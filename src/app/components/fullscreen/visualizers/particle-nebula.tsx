@@ -41,9 +41,8 @@ export function ParticleNebula() {
       const centerX = width / 2
       const centerY = height / 2
 
-      // Fade previous frame for trail effect
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.1)'
-      ctx.fillRect(0, 0, width, height)
+      // Clear completely - no background
+      ctx.clearRect(0, 0, width, height)
 
       const accentHSL = getComputedStyle(document.documentElement)
         .getPropertyValue('--accent')
@@ -58,14 +57,14 @@ export function ParticleNebula() {
       const spawnCount = Math.floor(intensity * 8)
       for (let i = 0; i < spawnCount; i++) {
         const angle = Math.random() * Math.PI * 2
-        const distance = Math.random() * 30
+        const distance = Math.random() * 45 // Increased from 30 to 45 (50% more)
         const freq = Math.floor(Math.random() * frequencyData.length)
         
         particlesRef.current.push({
           x: centerX + Math.cos(angle) * distance,
           y: centerY + Math.sin(angle) * distance,
-          vx: (Math.random() - 0.5) * 2,
-          vy: (Math.random() - 0.5) * 2,
+          vx: (Math.random() - 0.5) * 3, // Increased velocity too
+          vy: (Math.random() - 0.5) * 3,
           life: 1,
           freq: freq,
         })
