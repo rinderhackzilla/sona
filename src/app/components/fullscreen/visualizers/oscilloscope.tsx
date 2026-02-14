@@ -4,6 +4,7 @@ import { useAudioAnalyser } from '@/app/hooks/use-audio-analyser'
 export function Oscilloscope() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const { timeData } = useAudioAnalyser()
+  const frameCountRef = useRef(0)
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -26,6 +27,13 @@ export function Oscilloscope() {
     const draw = () => {
       if (!ctx || !canvas) return
 
+      // Skip frames to reduce refresh rate (60fps -> 30fps)
+      frameCountRef.current++
+      if (frameCountRef.current % 2 !== 0) {
+        animationId = requestAnimationFrame(draw)
+        return
+      }
+
       const width = canvas.offsetWidth
       const height = canvas.offsetHeight
 
@@ -37,8 +45,8 @@ export function Oscilloscope() {
         .trim()
       const [h, s, l] = accentHSL.split(' ')
 
-      // Use only 30% of data points (step = 3.33, rounded to ~3)
-      const step = 3
+      // Use only 20% of data points (step = 5)
+      const step = 5
       const reducedLength = Math.floor(timeData.length / step)
       const sliceWidth = width / reducedLength
       
