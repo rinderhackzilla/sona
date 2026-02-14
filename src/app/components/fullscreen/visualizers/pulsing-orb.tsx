@@ -1,40 +1,46 @@
 import { useEffect, useRef } from 'react'
-import { useVisualizerSettings } from '../settings'
+import { useAudioAnalyser } from '@/app/hooks/use-audio-analyser'
 
-interface PulsingOrbProps {
-  audioData: Uint8Array
-  isPlaying: boolean
-}
-
-export function PulsingOrb({ audioData, isPlaying }: PulsingOrbProps) {
+export function PulsingOrb() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
-  const { primaryColor, secondaryColor } = useVisualizerSettings()
+  const { frequencyData } = useAudioAnalyser()
 
   useEffect(() => {
-    if (!canvasRef.current) return
-
     const canvas = canvasRef.current
+    if (!canvas) return
+
     const ctx = canvas.getContext('2d')
     if (!ctx) return
 
-    const width = canvas.width
-    const height = canvas.height
-    const centerX = width / 2
-    const centerY = height / 2
+    const updateSize = () => {
+      const dpr = window.devicePixelRatio || 1
+      canvas.width = canvas.offsetWidth * dpr
+      canvas.height = canvas.offsetHeight * dpr
+      ctx.scale(dpr, dpr)
+    }
+    updateSize()
+    window.addEventListener('resize', updateSize)
 
     let animationId: number
 
     const draw = () => {
+      if (!ctx || !canvas) return
+
+      const width = canvas.offsetWidth
+      const height = canvas.offsetHeight
+      const centerX = width / 2
+      const centerY = height / 2
+
       ctx.clearRect(0, 0, width, height)
 
-      if (!isPlaying) {
-        animationId = requestAnimationFrame(draw)
-        return
-      }
+      const accentHSL = getComputedStyle(document.documentElement)
+        .getPropertyValue('--accent')
+        .trim()
+      const [h, s, l] = accentHSL.split(' ')
 
       // Calculate average amplitude
-      const sum = audioData.reduce((acc, val) => acc + val, 0)
-      const average = sum / audioData.length
+      const sum = frequencyData.reduce((acc, val) => acc + val, 0)
+      const average = sum / (frequencyData.length || 1)
       const normalizedAverage = average / 255
 
       // Base radius and pulse effect
@@ -51,13 +57,9 @@ export function PulsingOrb({ audioData, isPlaying }: PulsingOrbProps) {
         pulseRadius * 1.5,
       )
 
-      // Parse colors
-      const primary = primaryColor || '#3b82f6'
-      const secondary = secondaryColor || '#8b5cf6'
-
-      gradient.addColorStop(0, primary)
-      gradient.addColorStop(0.5, secondary)
-      gradient.addColorStop(1, 'transparent')
+      gradient.addColorStop(0, `hsla(${h}, 100%, 60%, 1)`)
+      gradient.addColorStop(0.5, `hsla(${h}, 100%, 50%, 0.8)`)
+      gradient.addColorStop(1, `hsla(${h}, 100%, 40%, 0)`)
 
       // Draw outer glow
       ctx.globalAlpha = 0.3 * normalizedAverage
@@ -68,14 +70,17 @@ export function PulsingOrb({ audioData, isPlaying }: PulsingOrbProps) {
 
       // Draw main orb
       ctx.globalAlpha = 0.8
-      ctx.fillStyle = primary
+      ctx.fillStyle = `hsla(${h}, 100%, 60%, ${0.8 + normalizedAverage * 0.2})`
+      ctx.shadowBlur = 40 * normalizedAverage
+      ctx.shadowColor = `hsla(${h}, 100%, 60%, ${normalizedAverage})`
       ctx.beginPath()
       ctx.arc(centerX, centerY, pulseRadius, 0, Math.PI * 2)
       ctx.fill()
 
       // Draw inner highlight
       ctx.globalAlpha = 0.6
-      ctx.fillStyle = 'white'
+      ctx.shadowBlur = 0
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.5)'
       ctx.beginPath()
       ctx.arc(
         centerX - pulseRadius * 0.3,
@@ -87,6 +92,7 @@ export function PulsingOrb({ audioData, isPlaying }: PulsingOrbProps) {
       ctx.fill()
 
       ctx.globalAlpha = 1
+      ctx.shadowBlur = 0
 
       animationId = requestAnimationFrame(draw)
     }
@@ -94,18 +100,16 @@ export function PulsingOrb({ audioData, isPlaying }: PulsingOrbProps) {
     draw()
 
     return () => {
-      if (animationId) {
-        cancelAnimationFrame(animationId)
-      }
+      cancelAnimationFrame(animationId)
+      window.removeEventListener('resize', updateSize)
     }
-  }, [audioData, isPlaying, primaryColor, secondaryColor])
+  }, [frequencyData])
 
   return (
     <canvas
       ref={canvasRef}
-      width={1920}
-      height={1080}
-      className="w-full h-full"
+      className="absolute inset-0 w-full h-full"
+      style={{ imageRendering: 'auto' }}
     />
   )
 }
