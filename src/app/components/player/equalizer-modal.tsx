@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef, useCallback } from 'react'
+import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   Dialog,
@@ -15,6 +15,7 @@ import {
   SelectValue,
 } from '@/app/components/ui/select'
 import { cn } from '@/lib/utils'
+import { setEqEnabled, setEqGains, getEqState } from '@/app/hooks/use-audio-context'
 
 interface EqualizerModalProps {
   open: boolean
@@ -45,178 +46,25 @@ const EQ_PRESETS = {
   vocal: [0, -2, -3, -1, 3, 4, 3, 1],
 }
 
-// Global audio context shared across entire app
-let globalAudioContext: AudioContext | null = null
-let globalFilters: BiquadFilterNode[] = []
-let globalSource: MediaElementAudioSourceNode | null = null
-let isAudioInitialized = false
-
 export function EqualizerModal({ open, onOpenChange }: EqualizerModalProps) {
   const { t } = useTranslation()
   const [gains, setGains] = useState<number[]>(EQ_PRESETS.flat)
   const [selectedPreset, setSelectedPreset] = useState<string>('flat')
   const [isEnabled, setIsEnabled] = useState(false)
-  const [initStatus, setInitStatus] = useState<string>('Not initialized')
-  const initAttempted = useRef(false)
 
-  // Initialize Web Audio API
-  const initializeAudio = useCallback(() => {
-    if (isAudioInitialized) {
-      setInitStatus('Already initialized')
-      return true
-    }
-
-    if (initAttempted.current) {
-      setInitStatus('Init already attempted')
-      return false
-    }
-
-    initAttempted.current = true
-    setInitStatus('Initializing...')
-
-    try {
-      // Find all audio elements
-      const audioElements = document.querySelectorAll('audio')
-      console.log('Found audio elements:', audioElements.length)
-      
-      let audioElement: HTMLAudioElement | null = null
-      
-      // Try to find the active audio element
-      for (const el of Array.from(audioElements)) {
-        console.log('Audio element:', el.getAttribute('data-testid'), el.src)
-        if (el.src && !el.paused) {
-          audioElement = el as HTMLAudioElement
-          break
-        }
-      }
-      
-      // Fallback to first audio element with src
-      if (!audioElement) {
-        for (const el of Array.from(audioElements)) {
-          if (el.src) {
-            audioElement = el as HTMLAudioElement
-            break
-          }
-        }
-      }
-
-      if (!audioElement) {
-        setInitStatus('No audio element found')
-        initAttempted.current = false
-        return false
-      }
-
-      console.log('Using audio element:', audioElement)
-
-      // Check if already connected
-      if ((audioElement as any).__eqConnected) {
-        setInitStatus('Already connected to this element')
-        return false
-      }
-
-      const AudioContext = window.AudioContext || (window as any).webkitAudioContext
-      if (!globalAudioContext) {
-        globalAudioContext = new AudioContext()
-        console.log('Created AudioContext:', globalAudioContext.state)
-      }
-
-      // Resume context if suspended
-      if (globalAudioContext.state === 'suspended') {
-        globalAudioContext.resume()
-      }
-
-      // Create source - this can only be done once per element
-      try {
-        globalSource = globalAudioContext.createMediaElementSource(audioElement)
-        ;(audioElement as any).__eqConnected = true
-        console.log('Created MediaElementSource')
-      } catch (error: any) {
-        if (error.name === 'InvalidStateError') {
-          setInitStatus('Element already connected elsewhere')
-          initAttempted.current = false
-          return false
-        }
-        throw error
-      }
-
-      // Create filters for each band
-      const filters = FREQUENCY_BANDS.map((band, index) => {
-        const filter = globalAudioContext!.createBiquadFilter()
-        
-        if (index === 0) {
-          filter.type = 'lowshelf'
-        } else if (index === FREQUENCY_BANDS.length - 1) {
-          filter.type = 'highshelf'
-        } else {
-          filter.type = 'peaking'
-        }
-        
-        filter.frequency.value = band.hz
-        filter.Q.value = 1.0
-        filter.gain.value = 0
-        
-        console.log(`Created filter ${index}: ${band.freq}, type: ${filter.type}`)
-        return filter
-      })
-
-      globalFilters = filters
-
-      // Connect audio graph: source -> filters -> destination
-      let prevNode: AudioNode = globalSource
-      filters.forEach((filter, index) => {
-        prevNode.connect(filter)
-        prevNode = filter
-        console.log(`Connected filter ${index}`)
-      })
-      prevNode.connect(globalAudioContext.destination)
-      console.log('Connected to destination')
-
-      isAudioInitialized = true
-      setInitStatus('✓ Initialized successfully')
-      console.log('Web Audio API initialized successfully')
-      return true
-
-    } catch (error) {
-      console.error('Failed to initialize Web Audio API:', error)
-      setInitStatus(`Error: ${(error as Error).message}`)
-      initAttempted.current = false
-      return false
-    }
-  }, [])
-
-  // Try to initialize when modal opens
+  // Load saved state on mount
   useEffect(() => {
-    if (open && !isAudioInitialized) {
-      // Wait a bit for audio element to be ready
-      const timer = setTimeout(() => {
-        initializeAudio()
-      }, 500)
-      return () => clearTimeout(timer)
-    }
-  }, [open, initializeAudio])
-
-  // Apply gain changes to filters
-  const applyGains = useCallback((newGains: number[]) => {
-    if (!isEnabled || !globalFilters.length) {
-      console.log('Not applying gains - enabled:', isEnabled, 'filters:', globalFilters.length)
-      return
-    }
-
-    console.log('Applying gains:', newGains)
-    globalFilters.forEach((filter, index) => {
-      if (filter) {
-        filter.gain.value = newGains[index]
-        console.log(`Filter ${index} gain set to ${newGains[index]} dB`)
-      }
-    })
-  }, [isEnabled])
+    const state = getEqState()
+    setIsEnabled(state.enabled)
+    setGains(state.gains)
+  }, [open])
 
   const handleGainChange = (index: number, value: number) => {
     const newGains = [...gains]
     newGains[index] = value
     setGains(newGains)
     setSelectedPreset('custom')
-    applyGains(newGains)
+    setEqGains(newGains)
   }
 
   const handlePresetChange = (preset: string) => {
@@ -224,33 +72,20 @@ export function EqualizerModal({ open, onOpenChange }: EqualizerModalProps) {
     if (preset !== 'custom') {
       const presetGains = EQ_PRESETS[preset as keyof typeof EQ_PRESETS]
       setGains(presetGains)
-      applyGains(presetGains)
+      setEqGains(presetGains)
     }
   }
 
   const handleReset = () => {
     setGains(EQ_PRESETS.flat)
     setSelectedPreset('flat')
-    applyGains(EQ_PRESETS.flat)
+    setEqGains(EQ_PRESETS.flat)
   }
 
   const handleToggle = () => {
     const newState = !isEnabled
     setIsEnabled(newState)
-    console.log('EQ enabled:', newState)
-    
-    if (newState) {
-      applyGains(gains)
-    } else {
-      // Reset all filters to 0
-      console.log('Disabling EQ - resetting gains to 0')
-      globalFilters.forEach((filter, index) => {
-        if (filter) {
-          filter.gain.value = 0
-          console.log(`Filter ${index} reset to 0 dB`)
-        }
-      })
-    }
+    setEqEnabled(newState)
   }
 
   // Calculate curve points for visualization
@@ -275,31 +110,16 @@ export function EqualizerModal({ open, onOpenChange }: EqualizerModalProps) {
       <DialogContent className="max-w-4xl">
         <DialogHeader>
           <DialogTitle className="flex items-center justify-between">
-            <div className="flex flex-col gap-1">
-              <span>{t('player.equalizer.title', 'Equalizer')}</span>
-              <span className="text-xs font-normal text-muted-foreground">{initStatus}</span>
-            </div>
-            <div className="flex items-center gap-2">
-              {!isAudioInitialized && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={initializeAudio}
-                >
-                  Initialize Audio
-                </Button>
-              )}
-              <Button
-                variant={isEnabled ? 'default' : 'outline'}
-                size="sm"
-                onClick={handleToggle}
-                disabled={!isAudioInitialized}
-              >
-                {isEnabled
-                  ? t('player.equalizer.enabled', 'Enabled')
-                  : t('player.equalizer.disabled', 'Disabled')}
-              </Button>
-            </div>
+            <span>{t('player.equalizer.title', 'Equalizer')}</span>
+            <Button
+              variant={isEnabled ? 'default' : 'outline'}
+              size="sm"
+              onClick={handleToggle}
+            >
+              {isEnabled
+                ? t('player.equalizer.enabled', 'Enabled')
+                : t('player.equalizer.disabled', 'Disabled')}
+            </Button>
           </DialogTitle>
         </DialogHeader>
 
