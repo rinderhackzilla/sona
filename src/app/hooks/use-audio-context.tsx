@@ -29,6 +29,9 @@ let globalEqFilters: IBiquadFilterNode<IAudioContext>[] = []
 let globalEqEnabled = false
 let globalEqGains: number[] = [0, 0, 0, 0, 0, 0, 0, 0]
 
+// Global analyser for visualizer
+let globalAnalyser: AnalyserNode | null = null
+
 export function useAudioContext(audio: HTMLAudioElement | null) {
   const { isSong } = usePlayerMediaType()
   const { replayGainError, replayGainEnabled } = useReplayGainState()
@@ -37,6 +40,7 @@ export function useAudioContext(audio: HTMLAudioElement | null) {
   const sourceNodeRef = useRef<IAudioSource | null>(null)
   const gainNodeRef = useRef<IGainNode<IAudioContext> | null>(null)
   const eqFiltersRef = useRef<IBiquadFilterNode<IAudioContext>[]>([])
+  const analyserRef = useRef<AnalyserNode | null>(null)
 
   const setupAudioContext = useCallback(() => {
     if (!audio || !isSong || replayGainError) return
@@ -55,6 +59,16 @@ export function useAudioContext(audio: HTMLAudioElement | null) {
       gainNodeRef.current = audioContext.createGain()
     }
 
+    // Create analyser for visualizer
+    if (!analyserRef.current && !globalAnalyser) {
+      const analyser = audioContext.createAnalyser() as AnalyserNode
+      analyser.fftSize = 512
+      analyser.smoothingTimeConstant = 0.75
+      analyserRef.current = analyser
+      globalAnalyser = analyser
+      logger.info('[AudioContext] Created analyser for visualizer')
+    }
+
     // Create EQ filters if not already created
     if (eqFiltersRef.current.length === 0) {
       const filters = EQ_BANDS.map((band) => {
@@ -70,7 +84,7 @@ export function useAudioContext(audio: HTMLAudioElement | null) {
       logger.info('Created EQ filters', { count: filters.length })
     }
 
-    // Connect audio chain: source -> EQ filters -> gainNode -> destination
+    // Connect audio chain: source -> EQ filters -> analyser -> gainNode -> destination
     let prevNode: AudioNode = sourceNodeRef.current
     
     // Connect all EQ filters in series
@@ -79,13 +93,19 @@ export function useAudioContext(audio: HTMLAudioElement | null) {
       prevNode = filter
     })
     
-    // Connect last filter to gain node
+    // Connect to analyser (for visualizer)
+    if (analyserRef.current) {
+      prevNode.connect(analyserRef.current)
+      prevNode = analyserRef.current
+    }
+    
+    // Connect to gain node
     prevNode.connect(gainNodeRef.current)
     
     // Connect gain node to destination
     gainNodeRef.current.connect(audioContext.destination)
 
-    logger.info('Audio chain connected: source -> EQ -> gain -> destination')
+    logger.info('Audio chain connected: source -> EQ -> analyser -> gain -> destination')
   }, [audio, isSong, replayGainError])
 
   const resumeContext = useCallback(async () => {
@@ -124,6 +144,11 @@ export function useAudioContext(audio: HTMLAudioElement | null) {
       sourceNodeRef.current.disconnect()
       sourceNodeRef.current = null
     }
+    if (analyserRef.current) {
+      analyserRef.current.disconnect()
+      analyserRef.current = null
+      globalAnalyser = null
+    }
     eqFiltersRef.current.forEach(filter => {
       filter.disconnect()
     })
@@ -156,11 +181,17 @@ export function useAudioContext(audio: HTMLAudioElement | null) {
     sourceNodeRef,
     gainNodeRef,
     eqFiltersRef,
+    analyserRef,
     setupAudioContext,
     resumeContext,
     setupGain,
     resetRefs,
   }
+}
+
+// Export function to get global analyser for visualizer
+export function getGlobalAnalyser(): AnalyserNode | null {
+  return globalAnalyser
 }
 
 // Export functions to control EQ from equalizer modal
