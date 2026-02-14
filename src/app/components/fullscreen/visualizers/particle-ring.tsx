@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { useAudioAnalyser } from '@/app/hooks/use-audio-analyser'
+import { useSongColor } from '@/store/player.store'
 
 interface Particle {
   angle: number
@@ -7,12 +8,14 @@ interface Particle {
   size: number
   speed: number
   alpha: number
+  colorIndex: number // Which color from palette to use
 }
 
 export function ParticleRing() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const particlesRef = useRef<Particle[]>([])
   const { frequencyData } = useAudioAnalyser()
+  const { currentSongColorPalette } = useSongColor()
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -42,6 +45,7 @@ export function ParticleRing() {
           size: 2 + Math.random() * 3,
           speed: (0.01 + Math.random() * 0.02) * 0.75, // 25% slower
           alpha: 0.5 + Math.random() * 0.5,
+          colorIndex: i % 4, // Cycle through 4 colors
         })
       }
     }
@@ -58,10 +62,19 @@ export function ParticleRing() {
 
       ctx.clearRect(0, 0, width, height)
 
-      const accentHSL = getComputedStyle(document.documentElement)
-        .getPropertyValue('--accent')
-        .trim()
-      const [h, s, l] = accentHSL.split(' ')
+      // Use palette colors if available, fallback to accent
+      const colors = currentSongColorPalette
+        ? [
+            currentSongColorPalette.vibrant,
+            currentSongColorPalette.dominant,
+            currentSongColorPalette.accent,
+            currentSongColorPalette.muted,
+          ]
+        : [
+            getComputedStyle(document.documentElement)
+              .getPropertyValue('--accent')
+              .trim(),
+          ]
 
       // Calculate average amplitude for ring size
       const sum = frequencyData.reduce((acc, val) => acc + val, 0)
@@ -69,10 +82,10 @@ export function ParticleRing() {
       const normalizedAverage = average / 255
 
       // Smaller inner radius, same outer reach
-      const baseRadius = Math.min(width, height) * 0.18  // reduced from 0.25
+      const baseRadius = Math.min(width, height) * 0.18 // reduced from 0.25
       const ringRadius = baseRadius * (1 + normalizedAverage * 0.5)
 
-      // Draw particles with better contrast
+      // Draw particles with palette colors
       particlesRef.current.forEach((particle, index) => {
         // Update particle angle
         particle.angle += particle.speed
@@ -94,15 +107,39 @@ export function ParticleRing() {
         // Increased base opacity and size
         const baseOpacity = 0.6
         const opacity = baseOpacity + enhancedFrequency * 0.4
-        
-        // Draw particle with higher visibility
-        const hueShift = index % 2 === 0 ? 0 : 30
-        ctx.fillStyle = `hsla(${Number.parseInt(h) + hueShift}, 100%, 65%, ${opacity})`
+
+        // Get color from palette (cycles through all 4)
+        const colorHex =
+          colors.length > 1
+            ? colors[particle.colorIndex]
+            : colors[0]
+
+        // Convert hex to rgba
+        const hexToRgba = (hex: string, alpha: number) => {
+          if (hex.startsWith('hsl')) {
+            // Already HSL format from CSS variable
+            const [h, s, l] = hex.split(' ')
+            return `hsla(${h}, ${s}, ${l}, ${alpha})`
+          }
+          const r = parseInt(hex.slice(1, 3), 16)
+          const g = parseInt(hex.slice(3, 5), 16)
+          const b = parseInt(hex.slice(5, 7), 16)
+          return `rgba(${r}, ${g}, ${b}, ${alpha})`
+        }
+
+        // Draw particle
+        ctx.fillStyle = hexToRgba(colorHex, opacity)
         ctx.globalAlpha = opacity
         ctx.shadowBlur = 15 * enhancedFrequency
-        ctx.shadowColor = `hsla(${Number.parseInt(h) + hueShift}, 100%, 70%, ${enhancedFrequency})`
+        ctx.shadowColor = hexToRgba(colorHex, enhancedFrequency)
         ctx.beginPath()
-        ctx.arc(x, y, particle.size * (1 + enhancedFrequency * 1.5), 0, Math.PI * 2)
+        ctx.arc(
+          x,
+          y,
+          particle.size * (1 + enhancedFrequency * 1.5),
+          0,
+          Math.PI * 2,
+        )
         ctx.fill()
       })
 
@@ -118,7 +155,7 @@ export function ParticleRing() {
       cancelAnimationFrame(animationId)
       window.removeEventListener('resize', updateSize)
     }
-  }, [frequencyData])
+  }, [frequencyData, currentSongColorPalette])
 
   return (
     <canvas
