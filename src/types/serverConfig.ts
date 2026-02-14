@@ -88,6 +88,15 @@ interface IAccounts {
   }
 }
 
+interface IIntegrations {
+  lidarr: {
+    url: string
+    setUrl: (value: string) => void
+    apiKey: string
+    setApiKey: (value: string) => void
+  }
+}
+
 // When changing the desktop data types
 // You have to update the electron one.
 // Located at -> electron > main > core > settings.ts
@@ -103,6 +112,7 @@ interface IDesktop {
 export interface IAppContext {
   data: IAppData
   accounts: IAccounts
+  integrations: IIntegrations
   podcasts: IPodcasts
   pages: IAppPages
   desktop: IDesktop
