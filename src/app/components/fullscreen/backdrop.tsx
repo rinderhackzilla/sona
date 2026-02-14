@@ -30,7 +30,7 @@ function OtherBackdrop() {
   const { coverArt } = usePlayerCurrentSong()
   const coverArtUrl = getSimpleCoverArtUrl(coverArt, 'song', '300')
   const [backgroundImage, setBackgroundImage] = useState(coverArtUrl)
-  const { bigPlayerBlur } = useSongColor()
+  const { bigPlayerBlur, useSongColorOnBigPlayer, currentSongColor, currentSongColorIntensity } = useSongColor()
 
   const newBackgroundImage = useMemo(() => coverArtUrl, [coverArtUrl])
 
@@ -42,30 +42,48 @@ function OtherBackdrop() {
     }
   }, [newBackgroundImage])
 
+  // Calculate color tint overlay when dynamic colors are enabled
+  const colorTint = useMemo(() => {
+    if (!useSongColorOnBigPlayer || !currentSongColor) return undefined
+    return hexToRgba(currentSongColor, currentSongColorIntensity * 0.25) // 25% of intensity for subtle tint
+  }, [useSongColorOnBigPlayer, currentSongColor, currentSongColorIntensity])
+
   return (
     <div className="relative w-full h-full transition-colors duration-1000 bg-black/0">
       <div
-        className="absolute -inset-10 bg-cover bg-center z-0 transition-[background-image] duration-1000"
+        className="absolute -inset-10 bg-cover bg-center z-0 transition-[background-image,filter] duration-1000"
         style={{
           backgroundImage: `url(${backgroundImage})`,
           filter: `blur(${bigPlayerBlur.value}px)`,
         }}
       />
-      <div className="bg-background/50 absolute inset-0 w-full h-full z-0 transition-colors duration-1000" />
+      {/* Color tint overlay when dynamic colors enabled */}
+      {colorTint && (
+        <div 
+          className="absolute inset-0 w-full h-full z-[1] transition-colors duration-1000"
+          style={{ backgroundColor: colorTint }}
+        />
+      )}
+      <div className="bg-background/50 absolute inset-0 w-full h-full z-[2] transition-colors duration-1000" />
     </div>
   )
 }
 
 function MacBackdrop() {
   const { coverArt, title } = usePlayerCurrentSong()
-  const { bigPlayerBlur } = useSongColor()
-  const { currentSongColor, currentSongColorIntensity } = useSongColor()
+  const { bigPlayerBlur, useSongColorOnBigPlayer, currentSongColor, currentSongColorIntensity } = useSongColor()
 
   const backgroundColor = useMemo(() => {
     if (!currentSongColor) return undefined
 
     return hexToRgba(currentSongColor, currentSongColorIntensity)
   }, [currentSongColor, currentSongColorIntensity])
+
+  // Calculate color tint overlay when dynamic colors are enabled
+  const colorTint = useMemo(() => {
+    if (!useSongColorOnBigPlayer || !currentSongColor) return undefined
+    return hexToRgba(currentSongColor, currentSongColorIntensity * 0.25)
+  }, [useSongColorOnBigPlayer, currentSongColor, currentSongColorIntensity])
 
   return (
     <div
@@ -84,8 +102,15 @@ function MacBackdrop() {
           />
         )}
       </ImageLoader>
+      {/* Color tint overlay when dynamic colors enabled */}
+      {colorTint && (
+        <div 
+          className="absolute inset-0 z-[9] transition-colors duration-1000"
+          style={{ backgroundColor: colorTint }}
+        />
+      )}
       <div
-        className="absolute bg-background/50 inset-0 z-10"
+        className="absolute bg-background/50 inset-0 z-10 transition-all duration-1000"
         style={{
           WebkitBackdropFilter: `blur(${bigPlayerBlur.value}px)`,
           backdropFilter: `blur(${bigPlayerBlur.value}px)`,
