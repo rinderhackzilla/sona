@@ -6,7 +6,7 @@ const { URL } = require('url');
 
 // Configuration
 const PROXY_PORT = 4534;
-const LISTEN_HOST = process.env.LISTEN_HOST || '0.0.0.0'; // Listen on all interfaces
+const LISTEN_HOST = process.env.LISTEN_HOST || '0.0.0.0';
 const TARGET_HOST = process.env.NAVIDROME_HOST || '192.168.0.163';
 const TARGET_PORT = process.env.NAVIDROME_PORT || 4533;
 const TARGET_PROTOCOL = process.env.NAVIDROME_PROTOCOL || 'http';
@@ -49,14 +49,20 @@ const server = http.createServer((req, res) => {
   const client = TARGET_PROTOCOL === 'https' ? https : http;
 
   const proxyReq = client.request(options, (proxyRes) => {
-    // Add CORS headers to all responses
-    const headers = {
-      ...proxyRes.headers,
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, Range, Authorization',
-      'Access-Control-Expose-Headers': 'Content-Length, Content-Range, Content-Type',
-    };
+    // Copy headers from Navidrome but OVERRIDE CORS headers
+    const headers = { ...proxyRes.headers };
+    
+    // Remove any existing CORS headers from Navidrome
+    delete headers['access-control-allow-origin'];
+    delete headers['access-control-allow-methods'];
+    delete headers['access-control-allow-headers'];
+    delete headers['access-control-expose-headers'];
+    
+    // Add our CORS headers
+    headers['Access-Control-Allow-Origin'] = '*';
+    headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, OPTIONS';
+    headers['Access-Control-Allow-Headers'] = 'Content-Type, Range, Authorization';
+    headers['Access-Control-Expose-Headers'] = 'Content-Length, Content-Range, Content-Type';
 
     res.writeHead(proxyRes.statusCode, headers);
     proxyRes.pipe(res, { end: true });
