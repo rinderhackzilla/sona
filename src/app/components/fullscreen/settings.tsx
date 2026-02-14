@@ -40,6 +40,16 @@ export function useVisualizerContext() {
   return context
 }
 
+// Hook for visualizer settings (colors, etc.)
+export function useVisualizerSettings() {
+  const { currentSongColor } = useSongColor()
+  
+  return {
+    primaryColor: currentSongColor || '#3b82f6',
+    secondaryColor: '#8b5cf6',
+  }
+}
+
 export function VisualizerProvider({ children }: { children: React.ReactNode }) {
   const [preset, setPreset] = useState<VisualizerPreset>('frequency-circle')
   return (
