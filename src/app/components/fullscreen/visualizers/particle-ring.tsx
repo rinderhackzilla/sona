@@ -1,15 +1,15 @@
 import { useEffect, useRef } from 'react'
-import { useAudioAnalyser } from '@/app/hooks/use-audio-analyser'
 
 interface Particle {
   angle: number
-  baseRadius: number
+  distance: number
+  speed: number
   size: number
+  phase: number
 }
 
 export function ParticleRing() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
-  const { frequencyData } = useAudioAnalyser()
   const particlesRef = useRef<Particle[]>([])
 
   useEffect(() => {
@@ -30,12 +30,14 @@ export function ParticleRing() {
 
     // Initialize particles
     if (particlesRef.current.length === 0) {
-      const particleCount = 128
+      const particleCount = 150
       for (let i = 0; i < particleCount; i++) {
         particlesRef.current.push({
           angle: (i / particleCount) * Math.PI * 2,
-          baseRadius: Math.random() * 50 + 150,
-          size: Math.random() * 3 + 2,
+          distance: 100 + Math.random() * 100,
+          speed: 0.01 + Math.random() * 0.02,
+          size: 2 + Math.random() * 3,
+          phase: Math.random() * Math.PI * 2,
         })
       }
     }
@@ -49,6 +51,7 @@ export function ParticleRing() {
       const height = canvas.offsetHeight
       const centerX = width / 2
       const centerY = height / 2
+      const time = Date.now() / 1000
 
       ctx.clearRect(0, 0, width, height)
 
@@ -57,25 +60,52 @@ export function ParticleRing() {
         .trim()
       const [h, s, l] = accentHSL.split(' ')
 
+      // Draw connecting lines between nearby particles
+      ctx.strokeStyle = `hsla(${h}, ${s}, ${l}, 0.1)`
+      ctx.lineWidth = 1
+      
+      for (let i = 0; i < particlesRef.current.length; i++) {
+        const p1 = particlesRef.current[i]
+        const wave1 = Math.sin(time * 2 + p1.phase) * 30
+        const r1 = p1.distance + wave1
+        const x1 = centerX + Math.cos(p1.angle) * r1
+        const y1 = centerY + Math.sin(p1.angle) * r1
+
+        for (let j = i + 1; j < Math.min(i + 5, particlesRef.current.length); j++) {
+          const p2 = particlesRef.current[j]
+          const wave2 = Math.sin(time * 2 + p2.phase) * 30
+          const r2 = p2.distance + wave2
+          const x2 = centerX + Math.cos(p2.angle) * r2
+          const y2 = centerY + Math.sin(p2.angle) * r2
+
+          const dist = Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
+          if (dist < 80) {
+            ctx.beginPath()
+            ctx.moveTo(x1, y1)
+            ctx.lineTo(x2, y2)
+            ctx.stroke()
+          }
+        }
+      }
+
       // Draw particles
-      particlesRef.current.forEach((particle, index) => {
-        const dataIndex = Math.floor((index / particlesRef.current.length) * frequencyData.length)
-        const value = frequencyData[dataIndex] || 0
-        const radiusOffset = (value / 255) * 100
-        const radius = particle.baseRadius + radiusOffset
+      particlesRef.current.forEach((particle) => {
+        const wave = Math.sin(time * 2 + particle.phase) * 30
+        const radius = particle.distance + wave
 
         const x = centerX + Math.cos(particle.angle) * radius
         const y = centerY + Math.sin(particle.angle) * radius
 
-        const alpha = 0.3 + (value / 255) * 0.7
+        const pulse = Math.sin(time * 4 + particle.phase) * 0.5 + 0.5
+        const alpha = 0.4 + pulse * 0.6
+        
         ctx.fillStyle = `hsla(${h}, ${s}, ${l}, ${alpha})`
-        ctx.globalAlpha = 1
         ctx.beginPath()
         ctx.arc(x, y, particle.size, 0, Math.PI * 2)
         ctx.fill()
 
-        // Slowly rotate particles
-        particle.angle += 0.001
+        // Rotate particles
+        particle.angle += particle.speed
       })
 
       animationId = requestAnimationFrame(draw)
@@ -87,7 +117,7 @@ export function ParticleRing() {
       cancelAnimationFrame(animationId)
       window.removeEventListener('resize', updateSize)
     }
-  }, [frequencyData])
+  }, [])
 
   return (
     <canvas

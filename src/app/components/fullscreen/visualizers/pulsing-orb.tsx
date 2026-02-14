@@ -1,9 +1,7 @@
 import { useEffect, useRef } from 'react'
-import { useAudioAnalyser } from '@/app/hooks/use-audio-analyser'
 
 export function PulsingOrb() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
-  const { frequencyData } = useAudioAnalyser()
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -30,6 +28,7 @@ export function PulsingOrb() {
       const height = canvas.offsetHeight
       const centerX = width / 2
       const centerY = height / 2
+      const time = Date.now() / 1000
 
       ctx.clearRect(0, 0, width, height)
 
@@ -38,39 +37,48 @@ export function PulsingOrb() {
         .trim()
       const [h, s, l] = accentHSL.split(' ')
 
-      // Calculate average frequency for pulsing
-      let sum = 0
-      for (let i = 0; i < 64; i++) {
-        sum += frequencyData[i] || 0
-      }
-      const average = sum / 64
-      const scale = 0.5 + (average / 255) * 1.5
-      const baseRadius = Math.min(width, height) * 0.15
-      const radius = baseRadius * scale
+      // Main pulsing orb
+      const basePulse = Math.sin(time * 2) * 0.3 + 1
+      const baseRadius = Math.min(width, height) * 0.12 * basePulse
 
-      // Draw multiple concentric circles
-      for (let i = 0; i < 5; i++) {
-        const r = radius * (1 + i * 0.3)
-        const alpha = 0.6 - i * 0.1
+      // Multiple expanding rings
+      for (let i = 0; i < 8; i++) {
+        const phase = (time * 2 + i * 0.3) % (Math.PI * 2)
+        const expansion = Math.sin(phase) * 0.5 + 0.5
+        const r = baseRadius * (1 + expansion * 2 + i * 0.4)
+        const alpha = (1 - expansion) * 0.4
 
-        ctx.globalAlpha = 1
         ctx.strokeStyle = `hsla(${h}, ${s}, ${l}, ${alpha})`
-        ctx.lineWidth = 3
+        ctx.lineWidth = 2 + expansion * 3
         ctx.beginPath()
         ctx.arc(centerX, centerY, r, 0, Math.PI * 2)
         ctx.stroke()
       }
 
-      // Draw filled center orb with gradient
-      const gradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, radius)
-      gradient.addColorStop(0, `hsla(${h}, ${s}, ${l}, 0.8)`)
+      // Central glowing orb with gradient
+      const gradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, baseRadius * 1.5)
+      gradient.addColorStop(0, `hsla(${h}, ${s}, 70%, 0.9)`)
+      gradient.addColorStop(0.5, `hsla(${h}, ${s}, ${l}, 0.6)`)
       gradient.addColorStop(1, `hsla(${h}, ${s}, ${l}, 0)`)
       
-      ctx.globalAlpha = 1
       ctx.fillStyle = gradient
       ctx.beginPath()
-      ctx.arc(centerX, centerY, radius, 0, Math.PI * 2)
+      ctx.arc(centerX, centerY, baseRadius * 1.5, 0, Math.PI * 2)
       ctx.fill()
+
+      // Orbiting particles
+      for (let i = 0; i < 12; i++) {
+        const angle = (i / 12) * Math.PI * 2 + time
+        const orbit = baseRadius * 3
+        const x = centerX + Math.cos(angle) * orbit
+        const y = centerY + Math.sin(angle) * orbit
+        const size = 3 + Math.sin(time * 3 + i) * 2
+
+        ctx.fillStyle = `hsla(${h}, ${s}, ${l}, 0.8)`
+        ctx.beginPath()
+        ctx.arc(x, y, size, 0, Math.PI * 2)
+        ctx.fill()
+      }
 
       animationId = requestAnimationFrame(draw)
     }
@@ -81,7 +89,7 @@ export function PulsingOrb() {
       cancelAnimationFrame(animationId)
       window.removeEventListener('resize', updateSize)
     }
-  }, [frequencyData])
+  }, [])
 
   return (
     <canvas
