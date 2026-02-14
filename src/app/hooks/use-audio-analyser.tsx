@@ -1,34 +1,14 @@
 import { useEffect, useRef, useState } from 'react'
-import { usePlayerIsPlaying, usePlayerProgress } from '@/store/player.store'
+import { usePlayerIsPlaying, usePlayerRef } from '@/store/player.store'
 
-// Simulate audio frequencies based on playback
-function generateSimulatedFrequencies(progress: number, bufferSize: number): Uint8Array {
-  const data = new Uint8Array(bufferSize)
-  const time = Date.now() / 1000
-  
-  for (let i = 0; i < bufferSize; i++) {
-    // Create wave patterns that look like real audio
-    const frequency = i / bufferSize
-    const wave1 = Math.sin(time * 2 + i * 0.1) * 50
-    const wave2 = Math.sin(time * 3 + i * 0.05) * 30
-    const wave3 = Math.sin(time * 5 + frequency * Math.PI * 2) * 40
-    
-    // Bass frequencies (lower indices) should be stronger
-    const bassBoost = frequency < 0.2 ? 1.5 : 1.0
-    
-    // Add some randomness
-    const noise = (Math.random() - 0.5) * 20
-    
-    const value = (wave1 + wave2 + wave3 + noise) * bassBoost + 80
-    data[i] = Math.max(0, Math.min(255, value))
-  }
-  
-  return data
-}
+let globalAnalyser: AnalyserNode | null = null
+let globalAudioContext: AudioContext | null = null
+let globalSource: MediaElementAudioSourceNode | null = null
+let isConnected = false
 
 export function useAudioAnalyser() {
+  const audioRef = usePlayerRef()
   const isPlaying = usePlayerIsPlaying()
-  const progress = usePlayerProgress()
   
   const animationFrameRef = useRef<number | null>(null)
   
@@ -36,42 +16,93 @@ export function useAudioAnalyser() {
   const [timeData, setTimeData] = useState<Uint8Array>(new Uint8Array(128))
 
   useEffect(() => {
-    if (!isPlaying) {
-      // Reset to flat when not playing
+    if (!audioRef || !isPlaying) {
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current)
         animationFrameRef.current = null
       }
-      setFrequencyData(new Uint8Array(128))
-      setTimeData(new Uint8Array(128))
       return
     }
 
-    console.log('[Visualizer] Using simulated audio data (CORS workaround)')
+    console.log('[Visualizer] Audio element found')
 
-    const bufferLength = 128
+    // Setup audio context (singleton)
+    if (!globalAudioContext) {
+      try {
+        const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext
+        globalAudioContext = new AudioContextClass()
+        console.log('[Visualizer] Created AudioContext, state:', globalAudioContext.state)
+      } catch (error) {
+        console.error('[Visualizer] Error creating AudioContext:', error)
+        return
+      }
+    }
+
+    // Setup analyser (singleton)
+    if (!globalAnalyser && globalAudioContext) {
+      try {
+        globalAnalyser = globalAudioContext.createAnalyser()
+        globalAnalyser.fftSize = 512
+        globalAnalyser.smoothingTimeConstant = 0.75
+        console.log('[Visualizer] Created AnalyserNode, fftSize:', globalAnalyser.fftSize)
+      } catch (error) {
+        console.error('[Visualizer] Error creating AnalyserNode:', error)
+        return
+      }
+    }
+
+    // Connect audio pipeline (only once)
+    if (!isConnected && globalAudioContext && globalAnalyser && audioRef) {
+      try {
+        globalSource = globalAudioContext.createMediaElementSource(audioRef)
+        globalSource.connect(globalAnalyser)
+        globalAnalyser.connect(globalAudioContext.destination)
+        isConnected = true
+        console.log('[Visualizer] ✅ Audio pipeline connected successfully')
+      } catch (error: any) {
+        if (error.name === 'InvalidStateError') {
+          console.log('[Visualizer] Audio source already connected (OK)')
+          isConnected = true
+        } else {
+          console.error('[Visualizer] Error connecting audio:', error)
+        }
+      }
+    }
+
+    // Resume context if suspended
+    if (globalAudioContext && globalAudioContext.state === 'suspended') {
+      globalAudioContext.resume().then(() => {
+        console.log('[Visualizer] AudioContext resumed, new state:', globalAudioContext.state)
+      })
+    }
+
+    const analyser = globalAnalyser
+    if (!analyser) {
+      console.warn('[Visualizer] No analyser available')
+      return
+    }
+
+    const bufferLength = analyser.frequencyBinCount
+    const freqDataArray = new Uint8Array(bufferLength)
+    const timeDataArray = new Uint8Array(bufferLength)
+
     let lastLogTime = Date.now()
 
     const updateData = () => {
-      // Generate simulated frequency data
-      const freqDataArray = generateSimulatedFrequencies(progress, bufferLength)
-      const timeDataArray = new Uint8Array(bufferLength)
-      
-      // Generate time domain data (waveform)
-      for (let i = 0; i < bufferLength; i++) {
-        const t = i / bufferLength
-        timeDataArray[i] = 128 + Math.sin(Date.now() / 100 + t * Math.PI * 2) * 50
-      }
+      if (!analyser) return
 
-      setFrequencyData(freqDataArray)
-      setTimeData(timeDataArray)
+      analyser.getByteFrequencyData(freqDataArray)
+      analyser.getByteTimeDomainData(timeDataArray)
 
-      // Debug every 3 seconds
+      setFrequencyData(new Uint8Array(freqDataArray))
+      setTimeData(new Uint8Array(timeDataArray))
+
+      // Debug every 2 seconds
       const now = Date.now()
-      if (now - lastLogTime > 3000) {
+      if (now - lastLogTime > 2000) {
         const avg = freqDataArray.reduce((a, b) => a + b, 0) / freqDataArray.length
         const max = Math.max(...Array.from(freqDataArray))
-        console.log(`[Visualizer] 🎵 Simulated - avg: ${avg.toFixed(1)}, max: ${max}`)
+        console.log(`[Visualizer] 🎵 REAL DATA - avg: ${avg.toFixed(1)}, max: ${max}, context: ${globalAudioContext?.state}`)
         lastLogTime = now
       }
 
@@ -85,11 +116,11 @@ export function useAudioAnalyser() {
         cancelAnimationFrame(animationFrameRef.current)
       }
     }
-  }, [isPlaying, progress])
+  }, [audioRef, isPlaying])
 
   return {
     frequencyData,
     timeData,
-    analyser: null,
+    analyser: globalAnalyser,
   }
 }
