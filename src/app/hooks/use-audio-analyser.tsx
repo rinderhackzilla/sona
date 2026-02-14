@@ -11,7 +11,6 @@ export function useAudioAnalyser() {
   const isPlaying = usePlayerIsPlaying()
   
   const animationFrameRef = useRef<number | null>(null)
-  const hasReloadedRef = useRef(false)
   
   const [frequencyData, setFrequencyData] = useState<Uint8Array>(new Uint8Array(128))
   const [timeData, setTimeData] = useState<Uint8Array>(new Uint8Array(128))
@@ -26,6 +25,25 @@ export function useAudioAnalyser() {
     }
 
     console.log('[Visualizer] Audio element found, crossOrigin:', audioRef.crossOrigin)
+
+    // CRITICAL FIX: Remove crossorigin attribute
+    if (audioRef.crossOrigin) {
+      console.log('[Visualizer] Removing crossorigin attribute...')
+      const currentSrc = audioRef.src
+      const currentTime = audioRef.currentTime
+      const wasPaused = audioRef.paused
+      
+      audioRef.removeAttribute('crossorigin')
+      audioRef.src = currentSrc
+      audioRef.load()
+      audioRef.currentTime = currentTime
+      
+      if (!wasPaused) {
+        audioRef.play().catch(e => console.warn('[Visualizer] Could not resume:', e))
+      }
+      
+      console.log('[Visualizer] Crossorigin removed, audio reloaded')
+    }
 
     // Setup audio context (singleton)
     if (!globalAudioContext) {
@@ -45,7 +63,7 @@ export function useAudioAnalyser() {
         globalAnalyser = globalAudioContext.createAnalyser()
         globalAnalyser.fftSize = 512
         globalAnalyser.smoothingTimeConstant = 0.75
-        console.log('[Visualizer] Created AnalyserNode, fftSize:', globalAnalyser.fftSize)
+        console.log('[Visualizer] Created AnalyserNode')
       } catch (error) {
         console.error('[Visualizer] Error creating AnalyserNode:', error)
         return
@@ -59,53 +77,31 @@ export function useAudioAnalyser() {
         globalSource.connect(globalAnalyser)
         globalAnalyser.connect(globalAudioContext.destination)
         isConnected = true
-        console.log('[Visualizer] ✅ Connected audio pipeline successfully')
-        
-        // WORKAROUND: Reload audio to fix CORS issue
-        // This forces the audio to go through the analyser
-        if (!hasReloadedRef.current && audioRef.src) {
-          const currentTime = audioRef.currentTime
-          const wasPaused = audioRef.paused
-          
-          console.log('[Visualizer] Reloading audio to enable analysis...')
-          audioRef.load()
-          
-          // Restore playback position and state
-          audioRef.currentTime = currentTime
-          if (!wasPaused) {
-            audioRef.play().catch(e => console.warn('[Visualizer] Could not resume playback:', e))
-          }
-          
-          hasReloadedRef.current = true
-        }
+        console.log('[Visualizer] ✅ Audio pipeline connected')
       } catch (error: any) {
         if (error.name === 'InvalidStateError') {
-          console.log('[Visualizer] Audio source already connected (OK)')
+          console.log('[Visualizer] Source already connected (OK)')
           isConnected = true
         } else {
-          console.error('[Visualizer] Error connecting audio:', error)
+          console.error('[Visualizer] Connection error:', error)
         }
       }
     }
 
     // Resume context if suspended
-    if (globalAudioContext && globalAudioContext.state === 'suspended') {
+    if (globalAudioContext?.state === 'suspended') {
       globalAudioContext.resume().then(() => {
-        console.log('[Visualizer] AudioContext resumed, new state:', globalAudioContext.state)
+        console.log('[Visualizer] Context resumed')
       })
     }
 
     const analyser = globalAnalyser
-    if (!analyser) {
-      console.warn('[Visualizer] No analyser available')
-      return
-    }
+    if (!analyser) return
 
     const bufferLength = analyser.frequencyBinCount
     const freqDataArray = new Uint8Array(bufferLength)
     const timeDataArray = new Uint8Array(bufferLength)
 
-    let frameCount = 0
     let lastLogTime = Date.now()
 
     const updateData = () => {
@@ -122,10 +118,9 @@ export function useAudioAnalyser() {
       if (now - lastLogTime > 2000) {
         const avg = freqDataArray.reduce((a, b) => a + b, 0) / freqDataArray.length
         const max = Math.max(...Array.from(freqDataArray))
-        console.log(`[Visualizer] Freq avg: ${avg.toFixed(1)}, max: ${max}, context: ${globalAudioContext?.state}`)
+        console.log(`[Visualizer] 🎵 avg: ${avg.toFixed(1)}, max: ${max}`)
         lastLogTime = now
       }
-      frameCount++
 
       animationFrameRef.current = requestAnimationFrame(updateData)
     }
@@ -138,11 +133,6 @@ export function useAudioAnalyser() {
       }
     }
   }, [audioRef, isPlaying])
-
-  // Reset reload flag when audio changes
-  useEffect(() => {
-    hasReloadedRef.current = false
-  }, [audioRef?.src])
 
   return {
     frequencyData,
