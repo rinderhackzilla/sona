@@ -1,5 +1,5 @@
 import clsx from 'clsx'
-import { useState, useContext } from 'react'
+import { useState } from 'react'
 import { ImageLoader } from '@/app/components/image-loader'
 import { AspectRatio } from '@/app/components/ui/aspect-ratio'
 import { VISUALIZERS } from '@/app/components/fullscreen/visualizers'
@@ -45,7 +45,7 @@ export function FullscreenSongImage() {
             )}
           </ImageLoader>
         ) : (
-          <div className="w-full h-full relative bg-background/20">
+          <div className="w-full h-full relative">
             <VisualizerComponent />
           </div>
         )}
