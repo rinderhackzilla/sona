@@ -16,12 +16,15 @@ const MemoFullscreenSongImage = memo(FullscreenSongImage)
 export function SongInfo() {
   const currentSong = usePlayerStore((state) => state.songlist.currentSong)
   const navigate = useNavigate()
+  const exitFullscreen = usePlayerStore((state) => state.controls.exitFullscreen)
 
   function handleTitleClick() {
+    exitFullscreen()
     navigate(ROUTES.ALBUM.PAGE(currentSong.albumId))
   }
 
   function handleAlbumClick() {
+    exitFullscreen()
     navigate(ROUTES.ALBUM.PAGE(currentSong.albumId))
   }
 
@@ -65,9 +68,11 @@ export function SongInfo() {
 function ArtistNames({ song }: { song: ISong }) {
   const { artist, artistId, artists } = song
   const navigate = useNavigate()
+  const exitFullscreen = usePlayerStore((state) => state.controls.exitFullscreen)
 
   function handleArtistClick(id?: string) {
     if (!id) return
+    exitFullscreen()
     navigate(ROUTES.ARTIST.PAGE(id))
   }
 
