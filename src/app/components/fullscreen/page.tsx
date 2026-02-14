@@ -6,6 +6,7 @@ import {
   DrawerTrigger,
 } from '@/app/components/ui/drawer'
 import { useAppWindow } from '@/app/hooks/use-app-window'
+import { useAlbumColorExtractor } from '@/app/hooks/useAlbumColorExtractor'
 import { VisualizerProvider } from './settings'
 import { FullscreenBackdrop } from './backdrop'
 import { FullscreenDragHandler } from './drag-handler'
@@ -20,6 +21,9 @@ type FullscreenModeProps = {
 
 export function FullscreenMode({ children }: FullscreenModeProps) {
   const { handleFullscreen } = useAppWindow()
+  
+  // Extract album colors automatically
+  useAlbumColorExtractor()
 
   return (
     <VisualizerProvider>
