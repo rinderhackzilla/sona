@@ -6,6 +6,9 @@ import { Oscilloscope } from './oscilloscope'
 import { GeometricMandala } from './geometric-mandala'
 import { AudioLandscape } from './audio-landscape'
 import { CircularWaveform } from './circular-waveform'
+import { PulsingOrb } from './pulsing-orb'
+import { ParticleRing } from './particle-ring'
+import { WaveCircle } from './wave-circle'
 import type { VisualizerPreset } from '@/types/visualizer'
 
 export const VISUALIZERS = {
@@ -17,6 +20,9 @@ export const VISUALIZERS = {
   'geometric-mandala': GeometricMandala,
   'audio-landscape': AudioLandscape,
   'circular-waveform': CircularWaveform,
+  'pulsing-orb': PulsingOrb,
+  'particle-ring': ParticleRing,
+  'wave-circle': WaveCircle,
 } as const
 
 export const VISUALIZER_NAMES: Record<VisualizerPreset, string> = {
@@ -28,6 +34,9 @@ export const VISUALIZER_NAMES: Record<VisualizerPreset, string> = {
   'geometric-mandala': 'Geometric Mandala',
   'audio-landscape': 'Audio Landscape',
   'circular-waveform': 'Circular Waveform',
+  'pulsing-orb': 'Pulsing Orb',
+  'particle-ring': 'Particle Ring',
+  'wave-circle': 'Wave Circle',
 }
 
 export type VisualizerComponent = typeof VISUALIZERS[keyof typeof VISUALIZERS]
