@@ -2,7 +2,9 @@ import { memo, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Dot } from '@/app/components/dot'
 import { MarqueeTitle } from '@/app/components/fullscreen/marquee-title'
+import { SongMenuOptions } from '@/app/components/song/menu-options'
 import { SongQualityBadge } from '@/app/components/song/quality-badge'
+import { ContextMenuProvider } from '@/app/components/table/context-menu'
 import { Badge } from '@/app/components/ui/badge'
 import { DrawerClose } from '@/app/components/ui/drawer'
 import { cn } from '@/lib/utils'
@@ -42,42 +44,52 @@ export function SongInfo() {
   }
 
   return (
-    <div className="flex items-center justify-start h-full min-h-full max-h-full gap-4 2xl:gap-6 flex-1 pt-2 overflow-hidden">
-      {/* Hidden close button for programmatic closing */}
-      <DrawerClose ref={closeButtonRef} className="hidden" />
-      
-      <MemoFullscreenSongImage />
+    <ContextMenuProvider
+      options={
+        <SongMenuOptions
+          variant="context"
+          song={currentSong}
+          index={0}
+        />
+      }
+    >
+      <div className="flex items-center justify-start h-full min-h-full max-h-full gap-4 2xl:gap-6 flex-1 pt-2 overflow-hidden">
+        {/* Hidden close button for programmatic closing */}
+        <DrawerClose ref={closeButtonRef} className="hidden" />
+        
+        <MemoFullscreenSongImage />
 
-      <div className="flex flex-col w-[66%] max-w-full h-full max-h-[450px] 2xl:max-h-[550px] justify-end text-left overflow-hidden">
-        <MarqueeTitle gap="mr-6">
-          <h2 
-            className="scroll-m-20 text-4xl 2xl:text-5xl font-bold tracking-tight py-2 2xl:py-3 text-shadow-md hover:underline cursor-pointer"
-            onClick={handleTitleClick}
-          >
-            {currentSong.title}
-          </h2>
-        </MarqueeTitle>
-        <div className="text-base 2xl:text-lg flex gap-1 text-foreground/70 truncate maskImage-marquee-fade-finished">
-          <p 
-            className="truncate text-shadow-lg text-foreground hover:underline cursor-pointer"
-            onClick={handleAlbumClick}
-          >
-            {currentSong.album}
-          </p>
-          <Dot className="text-foreground/70" />
-          <ArtistNames song={currentSong} onArtistClick={handleArtistClick} />
-        </div>
-        <div className="flex gap-2 mt-2 2xl:mt-3 mb-[1px]">
-          {currentSong.genre && (
-            <Badge variant="neutral">{currentSong.genre}</Badge>
-          )}
-          {currentSong.year && (
-            <Badge variant="neutral">{currentSong.year}</Badge>
-          )}
-          <SongQualityBadge song={currentSong} variant="neutral" />
+        <div className="flex flex-col w-[66%] max-w-full h-full max-h-[450px] 2xl:max-h-[550px] justify-end text-left overflow-hidden">
+          <MarqueeTitle gap="mr-6">
+            <h2 
+              className="scroll-m-20 text-4xl 2xl:text-5xl font-bold tracking-tight py-2 2xl:py-3 text-shadow-md hover:underline cursor-pointer"
+              onClick={handleTitleClick}
+            >
+              {currentSong.title}
+            </h2>
+          </MarqueeTitle>
+          <div className="text-base 2xl:text-lg flex gap-1 text-foreground/70 truncate maskImage-marquee-fade-finished">
+            <p 
+              className="truncate text-shadow-lg text-foreground hover:underline cursor-pointer"
+              onClick={handleAlbumClick}
+            >
+              {currentSong.album}
+            </p>
+            <Dot className="text-foreground/70" />
+            <ArtistNames song={currentSong} onArtistClick={handleArtistClick} />
+          </div>
+          <div className="flex gap-2 mt-2 2xl:mt-3 mb-[1px]">
+            {currentSong.genre && (
+              <Badge variant="neutral">{currentSong.genre}</Badge>
+            )}
+            {currentSong.year && (
+              <Badge variant="neutral">{currentSong.year}</Badge>
+            )}
+            <SongQualityBadge song={currentSong} variant="neutral" />
+          </div>
         </div>
       </div>
-    </div>
+    </ContextMenuProvider>
   )
 }
 
