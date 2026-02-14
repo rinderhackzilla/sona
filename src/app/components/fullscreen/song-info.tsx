@@ -4,6 +4,7 @@ import { Dot } from '@/app/components/dot'
 import { MarqueeTitle } from '@/app/components/fullscreen/marquee-title'
 import { SongQualityBadge } from '@/app/components/song/quality-badge'
 import { Badge } from '@/app/components/ui/badge'
+import { useDrawer } from '@/app/components/ui/drawer'
 import { cn } from '@/lib/utils'
 import { ROUTES } from '@/routes/routesList'
 import { usePlayerStore } from '@/store/player.store'
@@ -16,16 +17,20 @@ const MemoFullscreenSongImage = memo(FullscreenSongImage)
 export function SongInfo() {
   const currentSong = usePlayerStore((state) => state.songlist.currentSong)
   const navigate = useNavigate()
-  const exitFullscreen = usePlayerStore((state) => state.controls.exitFullscreen)
+  const drawer = useDrawer()
 
   function handleTitleClick() {
-    exitFullscreen()
-    navigate(ROUTES.ALBUM.PAGE(currentSong.albumId))
+    drawer?.setOpen(false)
+    setTimeout(() => {
+      navigate(ROUTES.ALBUM.PAGE(currentSong.albumId))
+    }, 100)
   }
 
   function handleAlbumClick() {
-    exitFullscreen()
-    navigate(ROUTES.ALBUM.PAGE(currentSong.albumId))
+    drawer?.setOpen(false)
+    setTimeout(() => {
+      navigate(ROUTES.ALBUM.PAGE(currentSong.albumId))
+    }, 100)
   }
 
   return (
@@ -68,12 +73,14 @@ export function SongInfo() {
 function ArtistNames({ song }: { song: ISong }) {
   const { artist, artistId, artists } = song
   const navigate = useNavigate()
-  const exitFullscreen = usePlayerStore((state) => state.controls.exitFullscreen)
+  const drawer = useDrawer()
 
   function handleArtistClick(id?: string) {
     if (!id) return
-    exitFullscreen()
-    navigate(ROUTES.ARTIST.PAGE(id))
+    drawer?.setOpen(false)
+    setTimeout(() => {
+      navigate(ROUTES.ARTIST.PAGE(id))
+    }, 100)
   }
 
   if (artists && artists.length > 1) {
