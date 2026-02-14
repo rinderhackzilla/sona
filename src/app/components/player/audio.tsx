@@ -140,17 +140,11 @@ export function AudioPlayer({
     return undefined
   }, [handleRadioError, handleSongError, isRadio, isSong])
 
-  const crossOrigin = useMemo(() => {
-    if (!isSong || replayGainError) return undefined
-
-    return 'anonymous'
-  }, [isSong, replayGainError])
-
   return (
     <audio
       ref={audioRef}
       {...props}
-      crossOrigin={crossOrigin}
+      crossOrigin="anonymous"
       onError={handleError}
     />
   )
