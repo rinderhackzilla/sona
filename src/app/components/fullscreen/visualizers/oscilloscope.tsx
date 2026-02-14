@@ -29,42 +29,13 @@ export function Oscilloscope() {
       const width = canvas.offsetWidth
       const height = canvas.offsetHeight
 
-      // Dark background with slight fade for phosphor trail effect
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.15)'
-      ctx.fillRect(0, 0, width, height)
+      // Clear background completely
+      ctx.clearRect(0, 0, width, height)
 
       const accentHSL = getComputedStyle(document.documentElement)
         .getPropertyValue('--accent')
         .trim()
       const [h, s, l] = accentHSL.split(' ')
-
-      // Draw grid lines (oscilloscope style)
-      ctx.strokeStyle = `hsla(${h}, 50%, 30%, 0.2)`
-      ctx.lineWidth = 1
-      
-      // Vertical grid lines
-      for (let x = 0; x < width; x += width / 10) {
-        ctx.beginPath()
-        ctx.moveTo(x, 0)
-        ctx.lineTo(x, height)
-        ctx.stroke()
-      }
-      
-      // Horizontal grid lines
-      for (let y = 0; y < height; y += height / 8) {
-        ctx.beginPath()
-        ctx.moveTo(0, y)
-        ctx.lineTo(width, y)
-        ctx.stroke()
-      }
-
-      // Center line
-      ctx.strokeStyle = `hsla(${h}, 50%, 40%, 0.4)`
-      ctx.lineWidth = 2
-      ctx.beginPath()
-      ctx.moveTo(0, height / 2)
-      ctx.lineTo(width, height / 2)
-      ctx.stroke()
 
       // Draw waveform with phosphor glow
       const sliceWidth = width / timeData.length
@@ -93,30 +64,6 @@ export function Oscilloscope() {
       }
 
       ctx.shadowBlur = 0
-
-      // Draw scanlines for CRT effect
-      ctx.strokeStyle = 'rgba(0, 0, 0, 0.1)'
-      ctx.lineWidth = 1
-      for (let y = 0; y < height; y += 4) {
-        ctx.beginPath()
-        ctx.moveTo(0, y)
-        ctx.lineTo(width, y)
-        ctx.stroke()
-      }
-
-      // Vignette effect
-      const gradient = ctx.createRadialGradient(
-        width / 2,
-        height / 2,
-        0,
-        width / 2,
-        height / 2,
-        width / 2
-      )
-      gradient.addColorStop(0, 'rgba(0, 0, 0, 0)')
-      gradient.addColorStop(1, 'rgba(0, 0, 0, 0.3)')
-      ctx.fillStyle = gradient
-      ctx.fillRect(0, 0, width, height)
 
       animationId = requestAnimationFrame(draw)
     }
