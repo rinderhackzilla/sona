@@ -67,7 +67,7 @@ export function FullscreenSettings() {
           <SlidersHorizontal className={buttonsStyle.secondaryIcon} />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-80 p-0" align="start" side="top">
+      <PopoverContent className="w-104 p-0" align="start" side="top">
         <div className="flex flex-col">
           <DynamicColorOption showSeparator={false} />
           {useSongColorOnBigPlayer && <ColorIntensityOption />}
@@ -93,7 +93,7 @@ export function QueueSettings() {
           <SlidersHorizontal className="size-4" strokeWidth={2.5} />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-80 p-0" align="end" side="bottom">
+      <PopoverContent className="w-104 p-0" align="end" side="bottom">
         <div className="flex flex-col">
           <QueueDynamicColorOption showSeparator={false} />
           {useSongColorOnQueue && <ColorIntensityOption />}
