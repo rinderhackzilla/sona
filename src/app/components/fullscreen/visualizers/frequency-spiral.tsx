@@ -40,8 +40,13 @@ export function FrequencySpiral() {
         .trim()
       const [h, s, l] = accentHSL.split(' ')
 
-      // Slow rotation
-      rotationRef.current += 0.005
+      // Calculate bass for rotation boost
+      const bassData = Array.from(frequencyData.slice(0, 12))
+      const bassAvg = bassData.reduce((a, b) => a + b, 0) / bassData.length
+      const bassBoost = bassAvg / 255
+
+      // Slow rotation, faster on bass
+      rotationRef.current += 0.005 + bassBoost * 0.01
 
       // Draw spiral spectrum
       const dataCount = Math.min(frequencyData.length, 128)
@@ -57,9 +62,16 @@ export function FrequencySpiral() {
         
         // Frequency value affects distance from spiral path
         const frequencyValue = frequencyData[i] || 0
-        const normalizedValue = frequencyValue / 255
-        // Reduce offset from 50 to 30 to prevent clipping
-        const offset = normalizedValue * 30
+        let normalizedValue = frequencyValue / 255
+        
+        // BASS BOOST for lower frequencies
+        if (i < 20) {
+          normalizedValue = Math.min(1, normalizedValue * 1.8)
+        } else if (i < 40) {
+          normalizedValue = Math.min(1, normalizedValue * 1.3)
+        }
+        
+        const offset = normalizedValue * 35
 
         const x = centerX + Math.cos(angle) * (radius + offset)
         const y = centerY + Math.sin(angle) * (radius + offset)
@@ -72,8 +84,7 @@ export function FrequencySpiral() {
 
         // Draw frequency bars perpendicular to spiral
         if (i % 4 === 0) {
-          // Reduce bar length from 30 to 20
-          const barLength = normalizedValue * 20
+          const barLength = normalizedValue * 25
           const perpAngle = angle + Math.PI / 2
           const barX = x + Math.cos(perpAngle) * barLength
           const barY = y + Math.sin(perpAngle) * barLength
@@ -86,32 +97,41 @@ export function FrequencySpiral() {
 
       // Gradient stroke for spiral
       const avgFreq = frequencyData.reduce((a, b) => a + b, 0) / frequencyData.length / 255
-      ctx.strokeStyle = `hsla(${h}, 100%, ${50 + avgFreq * 20}%, ${0.7 + avgFreq * 0.3})`
-      ctx.lineWidth = 2
-      ctx.shadowBlur = 15 + avgFreq * 20
+      ctx.strokeStyle = `hsla(${h}, 100%, ${50 + avgFreq * 25}%, ${0.7 + avgFreq * 0.3})`
+      ctx.lineWidth = 2 + bassBoost * 2
+      ctx.shadowBlur = 15 + avgFreq * 25
       ctx.shadowColor = `hsla(${h}, 100%, 60%, ${avgFreq * 0.8})`
       ctx.lineCap = 'round'
       ctx.lineJoin = 'round'
       ctx.stroke()
 
-      // Draw glow points along spiral at high frequencies
-      for (let i = 0; i < dataCount; i += 8) {
+      // Draw energy trails - glow points along spiral at high frequencies
+      for (let i = 0; i < dataCount; i += 6) {
         const frequencyValue = frequencyData[i] || 0
-        if (frequencyValue > 180) { // Only bright points
+        let normalizedValue = frequencyValue / 255
+        
+        // Boost bass visibility
+        if (i < 20) {
+          normalizedValue = Math.min(1, normalizedValue * 1.8)
+        }
+        
+        if (normalizedValue > 0.6) { // Lower threshold
           const progress = i / dataCount
           const angle = progress * Math.PI * 2 * turns + rotationRef.current
           const radius = progress * maxRadius
-          const normalizedValue = frequencyValue / 255
           
-          const x = centerX + Math.cos(angle) * (radius + normalizedValue * 30)
-          const y = centerY + Math.sin(angle) * (radius + normalizedValue * 30)
+          const x = centerX + Math.cos(angle) * (radius + normalizedValue * 35)
+          const y = centerY + Math.sin(angle) * (radius + normalizedValue * 35)
 
-          ctx.beginPath()
-          ctx.arc(x, y, 2 + normalizedValue * 4, 0, Math.PI * 2)
-          ctx.fillStyle = `hsla(${h}, 100%, 70%, ${normalizedValue})`
-          ctx.shadowBlur = 15
-          ctx.shadowColor = `hsla(${h}, 100%, 60%, ${normalizedValue})`
-          ctx.fill()
+          // Multiple concentric glows for trail effect
+          for (let j = 0; j < 2; j++) {
+            ctx.beginPath()
+            ctx.arc(x, y, 2 + normalizedValue * 5 + j * 3, 0, Math.PI * 2)
+            ctx.fillStyle = `hsla(${h}, 100%, ${70 + j * 10}%, ${normalizedValue * (0.8 - j * 0.3)})`
+            ctx.shadowBlur = 18
+            ctx.shadowColor = `hsla(${h}, 100%, 60%, ${normalizedValue * 0.8})`
+            ctx.fill()
+          }
         }
       }
 
