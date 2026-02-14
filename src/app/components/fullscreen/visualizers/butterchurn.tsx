@@ -17,7 +17,6 @@ export function ButterchurnVisualizer() {
     const canvas = canvasRef.current
     if (!canvas || !audioElement) return
 
-    // Get canvas size
     const width = canvas.offsetWidth
     const height = canvas.offsetHeight
     canvas.width = width
@@ -35,44 +34,46 @@ export function ButterchurnVisualizer() {
       // Load a preset
       const presets = butterchurnPresets.getPresets()
       const presetKeys = Object.keys(presets)
-      
-      // Select a cool preset (you can randomize or let user choose)
       const selectedPreset = presets[presetKeys[Math.floor(Math.random() * presetKeys.length)]]
       visualizerRef.current.loadPreset(selectedPreset, 0)
 
-      console.log('[Butterchurn] Visualizer created with preset')
+      console.log('[Butterchurn] Visualizer created')
     } catch (error) {
       console.error('[Butterchurn] Error creating visualizer:', error)
     }
 
     return () => {
       if (visualizerRef.current) {
-        visualizerRef.current.destroy()
+        try {
+          // Safely destroy visualizer
+          if (typeof visualizerRef.current.destroy === 'function') {
+            visualizerRef.current.destroy()
+          }
+        } catch (error) {
+          console.warn('[Butterchurn] Error destroying visualizer:', error)
+        }
         visualizerRef.current = null
       }
     }
   }, [audioElement])
 
-  // Setup audio context and connect
+  // Setup audio context
   useEffect(() => {
     if (!audioElement || !isPlaying) return
 
     try {
-      // Create audio context
       if (!audioContextRef.current) {
         const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext
         audioContextRef.current = new AudioContextClass()
         console.log('[Butterchurn] Created AudioContext')
       }
 
-      // Create analyser
       if (!analyserRef.current && audioContextRef.current) {
         analyserRef.current = audioContextRef.current.createAnalyser()
         analyserRef.current.fftSize = 2048
         console.log('[Butterchurn] Created AnalyserNode')
       }
 
-      // Connect audio source
       if (!sourceRef.current && audioContextRef.current && analyserRef.current) {
         try {
           sourceRef.current = audioContextRef.current.createMediaElementSource(audioElement)
@@ -82,13 +83,10 @@ export function ButterchurnVisualizer() {
         } catch (error: any) {
           if (error.name === 'InvalidStateError') {
             console.log('[Butterchurn] Audio already connected')
-          } else {
-            console.error('[Butterchurn] Error connecting audio:', error)
           }
         }
       }
 
-      // Resume if suspended
       if (audioContextRef.current?.state === 'suspended') {
         audioContextRef.current.resume()
       }
@@ -105,7 +103,11 @@ export function ButterchurnVisualizer() {
 
     const render = () => {
       if (visualizerRef.current) {
-        visualizerRef.current.render()
+        try {
+          visualizerRef.current.render()
+        } catch (error) {
+          console.warn('[Butterchurn] Render error:', error)
+        }
       }
       animationId = requestAnimationFrame(render)
     }
@@ -128,7 +130,13 @@ export function ButterchurnVisualizer() {
         const height = canvas.offsetHeight
         canvas.width = width
         canvas.height = height
-        visualizerRef.current.setRendererSize(width, height)
+        try {
+          if (typeof visualizerRef.current.setRendererSize === 'function') {
+            visualizerRef.current.setRendererSize(width, height)
+          }
+        } catch (error) {
+          console.warn('[Butterchurn] Resize error:', error)
+        }
       }
     }
 
