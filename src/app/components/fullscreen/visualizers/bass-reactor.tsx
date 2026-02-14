@@ -54,10 +54,12 @@ export function BassReactor() {
       const highNorm = highAvg / 255
 
       // Draw concentric rings reacting to different frequencies
-      const maxRadius = Math.min(width, height) * 0.45
+      // Reduce from 45% to 32% to fit better
+      const maxRadius = Math.min(width, height) * 0.32
 
       // Bass ring (innermost, biggest pulse)
-      const bassRadius = 50 + bassNorm * maxRadius * 0.4
+      // Reduce multipliers to prevent overflow
+      const bassRadius = 40 + bassNorm * maxRadius * 0.35
       ctx.beginPath()
       ctx.arc(centerX, centerY, bassRadius, 0, Math.PI * 2)
       ctx.fillStyle = `hsla(${h}, 100%, 50%, ${bassNorm * 0.3})`
@@ -69,7 +71,7 @@ export function BassReactor() {
       ctx.stroke()
 
       // Mid ring
-      const midRadius = bassRadius + 60 + midNorm * 40
+      const midRadius = bassRadius + 50 + midNorm * 30
       ctx.beginPath()
       ctx.arc(centerX, centerY, midRadius, 0, Math.PI * 2)
       ctx.strokeStyle = `hsla(${h}, 100%, 65%, ${0.6 + midNorm * 0.4})`
@@ -79,7 +81,7 @@ export function BassReactor() {
       ctx.stroke()
 
       // High ring (outermost, fastest)
-      const highRadius = midRadius + 50 + highNorm * 30
+      const highRadius = midRadius + 40 + highNorm * 25
       ctx.beginPath()
       ctx.arc(centerX, centerY, highRadius, 0, Math.PI * 2)
       ctx.strokeStyle = `hsla(${h}, 100%, 70%, ${0.5 + highNorm * 0.5})`
