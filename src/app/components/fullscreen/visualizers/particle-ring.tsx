@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import { useVisualizerSettings } from '../settings'
+import { useAudioAnalyser } from '@/app/hooks/use-audio-analyser'
 
 interface Particle {
   angle: number
@@ -9,31 +9,32 @@ interface Particle {
   alpha: number
 }
 
-interface ParticleRingProps {
-  audioData: Uint8Array
-  isPlaying: boolean
-}
-
-export function ParticleRing({ audioData, isPlaying }: ParticleRingProps) {
+export function ParticleRing() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const particlesRef = useRef<Particle[]>([])
-  const { primaryColor, secondaryColor } = useVisualizerSettings()
+  const { frequencyData } = useAudioAnalyser()
 
   useEffect(() => {
-    if (!canvasRef.current) return
-
     const canvas = canvasRef.current
+    if (!canvas) return
+
     const ctx = canvas.getContext('2d')
     if (!ctx) return
 
-    const width = canvas.width
-    const height = canvas.height
-    const centerX = width / 2
-    const centerY = height / 2
+    const updateSize = () => {
+      const dpr = window.devicePixelRatio || 1
+      canvas.width = canvas.offsetWidth * dpr
+      canvas.height = canvas.offsetHeight * dpr
+      ctx.scale(dpr, dpr)
+    }
+    updateSize()
+    window.addEventListener('resize', updateSize)
 
     // Initialize particles
     const particleCount = 100
     if (particlesRef.current.length === 0) {
+      const width = canvas.offsetWidth
+      const height = canvas.offsetHeight
       for (let i = 0; i < particleCount; i++) {
         particlesRef.current.push({
           angle: (Math.PI * 2 * i) / particleCount,
@@ -48,16 +49,23 @@ export function ParticleRing({ audioData, isPlaying }: ParticleRingProps) {
     let animationId: number
 
     const draw = () => {
+      if (!ctx || !canvas) return
+
+      const width = canvas.offsetWidth
+      const height = canvas.offsetHeight
+      const centerX = width / 2
+      const centerY = height / 2
+
       ctx.clearRect(0, 0, width, height)
 
-      if (!isPlaying) {
-        animationId = requestAnimationFrame(draw)
-        return
-      }
+      const accentHSL = getComputedStyle(document.documentElement)
+        .getPropertyValue('--accent')
+        .trim()
+      const [h, s, l] = accentHSL.split(' ')
 
       // Calculate average amplitude for ring size
-      const sum = audioData.reduce((acc, val) => acc + val, 0)
-      const average = sum / audioData.length
+      const sum = frequencyData.reduce((acc, val) => acc + val, 0)
+      const average = sum / (frequencyData.length || 1)
       const normalizedAverage = average / 255
 
       const baseRadius = Math.min(width, height) * 0.25
@@ -70,9 +78,9 @@ export function ParticleRing({ audioData, isPlaying }: ParticleRingProps) {
 
         // Get frequency for this particle
         const dataIndex = Math.floor(
-          (index / particleCount) * audioData.length,
+          (index / particleCount) * frequencyData.length,
         )
-        const frequency = audioData[dataIndex] / 255
+        const frequency = (frequencyData[dataIndex] || 0) / 255
 
         // Calculate position
         const particleRadius = ringRadius + frequency * 100
@@ -80,15 +88,18 @@ export function ParticleRing({ audioData, isPlaying }: ParticleRingProps) {
         const y = centerY + Math.sin(particle.angle) * particleRadius
 
         // Draw particle
-        const color = index % 2 === 0 ? primaryColor : secondaryColor
-        ctx.fillStyle = color || '#3b82f6'
+        const hueShift = index % 2 === 0 ? 0 : 30
+        ctx.fillStyle = `hsla(${Number.parseInt(h) + hueShift}, 100%, 60%, ${particle.alpha * (0.5 + frequency * 0.5)})`
         ctx.globalAlpha = particle.alpha * (0.5 + frequency * 0.5)
+        ctx.shadowBlur = 8 * frequency
+        ctx.shadowColor = `hsla(${Number.parseInt(h) + hueShift}, 100%, 60%, ${frequency})`
         ctx.beginPath()
         ctx.arc(x, y, particle.size * (1 + frequency), 0, Math.PI * 2)
         ctx.fill()
       })
 
       ctx.globalAlpha = 1
+      ctx.shadowBlur = 0
 
       animationId = requestAnimationFrame(draw)
     }
@@ -96,18 +107,16 @@ export function ParticleRing({ audioData, isPlaying }: ParticleRingProps) {
     draw()
 
     return () => {
-      if (animationId) {
-        cancelAnimationFrame(animationId)
-      }
+      cancelAnimationFrame(animationId)
+      window.removeEventListener('resize', updateSize)
     }
-  }, [audioData, isPlaying, primaryColor, secondaryColor])
+  }, [frequencyData])
 
   return (
     <canvas
       ref={canvasRef}
-      width={1920}
-      height={1080}
-      className="w-full h-full"
+      className="absolute inset-0 w-full h-full"
+      style={{ imageRendering: 'auto' }}
     />
   )
 }

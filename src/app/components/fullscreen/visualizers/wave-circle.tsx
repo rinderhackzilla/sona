@@ -1,36 +1,42 @@
 import { useEffect, useRef } from 'react'
-import { useVisualizerSettings } from '../settings'
+import { useAudioAnalyser } from '@/app/hooks/use-audio-analyser'
 
-interface WaveCircleProps {
-  audioData: Uint8Array
-  isPlaying: boolean
-}
-
-export function WaveCircle({ audioData, isPlaying }: WaveCircleProps) {
+export function WaveCircle() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
-  const { primaryColor, secondaryColor } = useVisualizerSettings()
+  const { frequencyData } = useAudioAnalyser()
 
   useEffect(() => {
-    if (!canvasRef.current) return
-
     const canvas = canvasRef.current
+    if (!canvas) return
+
     const ctx = canvas.getContext('2d')
     if (!ctx) return
 
-    const width = canvas.width
-    const height = canvas.height
-    const centerX = width / 2
-    const centerY = height / 2
+    const updateSize = () => {
+      const dpr = window.devicePixelRatio || 1
+      canvas.width = canvas.offsetWidth * dpr
+      canvas.height = canvas.offsetHeight * dpr
+      ctx.scale(dpr, dpr)
+    }
+    updateSize()
+    window.addEventListener('resize', updateSize)
 
     let animationId: number
 
     const draw = () => {
+      if (!ctx || !canvas) return
+
+      const width = canvas.offsetWidth
+      const height = canvas.offsetHeight
+      const centerX = width / 2
+      const centerY = height / 2
+
       ctx.clearRect(0, 0, width, height)
 
-      if (!isPlaying) {
-        animationId = requestAnimationFrame(draw)
-        return
-      }
+      const accentHSL = getComputedStyle(document.documentElement)
+        .getPropertyValue('--accent')
+        .trim()
+      const [h, s, l] = accentHSL.split(' ')
 
       const baseRadius = Math.min(width, height) * 0.25
       const points = 128
@@ -41,12 +47,12 @@ export function WaveCircle({ audioData, isPlaying }: WaveCircleProps) {
         ctx.beginPath()
 
         const circleRadius = baseRadius * (1 + circle * 0.3)
-        const color = circle % 2 === 0 ? primaryColor : secondaryColor
+        const hueShift = circle * 15
 
         for (let i = 0; i <= points; i++) {
           const angle = (Math.PI * 2 * i) / points
-          const dataIndex = Math.floor((i / points) * audioData.length)
-          const amplitude = audioData[dataIndex] / 255
+          const dataIndex = Math.floor((i / points) * frequencyData.length)
+          const amplitude = (frequencyData[dataIndex] || 0) / 255
 
           const radius = circleRadius + amplitude * 80 * (1 - circle * 0.2)
           const x = centerX + Math.cos(angle) * radius
@@ -60,13 +66,16 @@ export function WaveCircle({ audioData, isPlaying }: WaveCircleProps) {
         }
 
         ctx.closePath()
-        ctx.strokeStyle = color || '#3b82f6'
+        ctx.strokeStyle = `hsla(${Number.parseInt(h) + hueShift}, 100%, 60%, ${0.7 - circle * 0.2})`
         ctx.lineWidth = 2
         ctx.globalAlpha = 0.7 - circle * 0.2
+        ctx.shadowBlur = 8
+        ctx.shadowColor = `hsla(${Number.parseInt(h) + hueShift}, 100%, 60%, ${0.5 - circle * 0.15})`
         ctx.stroke()
       }
 
       ctx.globalAlpha = 1
+      ctx.shadowBlur = 0
 
       animationId = requestAnimationFrame(draw)
     }
@@ -74,18 +83,16 @@ export function WaveCircle({ audioData, isPlaying }: WaveCircleProps) {
     draw()
 
     return () => {
-      if (animationId) {
-        cancelAnimationFrame(animationId)
-      }
+      cancelAnimationFrame(animationId)
+      window.removeEventListener('resize', updateSize)
     }
-  }, [audioData, isPlaying, primaryColor, secondaryColor])
+  }, [frequencyData])
 
   return (
     <canvas
       ref={canvasRef}
-      width={1920}
-      height={1080}
-      className="w-full h-full"
+      className="absolute inset-0 w-full h-full"
+      style={{ imageRendering: 'auto' }}
     />
   )
 }
