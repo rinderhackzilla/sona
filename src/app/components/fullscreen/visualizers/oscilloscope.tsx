@@ -37,8 +37,10 @@ export function Oscilloscope() {
         .trim()
       const [h, s, l] = accentHSL.split(' ')
 
-      // Draw waveform with phosphor glow
-      const sliceWidth = width / timeData.length
+      // Use only half the data points for cleaner look
+      const step = 2
+      const reducedLength = Math.floor(timeData.length / step)
+      const sliceWidth = width / reducedLength
       
       // Draw multiple layers for glow effect
       for (let layer = 2; layer >= 0; layer--) {
@@ -48,8 +50,9 @@ export function Oscilloscope() {
         ctx.shadowBlur = 15 + layer * 10
         ctx.shadowColor = `hsla(${h}, 100%, 60%, ${0.5 - layer * 0.15})`
 
-        for (let i = 0; i < timeData.length; i++) {
-          const value = timeData[i] || 128
+        for (let i = 0; i < reducedLength; i++) {
+          const dataIndex = i * step
+          const value = timeData[dataIndex] || 128
           const y = ((value - 128) / 128) * (height / 2) + height / 2
           const x = i * sliceWidth
 
