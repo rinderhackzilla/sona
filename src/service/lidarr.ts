@@ -68,18 +68,24 @@ class LidarrService {
   async addArtist(artistName: string): Promise<void> {
     // First search for the artist
     const searchResults = await this.searchArtist(artistName)
+    
+    console.log('🔍 Lidarr Search Results:', searchResults)
 
     if (searchResults.length === 0) {
       throw new Error(`Artist "${artistName}" not found in MusicBrainz`)
     }
 
     const artist = searchResults[0]
+    console.log('🎵 Selected Artist:', artist)
 
     // Get quality profiles and root folders
     const [qualityProfiles, rootFolders] = await Promise.all([
       this.request<Array<{ id: number }>>('qualityprofile'),
       this.request<Array<{ path: string }>>('rootfolder'),
     ])
+    
+    console.log('⚙️ Quality Profiles:', qualityProfiles)
+    console.log('📁 Root Folders:', rootFolders)
 
     if (qualityProfiles.length === 0 || rootFolders.length === 0) {
       throw new Error('No quality profiles or root folders configured in Lidarr')
@@ -97,6 +103,8 @@ class LidarrService {
         searchForMissingAlbums: true,
       },
     }
+    
+    console.log('📤 Sending Add Request:', addRequest)
 
     await this.request('artist', {
       method: 'POST',
