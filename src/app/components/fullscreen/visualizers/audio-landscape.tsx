@@ -105,14 +105,6 @@ export function AudioLandscape() {
 
       ctx.shadowBlur = 0
 
-      // Draw horizon line
-      ctx.strokeStyle = `hsla(${h}, 100%, 50%, 0.3)`
-      ctx.lineWidth = 2
-      ctx.beginPath()
-      ctx.moveTo(0, height * 0.8)
-      ctx.lineTo(width, height * 0.8)
-      ctx.stroke()
-
       animationId = requestAnimationFrame(draw)
     }
 
