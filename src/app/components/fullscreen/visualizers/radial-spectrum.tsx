@@ -1,7 +1,9 @@
 import { useEffect, useRef } from 'react'
+import { useAudioAnalyser } from '@/app/hooks/use-audio-analyser'
 
 export function RadialSpectrum() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  const { frequencyData } = useAudioAnalyser()
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -29,7 +31,6 @@ export function RadialSpectrum() {
       const centerX = width / 2
       const centerY = height / 2
       const maxRadius = Math.min(width, height) * 0.4
-      const time = Date.now() / 1000
 
       ctx.clearRect(0, 0, width, height)
 
@@ -38,19 +39,18 @@ export function RadialSpectrum() {
         .trim()
       const [h, s, l] = accentHSL.split(' ')
 
-      // Radial spectrum bars
-      const barCount = 80
+      // Use REAL frequency data for radial bars
+      const barCount = Math.min(frequencyData.length, 80)
       const angleStep = (Math.PI * 2) / barCount
 
       for (let i = 0; i < barCount; i++) {
-        const angle = i * angleStep + time * 0.5
+        const angle = i * angleStep
         
-        // Multiple frequency layers
-        const wave1 = Math.sin(time * 2 + i * 0.1) * 0.5 + 0.5
-        const wave2 = Math.sin(time * 3 - i * 0.15) * 0.3 + 0.5
-        const combined = (wave1 + wave2) / 2
+        // Get real frequency value (0-255)
+        const frequencyValue = frequencyData[i] || 0
+        const normalizedValue = frequencyValue / 255 // 0-1
         
-        const barLength = combined * maxRadius * 0.8
+        const barLength = normalizedValue * maxRadius * 0.8
 
         const x1 = centerX + Math.cos(angle) * 30
         const y1 = centerY + Math.sin(angle) * 30
@@ -59,7 +59,7 @@ export function RadialSpectrum() {
 
         const gradient = ctx.createLinearGradient(x1, y1, x2, y2)
         gradient.addColorStop(0, `hsla(${h}, ${s}, ${l}, 0.2)`)
-        gradient.addColorStop(1, `hsla(${h}, ${s}, ${l}, 0.95)`)
+        gradient.addColorStop(1, `hsla(${h}, ${s}, ${l}, ${0.95 * normalizedValue})`)
 
         ctx.strokeStyle = gradient
         ctx.lineWidth = 3
@@ -70,13 +70,15 @@ export function RadialSpectrum() {
         ctx.stroke()
       }
 
-      // Central rotating core
+      // Central pulsing core based on average frequency
+      const avgFrequency = frequencyData.reduce((a, b) => a + b, 0) / frequencyData.length
+      const pulseScale = 1 + (avgFrequency / 255) * 0.5
+
       for (let i = 0; i < 3; i++) {
-        const scale = 1 + Math.sin(time * 3 + i) * 0.2
         ctx.strokeStyle = `hsla(${h}, ${s}, ${l}, ${0.4 - i * 0.1})`
         ctx.lineWidth = 2
         ctx.beginPath()
-        ctx.arc(centerX, centerY, 25 * scale + i * 5, 0, Math.PI * 2)
+        ctx.arc(centerX, centerY, 25 * pulseScale + i * 5, 0, Math.PI * 2)
         ctx.stroke()
       }
 
@@ -89,7 +91,7 @@ export function RadialSpectrum() {
       cancelAnimationFrame(animationId)
       window.removeEventListener('resize', updateSize)
     }
-  }, [])
+  }, [frequencyData])
 
   return (
     <canvas
