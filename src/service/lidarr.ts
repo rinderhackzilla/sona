@@ -1,13 +1,16 @@
 import { useAppStore } from '@/store/app.store'
 
 export interface LidarrArtistSearchResult {
-  artistName: string
-  foreignArtistId: string
-  overview?: string
-  images?: Array<{
-    url: string
-    coverType: string
-  }>
+  foreignId: string
+  artist: {
+    artistName: string
+    foreignArtistId: string
+    overview?: string
+    images?: Array<{
+      url: string
+      coverType: string
+    }>
+  }
 }
 
 export interface LidarrArtistAddRequest {
@@ -68,34 +71,28 @@ class LidarrService {
   async addArtist(artistName: string): Promise<void> {
     // First search for the artist
     const searchResults = await this.searchArtist(artistName)
-    
-    console.log('🔍 Lidarr Search Results:', searchResults)
 
     if (searchResults.length === 0) {
       throw new Error(`Artist "${artistName}" not found in MusicBrainz`)
     }
 
-    const artist = searchResults[0]
-    console.log('🎵 Selected Artist:', artist)
+    const result = searchResults[0]
 
     // Get quality profiles and root folders
     const [qualityProfiles, rootFolders] = await Promise.all([
       this.request<Array<{ id: number }>>('qualityprofile'),
       this.request<Array<{ path: string }>>('rootfolder'),
     ])
-    
-    console.log('⚙️ Quality Profiles:', qualityProfiles)
-    console.log('📁 Root Folders:', rootFolders)
 
     if (qualityProfiles.length === 0 || rootFolders.length === 0) {
       throw new Error('No quality profiles or root folders configured in Lidarr')
     }
 
     const addRequest: LidarrArtistAddRequest = {
-      artistName: artist.artistName,
-      foreignArtistId: artist.foreignArtistId,
+      artistName: result.artist.artistName,
+      foreignArtistId: result.artist.foreignArtistId,
       qualityProfileId: qualityProfiles[0].id,
-      metadataProfileId: 1, // Default metadata profile
+      metadataProfileId: 1,
       rootFolderPath: rootFolders[0].path,
       monitored: true,
       searchForMissingAlbums: true,
@@ -103,8 +100,6 @@ class LidarrService {
         searchForMissingAlbums: true,
       },
     }
-    
-    console.log('📤 Sending Add Request:', addRequest)
 
     await this.request('artist', {
       method: 'POST',
