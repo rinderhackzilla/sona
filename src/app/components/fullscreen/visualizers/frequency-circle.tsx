@@ -1,9 +1,11 @@
 import { useEffect, useRef } from 'react'
 import { useAudioAnalyser } from '@/app/hooks/use-audio-analyser'
+import { useSongColor } from '@/store/player.store'
 
 export function FrequencyCircle() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const { frequencyData } = useAudioAnalyser()
+  const { currentSongColorPalette } = useSongColor()
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -34,26 +36,38 @@ export function FrequencyCircle() {
 
       ctx.clearRect(0, 0, width, height)
 
-      const accentHSL = getComputedStyle(document.documentElement)
-        .getPropertyValue('--accent')
-        .trim()
-      const [h, s, l] = accentHSL.split(' ')
+      // Get colors from palette or fallback
+      const colors = currentSongColorPalette
+        ? [
+            currentSongColorPalette.vibrant,
+            currentSongColorPalette.accent,
+            currentSongColorPalette.dominant,
+            currentSongColorPalette.muted,
+          ]
+        : null
+
+      const getFallbackColor = () => {
+        const accentHSL = getComputedStyle(document.documentElement)
+          .getPropertyValue('--accent')
+          .trim()
+        return accentHSL
+      }
 
       const barCount = Math.min(frequencyData.length, 64)
       const angleStep = (Math.PI * 2) / barCount
 
-      // Draw bars
+      // Draw bars with cycling colors
       for (let i = 0; i < barCount; i++) {
         const angle = i * angleStep - Math.PI / 2
-        
+
         const frequencyValue = frequencyData[i] || 0
         let normalizedValue = frequencyValue / 255
-        
+
         // 10% bass boost
         if (i < 16) {
           normalizedValue = Math.min(1, normalizedValue * 1.1)
         }
-        
+
         const barHeight = normalizedValue * radius * 0.65
 
         const x1 = centerX + Math.cos(angle) * radius
@@ -62,12 +76,22 @@ export function FrequencyCircle() {
         const y2 = centerY + Math.sin(angle) * (radius + barHeight)
 
         const gradient = ctx.createLinearGradient(x1, y1, x2, y2)
-        gradient.addColorStop(0, `hsla(${h}, 100%, 50%, 0.5)`)
-        gradient.addColorStop(1, `hsla(${h}, 100%, 70%, ${normalizedValue})`)
+
+        if (colors) {
+          // Cycle through palette colors
+          const colorIndex = Math.floor((i / barCount) * 4)
+          const hex = colors[colorIndex]
+          gradient.addColorStop(0, hexToRgba(hex, 0.5))
+          gradient.addColorStop(1, hexToRgba(hex, normalizedValue))
+          ctx.shadowColor = hexToRgba(hex, normalizedValue * 0.8)
+        } else {
+          const [h] = getFallbackColor().split(' ')
+          gradient.addColorStop(0, `hsla(${h}, 100%, 50%, 0.5)`)
+          gradient.addColorStop(1, `hsla(${h}, 100%, 70%, ${normalizedValue})`)
+          ctx.shadowColor = `hsla(${h}, 100%, 60%, ${normalizedValue * 0.8})`
+        }
 
         ctx.shadowBlur = 12 * normalizedValue
-        ctx.shadowColor = `hsla(${h}, 100%, 60%, ${normalizedValue * 0.8})`
-
         ctx.strokeStyle = gradient
         ctx.lineWidth = (width / barCount) * 0.8
         ctx.lineCap = 'round'
@@ -79,8 +103,13 @@ export function FrequencyCircle() {
 
       ctx.shadowBlur = 0
 
-      // Circle outline
-      ctx.strokeStyle = `hsla(${h}, 100%, 60%, 0.7)`
+      // Circle outline with vibrant color
+      if (colors) {
+        ctx.strokeStyle = hexToRgba(colors[0], 0.7)
+      } else {
+        const [h] = getFallbackColor().split(' ')
+        ctx.strokeStyle = `hsla(${h}, 100%, 60%, 0.7)`
+      }
       ctx.lineWidth = 2
       ctx.beginPath()
       ctx.arc(centerX, centerY, radius, 0, Math.PI * 2)
@@ -95,7 +124,7 @@ export function FrequencyCircle() {
       cancelAnimationFrame(animationId)
       window.removeEventListener('resize', updateSize)
     }
-  }, [frequencyData])
+  }, [frequencyData, currentSongColorPalette])
 
   return (
     <canvas
@@ -104,4 +133,12 @@ export function FrequencyCircle() {
       style={{ imageRendering: 'auto' }}
     />
   )
+}
+
+// Helper function
+function hexToRgba(hex: string, alpha: number): string {
+  const r = parseInt(hex.slice(1, 3), 16)
+  const g = parseInt(hex.slice(3, 5), 16)
+  const b = parseInt(hex.slice(5, 7), 16)
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`
 }
