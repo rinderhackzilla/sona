@@ -1,6 +1,6 @@
 import clsx from 'clsx'
 import { SlidersHorizontal } from 'lucide-react'
-import { ComponentPropsWithoutRef } from 'react'
+import { ComponentPropsWithoutRef, createContext, useContext, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/app/components/ui/button'
 import {
@@ -11,9 +11,43 @@ import {
 import { Separator } from '@/app/components/ui/separator'
 import { Slider } from '@/app/components/ui/slider'
 import { Switch } from '@/app/components/ui/switch'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/app/components/ui/select'
+import { VISUALIZER_NAMES } from '@/app/components/fullscreen/visualizers'
 import { cn } from '@/lib/utils'
 import { useSongColor } from '@/store/player.store'
+import type { VisualizerPreset } from '@/types/visualizer'
 import { buttonsStyle } from './controls'
+
+// Context for visualizer state (POC - will move to store)
+type VisualizerContextType = {
+  preset: VisualizerPreset
+  setPreset: (preset: VisualizerPreset) => void
+}
+
+const VisualizerContext = createContext<VisualizerContextType | null>(null)
+
+export function useVisualizerContext() {
+  const context = useContext(VisualizerContext)
+  if (!context) {
+    throw new Error('useVisualizerContext must be used within VisualizerProvider')
+  }
+  return context
+}
+
+export function VisualizerProvider({ children }: { children: React.ReactNode }) {
+  const [preset, setPreset] = useState<VisualizerPreset>('frequency-circle')
+  return (
+    <VisualizerContext.Provider value={{ preset, setPreset }}>
+      {children}
+    </VisualizerContext.Provider>
+  )
+}
 
 export function FullscreenSettings() {
   const { useSongColorOnBigPlayer } = useSongColor()
@@ -38,6 +72,7 @@ export function FullscreenSettings() {
           <DynamicColorOption showSeparator={false} />
           {useSongColorOnBigPlayer && <ColorIntensityOption />}
           {!useSongColorOnBigPlayer && <ImageBlurSizeOption />}
+          <VisualizerPresetOption />
         </div>
       </PopoverContent>
     </Popover>
@@ -140,6 +175,34 @@ function ImageBlurSizeOption(props: OptionProps) {
         tooltipValue={`${bigPlayerBlur.value}px`}
         onValueChange={([value]) => setBigPlayerBlurValue(value)}
       />
+    </SettingWrapper>
+  )
+}
+
+function VisualizerPresetOption(props: OptionProps) {
+  const context = useContext(VisualizerContext)
+  
+  // Graceful fallback if no context
+  if (!context) {
+    return null
+  }
+
+  const { preset, setPreset } = context
+
+  return (
+    <SettingWrapper text="Visualizer" {...props}>
+      <Select value={preset} onValueChange={(value) => setPreset(value as VisualizerPreset)}>
+        <SelectTrigger className="w-full">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          {(Object.keys(VISUALIZER_NAMES) as VisualizerPreset[]).map((key) => (
+            <SelectItem key={key} value={key}>
+              {VISUALIZER_NAMES[key]}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
     </SettingWrapper>
   )
 }
