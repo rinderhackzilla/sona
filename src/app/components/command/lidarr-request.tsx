@@ -1,7 +1,6 @@
 import { Download } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { toast } from 'sonner'
 import { CommandItemProps } from './command-menu'
 import { CommandGroup } from './command-group'
 import { CommandItem } from './command-item'
@@ -18,6 +17,7 @@ export function CommandLidarrRequest({
 }: CommandLidarrRequestProps) {
   const { t } = useTranslation()
   const [isRequesting, setIsRequesting] = useState(false)
+  const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle')
   const { lidarr: lidarrConfig } = useAppIntegrations((state) => state)
 
   // Don't show if Lidarr is not configured
@@ -32,17 +32,34 @@ export function CommandLidarrRequest({
 
   const handleRequest = async () => {
     setIsRequesting(true)
+    setStatus('idle')
 
     try {
       await lidarr.addArtist(searchQuery.trim())
-      toast.success(t('command.lidarr.success', { artist: searchQuery }))
+      setStatus('success')
+      // Reset success status after 2 seconds
+      setTimeout(() => setStatus('idle'), 2000)
     } catch (error) {
-      const message =
-        error instanceof Error ? error.message : 'Unknown error occurred'
-      toast.error(t('command.lidarr.error', { message }))
+      setStatus('error')
+      console.error('Lidarr request failed:', error)
+      // Reset error status after 3 seconds
+      setTimeout(() => setStatus('idle'), 3000)
     } finally {
       setIsRequesting(false)
     }
+  }
+
+  const getDisplayText = () => {
+    if (isRequesting) {
+      return t('command.lidarr.requesting')
+    }
+    if (status === 'success') {
+      return t('command.lidarr.success', { artist: searchQuery })
+    }
+    if (status === 'error') {
+      return t('command.lidarr.error', { message: 'Connection failed' })
+    }
+    return t('command.lidarr.request', { artist: searchQuery })
   }
 
   return (
@@ -52,10 +69,8 @@ export function CommandLidarrRequest({
         disabled={isRequesting}
       >
         <Download className="mr-2 h-4 w-4" />
-        <span>
-          {isRequesting
-            ? t('command.lidarr.requesting')
-            : t('command.lidarr.request', { artist: searchQuery })}
+        <span className={status === 'error' ? 'text-red-500' : ''}>
+          {getDisplayText()}
         </span>
       </CommandItem>
     </CommandGroup>
