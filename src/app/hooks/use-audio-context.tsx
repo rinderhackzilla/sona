@@ -4,12 +4,30 @@ import {
   type IAudioContext,
   type IGainNode,
   type IMediaElementAudioSourceNode,
+  type IBiquadFilterNode,
 } from 'standardized-audio-context'
 import { usePlayerMediaType, useReplayGainState } from '@/store/player.store'
 import { logger } from '@/utils/logger'
 import { ReplayGainParams } from '@/utils/replayGain'
 
 type IAudioSource = IMediaElementAudioSourceNode<IAudioContext>
+
+// EQ Filter configuration
+const EQ_BANDS = [
+  { hz: 32, type: 'lowshelf' as BiquadFilterType },
+  { hz: 64, type: 'peaking' as BiquadFilterType },
+  { hz: 125, type: 'peaking' as BiquadFilterType },
+  { hz: 250, type: 'peaking' as BiquadFilterType },
+  { hz: 500, type: 'peaking' as BiquadFilterType },
+  { hz: 1000, type: 'peaking' as BiquadFilterType },
+  { hz: 2000, type: 'peaking' as BiquadFilterType },
+  { hz: 4000, type: 'highshelf' as BiquadFilterType },
+]
+
+// Global EQ state shared across app
+let globalEqFilters: IBiquadFilterNode<IAudioContext>[] = []
+let globalEqEnabled = false
+let globalEqGains: number[] = [0, 0, 0, 0, 0, 0, 0, 0]
 
 export function useAudioContext(audio: HTMLAudioElement | null) {
   const { isSong } = usePlayerMediaType()
@@ -18,6 +36,7 @@ export function useAudioContext(audio: HTMLAudioElement | null) {
   const audioContextRef = useRef<IAudioContext | null>(null)
   const sourceNodeRef = useRef<IAudioSource | null>(null)
   const gainNodeRef = useRef<IGainNode<IAudioContext> | null>(null)
+  const eqFiltersRef = useRef<IBiquadFilterNode<IAudioContext>[]>([])
 
   const setupAudioContext = useCallback(() => {
     if (!audio || !isSong || replayGainError) return
@@ -34,11 +53,39 @@ export function useAudioContext(audio: HTMLAudioElement | null) {
 
     if (!gainNodeRef.current) {
       gainNodeRef.current = audioContext.createGain()
-      // First we need to connect the sourceNode to the gainNode
-      sourceNodeRef.current.connect(gainNodeRef.current)
-      // And then we can connect the gainNode to the destination
-      gainNodeRef.current.connect(audioContext.destination)
     }
+
+    // Create EQ filters if not already created
+    if (eqFiltersRef.current.length === 0) {
+      const filters = EQ_BANDS.map((band) => {
+        const filter = audioContext.createBiquadFilter()
+        filter.type = band.type
+        filter.frequency.value = band.hz
+        filter.Q.value = 1.0
+        filter.gain.value = 0
+        return filter
+      })
+      eqFiltersRef.current = filters
+      globalEqFilters = filters
+      logger.info('Created EQ filters', { count: filters.length })
+    }
+
+    // Connect audio chain: source -> EQ filters -> gainNode -> destination
+    let prevNode: AudioNode = sourceNodeRef.current
+    
+    // Connect all EQ filters in series
+    eqFiltersRef.current.forEach((filter, index) => {
+      prevNode.connect(filter)
+      prevNode = filter
+    })
+    
+    // Connect last filter to gain node
+    prevNode.connect(gainNodeRef.current)
+    
+    // Connect gain node to destination
+    gainNodeRef.current.connect(audioContext.destination)
+
+    logger.info('Audio chain connected: source -> EQ -> gain -> destination')
   }, [audio, isSong, replayGainError])
 
   const resumeContext = useCallback(async () => {
@@ -77,6 +124,10 @@ export function useAudioContext(audio: HTMLAudioElement | null) {
       sourceNodeRef.current.disconnect()
       sourceNodeRef.current = null
     }
+    eqFiltersRef.current.forEach(filter => {
+      filter.disconnect()
+    })
+    eqFiltersRef.current = []
     if (gainNodeRef.current) {
       gainNodeRef.current.disconnect()
       gainNodeRef.current = null
@@ -104,9 +155,47 @@ export function useAudioContext(audio: HTMLAudioElement | null) {
     audioContextRef,
     sourceNodeRef,
     gainNodeRef,
+    eqFiltersRef,
     setupAudioContext,
     resumeContext,
     setupGain,
     resetRefs,
+  }
+}
+
+// Export functions to control EQ from equalizer modal
+export function setEqEnabled(enabled: boolean) {
+  globalEqEnabled = enabled
+  logger.info('EQ enabled:', enabled)
+  
+  if (!enabled) {
+    // Bypass EQ by setting all gains to 0
+    globalEqFilters.forEach(filter => {
+      filter.gain.value = 0
+    })
+  } else {
+    // Restore saved gains
+    globalEqFilters.forEach((filter, index) => {
+      filter.gain.value = globalEqGains[index]
+    })
+  }
+}
+
+export function setEqGains(gains: number[]) {
+  globalEqGains = gains
+  
+  if (globalEqEnabled && globalEqFilters.length) {
+    globalEqFilters.forEach((filter, index) => {
+      filter.gain.value = gains[index]
+      logger.info(`EQ Filter ${index}: ${gains[index]} dB`)
+    })
+  }
+}
+
+export function getEqState() {
+  return {
+    enabled: globalEqEnabled,
+    gains: globalEqGains,
+    filters: globalEqFilters,
   }
 }
