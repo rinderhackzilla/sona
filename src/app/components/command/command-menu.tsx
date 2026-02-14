@@ -24,6 +24,7 @@ import { CommandAlbumResult } from './album-result'
 import { CommandArtistResult } from './artist-result'
 import { CommandGotoPage } from './goto-page'
 import { CommandHome, CommandPages } from './home'
+import { CommandLidarrRequest } from './lidarr-request'
 import { CommandPlaylists } from './playlists'
 import { CommandServer } from './server-management'
 import { CommandSongResult } from './song-result'
@@ -193,6 +194,14 @@ export default function CommandMenu() {
               {showArtistGroup && (
                 <CommandArtistResult
                   artists={artists}
+                  runCommand={runCommand}
+                />
+              )}
+
+              {/* Lidarr Request Option - shown when search is active */}
+              {query && query.trim().length > 0 && (
+                <CommandLidarrRequest
+                  searchQuery={query}
                   runCommand={runCommand}
                 />
               )}
