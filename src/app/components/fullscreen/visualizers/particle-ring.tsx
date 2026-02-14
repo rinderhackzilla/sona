@@ -40,7 +40,7 @@ export function ParticleRing() {
           angle: (Math.PI * 2 * i) / particleCount,
           radius: Math.min(width, height) * 0.3,
           size: 2 + Math.random() * 3,
-          speed: 0.01 + Math.random() * 0.02,
+          speed: (0.01 + Math.random() * 0.02) * 0.75, // 25% slower
           alpha: 0.5 + Math.random() * 0.5,
         })
       }
@@ -71,7 +71,7 @@ export function ParticleRing() {
       const baseRadius = Math.min(width, height) * 0.25
       const ringRadius = baseRadius * (1 + normalizedAverage * 0.5)
 
-      // Draw particles
+      // Draw particles with better contrast
       particlesRef.current.forEach((particle, index) => {
         // Update particle angle
         particle.angle += particle.speed
@@ -82,19 +82,26 @@ export function ParticleRing() {
         )
         const frequency = (frequencyData[dataIndex] || 0) / 255
 
-        // Calculate position
-        const particleRadius = ringRadius + frequency * 100
+        // Enhanced contrast: square the frequency value for more dramatic difference
+        const enhancedFrequency = frequency * frequency
+
+        // Calculate position with better amplitude response
+        const particleRadius = ringRadius + enhancedFrequency * 150
         const x = centerX + Math.cos(particle.angle) * particleRadius
         const y = centerY + Math.sin(particle.angle) * particleRadius
 
-        // Draw particle
+        // Increased base opacity and size
+        const baseOpacity = 0.6
+        const opacity = baseOpacity + enhancedFrequency * 0.4
+        
+        // Draw particle with higher visibility
         const hueShift = index % 2 === 0 ? 0 : 30
-        ctx.fillStyle = `hsla(${Number.parseInt(h) + hueShift}, 100%, 60%, ${particle.alpha * (0.5 + frequency * 0.5)})`
-        ctx.globalAlpha = particle.alpha * (0.5 + frequency * 0.5)
-        ctx.shadowBlur = 8 * frequency
-        ctx.shadowColor = `hsla(${Number.parseInt(h) + hueShift}, 100%, 60%, ${frequency})`
+        ctx.fillStyle = `hsla(${Number.parseInt(h) + hueShift}, 100%, 65%, ${opacity})`
+        ctx.globalAlpha = opacity
+        ctx.shadowBlur = 15 * enhancedFrequency
+        ctx.shadowColor = `hsla(${Number.parseInt(h) + hueShift}, 100%, 70%, ${enhancedFrequency})`
         ctx.beginPath()
-        ctx.arc(x, y, particle.size * (1 + frequency), 0, Math.PI * 2)
+        ctx.arc(x, y, particle.size * (1 + enhancedFrequency * 1.5), 0, Math.PI * 2)
         ctx.fill()
       })
 
