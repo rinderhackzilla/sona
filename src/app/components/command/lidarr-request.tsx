@@ -1,9 +1,8 @@
 import { Download } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { CommandGroup, CommandItem } from '@/app/components/ui/command'
 import { CommandItemProps } from './command-menu'
-import { CommandGroup } from './command-group'
-import { CommandItem } from './command-item'
 import { lidarr } from '@/service/lidarr'
 import { useAppIntegrations } from '@/store/app.store'
 
