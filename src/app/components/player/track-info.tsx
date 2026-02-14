@@ -81,7 +81,7 @@ export function TrackInfo({ song }: { song: ISong | undefined }) {
         />
       }
     >
-      <Fragment>
+      <div className="flex items-center gap-2 w-full">
         <div className="group relative">
           <div className="min-w-[70px] max-w-[70px] aspect-square bg-cover bg-center bg-skeleton rounded overflow-hidden shadow-md">
             <ImageLoader id={song.coverArt} type="song" size={400}>
@@ -117,7 +117,7 @@ export function TrackInfo({ song }: { song: ISong | undefined }) {
           </MarqueeTitle>
           <TrackInfoArtistsLinks song={song} />
         </div>
-      </Fragment>
+      </div>
     </ContextMenuProvider>
   )
 }
