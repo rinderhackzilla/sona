@@ -15,3 +15,12 @@ export const VISUALIZERS = {
 } as const
 
 export type VisualizerPreset = keyof typeof VISUALIZERS
+
+export const VISUALIZER_NAMES: Record<VisualizerPreset, string> = {
+  'butterchurn': 'Butterchurn (Milkdrop)',
+  'frequency-circle': 'Frequency Circle',
+  'pulsing-orb': 'Pulsing Orb',
+  'radial-spectrum': 'Radial Spectrum',
+  'particle-ring': 'Particle Ring',
+  'wave-circle': 'Wave Circle',
+}
