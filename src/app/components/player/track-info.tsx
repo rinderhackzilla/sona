@@ -8,6 +8,8 @@ import { Link } from 'react-router-dom'
 
 import { MarqueeTitle } from '@/app/components/fullscreen/marquee-title'
 import { ImageLoader } from '@/app/components/image-loader'
+import { SongMenuOptions } from '@/app/components/song/menu-options'
+import { ContextMenuProvider } from '@/app/components/table/context-menu'
 import { cn } from '@/lib/utils'
 import { ROUTES } from '@/routes/routesList'
 import { useSongColor } from '@/store/player.store'
@@ -70,43 +72,53 @@ export function TrackInfo({ song }: { song: ISong | undefined }) {
   }
 
   return (
-    <Fragment>
-      <div className="group relative">
-        <div className="min-w-[70px] max-w-[70px] aspect-square bg-cover bg-center bg-skeleton rounded overflow-hidden shadow-md">
-          <ImageLoader id={song.coverArt} type="song" size={400}>
-            {(src) => (
-              <LazyLoadImage
-                key={song.id}
-                id="track-song-image"
-                src={src}
-                width="100%"
-                height="100%"
-                crossOrigin="anonymous"
-                effect="opacity"
-                className="aspect-square object-cover w-full h-full bg-skeleton text-transparent"
-                data-testid="track-image"
-                alt={`${song.artist} - ${song.title}`}
-                onLoad={getImageColor}
-                onError={handleError}
-              />
-            )}
-          </ImageLoader>
+    <ContextMenuProvider
+      options={
+        <SongMenuOptions
+          variant="context"
+          song={song}
+          index={0}
+        />
+      }
+    >
+      <Fragment>
+        <div className="group relative">
+          <div className="min-w-[70px] max-w-[70px] aspect-square bg-cover bg-center bg-skeleton rounded overflow-hidden shadow-md">
+            <ImageLoader id={song.coverArt} type="song" size={400}>
+              {(src) => (
+                <LazyLoadImage
+                  key={song.id}
+                  id="track-song-image"
+                  src={src}
+                  width="100%"
+                  height="100%"
+                  crossOrigin="anonymous"
+                  effect="opacity"
+                  className="aspect-square object-cover w-full h-full bg-skeleton text-transparent"
+                  data-testid="track-image"
+                  alt={`${song.artist} - ${song.title}`}
+                  onLoad={getImageColor}
+                  onError={handleError}
+                />
+              )}
+            </ImageLoader>
+          </div>
         </div>
-      </div>
-      <div className="flex flex-col justify-center w-full overflow-hidden">
-        <MarqueeTitle gap="mr-2">
-          <Link to={ROUTES.ALBUM.PAGE(song.albumId)} tabIndex={-1}>
-            <span
-              className="text-sm font-medium hover:underline cursor-pointer"
-              data-testid="track-title"
-            >
-              {song.title}
-            </span>
-          </Link>
-        </MarqueeTitle>
-        <TrackInfoArtistsLinks song={song} />
-      </div>
-    </Fragment>
+        <div className="flex flex-col justify-center w-full overflow-hidden">
+          <MarqueeTitle gap="mr-2">
+            <Link to={ROUTES.ALBUM.PAGE(song.albumId)} tabIndex={-1}>
+              <span
+                className="text-sm font-medium hover:underline cursor-pointer"
+                data-testid="track-title"
+              >
+                {song.title}
+              </span>
+            </Link>
+          </MarqueeTitle>
+          <TrackInfoArtistsLinks song={song} />
+        </div>
+      </Fragment>
+    </ContextMenuProvider>
   )
 }
 
