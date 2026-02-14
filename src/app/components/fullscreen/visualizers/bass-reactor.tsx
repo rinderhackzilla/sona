@@ -4,6 +4,7 @@ import { useAudioAnalyser } from '@/app/hooks/use-audio-analyser'
 export function BassReactor() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const { frequencyData } = useAudioAnalyser()
+  const lastBassHitRef = useRef(0)
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -38,60 +39,80 @@ export function BassReactor() {
         .trim()
       const [h, s, l] = accentHSL.split(' ')
 
-      // Get bass frequencies (first 8 bins)
+      // Get bass frequencies (first 8 bins) with BOOST
       const bassData = Array.from(frequencyData.slice(0, 8))
       const bassAvg = bassData.reduce((a, b) => a + b, 0) / bassData.length
-      const bassNorm = bassAvg / 255
+      const bassNorm = Math.min(1, (bassAvg / 255) * 2.2) // 120% boost!
 
-      // Get mid frequencies
+      // Get mid frequencies with boost
       const midData = Array.from(frequencyData.slice(8, 32))
       const midAvg = midData.reduce((a, b) => a + b, 0) / midData.length
-      const midNorm = midAvg / 255
+      const midNorm = Math.min(1, (midAvg / 255) * 1.5) // 50% boost
 
-      // Get high frequencies
+      // Get high frequencies with boost
       const highData = Array.from(frequencyData.slice(32, 64))
       const highAvg = highData.reduce((a, b) => a + b, 0) / highData.length
-      const highNorm = highAvg / 255
+      const highNorm = Math.min(1, (highAvg / 255) * 1.3) // 30% boost
 
       // Draw concentric rings reacting to different frequencies
-      // Reduce from 45% to 32% to fit better
       const maxRadius = Math.min(width, height) * 0.32
 
+      // Detect bass hit for shockwave
+      const now = Date.now()
+      const timeSinceHit = now - lastBassHitRef.current
+      let shockwaveProgress = 0
+      if (bassNorm > 0.7 && timeSinceHit > 200) {
+        lastBassHitRef.current = now
+      }
+      if (timeSinceHit < 500) {
+        shockwaveProgress = 1 - (timeSinceHit / 500)
+      }
+
       // Bass ring (innermost, biggest pulse)
-      // Reduce multipliers to prevent overflow
-      const bassRadius = 40 + bassNorm * maxRadius * 0.35
+      const bassRadius = 40 + bassNorm * maxRadius * 0.4
       ctx.beginPath()
       ctx.arc(centerX, centerY, bassRadius, 0, Math.PI * 2)
-      ctx.fillStyle = `hsla(${h}, 100%, 50%, ${bassNorm * 0.3})`
+      ctx.fillStyle = `hsla(${h}, 100%, 50%, ${bassNorm * 0.4})`
       ctx.fill()
       ctx.strokeStyle = `hsla(${h}, 100%, 60%, ${0.7 + bassNorm * 0.3})`
-      ctx.lineWidth = 4 + bassNorm * 6
-      ctx.shadowBlur = 20 + bassNorm * 30
+      ctx.lineWidth = 4 + bassNorm * 8
+      ctx.shadowBlur = 20 + bassNorm * 40
       ctx.shadowColor = `hsla(${h}, 100%, 50%, ${bassNorm})`
       ctx.stroke()
 
+      // Shockwave on bass hits
+      if (shockwaveProgress > 0) {
+        const shockRadius = bassRadius + shockwaveProgress * 80
+        ctx.beginPath()
+        ctx.arc(centerX, centerY, shockRadius, 0, Math.PI * 2)
+        ctx.strokeStyle = `hsla(${h}, 100%, 70%, ${shockwaveProgress * 0.8})`
+        ctx.lineWidth = 3
+        ctx.shadowBlur = 25
+        ctx.stroke()
+      }
+
       // Mid ring
-      const midRadius = bassRadius + 50 + midNorm * 30
+      const midRadius = bassRadius + 50 + midNorm * 35
       ctx.beginPath()
       ctx.arc(centerX, centerY, midRadius, 0, Math.PI * 2)
       ctx.strokeStyle = `hsla(${h}, 100%, 65%, ${0.6 + midNorm * 0.4})`
-      ctx.lineWidth = 3 + midNorm * 4
-      ctx.shadowBlur = 15 + midNorm * 20
+      ctx.lineWidth = 3 + midNorm * 5
+      ctx.shadowBlur = 15 + midNorm * 25
       ctx.shadowColor = `hsla(${h}, 100%, 60%, ${midNorm * 0.8})`
       ctx.stroke()
 
       // High ring (outermost, fastest)
-      const highRadius = midRadius + 40 + highNorm * 25
+      const highRadius = midRadius + 40 + highNorm * 28
       ctx.beginPath()
       ctx.arc(centerX, centerY, highRadius, 0, Math.PI * 2)
       ctx.strokeStyle = `hsla(${h}, 100%, 70%, ${0.5 + highNorm * 0.5})`
-      ctx.lineWidth = 2 + highNorm * 3
-      ctx.shadowBlur = 10 + highNorm * 15
+      ctx.lineWidth = 2 + highNorm * 4
+      ctx.shadowBlur = 10 + highNorm * 20
       ctx.shadowColor = `hsla(${h}, 100%, 70%, ${highNorm * 0.7})`
       ctx.stroke()
 
       // Draw particles around rings based on bass
-      const particleCount = Math.floor(bassNorm * 30)
+      const particleCount = Math.floor(bassNorm * 40)
       for (let i = 0; i < particleCount; i++) {
         const angle = (i / particleCount) * Math.PI * 2 + Date.now() * 0.001
         const radius = bassRadius + 20
@@ -99,9 +120,9 @@ export function BassReactor() {
         const y = centerY + Math.sin(angle) * radius
         
         ctx.beginPath()
-        ctx.arc(x, y, 2 + bassNorm * 3, 0, Math.PI * 2)
+        ctx.arc(x, y, 2 + bassNorm * 4, 0, Math.PI * 2)
         ctx.fillStyle = `hsla(${h}, 100%, 70%, ${bassNorm})`
-        ctx.shadowBlur = 8
+        ctx.shadowBlur = 10
         ctx.shadowColor = `hsla(${h}, 100%, 60%, ${bassNorm})`
         ctx.fill()
       }
