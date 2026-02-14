@@ -11,6 +11,7 @@ export function useAudioAnalyser() {
   const isPlaying = usePlayerIsPlaying()
   
   const animationFrameRef = useRef<number | null>(null)
+  const hasReloadedRef = useRef(false)
   
   const [frequencyData, setFrequencyData] = useState<Uint8Array>(new Uint8Array(128))
   const [timeData, setTimeData] = useState<Uint8Array>(new Uint8Array(128))
@@ -24,7 +25,7 @@ export function useAudioAnalyser() {
       return
     }
 
-    console.log('[Visualizer] Audio element found:', audioRef)
+    console.log('[Visualizer] Audio element found, crossOrigin:', audioRef.crossOrigin)
 
     // Setup audio context (singleton)
     if (!globalAudioContext) {
@@ -42,7 +43,7 @@ export function useAudioAnalyser() {
     if (!globalAnalyser && globalAudioContext) {
       try {
         globalAnalyser = globalAudioContext.createAnalyser()
-        globalAnalyser.fftSize = 512 // Increased for better resolution
+        globalAnalyser.fftSize = 512
         globalAnalyser.smoothingTimeConstant = 0.75
         console.log('[Visualizer] Created AnalyserNode, fftSize:', globalAnalyser.fftSize)
       } catch (error) {
@@ -59,6 +60,24 @@ export function useAudioAnalyser() {
         globalAnalyser.connect(globalAudioContext.destination)
         isConnected = true
         console.log('[Visualizer] ✅ Connected audio pipeline successfully')
+        
+        // WORKAROUND: Reload audio to fix CORS issue
+        // This forces the audio to go through the analyser
+        if (!hasReloadedRef.current && audioRef.src) {
+          const currentTime = audioRef.currentTime
+          const wasPaused = audioRef.paused
+          
+          console.log('[Visualizer] Reloading audio to enable analysis...')
+          audioRef.load()
+          
+          // Restore playback position and state
+          audioRef.currentTime = currentTime
+          if (!wasPaused) {
+            audioRef.play().catch(e => console.warn('[Visualizer] Could not resume playback:', e))
+          }
+          
+          hasReloadedRef.current = true
+        }
       } catch (error: any) {
         if (error.name === 'InvalidStateError') {
           console.log('[Visualizer] Audio source already connected (OK)')
@@ -119,6 +138,11 @@ export function useAudioAnalyser() {
       }
     }
   }, [audioRef, isPlaying])
+
+  // Reset reload flag when audio changes
+  useEffect(() => {
+    hasReloadedRef.current = false
+  }, [audioRef?.src])
 
   return {
     frequencyData,
