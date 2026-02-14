@@ -385,7 +385,14 @@
       "pages": "Gehe zur Seite",
       "theme": "Thema ändern"
     },
-    "pages": "Seiten"
+    "pages": "Seiten",
+    "lidarr": {
+      "group": "In Lidarr anfragen",
+      "request": "'{{artist}}' in Lidarr anfragen",
+      "requesting": "Wird angefragt…",
+      "success": "'{{artist}}' erfolgreich in Lidarr angefragt!",
+      "error": "Künstler-Anfrage fehlgeschlagen: {{message}}"
+    }
   },
   "player": {
     "noSongPlaying": "Kein Lied wird abgespielt",
