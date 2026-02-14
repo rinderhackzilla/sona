@@ -33,9 +33,10 @@ export function PulsingOrb() {
 
       ctx.clearRect(0, 0, width, height)
 
-      const accentColor = getComputedStyle(document.documentElement)
+      const accentHSL = getComputedStyle(document.documentElement)
         .getPropertyValue('--accent')
         .trim()
+      const accentColor = accentHSL ? `hsl(${accentHSL})` : 'hsl(240, 100%, 50%)'
 
       // Calculate average frequency for pulsing
       let sum = 0
@@ -53,17 +54,19 @@ export function PulsingOrb() {
         const alpha = 0.6 - i * 0.1
 
         ctx.globalAlpha = alpha
-        ctx.strokeStyle = `hsl(${accentColor})`
+        ctx.strokeStyle = accentColor
         ctx.lineWidth = 3
         ctx.beginPath()
         ctx.arc(centerX, centerY, r, 0, Math.PI * 2)
         ctx.stroke()
       }
 
-      // Draw filled center orb
+      // Draw filled center orb with gradient
       const gradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, radius)
-      gradient.addColorStop(0, `hsla(${accentColor}, 0.8)`)
-      gradient.addColorStop(1, `hsla(${accentColor}, 0)`)
+      
+      // Parse HSL and create gradient colors
+      gradient.addColorStop(0, accentColor.replace('hsl(', 'hsla(').replace(')', ', 0.8)'))
+      gradient.addColorStop(1, accentColor.replace('hsl(', 'hsla(').replace(')', ', 0)'))
       
       ctx.globalAlpha = 1
       ctx.fillStyle = gradient
@@ -86,7 +89,7 @@ export function PulsingOrb() {
     <canvas
       ref={canvasRef}
       className="absolute inset-0 w-full h-full"
-      style={{ imageRendering: 'crisp-edges' }}
+      style={{ imageRendering: 'auto' }}
     />
   )
 }
