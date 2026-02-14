@@ -52,13 +52,13 @@ export function PulsingOrb() {
 
       const baseRadius = Math.min(width, height) * 0.18
 
-      phase += 0.03 + bass * 0.05
+      phase += 0.05 + bass * 0.08
 
-      // Layer 6: Outermost ring particles (32 particles, fast rotation)
+      // Layer 6: Outermost ring particles (32 particles, fast rotation) - SMALLER
       const outerRingCount = 32
       for (let i = 0; i < outerRingCount; i++) {
-        const angle = (Math.PI * 2 * i) / outerRingCount - phase * 1.5
-        const radius = baseRadius * (2.8 + Math.sin(phase * 2 + i * 0.2) * 0.15)
+        const angle = (Math.PI * 2 * i) / outerRingCount - phase * 2.5
+        const radius = baseRadius * (2.2 + Math.sin(phase * 2 + i * 0.2) * 0.15)
         const x = centerX + Math.cos(angle) * radius
         const y = centerY + Math.sin(angle) * radius
         const size = 1.5 + high * 4
@@ -71,11 +71,11 @@ export function PulsingOrb() {
         ctx.fill()
       }
 
-      // Layer 5: Large orbit particles (16 particles, slow counter-rotation)
+      // Layer 5: Large orbit particles (16 particles, faster rotation)
       const largeOrbitCount = 16
       for (let i = 0; i < largeOrbitCount; i++) {
-        const angle = (Math.PI * 2 * i) / largeOrbitCount + phase * 0.6
-        const radius = baseRadius * (2.2 + Math.sin(phase * 1.5 + i * 0.4) * 0.2)
+        const angle = (Math.PI * 2 * i) / largeOrbitCount + phase * 1.2
+        const radius = baseRadius * (2.0 + Math.sin(phase * 1.5 + i * 0.4) * 0.2)
         const x = centerX + Math.cos(angle) * radius
         const y = centerY + Math.sin(angle) * radius
         const size = 2.5 + treble * 5
@@ -98,10 +98,10 @@ export function PulsingOrb() {
       ctx.arc(centerX, centerY, midRingRadius, 0, Math.PI * 2)
       ctx.stroke()
 
-      // Layer 3: Dense particle ring (48 particles, rotating)
+      // Layer 3: Dense particle ring (48 particles, rotating faster)
       const denseRingCount = 48
       for (let i = 0; i < denseRingCount; i++) {
-        const angle = (Math.PI * 2 * i) / denseRingCount + phase * 1.2
+        const angle = (Math.PI * 2 * i) / denseRingCount + phase * 1.8
         const radius = baseRadius * (1.4 + Math.sin(phase * 3 + i * 0.15) * 0.1)
         const x = centerX + Math.cos(angle) * radius
         const y = centerY + Math.sin(angle) * radius
@@ -125,10 +125,10 @@ export function PulsingOrb() {
       ctx.arc(centerX, centerY, coreRingRadius, 0, Math.PI * 2)
       ctx.stroke()
 
-      // Layer 1: Center particles (12 particles, rotating fast)
+      // Layer 1: Center particles (12 particles, rotating very fast)
       const centerCount = 12
       for (let i = 0; i < centerCount; i++) {
-        const angle = (Math.PI * 2 * i) / centerCount - phase * 2
+        const angle = (Math.PI * 2 * i) / centerCount - phase * 3
         const radius = baseRadius * (0.4 + bass * 0.3)
         const x = centerX + Math.cos(angle) * radius
         const y = centerY + Math.sin(angle) * radius
