@@ -1,10 +1,10 @@
-import { memo } from 'react'
+import { memo, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Dot } from '@/app/components/dot'
 import { MarqueeTitle } from '@/app/components/fullscreen/marquee-title'
 import { SongQualityBadge } from '@/app/components/song/quality-badge'
 import { Badge } from '@/app/components/ui/badge'
-import { useDrawer } from '@/app/components/ui/drawer'
+import { DrawerClose } from '@/app/components/ui/drawer'
 import { cn } from '@/lib/utils'
 import { ROUTES } from '@/routes/routesList'
 import { usePlayerStore } from '@/store/player.store'
@@ -17,24 +17,35 @@ const MemoFullscreenSongImage = memo(FullscreenSongImage)
 export function SongInfo() {
   const currentSong = usePlayerStore((state) => state.songlist.currentSong)
   const navigate = useNavigate()
-  const drawer = useDrawer()
+  const closeButtonRef = useRef<HTMLButtonElement>(null)
 
   function handleTitleClick() {
-    drawer?.setOpen(false)
+    closeButtonRef.current?.click()
     setTimeout(() => {
       navigate(ROUTES.ALBUM.PAGE(currentSong.albumId))
     }, 100)
   }
 
   function handleAlbumClick() {
-    drawer?.setOpen(false)
+    closeButtonRef.current?.click()
     setTimeout(() => {
       navigate(ROUTES.ALBUM.PAGE(currentSong.albumId))
     }, 100)
   }
 
+  function handleArtistClick(id?: string) {
+    if (!id) return
+    closeButtonRef.current?.click()
+    setTimeout(() => {
+      navigate(ROUTES.ARTIST.PAGE(id))
+    }, 100)
+  }
+
   return (
     <div className="flex items-center justify-start h-full min-h-full max-h-full gap-4 2xl:gap-6 flex-1 pt-2 overflow-hidden">
+      {/* Hidden close button for programmatic closing */}
+      <DrawerClose ref={closeButtonRef} className="hidden" />
+      
       <MemoFullscreenSongImage />
 
       <div className="flex flex-col w-[66%] max-w-full h-full max-h-[450px] 2xl:max-h-[550px] justify-end text-left overflow-hidden">
@@ -54,7 +65,7 @@ export function SongInfo() {
             {currentSong.album}
           </p>
           <Dot className="text-foreground/70" />
-          <ArtistNames song={currentSong} />
+          <ArtistNames song={currentSong} onArtistClick={handleArtistClick} />
         </div>
         <div className="flex gap-2 mt-2 2xl:mt-3 mb-[1px]">
           {currentSong.genre && (
@@ -70,18 +81,14 @@ export function SongInfo() {
   )
 }
 
-function ArtistNames({ song }: { song: ISong }) {
+function ArtistNames({ 
+  song, 
+  onArtistClick 
+}: { 
+  song: ISong
+  onArtistClick: (id?: string) => void
+}) {
   const { artist, artistId, artists } = song
-  const navigate = useNavigate()
-  const drawer = useDrawer()
-
-  function handleArtistClick(id?: string) {
-    if (!id) return
-    drawer?.setOpen(false)
-    setTimeout(() => {
-      navigate(ROUTES.ARTIST.PAGE(id))
-    }, 100)
-  }
 
   if (artists && artists.length > 1) {
     const data = artists.slice(0, ALBUM_ARTISTS_MAX_NUMBER)
@@ -95,7 +102,7 @@ function ArtistNames({ song }: { song: ISong }) {
                 'truncate text-shadow-lg',
                 id && 'hover:underline cursor-pointer hover:text-foreground'
               )}
-              onClick={() => handleArtistClick(id)}
+              onClick={() => onArtistClick(id)}
             >
               {name}
             </p>
@@ -112,7 +119,7 @@ function ArtistNames({ song }: { song: ISong }) {
         'truncate text-shadow-lg',
         artistId && 'hover:underline cursor-pointer hover:text-foreground'
       )}
-      onClick={() => handleArtistClick(artistId)}
+      onClick={() => onArtistClick(artistId)}
     >
       {artist}
     </p>
