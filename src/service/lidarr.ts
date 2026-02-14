@@ -1,4 +1,4 @@
-import { useAppIntegrations } from '@/store/app.store'
+import { useAppStore } from '@/store/app.store'
 
 export interface LidarrArtistSearchResult {
   artistName: string
@@ -25,10 +25,10 @@ export interface LidarrArtistAddRequest {
 
 class LidarrService {
   private getConfig() {
-    const config = useAppIntegrations.getState()
+    const state = useAppStore.getState()
     return {
-      url: config.lidarr.url,
-      apiKey: config.lidarr.apiKey,
+      url: state.integrations.lidarr.url,
+      apiKey: state.integrations.lidarr.apiKey,
     }
   }
 
