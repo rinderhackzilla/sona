@@ -57,12 +57,18 @@ export function RadialSpectrum() {
         const x2 = centerX + Math.cos(angle) * (30 + barLength)
         const y2 = centerY + Math.sin(angle) * (30 + barLength)
 
+        // Gradient with MUCH more contrast
         const gradient = ctx.createLinearGradient(x1, y1, x2, y2)
-        gradient.addColorStop(0, `hsla(${h}, ${s}, ${l}, 0.2)`)
-        gradient.addColorStop(1, `hsla(${h}, ${s}, ${l}, ${0.95 * normalizedValue})`)
+        gradient.addColorStop(0, `hsla(${h}, ${s}, ${l}, 0.4)`)
+        gradient.addColorStop(0.5, `hsla(${h}, 100%, 60%, ${0.8 * normalizedValue})`)
+        gradient.addColorStop(1, `hsla(${h}, 100%, 70%, ${normalizedValue})`)
+
+        // Add glow effect
+        ctx.shadowBlur = 15 * normalizedValue
+        ctx.shadowColor = `hsla(${h}, 100%, 60%, ${normalizedValue})`
 
         ctx.strokeStyle = gradient
-        ctx.lineWidth = 3
+        ctx.lineWidth = 4
         ctx.lineCap = 'round'
         ctx.beginPath()
         ctx.moveTo(x1, y1)
@@ -70,13 +76,16 @@ export function RadialSpectrum() {
         ctx.stroke()
       }
 
+      // Reset shadow
+      ctx.shadowBlur = 0
+
       // Central pulsing core based on average frequency
       const avgFrequency = frequencyData.reduce((a, b) => a + b, 0) / frequencyData.length
       const pulseScale = 1 + (avgFrequency / 255) * 0.5
 
       for (let i = 0; i < 3; i++) {
-        ctx.strokeStyle = `hsla(${h}, ${s}, ${l}, ${0.4 - i * 0.1})`
-        ctx.lineWidth = 2
+        ctx.strokeStyle = `hsla(${h}, 100%, ${60 + i * 10}%, ${0.6 - i * 0.15})`
+        ctx.lineWidth = 3
         ctx.beginPath()
         ctx.arc(centerX, centerY, 25 * pulseScale + i * 5, 0, Math.PI * 2)
         ctx.stroke()
