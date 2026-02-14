@@ -32,9 +32,8 @@ export function WaveformTunnel() {
       const centerX = width / 2
       const centerY = height / 2
 
-      // Fade trail effect
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.15)'
-      ctx.fillRect(0, 0, width, height)
+      // Clear background completely
+      ctx.clearRect(0, 0, width, height)
 
       const accentHSL = getComputedStyle(document.documentElement)
         .getPropertyValue('--accent')
@@ -45,13 +44,16 @@ export function WaveformTunnel() {
       rotationRef.current += 0.003
 
       // Draw multiple rings creating tunnel effect
-      const ringCount = 8
+      const ringCount = 6
       const avgFreq = frequencyData.reduce((a, b) => a + b, 0) / frequencyData.length
       const pulse = avgFreq / 255
 
+      // Limit max radius to 35% of container to prevent clipping
+      const maxRadius = Math.min(width, height) * 0.35
+
       for (let ring = 0; ring < ringCount; ring++) {
         const progress = ring / ringCount
-        const radius = 50 + progress * Math.min(width, height) * 0.4
+        const radius = 50 + progress * maxRadius
         const pointCount = 64
         const angleStep = (Math.PI * 2) / pointCount
 
@@ -60,7 +62,8 @@ export function WaveformTunnel() {
           const angle = i * angleStep + rotationRef.current + ring * 0.5
           const dataIndex = Math.floor((i / pointCount) * timeData.length)
           const waveValue = (timeData[dataIndex] || 128) - 128
-          const waveOffset = (waveValue / 128) * 30 * (1 - progress) * (1 + pulse)
+          // Reduce wave offset to prevent clipping
+          const waveOffset = (waveValue / 128) * 20 * (1 - progress) * (1 + pulse * 0.5)
 
           const x = centerX + Math.cos(angle) * (radius + waveOffset)
           const y = centerY + Math.sin(angle) * (radius + waveOffset)
