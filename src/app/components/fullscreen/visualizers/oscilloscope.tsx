@@ -37,8 +37,8 @@ export function Oscilloscope() {
         .trim()
       const [h, s, l] = accentHSL.split(' ')
 
-      // Use only half the data points for cleaner look
-      const step = 2
+      // Use only 30% of data points (step = 3.33, rounded to ~3)
+      const step = 3
       const reducedLength = Math.floor(timeData.length / step)
       const sliceWidth = width / reducedLength
       
@@ -50,6 +50,7 @@ export function Oscilloscope() {
         ctx.shadowBlur = 15 + layer * 10
         ctx.shadowColor = `hsla(${h}, 100%, 60%, ${0.5 - layer * 0.15})`
 
+        // Smooth curves using quadraticCurveTo
         for (let i = 0; i < reducedLength; i++) {
           const dataIndex = i * step
           const value = timeData[dataIndex] || 128
@@ -59,7 +60,23 @@ export function Oscilloscope() {
           if (i === 0) {
             ctx.moveTo(x, y)
           } else {
-            ctx.lineTo(x, y)
+            // Get previous point for smooth curve
+            const prevDataIndex = (i - 1) * step
+            const prevValue = timeData[prevDataIndex] || 128
+            const prevY = ((prevValue - 128) / 128) * (height / 2) + height / 2
+            const prevX = (i - 1) * sliceWidth
+
+            // Calculate control point (midpoint between current and previous)
+            const cpX = (prevX + x) / 2
+            const cpY = (prevY + y) / 2
+
+            // Draw smooth curve
+            ctx.quadraticCurveTo(prevX, prevY, cpX, cpY)
+            
+            // For last segment, draw to current point
+            if (i === reducedLength - 1) {
+              ctx.lineTo(x, y)
+            }
           }
         }
 
