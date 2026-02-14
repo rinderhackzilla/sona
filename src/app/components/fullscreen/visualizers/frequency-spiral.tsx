@@ -32,9 +32,8 @@ export function FrequencySpiral() {
       const centerX = width / 2
       const centerY = height / 2
 
-      // Trail effect
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.1)'
-      ctx.fillRect(0, 0, width, height)
+      // Clear background completely
+      ctx.clearRect(0, 0, width, height)
 
       const accentHSL = getComputedStyle(document.documentElement)
         .getPropertyValue('--accent')
@@ -47,7 +46,8 @@ export function FrequencySpiral() {
       // Draw spiral spectrum
       const dataCount = Math.min(frequencyData.length, 128)
       const turns = 3 // Number of spiral turns
-      const maxRadius = Math.min(width, height) * 0.45
+      // Limit to 35% to prevent clipping
+      const maxRadius = Math.min(width, height) * 0.35
 
       ctx.beginPath()
       for (let i = 0; i < dataCount; i++) {
@@ -58,7 +58,8 @@ export function FrequencySpiral() {
         // Frequency value affects distance from spiral path
         const frequencyValue = frequencyData[i] || 0
         const normalizedValue = frequencyValue / 255
-        const offset = normalizedValue * 50
+        // Reduce offset from 50 to 30 to prevent clipping
+        const offset = normalizedValue * 30
 
         const x = centerX + Math.cos(angle) * (radius + offset)
         const y = centerY + Math.sin(angle) * (radius + offset)
@@ -71,7 +72,8 @@ export function FrequencySpiral() {
 
         // Draw frequency bars perpendicular to spiral
         if (i % 4 === 0) {
-          const barLength = normalizedValue * 30
+          // Reduce bar length from 30 to 20
+          const barLength = normalizedValue * 20
           const perpAngle = angle + Math.PI / 2
           const barX = x + Math.cos(perpAngle) * barLength
           const barY = y + Math.sin(perpAngle) * barLength
@@ -101,8 +103,8 @@ export function FrequencySpiral() {
           const radius = progress * maxRadius
           const normalizedValue = frequencyValue / 255
           
-          const x = centerX + Math.cos(angle) * (radius + normalizedValue * 50)
-          const y = centerY + Math.sin(angle) * (radius + normalizedValue * 50)
+          const x = centerX + Math.cos(angle) * (radius + normalizedValue * 30)
+          const y = centerY + Math.sin(angle) * (radius + normalizedValue * 30)
 
           ctx.beginPath()
           ctx.arc(x, y, 2 + normalizedValue * 4, 0, Math.PI * 2)
