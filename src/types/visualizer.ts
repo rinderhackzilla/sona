@@ -1,9 +1,9 @@
 export type VisualizerPreset =
   | 'frequency-circle'
-  | 'pulsing-orb'
   | 'radial-spectrum'
-  | 'particle-ring'
-  | 'wave-circle'
+  | 'waveform-tunnel'
+  | 'bass-reactor'
+  | 'frequency-spiral'
 
 export interface VisualizerSettings {
   enabled: boolean
