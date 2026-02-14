@@ -68,7 +68,8 @@ export function ParticleRing() {
       const average = sum / (frequencyData.length || 1)
       const normalizedAverage = average / 255
 
-      const baseRadius = Math.min(width, height) * 0.25
+      // Smaller inner radius, same outer reach
+      const baseRadius = Math.min(width, height) * 0.18  // reduced from 0.25
       const ringRadius = baseRadius * (1 + normalizedAverage * 0.5)
 
       // Draw particles with better contrast
@@ -85,7 +86,7 @@ export function ParticleRing() {
         // Enhanced contrast: square the frequency value for more dramatic difference
         const enhancedFrequency = frequency * frequency
 
-        // Calculate position with better amplitude response
+        // Calculate position with same outer amplitude but smaller inner radius
         const particleRadius = ringRadius + enhancedFrequency * 150
         const x = centerX + Math.cos(particle.angle) * particleRadius
         const y = centerY + Math.sin(particle.angle) * particleRadius
