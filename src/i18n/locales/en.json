@@ -398,7 +398,14 @@
       "pages": "Go to page",
       "theme": "Change theme"
     },
-    "pages": "Pages"
+    "pages": "Pages",
+    "lidarr": {
+      "group": "Request in Lidarr",
+      "request": "Request '{{artist}}' in Lidarr",
+      "requesting": "Requesting…",
+      "success": "Successfully requested '{{artist}}' in Lidarr!",
+      "error": "Failed to request artist: {{message}}"
+    }
   },
   "player": {
     "noSongPlaying": "No song playing",
