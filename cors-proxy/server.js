@@ -6,6 +6,7 @@ const { URL } = require('url');
 
 // Configuration
 const PROXY_PORT = 4534;
+const LISTEN_HOST = process.env.LISTEN_HOST || '0.0.0.0'; // Listen on all interfaces
 const TARGET_HOST = process.env.NAVIDROME_HOST || '192.168.0.163';
 const TARGET_PORT = process.env.NAVIDROME_PORT || 4533;
 const TARGET_PROTOCOL = process.env.NAVIDROME_PROTOCOL || 'http';
@@ -15,7 +16,7 @@ const TARGET_URL = `${TARGET_PROTOCOL}://${TARGET_HOST}:${TARGET_PORT}`;
 console.log(`
 🎵 Navidrome CORS Proxy Server
 `);
-console.log(`Proxy:  http://localhost:${PROXY_PORT}`);
+console.log(`Proxy:  http://${LISTEN_HOST}:${PROXY_PORT}`);
 console.log(`Target: ${TARGET_URL}\n`);
 
 const server = http.createServer((req, res) => {
@@ -71,9 +72,9 @@ const server = http.createServer((req, res) => {
   req.pipe(proxyReq, { end: true });
 });
 
-server.listen(PROXY_PORT, () => {
-  console.log(`✅ CORS Proxy running on http://localhost:${PROXY_PORT}`);
-  console.log(`\n💡 Update your app to use: http://localhost:${PROXY_PORT}`);
+server.listen(PROXY_PORT, LISTEN_HOST, () => {
+  console.log(`✅ CORS Proxy running on http://${LISTEN_HOST}:${PROXY_PORT}`);
+  console.log(`\n💡 Update your app to use: http://192.168.0.163:${PROXY_PORT}`);
   console.log(`\nPress Ctrl+C to stop\n`);
 });
 
