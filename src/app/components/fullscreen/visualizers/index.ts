@@ -3,10 +3,8 @@ import { PulsingOrb } from './pulsing-orb'
 import { RadialSpectrum } from './radial-spectrum'
 import { ParticleRing } from './particle-ring'
 import { WaveCircle } from './wave-circle'
-import { ButterchurnVisualizer } from './butterchurn'
 
 export const VISUALIZERS = {
-  'butterchurn': ButterchurnVisualizer,
   'frequency-circle': FrequencyCircle,
   'pulsing-orb': PulsingOrb,
   'radial-spectrum': RadialSpectrum,
@@ -17,7 +15,6 @@ export const VISUALIZERS = {
 export type VisualizerPreset = keyof typeof VISUALIZERS
 
 export const VISUALIZER_NAMES: Record<VisualizerPreset, string> = {
-  'butterchurn': 'Butterchurn (Milkdrop)',
   'frequency-circle': 'Frequency Circle',
   'pulsing-orb': 'Pulsing Orb',
   'radial-spectrum': 'Radial Spectrum',
