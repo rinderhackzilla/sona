@@ -23,6 +23,7 @@ import { ReplayGainParams } from '@/utils/replayGain'
 import { AudioPlayer } from './audio'
 import { PlayerClearQueueButton } from './clear-queue-button'
 import { PlayerControls } from './controls'
+import { EqualizerButton } from './equalizer-button'
 import { PlayerExpandButton } from './expand-button'
 import { PlayerLikeButton } from './like-button'
 import { PlayerLyricsButton } from './lyrics-button'
@@ -40,6 +41,7 @@ const MemoPlayerProgress = memo(PlayerProgress)
 const MemoPlayerLikeButton = memo(PlayerLikeButton)
 const MemoPlayerQueueButton = memo(PlayerQueueButton)
 const MemoPlayerClearQueueButton = memo(PlayerClearQueueButton)
+const MemoEqualizerButton = memo(EqualizerButton)
 const MemoPlayerVolume = memo(PlayerVolume)
 const MemoPlayerExpandButton = memo(PlayerExpandButton)
 const MemoPodcastPlaybackRate = memo(PodcastPlaybackRate)
@@ -215,6 +217,8 @@ export function Player() {
             {(isRadio || isPodcast) && (
               <MemoPlayerClearQueueButton disabled={!radio && !podcast} />
             )}
+
+            <MemoEqualizerButton disabled={!song && !radio && !podcast} />
 
             <MemoPlayerVolume
               audioRef={getAudioRef()}
