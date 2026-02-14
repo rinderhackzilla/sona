@@ -57,9 +57,14 @@ export function FrequencyCircle() {
         const x2 = centerX + Math.cos(angle) * (radius + barHeight)
         const y2 = centerY + Math.sin(angle) * (radius + barHeight)
 
+        // More vibrant gradient
         const gradient = ctx.createLinearGradient(x1, y1, x2, y2)
-        gradient.addColorStop(0, `hsla(${h}, ${s}, ${l}, 0.3)`)
-        gradient.addColorStop(1, `hsla(${h}, ${s}, ${l}, 0.9)`)
+        gradient.addColorStop(0, `hsla(${h}, 100%, 50%, 0.5)`)
+        gradient.addColorStop(1, `hsla(${h}, 100%, 70%, ${normalizedValue})`)
+
+        // Glow effect
+        ctx.shadowBlur = 12 * normalizedValue
+        ctx.shadowColor = `hsla(${h}, 100%, 60%, ${normalizedValue * 0.8})`
 
         ctx.strokeStyle = gradient
         ctx.lineWidth = (width / barCount) * 0.8
@@ -70,8 +75,11 @@ export function FrequencyCircle() {
         ctx.stroke()
       }
 
-      // Central circle outline
-      ctx.strokeStyle = `hsla(${h}, ${s}, ${l}, 0.5)`
+      // Reset shadow
+      ctx.shadowBlur = 0
+
+      // Brighter circle outline
+      ctx.strokeStyle = `hsla(${h}, 100%, 60%, 0.7)`
       ctx.lineWidth = 2
       ctx.beginPath()
       ctx.arc(centerX, centerY, radius, 0, Math.PI * 2)
