@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   Dialog,
@@ -7,7 +7,6 @@ import {
   DialogTitle,
 } from '@/app/components/ui/dialog'
 import { Button } from '@/app/components/ui/button'
-import { Slider } from '@/app/components/ui/slider'
 import {
   Select,
   SelectContent,
@@ -16,6 +15,7 @@ import {
   SelectValue,
 } from '@/app/components/ui/select'
 import { cn } from '@/lib/utils'
+import { usePlayerRef } from '@/store/player.store'
 
 interface EqualizerModalProps {
   open: boolean
@@ -31,8 +31,6 @@ const FREQUENCY_BANDS = [
   { freq: '1 kHz', hz: 1000 },
   { freq: '2 kHz', hz: 2000 },
   { freq: '4 kHz', hz: 4000 },
-  { freq: '8 kHz', hz: 8000 },
-  { freq: '16 kHz', hz: 16000 },
 ]
 
 const EQ_PRESETS = {
@@ -53,36 +51,110 @@ export function EqualizerModal({ open, onOpenChange }: EqualizerModalProps) {
   const [gains, setGains] = useState<number[]>(EQ_PRESETS.flat)
   const [selectedPreset, setSelectedPreset] = useState<string>('flat')
   const [isEnabled, setIsEnabled] = useState(false)
+  const audioContextRef = useRef<AudioContext | null>(null)
+  const filtersRef = useRef<BiquadFilterNode[]>([])
+  const sourceRef = useRef<MediaElementAudioSourceNode | null>(null)
+  const audioPlayerRef = usePlayerRef()
 
+  // Initialize Web Audio API
   useEffect(() => {
-    // TODO: Load saved EQ settings from store
-  }, [])
+    if (!audioPlayerRef || audioContextRef.current) return
 
-  const handleGainChange = (index: number, value: number[]) => {
+    try {
+      const AudioContext = window.AudioContext || (window as any).webkitAudioContext
+      const audioContext = new AudioContext()
+      audioContextRef.current = audioContext
+
+      // Create source from audio element
+      const source = audioContext.createMediaElementSource(audioPlayerRef)
+      sourceRef.current = source
+
+      // Create filters for each band
+      const filters = FREQUENCY_BANDS.map((band, index) => {
+        const filter = audioContext.createBiquadFilter()
+        
+        if (index === 0) {
+          filter.type = 'lowshelf'
+        } else if (index === FREQUENCY_BANDS.length - 1) {
+          filter.type = 'highshelf'
+        } else {
+          filter.type = 'peaking'
+        }
+        
+        filter.frequency.value = band.hz
+        filter.Q.value = 1
+        filter.gain.value = 0
+        
+        return filter
+      })
+
+      filtersRef.current = filters
+
+      // Connect audio graph: source -> filters -> destination
+      let prevNode: AudioNode = source
+      filters.forEach(filter => {
+        prevNode.connect(filter)
+        prevNode = filter
+      })
+      prevNode.connect(audioContext.destination)
+
+    } catch (error) {
+      console.error('Failed to initialize Web Audio API:', error)
+    }
+
+    return () => {
+      if (audioContextRef.current) {
+        audioContextRef.current.close()
+      }
+    }
+  }, [audioPlayerRef])
+
+  // Apply gain changes to filters
+  const applyGains = (newGains: number[]) => {
+    if (!isEnabled || !filtersRef.current.length) return
+
+    filtersRef.current.forEach((filter, index) => {
+      if (filter) {
+        filter.gain.value = newGains[index]
+      }
+    })
+  }
+
+  const handleGainChange = (index: number, value: number) => {
     const newGains = [...gains]
-    newGains[index] = value[0]
+    newGains[index] = value
     setGains(newGains)
     setSelectedPreset('custom')
-    // TODO: Apply EQ changes to audio
+    applyGains(newGains)
   }
 
   const handlePresetChange = (preset: string) => {
     setSelectedPreset(preset)
     if (preset !== 'custom') {
-      setGains(EQ_PRESETS[preset as keyof typeof EQ_PRESETS])
-      // TODO: Apply preset to audio
+      const presetGains = EQ_PRESETS[preset as keyof typeof EQ_PRESETS]
+      setGains(presetGains)
+      applyGains(presetGains)
     }
   }
 
   const handleReset = () => {
     setGains(EQ_PRESETS.flat)
     setSelectedPreset('flat')
-    // TODO: Reset audio EQ
+    applyGains(EQ_PRESETS.flat)
   }
 
   const handleToggle = () => {
-    setIsEnabled(!isEnabled)
-    // TODO: Enable/disable EQ on audio
+    const newState = !isEnabled
+    setIsEnabled(newState)
+    
+    if (newState) {
+      applyGains(gains)
+    } else {
+      // Reset all filters to 0
+      filtersRef.current.forEach(filter => {
+        if (filter) filter.gain.value = 0
+      })
+    }
   }
 
   // Calculate curve points for visualization
@@ -104,7 +176,7 @@ export function EqualizerModal({ open, onOpenChange }: EqualizerModalProps) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl">
+      <DialogContent className="max-w-4xl">
         <DialogHeader>
           <DialogTitle className="flex items-center justify-between">
             <span>{t('player.equalizer.title', 'Equalizer')}</span>
@@ -176,32 +248,28 @@ export function EqualizerModal({ open, onOpenChange }: EqualizerModalProps) {
           </div>
 
           {/* EQ Curve Visualization */}
-          <div className="bg-muted/30 rounded-lg p-4 border">
+          <div className="bg-muted/30 rounded-lg p-6 border">
             <svg
               width="100%"
-              height="120"
+              height="140"
               viewBox="0 0 100 60"
               preserveAspectRatio="none"
               className="w-full"
             >
-              {/* Center line (0 dB) */}
-              <line
-                x1="0"
-                y1="30"
-                x2="100"
-                y2="30"
-                stroke="currentColor"
-                strokeWidth="0.2"
-                opacity="0.3"
-              />
+              {/* Grid lines */}
+              <line x1="0" y1="15" x2="100" y2="15" stroke="currentColor" strokeWidth="0.1" opacity="0.2" />
+              <line x1="0" y1="30" x2="100" y2="30" stroke="currentColor" strokeWidth="0.2" opacity="0.3" />
+              <line x1="0" y1="45" x2="100" y2="45" stroke="currentColor" strokeWidth="0.1" opacity="0.2" />
+              
               {/* EQ Curve */}
               <polyline
                 points={getCurvePoints()}
                 fill="none"
                 stroke="hsl(var(--primary))"
-                strokeWidth="0.8"
+                strokeWidth="1"
                 strokeLinejoin="round"
               />
+              
               {/* Points */}
               {gains.map((gain, index) => {
                 const x = (index * 100) / (gains.length - 1)
@@ -211,7 +279,7 @@ export function EqualizerModal({ open, onOpenChange }: EqualizerModalProps) {
                     key={index}
                     cx={x}
                     cy={y}
-                    r="1"
+                    r="1.2"
                     fill="hsl(var(--primary))"
                   />
                 )
@@ -220,32 +288,41 @@ export function EqualizerModal({ open, onOpenChange }: EqualizerModalProps) {
           </div>
 
           {/* EQ Sliders */}
-          <div className="grid grid-cols-8 gap-4">
-            {FREQUENCY_BANDS.slice(0, 8).map((band, index) => (
-              <div key={band.hz} className="flex flex-col items-center gap-2">
-                <div className="text-xs font-medium text-muted-foreground text-center">
+          <div className="grid grid-cols-8 gap-6 px-2">
+            {FREQUENCY_BANDS.map((band, index) => (
+              <div key={band.hz} className="flex flex-col items-center gap-3">
+                <div className="text-xs font-medium text-muted-foreground text-center whitespace-nowrap">
                   {band.freq}
                 </div>
-                <div className="h-40 flex items-center justify-center">
-                  <Slider
-                    orientation="vertical"
-                    value={[gains[index]]}
-                    min={-12}
-                    max={12}
-                    step={1}
-                    onValueChange={(value) => handleGainChange(index, value)}
-                    className={cn(
-                      'h-32',
-                      !isEnabled && 'opacity-50 pointer-events-none',
-                    )}
+                
+                <div className="relative h-48 w-12 flex items-center justify-center">
+                  <input
+                    type="range"
+                    min="-12"
+                    max="12"
+                    step="1"
+                    value={gains[index]}
+                    onChange={(e) => handleGainChange(index, Number(e.target.value))}
                     disabled={!isEnabled}
+                    className={cn(
+                      'eq-slider',
+                      !isEnabled && 'opacity-30 cursor-not-allowed',
+                    )}
+                    style={{
+                      writingMode: 'bt-lr',
+                      WebkitAppearance: 'slider-vertical',
+                      width: '48px',
+                      height: '192px',
+                    }}
                   />
                 </div>
+                
                 <div
                   className={cn(
-                    'text-xs font-mono text-center min-w-[40px]',
+                    'text-xs font-mono text-center min-w-[50px] font-semibold',
                     gains[index] > 0 && 'text-green-500',
                     gains[index] < 0 && 'text-red-500',
+                    gains[index] === 0 && 'text-muted-foreground',
                   )}
                 >
                   {gains[index] > 0 ? '+' : ''}
@@ -256,7 +333,7 @@ export function EqualizerModal({ open, onOpenChange }: EqualizerModalProps) {
           </div>
 
           {/* Info Text */}
-          <div className="text-xs text-muted-foreground text-center pt-2">
+          <div className="text-xs text-muted-foreground text-center pt-2 border-t">
             {t(
               'player.equalizer.info',
               'Adjust frequency bands to customize your sound. Changes are applied in real-time.',
