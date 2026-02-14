@@ -43,10 +43,12 @@ export function PulsingOrb() {
       const bassData = frequencyData.slice(0, 8)
       const midData = frequencyData.slice(8, 32)
       const trebleData = frequencyData.slice(32, 64)
+      const highData = frequencyData.slice(64, 96)
 
       const bass = bassData.reduce((a, b) => a + b, 0) / (bassData.length * 255)
       const mid = midData.reduce((a, b) => a + b, 0) / (midData.length * 255)
       const treble = trebleData.reduce((a, b) => a + b, 0) / (trebleData.length * 255)
+      const high = highData.reduce((a, b) => a + b, 0) / (highData.length * 255)
 
       const baseRadius = Math.min(width, height) * 0.2
       const bassRadius = baseRadius * (1 + bass * 1.2)
@@ -55,30 +57,47 @@ export function PulsingOrb() {
 
       phase += 0.02
 
-      // Outer pulsing glow rings
-      for (let i = 0; i < 3; i++) {
-        const ringPhase = phase + i * 0.8
-        const ringAlpha = (Math.sin(ringPhase) * 0.5 + 0.5) * bass * 0.4
-        const ringRadius = bassRadius * (1.5 + i * 0.3) + Math.sin(phase + i) * 20
+      // Layer 5: Outer rotating ring particles (high frequencies)
+      const outerParticleCount = 32
+      for (let i = 0; i < outerParticleCount; i++) {
+        const angle = (Math.PI * 2 * i) / outerParticleCount - phase * 0.5
+        const distance = bassRadius * 2.2 + Math.sin(phase * 3 + i * 0.3) * 10
+        const x = centerX + Math.cos(angle) * distance
+        const y = centerY + Math.sin(angle) * distance
+        const size = 1.5 + high * 3
 
-        const gradient = ctx.createRadialGradient(
-          centerX,
-          centerY,
-          ringRadius * 0.8,
-          centerX,
-          centerY,
-          ringRadius,
-        )
-        gradient.addColorStop(0, `hsla(${h}, 100%, 60%, ${ringAlpha})`)
-        gradient.addColorStop(1, `hsla(${h}, 100%, 40%, 0)`)
-
-        ctx.fillStyle = gradient
+        ctx.fillStyle = `hsla(${h}, 100%, 80%, ${high * 0.6})`
         ctx.beginPath()
-        ctx.arc(centerX, centerY, ringRadius, 0, Math.PI * 2)
+        ctx.arc(x, y, size, 0, Math.PI * 2)
         ctx.fill()
       }
 
-      // Main orb with bass response
+      // Layer 4: Mid-outer orbital ring
+      const midOrbitCount = 16
+      for (let i = 0; i < midOrbitCount; i++) {
+        const angle = (Math.PI * 2 * i) / midOrbitCount + phase * 0.8
+        const distance = bassRadius * 1.8 + Math.sin(phase * 2 + i * 0.5) * 8
+        const x = centerX + Math.cos(angle) * distance
+        const y = centerY + Math.sin(angle) * distance
+        const size = 2 + mid * 4
+
+        ctx.shadowBlur = 8 * mid
+        ctx.shadowColor = `hsla(${h}, 100%, 65%, ${mid * 0.5})`
+        ctx.fillStyle = `hsla(${h}, 100%, 70%, ${mid * 0.7})`
+        ctx.beginPath()
+        ctx.arc(x, y, size, 0, Math.PI * 2)
+        ctx.fill()
+      }
+
+      // Layer 3: Mid-frequency ring
+      ctx.shadowBlur = 30 * mid
+      ctx.strokeStyle = `hsla(${h}, 100%, 70%, ${mid * 0.7})`
+      ctx.lineWidth = 3
+      ctx.beginPath()
+      ctx.arc(centerX, centerY, midRadius * 1.3, 0, Math.PI * 2)
+      ctx.stroke()
+
+      // Layer 2: Main orb with bass response
       const orbGradient = ctx.createRadialGradient(
         centerX - bassRadius * 0.3,
         centerY - bassRadius * 0.3,
@@ -100,15 +119,7 @@ export function PulsingOrb() {
       ctx.arc(centerX, centerY, bassRadius, 0, Math.PI * 2)
       ctx.fill()
 
-      // Mid-frequency ring
-      ctx.shadowBlur = 30 * mid
-      ctx.strokeStyle = `hsla(${h}, 100%, 70%, ${mid * 0.7})`
-      ctx.lineWidth = 3
-      ctx.beginPath()
-      ctx.arc(centerX, centerY, midRadius * 1.3, 0, Math.PI * 2)
-      ctx.stroke()
-
-      // Treble particles
+      // Layer 1: Treble particles (inner orbit)
       const particleCount = 24
       for (let i = 0; i < particleCount; i++) {
         const angle = (Math.PI * 2 * i) / particleCount + phase
