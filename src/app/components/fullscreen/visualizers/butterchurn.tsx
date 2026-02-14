@@ -1,21 +1,67 @@
 import { useEffect, useRef } from 'react'
 import butterchurn from 'butterchurn'
-import butterchurnPresets from 'butterchurn-presets'
+import * as presets from 'butterchurn-presets'
 import { usePlayerRef, usePlayerIsPlaying } from '@/store/player.store'
+
+// Global audio context singleton
+let globalAudioContext: AudioContext | null = null
+let globalAnalyser: AnalyserNode | null = null
+let globalSource: MediaElementAudioSourceNode | null = null
 
 export function ButterchurnVisualizer() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const visualizerRef = useRef<any>(null)
-  const audioContextRef = useRef<AudioContext | null>(null)
-  const analyserRef = useRef<AnalyserNode | null>(null)
-  const sourceRef = useRef<MediaElementAudioSourceNode | null>(null)
   
   const audioElement = usePlayerRef()
   const isPlaying = usePlayerIsPlaying()
 
+  // Initialize audio context FIRST
+  useEffect(() => {
+    if (!audioElement) return
+
+    try {
+      // Create audio context
+      if (!globalAudioContext) {
+        const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext
+        globalAudioContext = new AudioContextClass()
+        console.log('[Butterchurn] Created AudioContext')
+      }
+
+      // Create analyser
+      if (!globalAnalyser && globalAudioContext) {
+        globalAnalyser = globalAudioContext.createAnalyser()
+        globalAnalyser.fftSize = 2048
+        globalAnalyser.smoothingTimeConstant = 0.8
+        console.log('[Butterchurn] Created AnalyserNode')
+      }
+
+      // Connect audio source
+      if (!globalSource && globalAudioContext && globalAnalyser) {
+        try {
+          globalSource = globalAudioContext.createMediaElementSource(audioElement)
+          globalSource.connect(globalAnalyser)
+          globalAnalyser.connect(globalAudioContext.destination)
+          console.log('[Butterchurn] ✅ Audio connected')
+        } catch (error: any) {
+          if (error.name !== 'InvalidStateError') {
+            console.error('[Butterchurn] Error connecting audio:', error)
+          }
+        }
+      }
+
+      // Resume if suspended
+      if (globalAudioContext?.state === 'suspended') {
+        globalAudioContext.resume()
+      }
+    } catch (error) {
+      console.error('[Butterchurn] Audio setup error:', error)
+    }
+  }, [audioElement])
+
+  // Create visualizer AFTER audio context
   useEffect(() => {
     const canvas = canvasRef.current
-    if (!canvas || !audioElement) return
+    if (!canvas || !globalAudioContext || !globalAnalyser) return
 
     const width = canvas.offsetWidth
     const height = canvas.offsetHeight
@@ -23,21 +69,24 @@ export function ButterchurnVisualizer() {
     canvas.height = height
 
     try {
-      // Create visualizer
-      visualizerRef.current = butterchurn.createVisualizer(audioContextRef.current, canvas, {
+      // Create visualizer with audio context
+      visualizerRef.current = butterchurn.createVisualizer(globalAudioContext, canvas, {
         width,
         height,
         pixelRatio: window.devicePixelRatio || 1,
         textureRatio: 1,
       })
 
-      // Load a preset
-      const presets = butterchurnPresets.getPresets()
-      const presetKeys = Object.keys(presets)
-      const selectedPreset = presets[presetKeys[Math.floor(Math.random() * presetKeys.length)]]
-      visualizerRef.current.loadPreset(selectedPreset, 0)
+      // Connect to analyser
+      visualizerRef.current.connectAudio(globalAnalyser)
 
-      console.log('[Butterchurn] Visualizer created')
+      // Load random preset
+      const presetKeys = Object.keys(presets)
+      const randomKey = presetKeys[Math.floor(Math.random() * presetKeys.length)]
+      const preset = presets[randomKey as keyof typeof presets]
+      
+      visualizerRef.current.loadPreset(preset, 0)
+      console.log('[Butterchurn] ✅ Visualizer created with preset:', randomKey)
     } catch (error) {
       console.error('[Butterchurn] Error creating visualizer:', error)
     }
@@ -45,55 +94,14 @@ export function ButterchurnVisualizer() {
     return () => {
       if (visualizerRef.current) {
         try {
-          // Safely destroy visualizer
-          if (typeof visualizerRef.current.destroy === 'function') {
-            visualizerRef.current.destroy()
-          }
+          visualizerRef.current.destroy()
         } catch (error) {
-          console.warn('[Butterchurn] Error destroying visualizer:', error)
+          console.warn('[Butterchurn] Cleanup warning:', error)
         }
         visualizerRef.current = null
       }
     }
-  }, [audioElement])
-
-  // Setup audio context
-  useEffect(() => {
-    if (!audioElement || !isPlaying) return
-
-    try {
-      if (!audioContextRef.current) {
-        const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext
-        audioContextRef.current = new AudioContextClass()
-        console.log('[Butterchurn] Created AudioContext')
-      }
-
-      if (!analyserRef.current && audioContextRef.current) {
-        analyserRef.current = audioContextRef.current.createAnalyser()
-        analyserRef.current.fftSize = 2048
-        console.log('[Butterchurn] Created AnalyserNode')
-      }
-
-      if (!sourceRef.current && audioContextRef.current && analyserRef.current) {
-        try {
-          sourceRef.current = audioContextRef.current.createMediaElementSource(audioElement)
-          sourceRef.current.connect(analyserRef.current)
-          analyserRef.current.connect(audioContextRef.current.destination)
-          console.log('[Butterchurn] ✅ Audio connected')
-        } catch (error: any) {
-          if (error.name === 'InvalidStateError') {
-            console.log('[Butterchurn] Audio already connected')
-          }
-        }
-      }
-
-      if (audioContextRef.current?.state === 'suspended') {
-        audioContextRef.current.resume()
-      }
-    } catch (error) {
-      console.error('[Butterchurn] Setup error:', error)
-    }
-  }, [audioElement, isPlaying])
+  }, [globalAudioContext, globalAnalyser])
 
   // Animation loop
   useEffect(() => {
@@ -106,7 +114,7 @@ export function ButterchurnVisualizer() {
         try {
           visualizerRef.current.render()
         } catch (error) {
-          console.warn('[Butterchurn] Render error:', error)
+          // Silently ignore render errors
         }
       }
       animationId = requestAnimationFrame(render)
@@ -131,11 +139,9 @@ export function ButterchurnVisualizer() {
         canvas.width = width
         canvas.height = height
         try {
-          if (typeof visualizerRef.current.setRendererSize === 'function') {
-            visualizerRef.current.setRendererSize(width, height)
-          }
+          visualizerRef.current.setRendererSize(width, height)
         } catch (error) {
-          console.warn('[Butterchurn] Resize error:', error)
+          // Ignore resize errors
         }
       }
     }
