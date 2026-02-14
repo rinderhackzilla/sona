@@ -55,7 +55,7 @@ export function ParticleRing() {
       const accentHSL = getComputedStyle(document.documentElement)
         .getPropertyValue('--accent')
         .trim()
-      const accentColor = accentHSL ? `hsl(${accentHSL})` : 'hsl(240, 100%, 50%)'
+      const [h, s, l] = accentHSL.split(' ')
 
       // Draw particles
       particlesRef.current.forEach((particle, index) => {
@@ -68,8 +68,8 @@ export function ParticleRing() {
         const y = centerY + Math.sin(particle.angle) * radius
 
         const alpha = 0.3 + (value / 255) * 0.7
-        ctx.globalAlpha = alpha
-        ctx.fillStyle = accentColor
+        ctx.fillStyle = `hsla(${h}, ${s}, ${l}, ${alpha})`
+        ctx.globalAlpha = 1
         ctx.beginPath()
         ctx.arc(x, y, particle.size, 0, Math.PI * 2)
         ctx.fill()

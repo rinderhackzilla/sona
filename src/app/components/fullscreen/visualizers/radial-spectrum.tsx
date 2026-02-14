@@ -37,7 +37,7 @@ export function RadialSpectrum() {
       const accentHSL = getComputedStyle(document.documentElement)
         .getPropertyValue('--accent')
         .trim()
-      const accentColor = accentHSL ? `hsl(${accentHSL})` : 'hsl(240, 100%, 50%)'
+      const [h, s, l] = accentHSL.split(' ')
 
       // Draw radial spectrum
       const barCount = 64
@@ -54,10 +54,11 @@ export function RadialSpectrum() {
         const y2 = centerY + Math.sin(angle) * (20 + barLength)
 
         const gradient = ctx.createLinearGradient(x1, y1, x2, y2)
-        gradient.addColorStop(0, accentColor.replace('hsl(', 'hsla(').replace(')', ', 0.2)'))
-        gradient.addColorStop(1, accentColor.replace('hsl(', 'hsla(').replace(')', ', 0.9)'))
+        gradient.addColorStop(0, `hsla(${h}, ${s}, ${l}, 0.2)`)
+        gradient.addColorStop(1, `hsla(${h}, ${s}, ${l}, 0.9)`)
 
         ctx.strokeStyle = gradient
+        ctx.globalAlpha = 1
         ctx.lineWidth = 4
         ctx.lineCap = 'round'
         ctx.beginPath()

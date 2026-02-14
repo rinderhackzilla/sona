@@ -36,7 +36,7 @@ export function PulsingOrb() {
       const accentHSL = getComputedStyle(document.documentElement)
         .getPropertyValue('--accent')
         .trim()
-      const accentColor = accentHSL ? `hsl(${accentHSL})` : 'hsl(240, 100%, 50%)'
+      const [h, s, l] = accentHSL.split(' ')
 
       // Calculate average frequency for pulsing
       let sum = 0
@@ -48,13 +48,13 @@ export function PulsingOrb() {
       const baseRadius = Math.min(width, height) * 0.15
       const radius = baseRadius * scale
 
-      // Draw multiple concentric circles with different opacities
+      // Draw multiple concentric circles
       for (let i = 0; i < 5; i++) {
         const r = radius * (1 + i * 0.3)
         const alpha = 0.6 - i * 0.1
 
-        ctx.globalAlpha = alpha
-        ctx.strokeStyle = accentColor
+        ctx.globalAlpha = 1
+        ctx.strokeStyle = `hsla(${h}, ${s}, ${l}, ${alpha})`
         ctx.lineWidth = 3
         ctx.beginPath()
         ctx.arc(centerX, centerY, r, 0, Math.PI * 2)
@@ -63,10 +63,8 @@ export function PulsingOrb() {
 
       // Draw filled center orb with gradient
       const gradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, radius)
-      
-      // Parse HSL and create gradient colors
-      gradient.addColorStop(0, accentColor.replace('hsl(', 'hsla(').replace(')', ', 0.8)'))
-      gradient.addColorStop(1, accentColor.replace('hsl(', 'hsla(').replace(')', ', 0)'))
+      gradient.addColorStop(0, `hsla(${h}, ${s}, ${l}, 0.8)`)
+      gradient.addColorStop(1, `hsla(${h}, ${s}, ${l}, 0)`)
       
       ctx.globalAlpha = 1
       ctx.fillStyle = gradient

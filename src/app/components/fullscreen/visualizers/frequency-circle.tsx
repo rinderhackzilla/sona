@@ -12,7 +12,6 @@ export function FrequencyCircle() {
     const ctx = canvas.getContext('2d')
     if (!ctx) return
 
-    // Set canvas size
     const updateSize = () => {
       const dpr = window.devicePixelRatio || 1
       canvas.width = canvas.offsetWidth * dpr
@@ -22,7 +21,6 @@ export function FrequencyCircle() {
     updateSize()
     window.addEventListener('resize', updateSize)
 
-    // Animation loop
     let animationId: number
 
     const draw = () => {
@@ -34,16 +32,16 @@ export function FrequencyCircle() {
       const centerY = height / 2
       const radius = Math.min(width, height) * 0.25
 
-      // Clear canvas
       ctx.clearRect(0, 0, width, height)
 
-      // Get CSS theme color - parse HSL values correctly
+      // Get CSS theme color
       const accentHSL = getComputedStyle(document.documentElement)
         .getPropertyValue('--accent')
         .trim()
       
-      // accentHSL is like "240 100% 50%" - we need to build the full hsl() string
-      const accentColor = accentHSL ? `hsl(${accentHSL})` : 'hsl(240, 100%, 50%)'
+      // accentHSL is like "225 27% 31%"
+      const [h, s, l] = accentHSL.split(' ')
+      const baseColor = `hsl(${h}, ${s}, ${l})`
 
       // Draw frequency bars in circle
       const barCount = 128
@@ -60,11 +58,10 @@ export function FrequencyCircle() {
         const x2 = centerX + Math.cos(angle) * (radius + barHeight)
         const y2 = centerY + Math.sin(angle) * (radius + barHeight)
 
-        // Color based on frequency intensity
         const alpha = 0.3 + (value / 255) * 0.7
         
-        ctx.strokeStyle = accentColor
-        ctx.globalAlpha = alpha
+        ctx.strokeStyle = `hsla(${h}, ${s}, ${l}, ${alpha})`
+        ctx.globalAlpha = 1
         ctx.lineWidth = 2
         ctx.lineCap = 'round'
 
@@ -75,8 +72,8 @@ export function FrequencyCircle() {
       }
 
       // Draw center circle
-      ctx.globalAlpha = 0.2
-      ctx.strokeStyle = accentColor
+      ctx.strokeStyle = `hsla(${h}, ${s}, ${l}, 0.2)`
+      ctx.globalAlpha = 1
       ctx.lineWidth = 2
       ctx.beginPath()
       ctx.arc(centerX, centerY, radius, 0, Math.PI * 2)

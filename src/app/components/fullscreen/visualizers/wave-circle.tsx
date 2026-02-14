@@ -37,7 +37,7 @@ export function WaveCircle() {
       const accentHSL = getComputedStyle(document.documentElement)
         .getPropertyValue('--accent')
         .trim()
-      const accentColor = accentHSL ? `hsl(${accentHSL})` : 'hsl(240, 100%, 50%)'
+      const [h, s, l] = accentHSL.split(' ')
 
       // Draw multiple wave circles
       const waveCount = 3
@@ -47,9 +47,10 @@ export function WaveCircle() {
         const phaseOffset = wave * 0.5
 
         ctx.beginPath()
-        ctx.strokeStyle = accentColor
+        const alpha = 0.7 - wave * 0.2
+        ctx.strokeStyle = `hsla(${h}, ${s}, ${l}, ${alpha})`
         ctx.lineWidth = 2
-        ctx.globalAlpha = 0.7 - wave * 0.2
+        ctx.globalAlpha = 1
 
         for (let i = 0; i <= points; i++) {
           const angle = i * angleStep
