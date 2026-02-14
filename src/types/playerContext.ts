@@ -112,8 +112,16 @@ interface IQueueSettings {
   useSongColor: boolean
 }
 
+export interface AlbumColorPalette {
+  dominant: string
+  vibrant: string
+  muted: string
+  accent: string
+}
+
 interface IColorsSettings {
   currentSongColor: string | null
+  currentSongColorPalette: AlbumColorPalette | null
   currentSongColorIntensity: number
   bigPlayer: IBigPlayerSettings
   queue: IQueueSettings
@@ -179,6 +187,7 @@ export interface IPlayerActions {
   setLastPodcast: (episode: EpisodeWithPodcast, progress: number) => void
   updateQueueChecks: () => void
   setCurrentSongColor: (value: string | null) => void
+  setCurrentSongColorPalette: (value: AlbumColorPalette | null) => void
   setCurrentSongIntensity: (value: number) => void
   setUseSongColorOnQueue: (value: boolean) => void
   setUseSongColorOnBigPlayer: (value: boolean) => void
