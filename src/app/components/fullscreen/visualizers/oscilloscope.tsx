@@ -45,18 +45,18 @@ export function Oscilloscope() {
         .trim()
       const [h, s, l] = accentHSL.split(' ')
 
-      // Use only 20% of data points (step = 5)
-      const step = 5
+      // Use only ~10% of data points (step = 10) for clean minimal look
+      const step = 10
       const reducedLength = Math.floor(timeData.length / step)
       const sliceWidth = width / reducedLength
       
-      // Draw multiple layers for glow effect
+      // Draw multiple layers for glow effect with thicker lines
       for (let layer = 2; layer >= 0; layer--) {
         ctx.beginPath()
-        ctx.lineWidth = 3 + layer * 2
+        ctx.lineWidth = 4 + layer * 3 // Thicker lines
         ctx.strokeStyle = `hsla(${h}, 100%, ${60 + layer * 10}%, ${0.7 - layer * 0.2})`
-        ctx.shadowBlur = 15 + layer * 10
-        ctx.shadowColor = `hsla(${h}, 100%, 60%, ${0.5 - layer * 0.15})`
+        ctx.shadowBlur = 20 + layer * 15
+        ctx.shadowColor = `hsla(${h}, 100%, 60%, ${0.6 - layer * 0.15})`
 
         // Smooth curves using quadraticCurveTo
         for (let i = 0; i < reducedLength; i++) {
