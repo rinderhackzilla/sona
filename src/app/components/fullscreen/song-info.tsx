@@ -1,8 +1,11 @@
 import { memo } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Dot } from '@/app/components/dot'
 import { MarqueeTitle } from '@/app/components/fullscreen/marquee-title'
 import { SongQualityBadge } from '@/app/components/song/quality-badge'
 import { Badge } from '@/app/components/ui/badge'
+import { cn } from '@/lib/utils'
+import { ROUTES } from '@/routes/routesList'
 import { usePlayerStore } from '@/store/player.store'
 import { ISong } from '@/types/responses/song'
 import { ALBUM_ARTISTS_MAX_NUMBER } from '@/utils/multipleArtists'
@@ -12,6 +15,15 @@ const MemoFullscreenSongImage = memo(FullscreenSongImage)
 
 export function SongInfo() {
   const currentSong = usePlayerStore((state) => state.songlist.currentSong)
+  const navigate = useNavigate()
+
+  function handleTitleClick() {
+    navigate(ROUTES.ALBUM.PAGE(currentSong.albumId))
+  }
+
+  function handleAlbumClick() {
+    navigate(ROUTES.ALBUM.PAGE(currentSong.albumId))
+  }
 
   return (
     <div className="flex items-center justify-start h-full min-h-full max-h-full gap-4 2xl:gap-6 flex-1 pt-2 overflow-hidden">
@@ -19,12 +31,18 @@ export function SongInfo() {
 
       <div className="flex flex-col w-[66%] max-w-full h-full max-h-[450px] 2xl:max-h-[550px] justify-end text-left overflow-hidden">
         <MarqueeTitle gap="mr-6">
-          <h2 className="scroll-m-20 text-4xl 2xl:text-5xl font-bold tracking-tight py-2 2xl:py-3 text-shadow-md">
+          <h2 
+            className="scroll-m-20 text-4xl 2xl:text-5xl font-bold tracking-tight py-2 2xl:py-3 text-shadow-md hover:underline cursor-pointer"
+            onClick={handleTitleClick}
+          >
             {currentSong.title}
           </h2>
         </MarqueeTitle>
         <div className="text-base 2xl:text-lg flex gap-1 text-foreground/70 truncate maskImage-marquee-fade-finished">
-          <p className="truncate text-shadow-lg text-foreground">
+          <p 
+            className="truncate text-shadow-lg text-foreground hover:underline cursor-pointer"
+            onClick={handleAlbumClick}
+          >
             {currentSong.album}
           </p>
           <Dot className="text-foreground/70" />
@@ -45,7 +63,13 @@ export function SongInfo() {
 }
 
 function ArtistNames({ song }: { song: ISong }) {
-  const { artist, artists } = song
+  const { artist, artistId, artists } = song
+  const navigate = useNavigate()
+
+  function handleArtistClick(id?: string) {
+    if (!id) return
+    navigate(ROUTES.ARTIST.PAGE(id))
+  }
 
   if (artists && artists.length > 1) {
     const data = artists.slice(0, ALBUM_ARTISTS_MAX_NUMBER)
@@ -54,7 +78,15 @@ function ArtistNames({ song }: { song: ISong }) {
       <div className="flex items-center gap-1">
         {data.map(({ id, name }, index) => (
           <div key={id} className="flex">
-            <p className="truncate text-shadow-lg">{name}</p>
+            <p 
+              className={cn(
+                'truncate text-shadow-lg',
+                id && 'hover:underline cursor-pointer hover:text-foreground'
+              )}
+              onClick={() => handleArtistClick(id)}
+            >
+              {name}
+            </p>
             {index < data.length - 1 && ','}
           </div>
         ))}
@@ -62,5 +94,15 @@ function ArtistNames({ song }: { song: ISong }) {
     )
   }
 
-  return <p className="truncate text-shadow-lg">{artist}</p>
+  return (
+    <p 
+      className={cn(
+        'truncate text-shadow-lg',
+        artistId && 'hover:underline cursor-pointer hover:text-foreground'
+      )}
+      onClick={() => handleArtistClick(artistId)}
+    >
+      {artist}
+    </p>
+  )
 }
