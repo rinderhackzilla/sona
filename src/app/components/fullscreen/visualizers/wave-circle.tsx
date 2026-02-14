@@ -1,7 +1,9 @@
 import { useEffect, useRef } from 'react'
+import { useAudioAnalyser } from '@/app/hooks/use-audio-analyser'
 
 export function WaveCircle() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  const { timeData, frequencyData } = useAudioAnalyser()
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -28,8 +30,7 @@ export function WaveCircle() {
       const height = canvas.offsetHeight
       const centerX = width / 2
       const centerY = height / 2
-      const baseRadius = Math.min(width, height) * 0.25
-      const time = Date.now() / 1000
+      const radius = Math.min(width, height) * 0.3
 
       ctx.clearRect(0, 0, width, height)
 
@@ -38,65 +39,47 @@ export function WaveCircle() {
         .trim()
       const [h, s, l] = accentHSL.split(' ')
 
-      // Multiple flowing wave circles
-      const waveCount = 5
-      for (let wave = 0; wave < waveCount; wave++) {
-        const points = 150
-        const angleStep = (Math.PI * 2) / points
-        const phaseOffset = wave * 0.8 + time * 0.5
+      // Use REAL waveform data
+      const pointCount = Math.min(timeData.length, 128)
+      const angleStep = (Math.PI * 2) / pointCount
 
-        ctx.beginPath()
-        const alpha = 0.6 - wave * 0.1
-        ctx.strokeStyle = `hsla(${h}, ${s}, ${l}, ${alpha})`
-        ctx.lineWidth = 2
+      // Draw waveform circle
+      ctx.beginPath()
+      for (let i = 0; i < pointCount; i++) {
+        const angle = i * angleStep
+        
+        // Get real waveform value (0-255, centered at 128)
+        const waveValue = timeData[i] || 128
+        const normalizedWave = (waveValue - 128) / 128 // -1 to 1
+        const waveRadius = radius + normalizedWave * radius * 0.5
 
-        for (let i = 0; i <= points; i++) {
-          const angle = i * angleStep
-          
-          // Complex wave patterns
-          const wave1 = Math.sin(angle * 3 + time * 2 + phaseOffset)
-          const wave2 = Math.sin(angle * 5 - time * 3 + phaseOffset * 2)
-          const wave3 = Math.cos(angle * 2 + time + phaseOffset)
-          
-          const combined = (wave1 + wave2 * 0.5 + wave3 * 0.3) / 2.8
-          const waveOffset = combined * 40 * (1 - wave * 0.15)
-          
-          const radius = baseRadius * (1 + wave * 0.25) + waveOffset
+        const x = centerX + Math.cos(angle) * waveRadius
+        const y = centerY + Math.sin(angle) * waveRadius
 
-          const x = centerX + Math.cos(angle) * radius
-          const y = centerY + Math.sin(angle) * radius
-
-          if (i === 0) {
-            ctx.moveTo(x, y)
-          } else {
-            ctx.lineTo(x, y)
-          }
-        }
-
-        ctx.closePath()
-        ctx.stroke()
-
-        // Add glow effect
-        if (wave === 0) {
-          ctx.shadowBlur = 20
-          ctx.shadowColor = `hsla(${h}, ${s}, ${l}, 0.5)`
-          ctx.stroke()
-          ctx.shadowBlur = 0
+        if (i === 0) {
+          ctx.moveTo(x, y)
+        } else {
+          ctx.lineTo(x, y)
         }
       }
+      ctx.closePath()
 
-      // Central pulsing dot
-      const pulse = Math.sin(time * 3) * 0.5 + 0.5
-      const dotRadius = 8 + pulse * 6
-      
-      const gradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, dotRadius * 2)
-      gradient.addColorStop(0, `hsla(${h}, ${s}, 70%, 0.9)`)
-      gradient.addColorStop(1, `hsla(${h}, ${s}, ${l}, 0)`)
-      
-      ctx.fillStyle = gradient
-      ctx.beginPath()
-      ctx.arc(centerX, centerY, dotRadius * 2, 0, Math.PI * 2)
+      // Color based on average frequency
+      const avgFrequency = frequencyData.reduce((a, b) => a + b, 0) / frequencyData.length
+      const alpha = 0.3 + (avgFrequency / 255) * 0.6
+
+      ctx.fillStyle = `hsla(${h}, ${s}, ${l}, ${alpha * 0.2})`
       ctx.fill()
+      ctx.strokeStyle = `hsla(${h}, ${s}, ${l}, ${alpha})`
+      ctx.lineWidth = 2
+      ctx.stroke()
+
+      // Inner reference circle
+      ctx.strokeStyle = `hsla(${h}, ${s}, ${l}, 0.3)`
+      ctx.lineWidth = 1
+      ctx.beginPath()
+      ctx.arc(centerX, centerY, radius, 0, Math.PI * 2)
+      ctx.stroke()
 
       animationId = requestAnimationFrame(draw)
     }
@@ -107,7 +90,7 @@ export function WaveCircle() {
       cancelAnimationFrame(animationId)
       window.removeEventListener('resize', updateSize)
     }
-  }, [])
+  }, [timeData, frequencyData])
 
   return (
     <canvas
