@@ -45,7 +45,8 @@ function OtherBackdrop() {
   return (
     <div className="relative w-full h-full transition-colors duration-1000 bg-black/0">
       <div
-        className="absolute -inset-10 bg-cover bg-center z-0 transition-[background-image,filter] duration-1000"
+        key={backgroundImage}
+        className="absolute -inset-10 bg-cover bg-center z-0 transition-[background-image,filter] duration-1000 animate-backdrop-slow-zoom"
         style={{
           backgroundImage: `url(${backgroundImage})`,
           filter: `blur(${bigPlayerBlur.value}px)`,
@@ -72,18 +73,20 @@ function MacBackdrop() {
       className="relative w-full h-full flex items-center transition-colors duration-1000"
       style={{ backgroundColor }}
     >
-      <ImageLoader id={coverArt} type="song">
-        {(src) => (
-          <LazyLoadImage
-            key={coverArt}
-            src={src}
-            alt={title}
-            effect="opacity"
-            width="100%"
-            className="w-full bg-contain"
-          />
-        )}
-      </ImageLoader>
+      <div key={coverArt} className="relative w-full h-full animate-backdrop-slow-zoom">
+        <ImageLoader id={coverArt} type="song">
+          {(src) => (
+            <LazyLoadImage
+              key={coverArt}
+              src={src}
+              alt={title}
+              effect="opacity"
+              width="100%"
+              className="w-full bg-contain"
+            />
+          )}
+        </ImageLoader>
+      </div>
       <div
         className="absolute bg-background/50 inset-0 z-10 transition-all duration-1000"
         style={{
@@ -111,15 +114,10 @@ function DynamicColorBackdrop() {
     }
   }, [newBackgroundImage])
 
-  const backgroundColor = useMemo(() => {
+  // Color overlay - intensity controls the opacity/transparency
+  const colorOverlay = useMemo(() => {
     if (!currentSongColor) return undefined
     return hexToRgba(currentSongColor, currentSongColorIntensity)
-  }, [currentSongColor, currentSongColorIntensity])
-
-  // Color tint for the image - 40% of intensity for visible effect
-  const colorTint = useMemo(() => {
-    if (!currentSongColor) return undefined
-    return hexToRgba(currentSongColor, currentSongColorIntensity * 0.4)
   }, [currentSongColor, currentSongColorIntensity])
 
   return (
@@ -130,20 +128,21 @@ function DynamicColorBackdrop() {
           isChromeOrFirefox && 'bg-black/0',
         )}
       >
-        {/* Blurred background image */}
+        {/* Blurred background image with zoom animation */}
         <div
-          className="absolute -inset-10 bg-cover bg-center z-0 transition-[background-image,filter] duration-1000"
+          key={backgroundImage}
+          className="absolute -inset-10 bg-cover bg-center z-0 transition-[background-image,filter] duration-1000 animate-backdrop-slow-zoom"
           style={{
             backgroundImage: `url(${backgroundImage})`,
             filter: `blur(${bigPlayerBlur.value}px)`,
           }}
         />
         
-        {/* Color tint overlay */}
-        {colorTint && (
+        {/* Color overlay - slider controls transparency */}
+        {colorOverlay && (
           <div 
-            className="absolute inset-0 w-full h-full z-[1] transition-colors duration-1000 mix-blend-multiply"
-            style={{ backgroundColor: colorTint }}
+            className="absolute inset-0 w-full h-full z-[1] transition-colors duration-1000"
+            style={{ backgroundColor: colorOverlay }}
           />
         )}
         
@@ -153,12 +152,6 @@ function DynamicColorBackdrop() {
             'absolute inset-0 w-full h-full z-[2]',
             'transition-[background-image] duration-1000 default-gradient',
           )}
-        />
-        
-        {/* Base background color */}
-        <div
-          className="absolute inset-0 w-full h-full z-[-1] transition-[background-color] duration-1000"
-          style={{ backgroundColor }}
         />
       </div>
     </div>
