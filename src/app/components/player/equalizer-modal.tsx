@@ -15,7 +15,6 @@ import {
   SelectValue,
 } from '@/app/components/ui/select'
 import { cn } from '@/lib/utils'
-import { usePlayerRef } from '@/store/player.store'
 
 interface EqualizerModalProps {
   open: boolean
@@ -46,74 +45,97 @@ const EQ_PRESETS = {
   vocal: [0, -2, -3, -1, 3, 4, 3, 1],
 }
 
+// Global audio context shared across entire app
+let globalAudioContext: AudioContext | null = null
+let globalFilters: BiquadFilterNode[] = []
+let isAudioInitialized = false
+
 export function EqualizerModal({ open, onOpenChange }: EqualizerModalProps) {
   const { t } = useTranslation()
   const [gains, setGains] = useState<number[]>(EQ_PRESETS.flat)
   const [selectedPreset, setSelectedPreset] = useState<string>('flat')
   const [isEnabled, setIsEnabled] = useState(false)
-  const audioContextRef = useRef<AudioContext | null>(null)
-  const filtersRef = useRef<BiquadFilterNode[]>([])
-  const sourceRef = useRef<MediaElementAudioSourceNode | null>(null)
-  const audioPlayerRef = usePlayerRef()
+  const initAttempted = useRef(false)
 
-  // Initialize Web Audio API
+  // Initialize Web Audio API once globally
   useEffect(() => {
-    if (!audioPlayerRef || audioContextRef.current) return
+    if (isAudioInitialized || initAttempted.current) return
+    initAttempted.current = true
 
-    try {
-      const AudioContext = window.AudioContext || (window as any).webkitAudioContext
-      const audioContext = new AudioContext()
-      audioContextRef.current = audioContext
-
-      // Create source from audio element
-      const source = audioContext.createMediaElementSource(audioPlayerRef)
-      sourceRef.current = source
-
-      // Create filters for each band
-      const filters = FREQUENCY_BANDS.map((band, index) => {
-        const filter = audioContext.createBiquadFilter()
-        
-        if (index === 0) {
-          filter.type = 'lowshelf'
-        } else if (index === FREQUENCY_BANDS.length - 1) {
-          filter.type = 'highshelf'
-        } else {
-          filter.type = 'peaking'
+    const initAudio = async () => {
+      try {
+        // Find audio element
+        const audioElement = document.querySelector('audio[data-testid="player-song-audio"]') as HTMLAudioElement
+        if (!audioElement) {
+          console.warn('Audio element not found yet')
+          initAttempted.current = false
+          return
         }
-        
-        filter.frequency.value = band.hz
-        filter.Q.value = 1
-        filter.gain.value = 0
-        
-        return filter
-      })
 
-      filtersRef.current = filters
+        const AudioContext = window.AudioContext || (window as any).webkitAudioContext
+        if (!globalAudioContext) {
+          globalAudioContext = new AudioContext()
+        }
 
-      // Connect audio graph: source -> filters -> destination
-      let prevNode: AudioNode = source
-      filters.forEach(filter => {
-        prevNode.connect(filter)
-        prevNode = filter
-      })
-      prevNode.connect(audioContext.destination)
+        // Check if already connected
+        if ((audioElement as any).__audioSourceNode) {
+          console.log('Audio already connected to Web Audio API')
+          return
+        }
 
-    } catch (error) {
-      console.error('Failed to initialize Web Audio API:', error)
-    }
+        // Create source from audio element
+        const source = globalAudioContext.createMediaElementSource(audioElement)
+        ;(audioElement as any).__audioSourceNode = source
 
-    return () => {
-      if (audioContextRef.current) {
-        audioContextRef.current.close()
+        // Create filters for each band
+        const filters = FREQUENCY_BANDS.map((band, index) => {
+          const filter = globalAudioContext!.createBiquadFilter()
+          
+          if (index === 0) {
+            filter.type = 'lowshelf'
+          } else if (index === FREQUENCY_BANDS.length - 1) {
+            filter.type = 'highshelf'
+          } else {
+            filter.type = 'peaking'
+          }
+          
+          filter.frequency.value = band.hz
+          filter.Q.value = 1
+          filter.gain.value = 0
+          
+          return filter
+        })
+
+        globalFilters = filters
+
+        // Connect audio graph: source -> filters -> destination
+        let prevNode: AudioNode = source
+        filters.forEach(filter => {
+          prevNode.connect(filter)
+          prevNode = filter
+        })
+        prevNode.connect(globalAudioContext.destination)
+
+        isAudioInitialized = true
+        console.log('Web Audio API initialized successfully')
+
+      } catch (error) {
+        console.error('Failed to initialize Web Audio API:', error)
+        initAttempted.current = false
       }
     }
-  }, [audioPlayerRef])
+
+    // Try to init when modal opens
+    if (open) {
+      setTimeout(() => initAudio(), 100)
+    }
+  }, [open])
 
   // Apply gain changes to filters
   const applyGains = (newGains: number[]) => {
-    if (!isEnabled || !filtersRef.current.length) return
+    if (!isEnabled || !globalFilters.length) return
 
-    filtersRef.current.forEach((filter, index) => {
+    globalFilters.forEach((filter, index) => {
       if (filter) {
         filter.gain.value = newGains[index]
       }
@@ -151,7 +173,7 @@ export function EqualizerModal({ open, onOpenChange }: EqualizerModalProps) {
       applyGains(gains)
     } else {
       // Reset all filters to 0
-      filtersRef.current.forEach(filter => {
+      globalFilters.forEach(filter => {
         if (filter) filter.gain.value = 0
       })
     }
