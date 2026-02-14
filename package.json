@@ -1,14 +1,14 @@
 {
-  "name": "aonsoku",
+  "name": "sona",
   "private": true,
   "version": "0.11.0",
   "description": "A modern desktop client for Navidrome/Subsonic servers.",
   "author": {
-    "name": "Victor Alves"
+    "name": "rinderhack"
   },
   "main": "./out/main/index.js",
   "type": "module",
-  "productName": "Aonsoku",
+  "productName": "Sona",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
@@ -33,7 +33,7 @@
     "prepare": "husky"
   },
   "repository": {
-    "url": "https://github.com/victoralvesf/aonsoku"
+    "url": "https://github.com/sgtspeerock/sona"
   },
   "dependencies": {
     "@chriscodesthings/random-css-hex-color": "^1.1.0",
