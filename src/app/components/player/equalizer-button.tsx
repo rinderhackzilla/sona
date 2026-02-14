@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/app/components/ui/button'
 import { SimpleTooltip } from '@/app/components/ui/simple-tooltip'
-import { EqualizerIcon } from '@/app/components/icons/equalizer-icon'
+import { EqualizerIcon } from '@/app/components/icons/equalizer'
 import { EqualizerModal } from './equalizer-modal'
 
 interface EqualizerButtonProps {
@@ -15,16 +15,15 @@ export function EqualizerButton({ disabled }: EqualizerButtonProps) {
 
   return (
     <>
-      <SimpleTooltip text={t('player.tooltips.equalizer')} disabled={disabled}>
+      <SimpleTooltip text={t('player.tooltips.equalizer', 'Equalizer')}>
         <Button
           variant="ghost"
-          size="icon"
+          className="rounded-full w-10 h-10 p-3 text-secondary-foreground"
           disabled={disabled}
           onClick={() => setIsOpen(true)}
-          className="h-10 w-10 p-2.5 text-secondary-foreground hover:text-primary"
           data-testid="equalizer-button"
         >
-          <EqualizerIcon />
+          <EqualizerIcon className="w-5 h-5" />
         </Button>
       </SimpleTooltip>
 
