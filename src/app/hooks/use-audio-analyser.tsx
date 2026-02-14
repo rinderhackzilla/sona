@@ -1,11 +1,13 @@
 import { useEffect, useRef, useState } from 'react'
-import { usePlayerIsPlaying } from '@/store/player.store'
+import { usePlayerIsPlaying, usePlayerRef } from '@/store/player.store'
 
 let globalAnalyser: AnalyserNode | null = null
 let globalAudioContext: AudioContext | null = null
 let globalSource: MediaElementAudioSourceNode | null = null
+let isConnected = false
 
 export function useAudioAnalyser() {
+  const audioRef = usePlayerRef()
   const isPlaying = usePlayerIsPlaying()
   
   const animationFrameRef = useRef<number | null>(null)
@@ -14,7 +16,7 @@ export function useAudioAnalyser() {
   const [timeData, setTimeData] = useState<Uint8Array>(new Uint8Array(128))
 
   useEffect(() => {
-    if (!isPlaying) {
+    if (!audioRef || !isPlaying) {
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current)
         animationFrameRef.current = null
@@ -22,63 +24,70 @@ export function useAudioAnalyser() {
       return
     }
 
-    // Find audio element
-    const audioElement = document.querySelector('audio') as HTMLAudioElement
-    if (!audioElement) {
-      console.warn('[Visualizer] No audio element found')
-      return
-    }
+    console.log('[Visualizer] Audio element found:', audioRef)
 
-    // Setup audio context and analyser (singleton)
+    // Setup audio context (singleton)
     if (!globalAudioContext) {
       try {
         const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext
         globalAudioContext = new AudioContextClass()
-        console.log('[Visualizer] Created AudioContext')
+        console.log('[Visualizer] Created AudioContext, state:', globalAudioContext.state)
       } catch (error) {
         console.error('[Visualizer] Error creating AudioContext:', error)
         return
       }
     }
 
+    // Setup analyser (singleton)
     if (!globalAnalyser && globalAudioContext) {
       try {
         globalAnalyser = globalAudioContext.createAnalyser()
-        globalAnalyser.fftSize = 256
-        globalAnalyser.smoothingTimeConstant = 0.8
-        console.log('[Visualizer] Created AnalyserNode')
+        globalAnalyser.fftSize = 512 // Increased for better resolution
+        globalAnalyser.smoothingTimeConstant = 0.75
+        console.log('[Visualizer] Created AnalyserNode, fftSize:', globalAnalyser.fftSize)
       } catch (error) {
         console.error('[Visualizer] Error creating AnalyserNode:', error)
         return
       }
     }
 
-    if (!globalSource && globalAudioContext && globalAnalyser) {
+    // Connect audio pipeline (only once)
+    if (!isConnected && globalAudioContext && globalAnalyser && audioRef) {
       try {
-        globalSource = globalAudioContext.createMediaElementSource(audioElement)
+        globalSource = globalAudioContext.createMediaElementSource(audioRef)
         globalSource.connect(globalAnalyser)
         globalAnalyser.connect(globalAudioContext.destination)
-        console.log('[Visualizer] Connected audio pipeline')
-      } catch (error) {
-        // Might already be connected
-        console.warn('[Visualizer] Could not connect source (might be already connected):', error)
+        isConnected = true
+        console.log('[Visualizer] ✅ Connected audio pipeline successfully')
+      } catch (error: any) {
+        if (error.name === 'InvalidStateError') {
+          console.log('[Visualizer] Audio source already connected (OK)')
+          isConnected = true
+        } else {
+          console.error('[Visualizer] Error connecting audio:', error)
+        }
       }
     }
 
     // Resume context if suspended
     if (globalAudioContext && globalAudioContext.state === 'suspended') {
-      globalAudioContext.resume()
-      console.log('[Visualizer] Resumed AudioContext')
+      globalAudioContext.resume().then(() => {
+        console.log('[Visualizer] AudioContext resumed, new state:', globalAudioContext.state)
+      })
     }
 
     const analyser = globalAnalyser
-    if (!analyser) return
+    if (!analyser) {
+      console.warn('[Visualizer] No analyser available')
+      return
+    }
 
     const bufferLength = analyser.frequencyBinCount
     const freqDataArray = new Uint8Array(bufferLength)
     const timeDataArray = new Uint8Array(bufferLength)
 
     let frameCount = 0
+    let lastLogTime = Date.now()
 
     const updateData = () => {
       if (!analyser) return
@@ -89,12 +98,13 @@ export function useAudioAnalyser() {
       setFrequencyData(new Uint8Array(freqDataArray))
       setTimeData(new Uint8Array(timeDataArray))
 
-      // Debug every 60 frames
-      if (frameCount % 60 === 0) {
+      // Debug every 2 seconds
+      const now = Date.now()
+      if (now - lastLogTime > 2000) {
         const avg = freqDataArray.reduce((a, b) => a + b, 0) / freqDataArray.length
-        if (avg > 0) {
-          console.log('[Visualizer] Average frequency:', avg.toFixed(2))
-        }
+        const max = Math.max(...Array.from(freqDataArray))
+        console.log(`[Visualizer] Freq avg: ${avg.toFixed(1)}, max: ${max}, context: ${globalAudioContext?.state}`)
+        lastLogTime = now
       }
       frameCount++
 
@@ -108,7 +118,7 @@ export function useAudioAnalyser() {
         cancelAnimationFrame(animationFrameRef.current)
       }
     }
-  }, [isPlaying])
+  }, [audioRef, isPlaying])
 
   return {
     frequencyData,
