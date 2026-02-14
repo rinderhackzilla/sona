@@ -111,7 +111,7 @@ export function EqualizerModal({ open, onOpenChange }: EqualizerModalProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl">
-        <DialogHeader>
+        <DialogHeader className="pt-5">
           <DialogTitle className="flex items-center justify-between">
             <span>{t('player.equalizer.title', 'Equalizer')}</span>
             <Button
