@@ -118,6 +118,7 @@ export function EqualizerModal({ open, onOpenChange }: EqualizerModalProps) {
               variant={isEnabled ? 'default' : 'outline'}
               size="sm"
               onClick={handleToggle}
+              className="-mr-5"
             >
               {isEnabled
                 ? t('player.equalizer.enabled', 'Enabled')
