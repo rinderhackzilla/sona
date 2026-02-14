@@ -37,10 +37,13 @@ export function FrequencyCircle() {
       // Clear canvas
       ctx.clearRect(0, 0, width, height)
 
-      // Get CSS theme color
-      const accentColor = getComputedStyle(document.documentElement)
+      // Get CSS theme color - parse HSL values correctly
+      const accentHSL = getComputedStyle(document.documentElement)
         .getPropertyValue('--accent')
         .trim()
+      
+      // accentHSL is like "240 100% 50%" - we need to build the full hsl() string
+      const accentColor = accentHSL ? `hsl(${accentHSL})` : 'hsl(240, 100%, 50%)'
 
       // Draw frequency bars in circle
       const barCount = 128
@@ -58,10 +61,9 @@ export function FrequencyCircle() {
         const y2 = centerY + Math.sin(angle) * (radius + barHeight)
 
         // Color based on frequency intensity
-        const hue = accentColor ? `hsl(${accentColor})` : '#fff'
         const alpha = 0.3 + (value / 255) * 0.7
         
-        ctx.strokeStyle = hue
+        ctx.strokeStyle = accentColor
         ctx.globalAlpha = alpha
         ctx.lineWidth = 2
         ctx.lineCap = 'round'
@@ -74,7 +76,7 @@ export function FrequencyCircle() {
 
       // Draw center circle
       ctx.globalAlpha = 0.2
-      ctx.strokeStyle = `hsl(${accentColor})`
+      ctx.strokeStyle = accentColor
       ctx.lineWidth = 2
       ctx.beginPath()
       ctx.arc(centerX, centerY, radius, 0, Math.PI * 2)
@@ -95,7 +97,7 @@ export function FrequencyCircle() {
     <canvas
       ref={canvasRef}
       className="absolute inset-0 w-full h-full"
-      style={{ imageRendering: 'crisp-edges' }}
+      style={{ imageRendering: 'auto' }}
     />
   )
 }
