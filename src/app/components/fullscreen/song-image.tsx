@@ -2,8 +2,9 @@ import clsx from 'clsx'
 import { useState } from 'react'
 import { ImageLoader } from '@/app/components/image-loader'
 import { AspectRatio } from '@/app/components/ui/aspect-ratio'
-import { FrequencyCircle } from '@/app/components/fullscreen/visualizers/frequency-circle'
+import { VISUALIZERS } from '@/app/components/fullscreen/visualizers'
 import { usePlayerStore } from '@/store/player.store'
+import type { VisualizerPreset } from '@/types/visualizer'
 
 export function FullscreenSongImage() {
   const { coverArt, artist, title } = usePlayerStore(({ songlist }) => {
@@ -12,10 +13,14 @@ export function FullscreenSongImage() {
 
   // Local state for POC - will move to store later
   const [showVisualizer, setShowVisualizer] = useState(false)
+  const [currentPreset, setCurrentPreset] = useState<VisualizerPreset>('frequency-circle')
 
   const handleClick = () => {
     setShowVisualizer(!showVisualizer)
   }
+
+  // Get the current visualizer component
+  const VisualizerComponent = VISUALIZERS[currentPreset]
 
   return (
     <div className="2xl:w-[33%] h-full max-w-[450px] max-h-[450px] 2xl:max-w-[550px] 2xl:max-h-[550px] items-end flex aspect-square">
@@ -42,10 +47,16 @@ export function FullscreenSongImage() {
           </ImageLoader>
         ) : (
           <div className="w-full h-full relative bg-background/20">
-            <FrequencyCircle />
+            <VisualizerComponent />
           </div>
         )}
       </AspectRatio>
     </div>
   )
+}
+
+// Export setter for settings menu to use
+export function useVisualizerPreset() {
+  const [currentPreset, setCurrentPreset] = useState<VisualizerPreset>('frequency-circle')
+  return { currentPreset, setCurrentPreset }
 }
