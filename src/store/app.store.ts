@@ -56,6 +56,22 @@ export const useAppStore = createWithEqualityFn<IAppContext>()(
               },
             },
           },
+          integrations: {
+            lidarr: {
+              url: '',
+              setUrl: (value) => {
+                set((state) => {
+                  state.integrations.lidarr.url = value
+                })
+              },
+              apiKey: '',
+              setApiKey: (value) => {
+                set((state) => {
+                  state.integrations.lidarr.apiKey = value
+                })
+              },
+            },
+          },
           podcasts: {
             active: false,
             setActive: (value) => {
@@ -372,6 +388,7 @@ useAppStore.subscribe(
 
 export const useAppData = () => useAppStore((state) => state.data)
 export const useAppAccounts = () => useAppStore((state) => state.accounts)
+export const useAppIntegrations = () => useAppStore((state) => state.integrations)
 export const useAppPodcasts = () => useAppStore((state) => state.podcasts)
 export const useAppPodcastCollapsibleState = () =>
   useAppStore((state) => ({
