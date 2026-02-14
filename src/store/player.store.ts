@@ -7,7 +7,7 @@ import { immer } from 'zustand/middleware/immer'
 import { shallow } from 'zustand/shallow'
 import { createWithEqualityFn } from 'zustand/traditional'
 import { subsonic } from '@/service/subsonic'
-import { IPlayerContext, ISongList, LoopState } from '@/types/playerContext'
+import { IPlayerContext, ISongList, LoopState, AlbumColorPalette } from '@/types/playerContext'
 import { ISong } from '@/types/responses/song'
 import { areSongListsEqual } from '@/utils/compareSongLists'
 import { isDesktop } from '@/utils/desktop'
@@ -143,6 +143,7 @@ export const usePlayerStore = createWithEqualityFn<IPlayerContext>()(
             },
             colors: {
               currentSongColor: null,
+              currentSongColorPalette: null,
               currentSongColorIntensity: 0.65,
               bigPlayer: {
                 useSongColor: false,
@@ -515,6 +516,7 @@ export const usePlayerStore = createWithEqualityFn<IPlayerContext>()(
                 state.playerState.currentDuration = 0
                 state.playerState.audioPlayerRef = null
                 state.settings.colors.currentSongColor = null
+                state.settings.colors.currentSongColorPalette = null
               })
             },
             resetProgress: () => {
@@ -839,6 +841,11 @@ export const usePlayerStore = createWithEqualityFn<IPlayerContext>()(
                 state.settings.colors.currentSongColor = value
               })
             },
+            setCurrentSongColorPalette: (value) => {
+              set((state) => {
+                state.settings.colors.currentSongColorPalette = value
+              })
+            },
             setCurrentSongIntensity: (value) => {
               set((state) => {
                 state.settings.colors.currentSongColorIntensity = value
@@ -1143,11 +1150,12 @@ export const useLyricsState = () =>
 
 export const useSongColor = () =>
   usePlayerStore((state) => {
-    const { currentSongColor, currentSongColorIntensity, queue } =
+    const { currentSongColor, currentSongColorPalette, currentSongColorIntensity, queue } =
       state.settings.colors
     const { useSongColor, blur } = state.settings.colors.bigPlayer
     const {
       setCurrentSongColor,
+      setCurrentSongColorPalette,
       setUseSongColorOnQueue,
       setUseSongColorOnBigPlayer,
       setBigPlayerBlurValue,
@@ -1156,7 +1164,9 @@ export const useSongColor = () =>
 
     return {
       currentSongColor,
+      currentSongColorPalette,
       setCurrentSongColor,
+      setCurrentSongColorPalette,
       currentSongColorIntensity,
       setCurrentSongIntensity,
       useSongColorOnQueue: queue.useSongColor,
