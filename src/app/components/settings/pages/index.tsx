@@ -5,6 +5,7 @@ import { Appearance } from './appearance'
 import { Audio } from './audio'
 import { Content } from './content'
 import { Desktop } from './desktop'
+import { Integrations } from './integrations'
 import { Language } from './language'
 import { Privacy } from './privacy'
 
@@ -15,6 +16,7 @@ const pages: Record<SettingsOptions, JSX.Element> = {
   content: <Content />,
   accounts: <Accounts />,
   desktop: <Desktop />,
+  integrations: <Integrations />,
   privacy: <Privacy />,
 }
 
