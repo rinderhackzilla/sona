@@ -4,7 +4,7 @@ import { usePlayerIsPlaying, usePlayerRef } from '@/store/player.store'
 let globalAnalyser: AnalyserNode | null = null
 let globalAudioContext: AudioContext | null = null
 let globalSource: MediaElementAudioSourceNode | null = null
-let isConnected = false
+let connectedAudioElement: HTMLAudioElement | null = null
 
 export function useAudioAnalyser() {
   const audioRef = usePlayerRef()
@@ -51,18 +51,30 @@ export function useAudioAnalyser() {
       }
     }
 
-    // Connect audio pipeline (only once)
-    if (!isConnected && globalAudioContext && globalAnalyser && audioRef) {
+    // Connect audio pipeline - reconnect if audio element changed
+    const needsConnection = !globalSource || connectedAudioElement !== audioRef
+    
+    if (needsConnection && globalAudioContext && globalAnalyser && audioRef) {
       try {
+        // If there's an old source, disconnect it first
+        if (globalSource) {
+          try {
+            globalSource.disconnect()
+            console.log('[Visualizer] Disconnected old audio source')
+          } catch (e) {
+            // Ignore disconnect errors
+          }
+        }
+        
         globalSource = globalAudioContext.createMediaElementSource(audioRef)
         globalSource.connect(globalAnalyser)
         globalAnalyser.connect(globalAudioContext.destination)
-        isConnected = true
+        connectedAudioElement = audioRef
         console.log('[Visualizer] ✅ Audio pipeline connected successfully')
       } catch (error: any) {
         if (error.name === 'InvalidStateError') {
-          console.log('[Visualizer] Audio source already connected (OK)')
-          isConnected = true
+          console.log('[Visualizer] Audio source already connected to this element (OK)')
+          connectedAudioElement = audioRef
         } else {
           console.error('[Visualizer] Error connecting audio:', error)
         }
