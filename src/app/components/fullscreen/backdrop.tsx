@@ -45,11 +45,18 @@ function OtherBackdrop() {
   return (
     <div className="relative w-full h-full transition-colors duration-1000 bg-black/0">
       <div
-        key={backgroundImage}
-        className="absolute -inset-10 bg-cover bg-center z-0 transition-[background-image,filter] duration-1000 animate-backdrop-slow-zoom"
+        className="absolute -inset-10 bg-cover bg-center z-0 transition-[background-image,filter] duration-1000"
         style={{
           backgroundImage: `url(${backgroundImage})`,
           filter: `blur(${bigPlayerBlur.value}px)`,
+        }}
+      />
+      {/* Animated gradient overlay for movement */}
+      <div 
+        className="absolute inset-0 w-full h-full z-[1] opacity-30 animate-gradient-shift"
+        style={{
+          background: 'linear-gradient(45deg, hsl(var(--background)), hsl(var(--accent)), hsl(var(--primary)), hsl(var(--background)))',
+          backgroundSize: '400% 400%',
         }}
       />
       <div className="bg-background/50 absolute inset-0 w-full h-full z-[2] transition-colors duration-1000" />
@@ -73,20 +80,26 @@ function MacBackdrop() {
       className="relative w-full h-full flex items-center transition-colors duration-1000"
       style={{ backgroundColor }}
     >
-      <div key={coverArt} className="relative w-full h-full animate-backdrop-slow-zoom">
-        <ImageLoader id={coverArt} type="song">
-          {(src) => (
-            <LazyLoadImage
-              key={coverArt}
-              src={src}
-              alt={title}
-              effect="opacity"
-              width="100%"
-              className="w-full bg-contain"
-            />
-          )}
-        </ImageLoader>
-      </div>
+      <ImageLoader id={coverArt} type="song">
+        {(src) => (
+          <LazyLoadImage
+            key={coverArt}
+            src={src}
+            alt={title}
+            effect="opacity"
+            width="100%"
+            className="w-full bg-contain"
+          />
+        )}
+      </ImageLoader>
+      {/* Animated gradient overlay for movement */}
+      <div 
+        className="absolute inset-0 z-[9] opacity-30 animate-gradient-shift"
+        style={{
+          background: 'linear-gradient(45deg, hsl(var(--background)), hsl(var(--accent)), hsl(var(--primary)), hsl(var(--background)))',
+          backgroundSize: '400% 400%',
+        }}
+      />
       <div
         className="absolute bg-background/50 inset-0 z-10 transition-all duration-1000"
         style={{
@@ -102,7 +115,7 @@ function DynamicColorBackdrop() {
   const { coverArt } = usePlayerCurrentSong()
   const coverArtUrl = getSimpleCoverArtUrl(coverArt, 'song', '300')
   const [backgroundImage, setBackgroundImage] = useState(coverArtUrl)
-  const { currentSongColor, currentSongColorIntensity, bigPlayerBlur } = useSongColor()
+  const { currentSongColorIntensity, bigPlayerBlur } = useSongColor()
 
   const newBackgroundImage = useMemo(() => coverArtUrl, [coverArtUrl])
 
@@ -114,12 +127,6 @@ function DynamicColorBackdrop() {
     }
   }, [newBackgroundImage])
 
-  // Color overlay - intensity controls the opacity/transparency
-  const colorOverlay = useMemo(() => {
-    if (!currentSongColor) return undefined
-    return hexToRgba(currentSongColor, currentSongColorIntensity)
-  }, [currentSongColor, currentSongColorIntensity])
-
   return (
     <div className="absolute inset-0 w-full h-full z-0 overflow-hidden">
       <div
@@ -128,28 +135,37 @@ function DynamicColorBackdrop() {
           isChromeOrFirefox && 'bg-black/0',
         )}
       >
-        {/* Blurred background image with zoom animation */}
+        {/* Blurred background image */}
         <div
-          key={backgroundImage}
-          className="absolute -inset-10 bg-cover bg-center z-0 transition-[background-image,filter] duration-1000 animate-backdrop-slow-zoom"
+          className="absolute -inset-10 bg-cover bg-center z-0 transition-[background-image,filter] duration-1000"
           style={{
             backgroundImage: `url(${backgroundImage})`,
             filter: `blur(${bigPlayerBlur.value}px)`,
           }}
         />
         
-        {/* Color overlay - slider controls transparency */}
-        {colorOverlay && (
-          <div 
-            className="absolute inset-0 w-full h-full z-[1] transition-colors duration-1000"
-            style={{ backgroundColor: colorOverlay }}
-          />
-        )}
+        {/* Color overlay using theme colors - slider controls opacity */}
+        <div 
+          className="absolute inset-0 w-full h-full z-[1] transition-opacity duration-1000"
+          style={{ 
+            backgroundColor: 'hsl(var(--accent))',
+            opacity: currentSongColorIntensity,
+          }}
+        />
+        
+        {/* Animated gradient overlay for movement */}
+        <div 
+          className="absolute inset-0 w-full h-full z-[2] opacity-20 animate-gradient-shift"
+          style={{
+            background: 'linear-gradient(45deg, hsl(var(--background)), hsl(var(--accent)), hsl(var(--primary)), hsl(var(--background)))',
+            backgroundSize: '400% 400%',
+          }}
+        />
         
         {/* Gradient overlay */}
         <div
           className={clsx(
-            'absolute inset-0 w-full h-full z-[2]',
+            'absolute inset-0 w-full h-full z-[3]',
             'transition-[background-image] duration-1000 default-gradient',
           )}
         />
