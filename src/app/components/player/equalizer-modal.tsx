@@ -90,20 +90,23 @@ export function EqualizerModal({ open, onOpenChange }: EqualizerModalProps) {
 
   // Calculate curve points for visualization
   const getCurvePoints = () => {
-    const points: string[] = []
-    const width = 100
-    const height = 60
+    const points: { x: number; y: number }[] = []
+    const width = 700 // Fixed width in pixels
+    const height = 140 // Fixed height in pixels
     const step = width / (gains.length - 1)
     const centerY = height / 2
 
     gains.forEach((gain, index) => {
       const x = index * step
-      const y = centerY - (gain / 12) * (height / 2)
-      points.push(`${x},${y}`)
+      const y = centerY - (gain / 12) * (height / 2.5) // Scale factor to keep curve visible
+      points.push({ x, y })
     })
 
-    return points.join(' ')
+    return points
   }
+
+  const curvePoints = getCurvePoints()
+  const pathData = curvePoints.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x},${p.y}`).join(' ')
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -179,40 +182,37 @@ export function EqualizerModal({ open, onOpenChange }: EqualizerModalProps) {
           {/* EQ Curve Visualization */}
           <div className="bg-muted/30 rounded-lg p-6 border">
             <svg
-              width="100%"
+              width="700"
               height="140"
-              viewBox="0 0 100 60"
-              preserveAspectRatio="none"
+              viewBox="0 0 700 140"
               className="w-full"
+              style={{ height: 'auto' }}
             >
               {/* Grid lines */}
-              <line x1="0" y1="15" x2="100" y2="15" stroke="currentColor" strokeWidth="0.1" opacity="0.2" />
-              <line x1="0" y1="30" x2="100" y2="30" stroke="currentColor" strokeWidth="0.2" opacity="0.3" />
-              <line x1="0" y1="45" x2="100" y2="45" stroke="currentColor" strokeWidth="0.1" opacity="0.2" />
+              <line x1="0" y1="35" x2="700" y2="35" stroke="currentColor" strokeWidth="0.5" opacity="0.2" />
+              <line x1="0" y1="70" x2="700" y2="70" stroke="currentColor" strokeWidth="1" opacity="0.3" />
+              <line x1="0" y1="105" x2="700" y2="105" stroke="currentColor" strokeWidth="0.5" opacity="0.2" />
               
               {/* EQ Curve */}
-              <polyline
-                points={getCurvePoints()}
+              <path
+                d={pathData}
                 fill="none"
                 stroke="hsl(var(--primary))"
-                strokeWidth="1"
+                strokeWidth="2"
                 strokeLinejoin="round"
+                strokeLinecap="round"
               />
               
-              {/* Points */}
-              {gains.map((gain, index) => {
-                const x = (index * 100) / (gains.length - 1)
-                const y = 30 - (gain / 12) * 30
-                return (
-                  <circle
-                    key={index}
-                    cx={x}
-                    cy={y}
-                    r="1.2"
-                    fill="hsl(var(--primary))"
-                  />
-                )
-              })}
+              {/* Points - perfectly round */}
+              {curvePoints.map((point, index) => (
+                <circle
+                  key={index}
+                  cx={point.x}
+                  cy={point.y}
+                  r="4"
+                  fill="hsl(var(--primary))"
+                />
+              ))}
             </svg>
           </div>
 
