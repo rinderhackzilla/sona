@@ -1,7 +1,9 @@
 import { useEffect, useRef } from 'react'
+import { useAudioAnalyser } from '@/app/hooks/use-audio-analyser'
 
 export function FrequencyCircle() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  const { frequencyData } = useAudioAnalyser()
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -20,7 +22,6 @@ export function FrequencyCircle() {
     window.addEventListener('resize', updateSize)
 
     let animationId: number
-    let rotation = 0
 
     const draw = () => {
       if (!ctx || !canvas) return
@@ -29,7 +30,7 @@ export function FrequencyCircle() {
       const height = canvas.offsetHeight
       const centerX = width / 2
       const centerY = height / 2
-      const radius = Math.min(width, height) * 0.25
+      const radius = Math.min(width, height) * 0.35
 
       ctx.clearRect(0, 0, width, height)
 
@@ -38,47 +39,44 @@ export function FrequencyCircle() {
         .trim()
       const [h, s, l] = accentHSL.split(' ')
 
-      // Rotating frequency bars
-      const barCount = 64
-      const time = Date.now() / 1000
+      // Use REAL frequency data
+      const barCount = Math.min(frequencyData.length, 64)
+      const angleStep = (Math.PI * 2) / barCount
 
+      // Draw bars
       for (let i = 0; i < barCount; i++) {
-        // Create organic movement
-        const angle = (i / barCount) * Math.PI * 2 + rotation
-        const wave = Math.sin(time * 2 + i * 0.3) * 0.5 + 0.5
-        const barHeight = (30 + wave * radius * 0.5) * (0.6 + Math.sin(time * 3 + i * 0.1) * 0.4)
+        const angle = i * angleStep - Math.PI / 2
+        
+        // Get real frequency value
+        const frequencyValue = frequencyData[i] || 0
+        const normalizedValue = frequencyValue / 255
+        const barHeight = normalizedValue * radius * 0.6
 
         const x1 = centerX + Math.cos(angle) * radius
         const y1 = centerY + Math.sin(angle) * radius
         const x2 = centerX + Math.cos(angle) * (radius + barHeight)
         const y2 = centerY + Math.sin(angle) * (radius + barHeight)
 
-        const alpha = 0.4 + wave * 0.6
-        
-        ctx.strokeStyle = `hsla(${h}, ${s}, ${l}, ${alpha})`
-        ctx.lineWidth = 3
-        ctx.lineCap = 'round'
+        const gradient = ctx.createLinearGradient(x1, y1, x2, y2)
+        gradient.addColorStop(0, `hsla(${h}, ${s}, ${l}, 0.3)`)
+        gradient.addColorStop(1, `hsla(${h}, ${s}, ${l}, 0.9)`)
 
+        ctx.strokeStyle = gradient
+        ctx.lineWidth = (width / barCount) * 0.8
+        ctx.lineCap = 'round'
         ctx.beginPath()
         ctx.moveTo(x1, y1)
         ctx.lineTo(x2, y2)
         ctx.stroke()
       }
 
-      // Pulsing center circles
-      for (let i = 0; i < 3; i++) {
-        const scale = 1 + Math.sin(time * 2 - i * 0.5) * 0.15
-        const r = radius * (0.8 - i * 0.15) * scale
-        const alpha = 0.3 - i * 0.1
-        
-        ctx.strokeStyle = `hsla(${h}, ${s}, ${l}, ${alpha})`
-        ctx.lineWidth = 2
-        ctx.beginPath()
-        ctx.arc(centerX, centerY, r, 0, Math.PI * 2)
-        ctx.stroke()
-      }
+      // Central circle outline
+      ctx.strokeStyle = `hsla(${h}, ${s}, ${l}, 0.5)`
+      ctx.lineWidth = 2
+      ctx.beginPath()
+      ctx.arc(centerX, centerY, radius, 0, Math.PI * 2)
+      ctx.stroke()
 
-      rotation += 0.005
       animationId = requestAnimationFrame(draw)
     }
 
@@ -88,7 +86,7 @@ export function FrequencyCircle() {
       cancelAnimationFrame(animationId)
       window.removeEventListener('resize', updateSize)
     }
-  }, [])
+  }, [frequencyData])
 
   return (
     <canvas
