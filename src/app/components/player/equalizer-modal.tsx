@@ -111,73 +111,73 @@ export function EqualizerModal({ open, onOpenChange }: EqualizerModalProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl">
-        <DialogHeader className="pt-5">
-          <DialogTitle className="flex items-center justify-between">
-            <span>{t('player.equalizer.title', 'Equalizer')}</span>
+        <DialogHeader>
+          <DialogTitle>{t('player.equalizer.title', 'Equalizer')}</DialogTitle>
+        </DialogHeader>
+
+        <div className="space-y-6 py-4">
+          {/* Controls Row */}
+          <div className="flex items-center gap-4">
             <Button
               variant={isEnabled ? 'default' : 'outline'}
               size="sm"
               onClick={handleToggle}
-              className="-mr-5"
             >
               {isEnabled
                 ? t('player.equalizer.enabled', 'Enabled')
                 : t('player.equalizer.disabled', 'Disabled')}
             </Button>
-          </DialogTitle>
-        </DialogHeader>
-
-        <div className="space-y-6 py-4">
-          {/* Preset Selection */}
-          <div className="flex items-center gap-4">
-            <label className="text-sm font-medium min-w-[80px]">
-              {t('player.equalizer.preset', 'Preset')}:
-            </label>
-            <Select value={selectedPreset} onValueChange={handlePresetChange}>
-              <SelectTrigger className="w-[200px]">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="flat">
-                  {t('player.equalizer.presets.flat', 'Flat')}
-                </SelectItem>
-                <SelectItem value="rock">
-                  {t('player.equalizer.presets.rock', 'Rock')}
-                </SelectItem>
-                <SelectItem value="pop">
-                  {t('player.equalizer.presets.pop', 'Pop')}
-                </SelectItem>
-                <SelectItem value="jazz">
-                  {t('player.equalizer.presets.jazz', 'Jazz')}
-                </SelectItem>
-                <SelectItem value="classical">
-                  {t('player.equalizer.presets.classical', 'Classical')}
-                </SelectItem>
-                <SelectItem value="electronic">
-                  {t('player.equalizer.presets.electronic', 'Electronic')}
-                </SelectItem>
-                <SelectItem value="acoustic">
-                  {t('player.equalizer.presets.acoustic', 'Acoustic')}
-                </SelectItem>
-                <SelectItem value="bass_boost">
-                  {t('player.equalizer.presets.bass_boost', 'Bass Boost')}
-                </SelectItem>
-                <SelectItem value="treble_boost">
-                  {t('player.equalizer.presets.treble_boost', 'Treble Boost')}
-                </SelectItem>
-                <SelectItem value="vocal">
-                  {t('player.equalizer.presets.vocal', 'Vocal')}
-                </SelectItem>
-                {selectedPreset === 'custom' && (
-                  <SelectItem value="custom">
-                    {t('player.equalizer.presets.custom', 'Custom')}
+            
+            <div className="flex items-center gap-4 flex-1">
+              <label className="text-sm font-medium min-w-[60px]">
+                {t('player.equalizer.preset', 'Preset')}:
+              </label>
+              <Select value={selectedPreset} onValueChange={handlePresetChange}>
+                <SelectTrigger className="w-[200px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="flat">
+                    {t('player.equalizer.presets.flat', 'Flat')}
                   </SelectItem>
-                )}
-              </SelectContent>
-            </Select>
-            <Button variant="outline" size="sm" onClick={handleReset}>
-              {t('player.equalizer.reset', 'Reset')}
-            </Button>
+                  <SelectItem value="rock">
+                    {t('player.equalizer.presets.rock', 'Rock')}
+                  </SelectItem>
+                  <SelectItem value="pop">
+                    {t('player.equalizer.presets.pop', 'Pop')}
+                  </SelectItem>
+                  <SelectItem value="jazz">
+                    {t('player.equalizer.presets.jazz', 'Jazz')}
+                  </SelectItem>
+                  <SelectItem value="classical">
+                    {t('player.equalizer.presets.classical', 'Classical')}
+                  </SelectItem>
+                  <SelectItem value="electronic">
+                    {t('player.equalizer.presets.electronic', 'Electronic')}
+                  </SelectItem>
+                  <SelectItem value="acoustic">
+                    {t('player.equalizer.presets.acoustic', 'Acoustic')}
+                  </SelectItem>
+                  <SelectItem value="bass_boost">
+                    {t('player.equalizer.presets.bass_boost', 'Bass Boost')}
+                  </SelectItem>
+                  <SelectItem value="treble_boost">
+                    {t('player.equalizer.presets.treble_boost', 'Treble Boost')}
+                  </SelectItem>
+                  <SelectItem value="vocal">
+                    {t('player.equalizer.presets.vocal', 'Vocal')}
+                  </SelectItem>
+                  {selectedPreset === 'custom' && (
+                    <SelectItem value="custom">
+                      {t('player.equalizer.presets.custom', 'Custom')}
+                    </SelectItem>
+                  )}
+                </SelectContent>
+              </Select>
+              <Button variant="outline" size="sm" onClick={handleReset}>
+                {t('player.equalizer.reset', 'Reset')}
+              </Button>
+            </div>
           </div>
 
           {/* EQ Curve Visualization */}
