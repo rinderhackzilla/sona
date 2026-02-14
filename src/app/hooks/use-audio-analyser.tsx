@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { usePlayerIsPlaying, usePlayerRef } from '@/store/player.store'
+import { usePlayerIsPlaying } from '@/store/player.store'
 
 interface AudioAnalyserData {
   frequencyData: Uint8Array
@@ -8,19 +8,16 @@ interface AudioAnalyserData {
 }
 
 export function useAudioAnalyser() {
-  const audioRef = usePlayerRef()
   const isPlaying = usePlayerIsPlaying()
   
   const analyserRef = useRef<AnalyserNode | null>(null)
-  const audioContextRef = useRef<AudioContext | null>(null)
-  const sourceRef = useRef<MediaElementAudioSourceNode | null>(null)
   const animationFrameRef = useRef<number | null>(null)
   
-  const [frequencyData, setFrequencyData] = useState<Uint8Array>(new Uint8Array(0))
-  const [timeData, setTimeData] = useState<Uint8Array>(new Uint8Array(0))
+  const [frequencyData, setFrequencyData] = useState<Uint8Array>(new Uint8Array(128))
+  const [timeData, setTimeData] = useState<Uint8Array>(new Uint8Array(128))
 
   useEffect(() => {
-    if (!audioRef || !isPlaying) {
+    if (!isPlaying) {
       // Stop animation loop when not playing
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current)
@@ -29,26 +26,29 @@ export function useAudioAnalyser() {
       return
     }
 
+    // Try to get existing audio element
+    const audioElement = document.querySelector('audio')
+    if (!audioElement) {
+      console.warn('No audio element found')
+      return
+    }
+
     // Setup audio context and analyser
-    if (!audioContextRef.current) {
-      const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext
-      audioContextRef.current = new AudioContextClass()
-    }
-
-    if (!analyserRef.current && audioContextRef.current) {
-      analyserRef.current = audioContextRef.current.createAnalyser()
-      analyserRef.current.fftSize = 2048
-      analyserRef.current.smoothingTimeConstant = 0.8
-    }
-
-    if (!sourceRef.current && audioContextRef.current && analyserRef.current) {
+    if (!analyserRef.current) {
       try {
-        sourceRef.current = audioContextRef.current.createMediaElementSource(audioRef)
-        sourceRef.current.connect(analyserRef.current)
-        analyserRef.current.connect(audioContextRef.current.destination)
+        const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext
+        const audioContext = new AudioContextClass()
+        
+        analyserRef.current = audioContext.createAnalyser()
+        analyserRef.current.fftSize = 256 // Smaller for better performance
+        analyserRef.current.smoothingTimeConstant = 0.85
+        
+        const source = audioContext.createMediaElementSource(audioElement)
+        source.connect(analyserRef.current)
+        analyserRef.current.connect(audioContext.destination)
       } catch (error) {
-        // Source might already be connected, ignore error
-        console.warn('Audio source already connected:', error)
+        console.error('Error setting up audio analyser:', error)
+        return
       }
     }
 
@@ -79,22 +79,13 @@ export function useAudioAnalyser() {
         cancelAnimationFrame(animationFrameRef.current)
       }
     }
-  }, [audioRef, isPlaying])
+  }, [isPlaying])
 
   // Cleanup on unmount
   useEffect(() => {
     return () => {
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current)
-      }
-      if (sourceRef.current) {
-        sourceRef.current.disconnect()
-      }
-      if (analyserRef.current) {
-        analyserRef.current.disconnect()
-      }
-      if (audioContextRef.current) {
-        audioContextRef.current.close()
       }
     }
   }, [])
