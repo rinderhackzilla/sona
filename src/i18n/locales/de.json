@@ -290,9 +290,19 @@
     },
     "error": "Abspielen des Radios fehlgeschlagen, überprüfen Sie die Stream-URL!"
   },
+  "rabbitHole": {
+    "button": "Rabbit Hole",
+    "tooltip": "Generiere eine 50-Song Entdeckungswarteschlange basierend auf ähnlicher Musik",
+    "loading": "Erstelle dein Rabbit Hole...",
+    "queueCreated": "{{count}}-Song Rabbit-Hole-Warteschlange erstellt!",
+    "noSongsFound": "Keine ähnlichen Songs in deiner Bibliothek gefunden",
+    "error": "Fehler beim Generieren der Warteschlange",
+    "apiKeyMissing": "Last.fm API-Schlüssel nicht in den Einstellungen konfiguriert"
+  },
   "dayjs": {
     "relativeTime": {
       "dd": "%d Tagen",
+
       "M": "1 Monat",
       "future": "in %s",
       "past": "vor %s",
