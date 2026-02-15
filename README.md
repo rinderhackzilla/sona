@@ -3,7 +3,7 @@
 <br />
 <div align="center">
   <a href="https://github.com/sgtspeerock/sona">
-    <img src="./resources/icons/icon.png" alt="Sona" width="80" height="80">
+    <img src="./resources/sona_header.png" alt="Sona">
   </a>
 
   <h3 align="center">Sona</h3>
