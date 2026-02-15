@@ -11,6 +11,7 @@ const LIBRARY = {
   PODCASTS: '/library/podcasts',
   EPISODES: '/library/episodes',
   RADIOS: '/library/radios',
+  DISCOVER_WEEKLY: '/library/discover-weekly',
 }
 
 const ARTIST = {
