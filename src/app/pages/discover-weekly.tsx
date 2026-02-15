@@ -1,4 +1,4 @@
-import { RefreshCw, Sparkles, Info } from 'lucide-react'
+import { RefreshCw, Sparkles, Info, Play, Shuffle } from 'lucide-react'
 import { CoverMosaic } from '@/app/components/discover-weekly/cover-mosaic'
 import { BadgesData } from '@/app/components/header-info'
 import ListWrapper from '@/app/components/list-wrapper'
@@ -126,6 +126,15 @@ export default function DiscoverWeeklyPage() {
     { content: lastUpdated ? `Updated ${lastUpdated}` : null, type: 'text' },
   ]
 
+  const handlePlayAll = () => {
+    setSongList(playlist, 0)
+  }
+
+  const handlePlayShuffle = () => {
+    const shuffled = [...playlist].sort(() => Math.random() - 0.5)
+    setSongList(shuffled, 0)
+  }
+
   return (
     <div className="w-full">
       {/* Custom Header with Mosaic Cover */}
@@ -179,13 +188,29 @@ export default function DiscoverWeeklyPage() {
       <ListWrapper>
         <div className="flex gap-2 mb-4">
           <Button
+            variant="default"
+            size="default"
+            onClick={handlePlayAll}
+          >
+            <Play className="h-4 w-4 mr-2" />
+            Play All
+          </Button>
+          <Button
+            variant="outline"
+            size="default"
+            onClick={handlePlayShuffle}
+          >
+            <Shuffle className="h-4 w-4 mr-2" />
+            Shuffle
+          </Button>
+          <Button
             variant="outline"
             size="default"
             onClick={generate}
             disabled={isGenerating}
           >
             <RefreshCw className="h-4 w-4 mr-2" />
-            Refresh Playlist
+            Refresh
           </Button>
         </div>
 
