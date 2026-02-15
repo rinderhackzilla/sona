@@ -72,32 +72,30 @@ export default function Home() {
 
   return (
     <div className="w-full px-8 py-6">
-      {/* Hero Section */}
-      <div 
-        className="grid gap-6 mb-8"
-        style={{
-          gridTemplateColumns: shouldShowTwoColumns ? 'repeat(2, 1fr)' : '1fr'
-        }}
-      >
-        {/* Hero Carousel */}
-        <div className="min-h-[450px] w-full">
-          {similarArtists.isFetching || similarArtists.isLoading ? (
-            <div className="h-full">
+      {/* Hero Section - Same width as genre discovery below */}
+      <div className="mb-8">
+        <div 
+          className="grid gap-4"
+          style={{
+            gridTemplateColumns: shouldShowTwoColumns ? 'repeat(2, 1fr)' : '1fr'
+          }}
+        >
+          {/* Hero Carousel */}
+          <div className="h-[400px]">
+            {similarArtists.isFetching || similarArtists.isLoading ? (
               <HeaderFallback />
-            </div>
-          ) : (
-            <div className="h-full">
+            ) : (
               <AlbumHeader albums={similarArtists.data?.list || []} />
+            )}
+          </div>
+
+          {/* This is Artist - Only shown if enabled */}
+          {showThisIsArtist && (
+            <div className="h-[400px]">
+              <ThisIsArtist />
             </div>
           )}
         </div>
-
-        {/* This is Artist - Only shown if enabled */}
-        {showThisIsArtist && (
-          <div className="min-h-[450px] w-full">
-            <ThisIsArtist />
-          </div>
-        )}
       </div>
 
       {/* Genre Discovery Section */}
