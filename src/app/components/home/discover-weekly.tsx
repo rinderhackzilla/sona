@@ -1,14 +1,11 @@
 import { useEffect } from 'react'
-import { useTranslation } from 'react-i18next'
-import { RefreshCw, Sparkles, Settings } from 'lucide-react'
-import PreviewList from './preview-list'
+import { RefreshCw, Sparkles, Settings, Play, Shuffle } from 'lucide-react'
 import { Button } from '@/app/components/ui/button'
 import { Card, CardDescription, CardHeader } from '@/app/components/ui/card'
 import { useDiscoverWeekly } from '@/app/hooks/use-discover-weekly'
-import { useAudioPlayer } from '@/store/player.store'
+import { usePlayerActions } from '@/store/player.store'
 
 export function DiscoverWeekly() {
-  const { t } = useTranslation()
   const {
     playlist,
     isGenerating,
@@ -19,7 +16,7 @@ export function DiscoverWeekly() {
     checkAndRegenerate,
     isConfigured,
   } = useDiscoverWeekly()
-  const { setQueue } = useAudioPlayer()
+  const { setSongList } = usePlayerActions()
 
   // Check if playlist needs regeneration on mount
   useEffect(() => {
@@ -109,11 +106,20 @@ export function DiscoverWeekly() {
     ? new Date(lastGenerated).toLocaleDateString()
     : null
 
+  const handlePlayAll = () => {
+    setSongList(playlist, 0)
+  }
+
+  const handlePlayShuffle = () => {
+    const shuffled = [...playlist].sort(() => Math.random() - 0.5)
+    setSongList(shuffled, 0)
+  }
+
   return (
-    <div className="mb-6">
+    <div className="mb-8">
       <div className="flex items-center justify-between mb-4">
         <div>
-          <h2 className="text-xl font-semibold flex items-center gap-2">
+          <h2 className="text-2xl font-semibold flex items-center gap-2">
             <Sparkles className="h-5 w-5" />
             Discover Weekly
           </h2>
@@ -124,22 +130,69 @@ export function DiscoverWeekly() {
             </p>
           )}
         </div>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={generate}
-          disabled={isGenerating}
-        >
-          <RefreshCw className="h-4 w-4 mr-2" />
-          Refresh
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            variant="default"
+            size="sm"
+            onClick={handlePlayAll}
+          >
+            <Play className="h-4 w-4 mr-2" />
+            Play All
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handlePlayShuffle}
+          >
+            <Shuffle className="h-4 w-4 mr-2" />
+            Shuffle
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={generate}
+            disabled={isGenerating}
+          >
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Refresh
+          </Button>
+        </div>
       </div>
 
-      <PreviewList
-        list={playlist.slice(0, 10)}
-        title="Your Personalized Mix"
-        showMore={false}
-      />
+      <Card>
+        <div className="p-4">
+          <p className="text-sm text-muted-foreground mb-4">
+            {playlist.length} songs personalized for you
+          </p>
+          <div className="space-y-2">
+            {playlist.slice(0, 10).map((song, index) => (
+              <div
+                key={song.id}
+                className="flex items-center gap-3 p-2 rounded hover:bg-accent cursor-pointer"
+                onClick={() => setSongList(playlist, index)}
+              >
+                <div className="text-sm text-muted-foreground w-8">
+                  {index + 1}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium truncate">{song.title}</p>
+                  <p className="text-xs text-muted-foreground truncate">
+                    {song.artist}
+                  </p>
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  {song.album}
+                </div>
+              </div>
+            ))}
+          </div>
+          {playlist.length > 10 && (
+            <p className="text-sm text-muted-foreground text-center mt-4">
+              + {playlist.length - 10} more songs
+            </p>
+          )}
+        </div>
+      </Card>
     </div>
   )
 }
