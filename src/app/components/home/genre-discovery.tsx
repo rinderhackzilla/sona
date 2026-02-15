@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { ROUTES } from '@/routes/routesList'
 import { Music } from 'lucide-react'
 import { AlbumListResponse } from '@/types/responses/album'
-import { Skeleton } from '@/components/ui/skeleton'
+import { Skeleton } from '@/app/components/ui/skeleton'
 import AlbumCard from '@/app/components/cards/album-card'
 
 interface GenreRowProps {
