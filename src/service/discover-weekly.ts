@@ -64,54 +64,35 @@ async function findArtistInLibrary(
 }
 
 /**
- * Get random songs from an artist
+ * Get random songs from an artist using Subsonic's getTopSongs
  */
 async function getArtistSongs(
-  artistId: string,
+  artistName: string,
   count: number,
 ): Promise<Song[]> {
   try {
-    // Get all albums by artist
-    const albums = await search.get({
-      query: '',
-      artistCount: 0,
-      albumCount: 100,
-      songCount: 0,
-      albumOffset: 0,
-    })
+    // Get top songs for this artist
+    const topSongs = await songs.getTopSongs(artistName)
 
-    // Filter to only this artist's albums
-    const artistAlbums = albums?.album?.filter((a) => a.artistId === artistId)
-
-    if (!artistAlbums || artistAlbums.length === 0) {
+    if (!topSongs || topSongs.length === 0) {
+      console.log(`[DiscoverWeekly] No songs found for ${artistName}`)
       return []
     }
 
-    // Get random songs from random albums
-    const allSongs: Song[] = []
-    const randomAlbums = artistAlbums
-      .sort(() => Math.random() - 0.5)
-      .slice(0, 3)
+    // Shuffle and take requested amount
+    const shuffled = topSongs.sort(() => Math.random() - 0.5)
+    const selected = shuffled.slice(0, count)
 
-    for (const album of randomAlbums) {
-      try {
-        const randomSongsFromAlbum = await songs.getRandomSongs({
-          size: count,
-        })
-        if (randomSongsFromAlbum) {
-          allSongs.push(
-            ...randomSongsFromAlbum.filter((s) => s.artistId === artistId),
-          )
-        }
-      } catch (error) {
-        console.error(`[DiscoverWeekly] Failed to get songs:`, error)
-      }
-    }
+    console.log(
+      `[DiscoverWeekly] Got ${selected.length} songs from ${artistName}`,
+    )
 
-    // Shuffle and limit
-    return allSongs.sort(() => Math.random() - 0.5).slice(0, count)
+    return selected
   } catch (error) {
-    console.error(`[DiscoverWeekly] Failed to get artist songs:`, error)
+    console.error(
+      `[DiscoverWeekly] Failed to get songs for ${artistName}:`,
+      error,
+    )
     return []
   }
 }
@@ -210,7 +191,7 @@ export async function generateDiscoverWeekly(
   const allSongs: Song[] = []
 
   for (const artist of foundArtists) {
-    const artistSongs = await getArtistSongs(artist.id, songsPerArtist)
+    const artistSongs = await getArtistSongs(artist.name, songsPerArtist)
     allSongs.push(...artistSongs)
   }
 
