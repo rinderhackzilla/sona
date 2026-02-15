@@ -1,5 +1,5 @@
 import { AudioLandscape } from './audio-landscape'
-import { Butterchurn } from './butterchurn'
+import { ButterchurnVisualizer } from './butterchurn'
 import { CircularWaveform } from './circular-waveform'
 import { FrequencyCircle } from './frequency-circle'
 import { GeometricMandala } from './geometric-mandala'
@@ -21,7 +21,7 @@ export const VISUALIZERS = {
   'audio-landscape': AudioLandscape,
   'waveform-tunnel': WaveformTunnel,
   'oscilloscope': Oscilloscope,
-  'butterchurn': Butterchurn,
+  'butterchurn': ButterchurnVisualizer,
 } as const
 
 export type VisualizerPreset = keyof typeof VISUALIZERS
