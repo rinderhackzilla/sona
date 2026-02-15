@@ -1,28 +1,14 @@
 import { Calendar, Music, Play, Info } from 'lucide-react'
 import { Link } from 'react-router-dom'
-import { useQuery } from '@tanstack/react-query'
 import { Button } from '@/app/components/ui/button'
 import { ImageLoader } from '@/app/components/image-loader'
 import { useDiscoverWeekly } from '@/app/hooks/use-discover-weekly'
 import { usePlayerActions } from '@/store/player.store'
-import { subsonic } from '@/service/subsonic'
-import { queryKeys } from '@/utils/queryKeys'
 import { ROUTES } from '@/routes/routesList'
 
 export function DiscoverWeeklyCard() {
   const { playlist, isGenerating, error, isConfigured } = useDiscoverWeekly()
   const { setSongList } = usePlayerActions()
-
-  // Fetch subsonic playlists to find "Discover Weekly" playlist ID
-  const { data: subsonicPlaylists } = useQuery({
-    queryKey: [queryKeys.playlist.all],
-    queryFn: subsonic.playlists.getAll,
-  })
-
-  // Find the Discover Weekly playlist from subsonic
-  const discoverWeeklyPlaylist = subsonicPlaylists?.find(
-    (p) => p.name === 'Discover Weekly'
-  )
 
   if (!isConfigured) {
     return (
@@ -90,53 +76,6 @@ export function DiscoverWeeklyCard() {
   // Get cover art from first song
   const coverArt = playlist[0]?.coverArt
 
-  // Cover image component (with optional link)
-  const CoverImage = () => {
-    const imageContent = (
-      <>
-        {coverArt ? (
-          <ImageLoader id={coverArt} type="album" size="300">
-            {(src, isLoadingImage) => (
-              <>
-                {src && (
-                  <img
-                    src={src}
-                    alt="Discover Weekly"
-                    className="w-[180px] h-[180px] 2xl:w-[220px] 2xl:h-[220px] rounded-lg shadow-2xl object-cover transition-transform hover:scale-105"
-                  />
-                )}
-                {!src && !isLoadingImage && (
-                  <div className="w-[180px] h-[180px] 2xl:w-[220px] 2xl:h-[220px] rounded-lg shadow-2xl bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center">
-                    <Calendar className="h-16 w-16 text-muted-foreground" />
-                  </div>
-                )}
-              </>
-            )}
-          </ImageLoader>
-        ) : (
-          <div className="w-[180px] h-[180px] 2xl:w-[220px] 2xl:h-[220px] rounded-lg shadow-2xl bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center">
-            <Calendar className="h-16 w-16 text-muted-foreground" />
-          </div>
-        )}
-      </>
-    )
-
-    // If we found the subsonic playlist, wrap in Link
-    if (discoverWeeklyPlaylist) {
-      return (
-        <Link
-          to={ROUTES.PLAYLIST.PAGE(discoverWeeklyPlaylist.id)}
-          className="flex-shrink-0 relative"
-        >
-          {imageContent}
-        </Link>
-      )
-    }
-
-    // Otherwise just show the image
-    return <div className="flex-shrink-0 relative">{imageContent}</div>
-  }
-
   return (
     <div className="relative w-full h-full overflow-hidden border rounded-lg">
       {/* Background Image with Blur */}
@@ -159,8 +98,36 @@ export function DiscoverWeeklyCard() {
 
       {/* Content */}
       <div className="relative h-full flex items-center gap-6 px-8 z-10">
-        {/* Cover Image - Left Side (with conditional link) */}
-        <CoverImage />
+        {/* Cover Image - Left Side - Linked to Discover Weekly page */}
+        <Link
+          to={ROUTES.LIBRARY.DISCOVER_WEEKLY}
+          className="flex-shrink-0 relative"
+        >
+          {coverArt ? (
+            <ImageLoader id={coverArt} type="album" size="300">
+              {(src, isLoadingImage) => (
+                <>
+                  {src && (
+                    <img
+                      src={src}
+                      alt="Discover Weekly"
+                      className="w-[180px] h-[180px] 2xl:w-[220px] 2xl:h-[220px] rounded-lg shadow-2xl object-cover cursor-pointer transition-transform hover:scale-105"
+                    />
+                  )}
+                  {!src && !isLoadingImage && (
+                    <div className="w-[180px] h-[180px] 2xl:w-[220px] 2xl:h-[220px] rounded-lg shadow-2xl bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center">
+                      <Calendar className="h-16 w-16 text-muted-foreground" />
+                    </div>
+                  )}
+                </>
+              )}
+            </ImageLoader>
+          ) : (
+            <div className="w-[180px] h-[180px] 2xl:w-[220px] 2xl:h-[220px] rounded-lg shadow-2xl bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center">
+              <Calendar className="h-16 w-16 text-muted-foreground" />
+            </div>
+          )}
+        </Link>
 
         {/* Info - Right Side */}
         <div className="flex-1 flex flex-col gap-3 min-w-0">
