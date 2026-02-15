@@ -1,5 +1,5 @@
 import { RefreshCw, Sparkles, Info, Play, Shuffle } from 'lucide-react'
-import { LastfmAvatar } from '@/app/components/discover-weekly/lastfm-avatar'
+import ImageHeader from '@/app/components/album/image-header'
 import { BadgesData } from '@/app/components/header-info'
 import ListWrapper from '@/app/components/list-wrapper'
 import { Button } from '@/app/components/ui/button'
@@ -8,13 +8,11 @@ import { DataTable } from '@/app/components/ui/data-table'
 import { useDiscoverWeekly } from '@/app/hooks/use-discover-weekly'
 import { songsColumns } from '@/app/tables/songs-columns'
 import { usePlayerActions } from '@/store/player.store'
-import { useAppIntegrations } from '@/store/app.store'
 import { ColumnFilter } from '@/types/columnFilter'
 import { convertSecondsToHumanRead } from '@/utils/convertSecondsToTime'
 
 export default function DiscoverWeeklyPage() {
   const columns = songsColumns()
-  const { lastfm } = useAppIntegrations()
   const {
     playlist,
     isGenerating,
@@ -110,7 +108,6 @@ export default function DiscoverWeeklyPage() {
     'select',
   ]
 
-  const hasSongs = playlist.length > 0
   const totalDuration = playlist.reduce((acc, song) => acc + song.duration, 0)
   const duration = convertSecondsToHumanRead(totalDuration)
 
@@ -137,59 +134,22 @@ export default function DiscoverWeeklyPage() {
     setSongList(shuffled, 0)
   }
 
+  // Use first song's cover art as playlist cover
+  const coverArt = playlist.length > 0 ? playlist[0].coverArt : undefined
+
   return (
     <div className="w-full">
-      {/* Custom Header with Last.fm Avatar */}
-      <div className="relative w-full">
-        <div className="flex flex-col md:flex-row gap-6 p-8 pb-6">
-          {/* Last.fm Avatar */}
-          <div className="flex-shrink-0">
-            <div className="w-48 h-48 md:w-56 md:h-56 lg:w-64 lg:h-64 rounded-lg overflow-hidden shadow-2xl">
-              <LastfmAvatar 
-                username={lastfm.username} 
-                apiKey={lastfm.apiKey}
-                size={256} 
-              />
-            </div>
-          </div>
-
-          {/* Info */}
-          <div className="flex-1 flex flex-col justify-end">
-            <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground mb-2">
-              <Sparkles className="h-4 w-4" />
-              <span>Personalized Playlist</span>
-            </div>
-            
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4">
-              Discover Weekly
-            </h1>
-
-            {weekKey && (
-              <p className="text-sm text-muted-foreground mb-4">
-                Week of {weekKey}
-              </p>
-            )}
-
-            <p className="text-base text-muted-foreground mb-6">
-              Personalized for <span className="font-medium">{lastfm.username}</span> based on Last.fm listening history
-            </p>
-
-            {/* Badges */}
-            <div className="flex flex-wrap gap-2">
-              {badges.map((badge, index) => (
-                badge.content && (
-                  <span
-                    key={index}
-                    className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-secondary text-secondary-foreground"
-                  >
-                    {badge.content}
-                  </span>
-                )
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
+      <ImageHeader
+        type="Personalized Playlist"
+        title="Discover Weekly"
+        subtitle="Your personalized mix based on Last.fm listening history"
+        coverArtId={coverArt}
+        coverArtType="album"
+        coverArtSize="700"
+        coverArtAlt="Discover Weekly"
+        badges={badges}
+        isPlaylist={true}
+      />
 
       <ListWrapper>
         <div className="flex gap-2 mb-4">
