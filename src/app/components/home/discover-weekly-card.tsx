@@ -1,10 +1,8 @@
 import { Calendar, Music, Play, Info } from 'lucide-react'
-import { Link } from 'react-router-dom'
 import { Button } from '@/app/components/ui/button'
 import { ImageLoader } from '@/app/components/image-loader'
 import { useDiscoverWeekly } from '@/app/hooks/use-discover-weekly'
 import { usePlayerActions } from '@/store/player.store'
-import { ROUTES } from '@/routes/routesList'
 
 export function DiscoverWeeklyCard() {
   const { playlist, isGenerating, error, isConfigured } = useDiscoverWeekly()
@@ -98,8 +96,8 @@ export function DiscoverWeeklyCard() {
 
       {/* Content */}
       <div className="relative h-full flex items-center gap-6 px-8 z-10">
-        {/* Cover Image - Left Side - Wrapped in Link */}
-        <Link to={ROUTES.DISCOVER_WEEKLY} className="flex-shrink-0 relative">
+        {/* Cover Image - Left Side */}
+        <div className="flex-shrink-0 relative">
           {coverArt ? (
             <ImageLoader id={coverArt} type="album" size="300">
               {(src, isLoadingImage) => (
@@ -108,7 +106,7 @@ export function DiscoverWeeklyCard() {
                     <img
                       src={src}
                       alt="Discover Weekly"
-                      className="w-[180px] h-[180px] 2xl:w-[220px] 2xl:h-[220px] rounded-lg shadow-2xl object-cover cursor-pointer transition-transform hover:scale-105"
+                      className="w-[180px] h-[180px] 2xl:w-[220px] 2xl:h-[220px] rounded-lg shadow-2xl object-cover"
                     />
                   )}
                   {!src && !isLoadingImage && (
@@ -124,7 +122,7 @@ export function DiscoverWeeklyCard() {
               <Calendar className="h-16 w-16 text-muted-foreground" />
             </div>
           )}
-        </Link>
+        </div>
 
         {/* Info - Right Side */}
         <div className="flex-1 flex flex-col gap-3 min-w-0">
