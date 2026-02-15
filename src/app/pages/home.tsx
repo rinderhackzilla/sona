@@ -5,7 +5,6 @@ import {
 } from '@/app/components/fallbacks/home-fallbacks'
 import HomeHeader from '@/app/components/home/carousel/header'
 import PreviewList from '@/app/components/home/preview-list'
-import QuickAccess from '@/app/components/home/quick-access'
 import GenreDiscovery from '@/app/components/home/genre-discovery'
 import {
   useGetMostPlayed,
@@ -61,9 +60,6 @@ export default function Home() {
       ) : (
         <HomeHeader songs={randomSongs || []} />
       )}
-
-      {/* Quick Access Cards */}
-      <QuickAccess />
 
       {/* Genre Discovery Section */}
       <GenreDiscovery />
