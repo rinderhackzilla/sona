@@ -4,6 +4,7 @@ import { ComponentPropsWithoutRef, useEffect, useRef, useState } from 'react'
 import { isSafari } from 'react-device-detect'
 import { useTranslation } from 'react-i18next'
 import { Lrc } from 'react-lrc'
+import { ImageLoader } from '@/app/components/image-loader'
 import {
   ScrollArea,
   scrollAreaViewportSelector,
@@ -20,7 +21,7 @@ export function LyricsTab() {
   const { currentSong } = usePlayerSonglist()
   const { t } = useTranslation()
 
-  const { id, artist, title, duration } = currentSong
+  const { id, artist, title, duration, album, coverArt } = currentSong
 
   const { data: lyrics, isLoading } = useQuery({
     queryKey: ['get-lyrics', artist, title, duration],
@@ -36,17 +37,49 @@ export function LyricsTab() {
   const noLyricsFound = t('fullscreen.noLyrics')
   const loadingLyrics = t('fullscreen.loadingLyrics')
 
-  if (isLoading) {
-    return <CenteredMessage>{loadingLyrics}</CenteredMessage>
-  } else if (lyrics && lyrics.value) {
-    return areLyricsSynced(lyrics) ? (
-      <SyncedLyrics lyrics={lyrics} />
-    ) : (
-      <UnsyncedLyrics lyrics={lyrics} />
-    )
-  } else {
-    return <CenteredMessage>{noLyricsFound}</CenteredMessage>
-  }
+  return (
+    <div className="flex w-full h-full gap-6">
+      {/* Left side - Song Info */}
+      <div className="flex-shrink-0 w-64 flex flex-col gap-4">
+        {/* Cover Art */}
+        <div className="w-full aspect-square rounded-lg overflow-hidden shadow-2xl">
+          <ImageLoader id={coverArt} type="song" size="300">
+            {(src) => (
+              <img
+                src={src}
+                alt={title}
+                className="w-full h-full object-cover"
+              />
+            )}
+          </ImageLoader>
+        </div>
+
+        {/* Song Details */}
+        <div className="flex flex-col gap-1">
+          <h2 className="text-xl font-bold truncate">{title}</h2>
+          <p className="text-lg text-muted-foreground truncate">{artist}</p>
+          {album && (
+            <p className="text-sm text-muted-foreground truncate">{album}</p>
+          )}
+        </div>
+      </div>
+
+      {/* Right side - Lyrics */}
+      <div className="flex-1 min-w-0">
+        {isLoading ? (
+          <CenteredMessage>{loadingLyrics}</CenteredMessage>
+        ) : lyrics && lyrics.value ? (
+          areLyricsSynced(lyrics) ? (
+            <SyncedLyrics lyrics={lyrics} />
+          ) : (
+            <UnsyncedLyrics lyrics={lyrics} />
+          )
+        ) : (
+          <CenteredMessage>{noLyricsFound}</CenteredMessage>
+        )}
+      </div>
+    </div>
+  )
 }
 
 function SyncedLyrics({ lyrics }: LyricProps) {
@@ -85,7 +118,7 @@ function SyncedLyrics({ lyrics }: LyricProps) {
               'my-5 cursor-pointer hover:opacity-100 duration-500',
               'transition-[opacity,transform,text-shadow] motion-reduce:transition-none',
               active 
-                ? 'opacity-100 scale-125 drop-shadow-[0_0_8px_hsl(var(--primary))] text-shadow-[0_0_12px_hsl(var(--primary)/0.5)]' 
+                ? 'opacity-100 scale-125 drop-shadow-[0_0_12px_rgba(255,255,255,0.6)]' 
                 : 'opacity-50',
             )}
           >
