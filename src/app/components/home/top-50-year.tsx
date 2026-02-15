@@ -26,7 +26,7 @@ export function Top50Year() {
               <Info className="h-5 w-5 mt-0.5 text-muted-foreground" />
               <div className="flex-1">
                 <CardTitle className="text-base mb-2">
-                  Top 50 Year
+                  Your Top 50
                 </CardTitle>
                 <CardDescription>
                   Your top 50 most played tracks from the last 12 months based on your Last.fm listening history.
@@ -47,7 +47,7 @@ export function Top50Year() {
         <Card className="border-destructive">
           <CardHeader>
             <CardDescription className="text-destructive">
-              Error generating Top 50: {error}
+              Error generating Your Top 50: {error}
             </CardDescription>
           </CardHeader>
         </Card>
@@ -72,7 +72,7 @@ export function Top50Year() {
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-semibold flex items-center gap-2">
             <Trophy className="h-5 w-5" />
-            Top 50 of {year}
+            Your Top 50
           </h2>
           <Button
             variant="outline"
@@ -107,7 +107,7 @@ export function Top50Year() {
         <div>
           <h2 className="text-2xl font-semibold flex items-center gap-2">
             <Trophy className="h-5 w-5 text-yellow-500" />
-            Top 50 of {year}
+            Your Top 50
           </h2>
           {lastUpdated && (
             <p className="text-sm text-muted-foreground mt-1">
