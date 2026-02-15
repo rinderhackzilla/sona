@@ -12,7 +12,6 @@ import { usePlayerActions } from '@/store/player.store'
 import { ColumnFilter } from '@/types/columnFilter'
 import { convertSecondsToHumanRead } from '@/utils/convertSecondsToTime'
 import { exportPlaylist } from '@/service/export-playlist'
-import { useToast } from '@/app/hooks/use-toast'
 
 export default function DiscoverWeeklyPage() {
   const columns = songsColumns()
@@ -27,7 +26,6 @@ export default function DiscoverWeeklyPage() {
     isConfigured,
   } = useDiscoverWeekly()
   const { setSongList } = usePlayerActions()
-  const { toast } = useToast()
   const [isSaving, setIsSaving] = useState(false)
 
   // Note: Catch-up check happens automatically in the hook on mount
@@ -150,16 +148,11 @@ export default function DiscoverWeeklyPage() {
         isPublic: false,
       })
 
-      toast({
-        title: 'Playlist Saved',
-        description: `"${playlistName}" has been saved to your library`,
-      })
+      console.log(`[Discover Weekly] ✓ Playlist saved: "${playlistName}"`)
+      alert(`Playlist "${playlistName}" has been saved to your library!`)
     } catch (error) {
-      toast({
-        title: 'Save Failed',
-        description: error instanceof Error ? error.message : 'Failed to save playlist',
-        variant: 'destructive',
-      })
+      console.error('[Discover Weekly] Save failed:', error)
+      alert(`Failed to save playlist: ${error instanceof Error ? error.message : 'Unknown error'}`)
     } finally {
       setIsSaving(false)
     }
