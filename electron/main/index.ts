@@ -2,6 +2,7 @@ import { electronApp, optimizer, platform } from '@electron-toolkit/utils'
 import { app, globalShortcut } from 'electron'
 import { createAppMenu } from './core/menu'
 import { createWindow, mainWindow } from './window'
+import { startDiscoverWeeklyScheduler } from '../discover-weekly-scheduler'
 
 const currentDesktop = process.env.XDG_CURRENT_DESKTOP ?? ''
 
@@ -32,6 +33,9 @@ if (!instanceLock) {
     electronApp.setAppUserModelId('com.victoralvesf.aonsoku')
 
     createWindow()
+    
+    // Start Discover Weekly background scheduler
+    startDiscoverWeeklyScheduler()
   })
 
   app.on('activate', function () {
