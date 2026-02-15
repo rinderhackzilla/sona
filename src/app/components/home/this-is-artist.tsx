@@ -19,8 +19,8 @@ export function ThisIsArtist() {
 
   if (!isConfigured) {
     return (
-      <div className="w-full">
-        <Card className="border-dashed h-full">
+      <div className="h-full w-full">
+        <Card className="border-dashed h-full w-full">
           <CardHeader>
             <div className="flex items-start gap-3">
               <Info className="h-5 w-5 mt-0.5 text-muted-foreground" />
@@ -43,8 +43,8 @@ export function ThisIsArtist() {
 
   if (error) {
     return (
-      <div className="w-full">
-        <Card className="border-destructive h-full">
+      <div className="h-full w-full">
+        <Card className="border-destructive h-full w-full">
           <CardHeader>
             <CardDescription className="text-destructive">
               Error generating This is Artist: {error}
@@ -57,8 +57,8 @@ export function ThisIsArtist() {
 
   if (isGenerating) {
     return (
-      <div className="w-full">
-        <Card className="h-full flex items-center justify-center">
+      <div className="h-full w-full">
+        <Card className="h-full w-full flex items-center justify-center">
           <div className="flex items-center gap-2 text-muted-foreground p-8">
             <RefreshCw className="h-5 w-5 animate-spin" />
             <span>Generating today's artist playlist...</span>
@@ -70,8 +70,8 @@ export function ThisIsArtist() {
 
   if (playlist.length === 0 || !artist) {
     return (
-      <div className="w-full">
-        <Card className="h-full flex items-center justify-center">
+      <div className="h-full w-full">
+        <Card className="h-full w-full flex items-center justify-center">
           <div className="text-center p-8">
             <Music className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
             <h3 className="text-lg font-semibold mb-2">This is Artist</h3>
@@ -107,12 +107,12 @@ export function ThisIsArtist() {
   }
 
   return (
-    <div className="w-full">
+    <div className="h-full w-full">
       <ImageLoader id={artist.coverArt} type="artist" size="300">
         {(artistCoverUrl, isLoadingImage) => (
-          <Card className="h-full overflow-hidden">
+          <Card className="h-full w-full overflow-hidden flex flex-col">
             {/* Artist Cover Header */}
-            <div className="relative h-48 bg-gradient-to-b from-primary/20 to-background">
+            <div className="relative h-48 bg-gradient-to-b from-primary/20 to-background flex-shrink-0">
               {artistCoverUrl && (
                 <img
                   src={artistCoverUrl}
@@ -153,7 +153,7 @@ export function ThisIsArtist() {
             </div>
 
             {/* Controls */}
-            <div className="p-4 border-b">
+            <div className="p-4 border-b flex-shrink-0">
               <div className="flex gap-2">
                 <Button
                   variant="default"
@@ -185,7 +185,7 @@ export function ThisIsArtist() {
             </div>
 
             {/* Song List Preview */}
-            <div className="p-4 max-h-96 overflow-y-auto">
+            <div className="p-4 flex-1 overflow-y-auto">
               <p className="text-xs text-muted-foreground mb-3 uppercase tracking-wide">
                 Top Tracks
               </p>
