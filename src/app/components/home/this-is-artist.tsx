@@ -19,61 +19,71 @@ export function ThisIsArtist() {
 
   if (!isConfigured) {
     return (
-      <Card className="h-full w-full border-dashed bg-muted/20 flex items-center justify-center p-6">
-        <div className="text-center max-w-sm">
-          <Info className="h-6 w-6 mx-auto mb-2 text-muted-foreground" />
-          <h3 className="font-semibold mb-1 text-sm">This is Artist</h3>
-          <p className="text-xs text-muted-foreground">
-            Configure Last.fm in Settings → Integrations
-          </p>
+      <div className="relative w-full h-full overflow-hidden border rounded-lg bg-muted/20 border-dashed">
+        <div className="relative h-full flex items-center justify-center p-8 z-10">
+          <div className="text-center max-w-sm">
+            <Info className="h-6 w-6 mx-auto mb-2 text-muted-foreground" />
+            <h3 className="font-semibold mb-1 text-sm">This is Artist</h3>
+            <p className="text-xs text-muted-foreground">
+              Configure Last.fm in Settings → Integrations
+            </p>
+          </div>
         </div>
-      </Card>
+      </div>
     )
   }
 
   if (error) {
     return (
-      <Card className="h-full w-full border-destructive bg-destructive/5 flex items-center justify-center p-6">
-        <div className="text-center max-w-sm">
-          <p className="text-xs text-destructive">
-            Error: {error}
-          </p>
+      <div className="relative w-full h-full overflow-hidden border rounded-lg bg-destructive/5 border-destructive">
+        <div className="relative h-full flex items-center justify-center p-8 z-10">
+          <div className="text-center max-w-sm">
+            <p className="text-xs text-destructive">
+              Error: {error}
+            </p>
+          </div>
         </div>
-      </Card>
+      </div>
     )
   }
 
   if (isGenerating) {
     return (
-      <Card className="h-full w-full bg-gradient-to-br from-primary/5 to-primary/10 flex items-center justify-center">
-        <div className="flex flex-col items-center gap-2">
-          <RefreshCw className="h-6 w-6 animate-spin text-muted-foreground" />
-          <span className="text-xs text-muted-foreground">Generating...</span>
+      <div className="relative w-full h-full overflow-hidden border rounded-lg">
+        <div className="absolute inset-0 bg-gradient-to-l from-primary/5 to-primary/10" />
+        <div className="relative h-full flex items-center justify-center z-10">
+          <div className="flex flex-col items-center gap-2">
+            <RefreshCw className="h-6 w-6 animate-spin text-muted-foreground" />
+            <span className="text-xs text-muted-foreground">Generating...</span>
+          </div>
         </div>
-      </Card>
+      </div>
     )
   }
 
   if (playlist.length === 0 || !artist) {
     return (
-      <Card className="h-full w-full bg-gradient-to-br from-primary/5 to-primary/10 flex items-center justify-center">
-        <div className="text-center p-6">
-          <Music className="h-8 w-8 mx-auto mb-3 text-muted-foreground" />
-          <h3 className="font-semibold mb-2 text-sm">This is Artist</h3>
-          <p className="text-xs text-muted-foreground mb-3">
-            Generate your daily playlist
-          </p>
-          <Button
-            variant="default"
-            size="sm"
-            onClick={generate}
-            disabled={isGenerating}
-          >
-            <RefreshCw className="h-3 w-3 mr-1.5" />
-            Generate
-          </Button>
+      <div className="relative w-full h-full overflow-hidden border rounded-lg">
+        <div className="absolute inset-0 bg-gradient-to-l from-primary/5 to-primary/10" />
+        <div className="relative h-full flex items-center justify-center p-8 z-10">
+          <div className="text-center">
+            <Music className="h-8 w-8 mx-auto mb-3 text-muted-foreground" />
+            <h3 className="font-semibold mb-2 text-sm">This is Artist</h3>
+            <p className="text-xs text-muted-foreground mb-3">
+              Generate your daily playlist
+            </p>
+            <Button
+              variant="default"
+              size="sm"
+              onClick={generate}
+              disabled={isGenerating}
+            >
+              <RefreshCw className="h-3 w-3 mr-1.5" />
+              Generate
+            </Button>
+          </div>
         </div>
-      </Card>
+      </div>
     )
   }
 
@@ -82,7 +92,7 @@ export function ThisIsArtist() {
   }
 
   return (
-    <div className="relative w-full h-full overflow-hidden">
+    <div className="relative w-full h-full overflow-hidden border rounded-lg">
       {/* Background Image with Blur */}
       <ImageLoader id={artist.coverArt} type="artist" size="300">
         {(artistCoverUrl) => (
@@ -108,8 +118,8 @@ export function ThisIsArtist() {
             <p className="text-sm text-muted-foreground mb-2">
               Daily Playlist
             </p>
-            <h2 className="text-4xl 2xl:text-5xl font-bold truncate">
-              This is {artist.name}
+            <h2 className="text-4xl 2xl:text-5xl font-bold leading-tight">
+              This is<br />{artist.name}
             </h2>
           </div>
 
