@@ -47,7 +47,7 @@ function AlbumHeaderItem({ album }: { album: Albums }) {
               className="absolute inset-0 bg-cover bg-center blur-2xl scale-110 opacity-40"
               style={{ backgroundImage: `url(${src})` }}
             />
-            <div className="absolute inset-0 bg-gradient-to-r from-background/80 via-background/60 to-background/80" />
+            <div className="absolute inset-0 bg-gradient-to-r from-background/80 via-background/40 to-background/20" />
           </>
         )}
       </ImageLoader>
