@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { RefreshCw, Sparkles, Settings } from 'lucide-react'
-import { PreviewList } from './preview-list'
+import PreviewList from './preview-list'
 import { Button } from '@/app/components/ui/button'
 import { Card, CardDescription, CardHeader } from '@/app/components/ui/card'
 import { useDiscoverWeekly } from '@/app/hooks/use-discover-weekly'
@@ -136,12 +136,9 @@ export function DiscoverWeekly() {
       </div>
 
       <PreviewList
-        songs={playlist.slice(0, 10)}
-        onPlayAll={() => setQueue(playlist)}
-        onPlayShuffle={() => {
-          const shuffled = [...playlist].sort(() => Math.random() - 0.5)
-          setQueue(shuffled)
-        }}
+        list={playlist.slice(0, 10)}
+        title="Your Personalized Mix"
+        showMore={false}
       />
     </div>
   )
