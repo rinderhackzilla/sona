@@ -31,7 +31,7 @@ interface TopTracksResponse {
 const LASTFM_API_URL = 'https://ws.audioscrobbler.com/2.0/'
 const TARGET_SONGS = 30
 const TOP_TRACKS_COUNT = 15 // Get top 15 from Last.fm, fill rest with random
-const MAX_RETRIES = 5 // Maximum attempts to find an artist with songs
+const MAX_RETRIES = 20 // Try up to 20 different artists
 
 interface GenerateConfig {
   username: string
@@ -66,18 +66,18 @@ async function getArtistTopTracks(
 /**
  * Select a random artist from library
  */
-async function selectRandomArtist(excludeIds: Set<string> = new Set()): Promise<ISimilarArtist> {
+async function selectRandomArtist(excludeIds: Set<string> = new Set()): Promise<ISimilarArtist | null> {
   const allArtists = await subsonic.artists.getAll()
 
   if (!allArtists || allArtists.length === 0) {
-    throw new Error('No artists found in library')
+    return null
   }
 
   // Filter out excluded artists
   const availableArtists = allArtists.filter(artist => !excludeIds.has(artist.id))
   
   if (availableArtists.length === 0) {
-    throw new Error('No more artists available to try')
+    return null
   }
 
   // Select random artist
@@ -91,24 +91,29 @@ async function selectRandomArtist(excludeIds: Set<string> = new Set()): Promise<
  * Get all songs for an artist from Navidrome
  */
 async function getArtistSongs(artistId: string): Promise<Song[]> {
-  const artist = await subsonic.artists.getOne(artistId)
-  
-  if (!artist) {
-    throw new Error(`Artist not found: ${artistId}`)
-  }
+  try {
+    const artist = await subsonic.artists.getOne(artistId)
+    
+    if (!artist) {
+      return []
+    }
 
-  const songs: Song[] = []
+    const songs: Song[] = []
 
-  // Collect all songs from all albums
-  if (artist.album) {
-    for (const album of artist.album) {
-      if (album.song) {
-        songs.push(...album.song)
+    // Collect all songs from all albums
+    if (artist.album) {
+      for (const album of artist.album) {
+        if (album.song) {
+          songs.push(...album.song)
+        }
       }
     }
-  }
 
-  return songs
+    return songs
+  } catch (error) {
+    console.warn(`[ThisIsArtist] Failed to get songs for artist ${artistId}:`, error)
+    return []
+  }
 }
 
 /**
@@ -153,6 +158,7 @@ export async function generateThisIsArtist(
 
   const excludedArtists = new Set<string>()
   let attempts = 0
+  let lastError: Error | null = null
 
   while (attempts < MAX_RETRIES) {
     attempts++
@@ -160,7 +166,13 @@ export async function generateThisIsArtist(
     try {
       // Step 1: Select random artist
       const artist = await selectRandomArtist(excludedArtists)
-      console.log(`[ThisIsArtist] Attempt ${attempts}: Selected ${artist.name}`)
+      
+      if (!artist) {
+        console.error(`[ThisIsArtist] No more artists available after ${attempts} attempts`)
+        throw new Error(`No artists available in library (tried ${excludedArtists.size} artists)`)
+      }
+
+      console.log(`[ThisIsArtist] Attempt ${attempts}/${MAX_RETRIES}: Selected "${artist.name}"`)
 
       // Step 2: Get all songs from artist
       const artistSongs = await getArtistSongs(artist.id)
@@ -172,7 +184,7 @@ export async function generateThisIsArtist(
         continue // Try next artist
       }
 
-      console.log(`[ThisIsArtist] Found ${artistSongs.length} songs for ${artist.name}`)
+      console.log(`[ThisIsArtist] ✓ Found ${artistSongs.length} songs for ${artist.name}`)
 
       let playlist: Song[] = []
 
@@ -216,7 +228,7 @@ export async function generateThisIsArtist(
         const shuffled = remainingSongs.sort(() => Math.random() - 0.5)
         playlist.push(...shuffled.slice(0, remainingSlots))
         
-        console.log(`[ThisIsArtist] Added ${remainingSlots} random songs (total: ${playlist.length})`)
+        console.log(`[ThisIsArtist] Added ${Math.min(remainingSlots, shuffled.length)} random songs (total: ${playlist.length})`)
       }
 
       // Trim to exactly 30 if we have more
@@ -229,21 +241,23 @@ export async function generateThisIsArtist(
         artist,
       }
     } catch (error) {
-      // If error is about no more artists, throw immediately
-      if (error instanceof Error && error.message.includes('No more artists available')) {
-        throw error
+      lastError = error instanceof Error ? error : new Error(String(error))
+      
+      // If error is about no more artists, break immediately
+      if (lastError.message.includes('No artists available')) {
+        break
       }
       
       // Log other errors and continue
-      console.warn(`[ThisIsArtist] Attempt ${attempts} failed:`, error)
-      
-      // If we've exhausted retries, throw the last error
-      if (attempts >= MAX_RETRIES) {
-        throw new Error(`Failed to generate playlist after ${MAX_RETRIES} attempts: ${error}`)
-      }
+      console.warn(`[ThisIsArtist] Attempt ${attempts} error:`, lastError.message)
     }
   }
 
-  // Fallback error (should never reach here)
-  throw new Error('Failed to generate playlist: No suitable artist found')
+  // If we've exhausted all retries
+  const errorMsg = lastError 
+    ? `Failed after ${attempts} attempts: ${lastError.message}`
+    : `Failed to find artist with songs after ${attempts} attempts (tried ${excludedArtists.size} artists)`
+  
+  console.error(`[ThisIsArtist] ✗ ${errorMsg}`)
+  throw new Error(errorMsg)
 }
