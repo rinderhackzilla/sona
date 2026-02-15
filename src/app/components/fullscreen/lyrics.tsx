@@ -26,7 +26,7 @@ interface LyricProps {
 }
 
 export function LyricsTab() {
-  const { currentSong, currentIndex } = usePlayerSonglist()
+  const { currentSong } = usePlayerSonglist()
   const { t } = useTranslation()
 
   const { id, artist, artistId, title, album, albumId, duration, coverArt } = currentSong
@@ -74,7 +74,7 @@ export function LyricsTab() {
               <SongMenuOptions
                 variant="context"
                 song={currentSong}
-                index={currentIndex}
+                index={0}
               />
             </ContextMenuContent>
           </ContextMenu>
