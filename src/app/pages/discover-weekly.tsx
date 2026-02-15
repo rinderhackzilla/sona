@@ -1,6 +1,5 @@
-import { useTranslation } from 'react-i18next'
 import { RefreshCw, Sparkles, Info } from 'lucide-react'
-import ImageHeader from '@/app/components/album/image-header'
+import { CoverMosaic } from '@/app/components/discover-weekly/cover-mosaic'
 import { BadgesData } from '@/app/components/header-info'
 import ListWrapper from '@/app/components/list-wrapper'
 import { Button } from '@/app/components/ui/button'
@@ -13,7 +12,6 @@ import { ColumnFilter } from '@/types/columnFilter'
 import { convertSecondsToHumanRead } from '@/utils/convertSecondsToTime'
 
 export default function DiscoverWeeklyPage() {
-  const { t } = useTranslation()
   const columns = songsColumns()
   const {
     playlist,
@@ -114,44 +112,69 @@ export default function DiscoverWeeklyPage() {
   const totalDuration = playlist.reduce((acc, song) => acc + song.duration, 0)
   const duration = convertSecondsToHumanRead(totalDuration)
 
-  const songCount = hasSongs
-    ? t('playlist.songCount', { count: playlist.length })
-    : null
-  const playlistDuration = hasSongs
-    ? t('playlist.duration', { duration })
-    : null
+  const songCount = `${playlist.length} ${playlist.length === 1 ? 'song' : 'songs'}`
+  const artistsCount = artistsUsed.length > 0 ? `${artistsUsed.length} artists` : null
 
   const lastUpdated = lastGenerated
     ? new Date(lastGenerated).toLocaleDateString()
     : null
 
-  const artistsCount = artistsUsed.length > 0
-    ? `${artistsUsed.length} ${t('artist.pluralHeadline').toLowerCase()}`
-    : null
-
   const badges: BadgesData = [
     { content: songCount, type: 'text' },
-    { content: playlistDuration, type: 'text' },
+    { content: duration, type: 'text' },
     { content: artistsCount, type: 'text' },
     { content: lastUpdated ? `Updated ${lastUpdated}` : null, type: 'text' },
   ]
 
-  // Use first song's cover art as playlist cover
-  const coverArt = playlist.length > 0 ? playlist[0].coverArt : undefined
-
   return (
     <div className="w-full">
-      <ImageHeader
-        type="Personalized Playlist"
-        title={`Discover Weekly${weekKey ? ` • ${weekKey}` : ''}`}
-        subtitle="Your personalized mix based on Last.fm listening history"
-        coverArtId={coverArt}
-        coverArtType="album"
-        coverArtSize="700"
-        coverArtAlt="Discover Weekly"
-        badges={badges}
-        isPlaylist={true}
-      />
+      {/* Custom Header with Mosaic Cover */}
+      <div className="relative w-full">
+        <div className="flex flex-col md:flex-row gap-6 p-8 pb-6">
+          {/* Mosaic Cover */}
+          <div className="flex-shrink-0">
+            <div className="w-48 h-48 md:w-56 md:h-56 lg:w-64 lg:h-64 rounded-lg overflow-hidden shadow-2xl">
+              <CoverMosaic songs={playlist} size={256} />
+            </div>
+          </div>
+
+          {/* Info */}
+          <div className="flex-1 flex flex-col justify-end">
+            <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground mb-2">
+              <Sparkles className="h-4 w-4" />
+              <span>Personalized Playlist</span>
+            </div>
+            
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4">
+              Discover Weekly
+            </h1>
+
+            {weekKey && (
+              <p className="text-sm text-muted-foreground mb-4">
+                Week of {weekKey}
+              </p>
+            )}
+
+            <p className="text-base text-muted-foreground mb-6">
+              Your personalized mix based on Last.fm listening history
+            </p>
+
+            {/* Badges */}
+            <div className="flex flex-wrap gap-2">
+              {badges.map((badge, index) => (
+                badge.content && (
+                  <span
+                    key={index}
+                    className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-secondary text-secondary-foreground"
+                  >
+                    {badge.content}
+                  </span>
+                )
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
 
       <ListWrapper>
         <div className="flex gap-2 mb-4">
