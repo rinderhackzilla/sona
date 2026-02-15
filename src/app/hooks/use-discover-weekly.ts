@@ -22,16 +22,24 @@ export function useDiscoverWeekly() {
   const [error, setError] = useState<string | null>(null)
   const [metadata, setMetadata] = useState<PlaylistMetadata | null>(null)
   const hasCheckedCatchupRef = useRef(false)
+  const hasLoadedRef = useRef(false)
 
   const isConfigured = !!(lastfm.username && lastfm.apiKey)
 
   // Load playlist from localStorage on mount
   useEffect(() => {
-    const { playlist: storedPlaylist, metadata: storedMetadata } = loadPlaylist()
-    
-    if (storedPlaylist.length > 0 && storedMetadata) {
-      setPlaylist(storedPlaylist)
-      setMetadata(storedMetadata)
+    if (hasLoadedRef.current) return
+    hasLoadedRef.current = true
+
+    try {
+      const { playlist: storedPlaylist, metadata: storedMetadata } = loadPlaylist()
+      
+      if (storedPlaylist.length > 0 && storedMetadata) {
+        setPlaylist(storedPlaylist)
+        setMetadata(storedMetadata)
+      }
+    } catch (error) {
+      console.error('[DiscoverWeekly Hook] Failed to load playlist:', error)
     }
   }, [])
 
