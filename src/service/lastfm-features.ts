@@ -87,7 +87,8 @@ export async function findTrackInNavidrome(
     
     // Search for track
     const searchQuery = `${artistName} ${trackName}`
-    const results = await subsonic.search.search3(searchQuery, {
+    const results = await subsonic.search.get({
+      query: searchQuery,
       songCount: 5,
       artistCount: 0,
       albumCount: 0,
