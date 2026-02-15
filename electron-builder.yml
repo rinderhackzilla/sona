@@ -1,7 +1,6 @@
 appId: com.sgtspeerock.sona
 productName: Sona
 copyright: Copyright © 2026 rinderhack
-icon: ./build/icon.ico
 artifactName: '${productName}-v${version}-${os}-${arch}.${ext}'
 
 directories:
@@ -13,42 +12,34 @@ files:
   - 'out/**'
   - '!out/renderer/screenshots{,/**}'
   - 'package.json'
-  # Include Electron resources for ICU
-  - from: node_modules/electron/dist
-    to: .
-    filter:
-      - '*.pak'
-      - '*.bin'
-      - 'icudtl.dat'
-      - 'v8_context_snapshot.bin'
-      - 'snapshot_blob.bin'
 
 extraResources:
   - from: resources
     to: resources
 
 win:
+  icon: build/icon.ico
   executableName: Sona
   target:
     - target: nsis
       arch:
         - x64
-        - arm64
 
 nsis:
-  shortcutName: ${productName}
   oneClick: false
   allowToChangeInstallationDirectory: true
-  uninstallDisplayName: ${productName}
   createDesktopShortcut: always
-  license: ./LICENSE.txt
-  uninstallerIcon: ./build/icon.ico
+  createStartMenuShortcut: true
+  shortcutName: Sona
+  installerIcon: build/icon.ico
+  uninstallerIcon: build/icon.ico
+  license: LICENSE.txt
 
 mac:
   category: public.app-category.music
   entitlementsInherit: build/entitlements.mac.plist
   notarize: false
-  icon: ./build/icon.icns
+  icon: build/icon.icns
   target:
     - target: dmg
       arch:
