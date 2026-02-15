@@ -1,16 +1,27 @@
-import { RefreshCw, Sparkles, Play, Shuffle, Info } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
+import { RefreshCw, Sparkles, Info } from 'lucide-react'
+import ImageHeader from '@/app/components/album/image-header'
+import { BadgesData } from '@/app/components/header-info'
+import ListWrapper from '@/app/components/list-wrapper'
 import { Button } from '@/app/components/ui/button'
 import { Card, CardDescription, CardHeader, CardTitle } from '@/app/components/ui/card'
+import { DataTable } from '@/app/components/ui/data-table'
 import { useDiscoverWeekly } from '@/app/hooks/use-discover-weekly'
+import { songsColumns } from '@/app/tables/songs-columns'
 import { usePlayerActions } from '@/store/player.store'
+import { ColumnFilter } from '@/types/columnFilter'
+import { convertSecondsToHumanRead } from '@/utils/convertSecondsToTime'
 
 export default function DiscoverWeeklyPage() {
+  const { t } = useTranslation()
+  const columns = songsColumns()
   const {
     playlist,
     isGenerating,
     error,
     lastGenerated,
     artistsUsed,
+    weekKey,
     generate,
     isConfigured,
   } = useDiscoverWeekly()
@@ -91,51 +102,59 @@ export default function DiscoverWeeklyPage() {
     )
   }
 
+  const columnsToShow: ColumnFilter[] = [
+    'index',
+    'title',
+    'album',
+    'duration',
+    'select',
+  ]
+
+  const hasSongs = playlist.length > 0
+  const totalDuration = playlist.reduce((acc, song) => acc + song.duration, 0)
+  const duration = convertSecondsToHumanRead(totalDuration)
+
+  const songCount = hasSongs
+    ? t('playlist.songCount', { count: playlist.length })
+    : null
+  const playlistDuration = hasSongs
+    ? t('playlist.duration', { duration })
+    : null
+
   const lastUpdated = lastGenerated
     ? new Date(lastGenerated).toLocaleDateString()
     : null
 
-  const handlePlayAll = () => {
-    setSongList(playlist, 0)
-  }
+  const artistsCount = artistsUsed.length > 0
+    ? `${artistsUsed.length} ${t('artist.pluralHeadline').toLowerCase()}`
+    : null
 
-  const handlePlayShuffle = () => {
-    const shuffled = [...playlist].sort(() => Math.random() - 0.5)
-    setSongList(shuffled, 0)
-  }
+  const badges: BadgesData = [
+    { content: songCount, type: 'text' },
+    { content: playlistDuration, type: 'text' },
+    { content: artistsCount, type: 'text' },
+    { content: lastUpdated ? `Updated ${lastUpdated}` : null, type: 'text' },
+  ]
+
+  // Use first song's cover art as playlist cover
+  const coverArt = playlist.length > 0 ? playlist[0].coverArt : undefined
 
   return (
-    <div className="w-full px-8 py-6">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-3xl font-bold flex items-center gap-3">
-            <Sparkles className="h-8 w-8" />
-            Discover Weekly
-          </h1>
-          {lastUpdated && (
-            <p className="text-muted-foreground mt-2">
-              Last updated {lastUpdated}
-              {artistsUsed.length > 0 && ` • ${artistsUsed.length} artists`}
-            </p>
-          )}
-        </div>
-        <div className="flex gap-2">
-          <Button
-            variant="default"
-            size="default"
-            onClick={handlePlayAll}
-          >
-            <Play className="h-4 w-4 mr-2" />
-            Play All
-          </Button>
-          <Button
-            variant="outline"
-            size="default"
-            onClick={handlePlayShuffle}
-          >
-            <Shuffle className="h-4 w-4 mr-2" />
-            Shuffle
-          </Button>
+    <div className="w-full">
+      <ImageHeader
+        type="Personalized Playlist"
+        title={`Discover Weekly${weekKey ? ` • ${weekKey}` : ''}`}
+        subtitle="Your personalized mix based on Last.fm listening history"
+        coverArtId={coverArt}
+        coverArtType="album"
+        coverArtSize="700"
+        coverArtAlt="Discover Weekly"
+        badges={badges}
+        isPlaylist={true}
+      />
+
+      <ListWrapper>
+        <div className="flex gap-2 mb-4">
           <Button
             variant="outline"
             size="default"
@@ -143,42 +162,19 @@ export default function DiscoverWeeklyPage() {
             disabled={isGenerating}
           >
             <RefreshCw className="h-4 w-4 mr-2" />
-            Refresh
+            Refresh Playlist
           </Button>
         </div>
-      </div>
 
-      <Card>
-        <div className="p-6">
-          <p className="text-sm text-muted-foreground mb-4">
-            {playlist.length} songs personalized for you
-          </p>
-          <div className="space-y-1">
-            {playlist.map((song, index) => (
-              <div
-                key={song.id}
-                className="flex items-center gap-4 p-3 rounded hover:bg-accent cursor-pointer group"
-                onClick={() => setSongList(playlist, index)}
-              >
-                <div className="text-sm text-muted-foreground w-10 text-right">
-                  {index + 1}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium truncate group-hover:text-primary">
-                    {song.title}
-                  </p>
-                  <p className="text-xs text-muted-foreground truncate">
-                    {song.artist} • {song.album}
-                  </p>
-                </div>
-                <div className="text-xs text-muted-foreground">
-                  {Math.floor(song.duration / 60)}:{String(song.duration % 60).padStart(2, '0')}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </Card>
+        <DataTable
+          columns={columns}
+          data={playlist}
+          handlePlaySong={(row) => setSongList(playlist, row.index)}
+          columnFilter={columnsToShow}
+          noRowsMessage="No songs in your Discover Weekly yet"
+          variant="modern"
+        />
+      </ListWrapper>
     </div>
   )
 }
