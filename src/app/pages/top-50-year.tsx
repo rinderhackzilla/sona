@@ -1,4 +1,5 @@
-import { RefreshCw, Trophy, Info, Play, Shuffle } from 'lucide-react'
+import { RefreshCw, Trophy, Info, Play, Shuffle, Save } from 'lucide-react'
+import { useState } from 'react'
 import ImageHeader from '@/app/components/album/image-header'
 import { BadgesData } from '@/app/components/header-info'
 import ListWrapper from '@/app/components/list-wrapper'
@@ -10,6 +11,8 @@ import { songsColumns } from '@/app/tables/songs-columns'
 import { usePlayerActions } from '@/store/player.store'
 import { ColumnFilter } from '@/types/columnFilter'
 import { convertSecondsToHumanRead } from '@/utils/convertSecondsToTime'
+import { exportPlaylist } from '@/service/export-playlist'
+import { useToast } from '@/app/hooks/use-toast'
 
 export default function Top50YearPage() {
   const columns = songsColumns()
@@ -24,6 +27,8 @@ export default function Top50YearPage() {
     isConfigured,
   } = useTop50Year()
   const { setSongList } = usePlayerActions()
+  const { toast } = useToast()
+  const [isSaving, setIsSaving] = useState(false)
 
   if (!isConfigured) {
     return (
@@ -131,6 +136,32 @@ export default function Top50YearPage() {
     setSongList(shuffled, 0)
   }
 
+  const handleSaveAsPlaylist = async () => {
+    setIsSaving(true)
+    try {
+      const playlistName = `Your Top 50 - ${year}`
+      await exportPlaylist({
+        name: playlistName,
+        songs: playlist,
+        comment: `Your top ${totalTracks} most played tracks from ${year}. Generated on ${lastUpdated || new Date().toLocaleDateString()}`,
+        isPublic: false,
+      })
+
+      toast({
+        title: 'Playlist Saved',
+        description: `"${playlistName}" has been saved to your library`,
+      })
+    } catch (error) {
+      toast({
+        title: 'Save Failed',
+        description: error instanceof Error ? error.message : 'Failed to save playlist',
+        variant: 'destructive',
+      })
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
   // Use first song's cover art as playlist cover
   const coverArt = playlist.length > 0 ? playlist[0].coverArt : undefined
 
@@ -174,6 +205,15 @@ export default function Top50YearPage() {
           >
             <RefreshCw className="h-4 w-4 mr-2" />
             Refresh
+          </Button>
+          <Button
+            variant="outline"
+            size="default"
+            onClick={handleSaveAsPlaylist}
+            disabled={isSaving}
+          >
+            <Save className="h-4 w-4 mr-2" />
+            {isSaving ? 'Saving...' : 'Save as Playlist'}
           </Button>
         </div>
 
