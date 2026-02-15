@@ -1,9 +1,9 @@
 import { RefreshCw, Music, Play, Shuffle, Info } from 'lucide-react'
 import { Button } from '@/app/components/ui/button'
 import { Card, CardDescription, CardHeader, CardTitle } from '@/app/components/ui/card'
+import { ImageLoader } from '@/app/components/image-loader'
 import { useThisIsArtist } from '@/app/hooks/use-this-is-artist'
 import { usePlayerActions } from '@/store/player.store'
-import { subsonic } from '@/service/subsonic-service'
 
 export function ThisIsArtist() {
   const {
@@ -106,111 +106,117 @@ export function ThisIsArtist() {
     setSongList(shuffled, 0)
   }
 
-  // Get artist cover image
-  const artistCoverUrl = artist.artistImageUrl || subsonic.getCoverArtUrl(artist.coverArt, 'artist', '300')
-
   return (
     <div className="w-full">
-      <Card className="h-full overflow-hidden">
-        {/* Artist Cover Header */}
-        <div className="relative h-48 bg-gradient-to-b from-primary/20 to-background">
-          {artistCoverUrl && (
-            <img
-              src={artistCoverUrl}
-              alt={artist.name}
-              className="absolute inset-0 w-full h-full object-cover opacity-30"
-            />
-          )}
-          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-transparent" />
-          <div className="absolute bottom-4 left-6 right-6">
-            <div className="flex items-end gap-4">
+      <ImageLoader id={artist.coverArt} type="artist" size="300">
+        {(artistCoverUrl, isLoadingImage) => (
+          <Card className="h-full overflow-hidden">
+            {/* Artist Cover Header */}
+            <div className="relative h-48 bg-gradient-to-b from-primary/20 to-background">
               {artistCoverUrl && (
                 <img
                   src={artistCoverUrl}
                   alt={artist.name}
-                  className="w-24 h-24 rounded-lg shadow-lg object-cover"
+                  className="absolute inset-0 w-full h-full object-cover opacity-30"
                 />
               )}
-              <div className="flex-1 min-w-0">
-                <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">
-                  Daily Playlist
-                </p>
-                <h2 className="text-2xl font-bold truncate">
-                  This is {artist.name}
-                </h2>
-                {lastUpdated && (
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {lastUpdated} • {playlist.length} songs
-                  </p>
-                )}
+              <div className="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-transparent" />
+              <div className="absolute bottom-4 left-6 right-6">
+                <div className="flex items-end gap-4">
+                  {artistCoverUrl && (
+                    <img
+                      src={artistCoverUrl}
+                      alt={artist.name}
+                      className="w-24 h-24 rounded-lg shadow-lg object-cover"
+                    />
+                  )}
+                  {!artistCoverUrl && !isLoadingImage && (
+                    <div className="w-24 h-24 rounded-lg shadow-lg bg-muted flex items-center justify-center">
+                      <Music className="h-12 w-12 text-muted-foreground" />
+                    </div>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">
+                      Daily Playlist
+                    </p>
+                    <h2 className="text-2xl font-bold truncate">
+                      This is {artist.name}
+                    </h2>
+                    {lastUpdated && (
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {lastUpdated} • {playlist.length} songs
+                      </p>
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
-        </div>
 
-        {/* Controls */}
-        <div className="p-4 border-b">
-          <div className="flex gap-2">
-            <Button
-              variant="default"
-              size="sm"
-              onClick={handlePlayAll}
-              className="flex-1"
-            >
-              <Play className="h-4 w-4 mr-2" />
-              Play All
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handlePlayShuffle}
-              className="flex-1"
-            >
-              <Shuffle className="h-4 w-4 mr-2" />
-              Shuffle
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={generate}
-              disabled={isGenerating}
-            >
-              <RefreshCw className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-
-        {/* Song List Preview */}
-        <div className="p-4 max-h-96 overflow-y-auto">
-          <p className="text-xs text-muted-foreground mb-3 uppercase tracking-wide">
-            Top Tracks
-          </p>
-          <div className="space-y-1">
-            {playlist.slice(0, 10).map((song, index) => (
-              <div
-                key={song.id}
-                className="flex items-center gap-3 p-2 rounded hover:bg-accent cursor-pointer transition-colors"
-                onClick={() => setSongList(playlist, index)}
-              >
-                <div className="text-xs text-muted-foreground w-6 text-right">
-                  {index + 1}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium truncate">{song.title}</p>
-                  <p className="text-xs text-muted-foreground truncate">
-                    {song.album}
-                  </p>
-                </div>
+            {/* Controls */}
+            <div className="p-4 border-b">
+              <div className="flex gap-2">
+                <Button
+                  variant="default"
+                  size="sm"
+                  onClick={handlePlayAll}
+                  className="flex-1"
+                >
+                  <Play className="h-4 w-4 mr-2" />
+                  Play All
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handlePlayShuffle}
+                  className="flex-1"
+                >
+                  <Shuffle className="h-4 w-4 mr-2" />
+                  Shuffle
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={generate}
+                  disabled={isGenerating}
+                >
+                  <RefreshCw className="h-4 w-4" />
+                </Button>
               </div>
-            ))}
-          </div>
-          {playlist.length > 10 && (
-            <p className="text-xs text-muted-foreground text-center mt-4 py-2">
-              + {playlist.length - 10} more songs
-            </p>
-          )}
-        </div>
-      </Card>
+            </div>
+
+            {/* Song List Preview */}
+            <div className="p-4 max-h-96 overflow-y-auto">
+              <p className="text-xs text-muted-foreground mb-3 uppercase tracking-wide">
+                Top Tracks
+              </p>
+              <div className="space-y-1">
+                {playlist.slice(0, 10).map((song, index) => (
+                  <div
+                    key={song.id}
+                    className="flex items-center gap-3 p-2 rounded hover:bg-accent cursor-pointer transition-colors"
+                    onClick={() => setSongList(playlist, index)}
+                  >
+                    <div className="text-xs text-muted-foreground w-6 text-right">
+                      {index + 1}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium truncate">{song.title}</p>
+                      <p className="text-xs text-muted-foreground truncate">
+                        {song.album}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              {playlist.length > 10 && (
+                <p className="text-xs text-muted-foreground text-center mt-4 py-2">
+                  + {playlist.length - 10} more songs
+                </p>
+              )}
+            </div>
+          </Card>
+        )}
+      </ImageLoader>
     </div>
   )
 }
