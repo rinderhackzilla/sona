@@ -1,6 +1,6 @@
 import { generateThisIsArtist } from './this-is-artist'
 import type { Song } from '@/types/responses/song'
-import type { Artist } from '@/types/responses/artist'
+import type { ISimilarArtist } from '@/types/responses/artist'
 
 const STORAGE_KEY = 'this_is_artist_playlist'
 const STORAGE_KEY_METADATA = 'this_is_artist_metadata'
@@ -8,7 +8,7 @@ const STORAGE_KEY_DATE_FLAG = 'this_is_artist_current_date'
 
 interface PlaylistMetadata {
   generatedAt: string
-  artist: Artist
+  artist: ISimilarArtist
   totalSongs: number
   dateKey: string // Format: "2026-02-15"
 }
