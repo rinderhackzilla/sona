@@ -100,6 +100,8 @@ interface IIntegrations {
     setUsername: (value: string) => void
     apiKey: string
     setApiKey: (value: string) => void
+    showThisIsArtist: boolean
+    setShowThisIsArtist: (value: boolean) => void
   }
 }
 
