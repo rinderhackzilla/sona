@@ -130,8 +130,8 @@ export function DiscoverWeeklyCard() {
             <p className="text-sm text-muted-foreground mb-2">
               Your Weekly Mix
             </p>
-            <h2 className="text-4xl 2xl:text-5xl font-bold truncate">
-              Discover Weekly
+            <h2 className="text-4xl 2xl:text-5xl font-bold leading-tight">
+              Discover<br />Weekly
             </h2>
           </div>
 
