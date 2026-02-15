@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
+import { RabbitHoleButton } from '@/app/components/rabbit-hole-button'
 import { DataTable } from '@/app/components/ui/data-table'
 import { songsColumns } from '@/app/tables/songs-columns'
 import { ROUTES } from '@/routes/routesList'
@@ -35,9 +36,18 @@ export default function ArtistTopSongs({ topSongs, artist }: TopSongsProps) {
   return (
     <div className="w-full mb-4">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="scroll-m-20 text-2xl font-semibold tracking-tight">
-          {t('artist.topSongs')}
-        </h3>
+        <div className="flex items-center gap-2">
+          <h3 className="scroll-m-20 text-2xl font-semibold tracking-tight">
+            {t('artist.topSongs')}
+          </h3>
+          <RabbitHoleButton
+            type="artist"
+            artistName={name}
+            artistId={id}
+            size="sm"
+            variant="ghost"
+          />
+        </div>
 
         <Link
           to={ROUTES.SONGS.ARTIST_TRACKS(id, name)}
