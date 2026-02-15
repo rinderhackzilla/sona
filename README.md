@@ -46,7 +46,6 @@
         <li><a href="#lidarr-integration-setup">Lidarr Integration Setup</a></li>
       </ul>
     </li>
-    <li><a href="#roadmap">Roadmap</a></li>
     <li><a href="#license">License</a></li>
   </ol>
 </details>
@@ -305,25 +304,6 @@ Connect Sona directly to your Lidarr instance via API to request and download mi
   - Check indexers are configured: **Settings → Indexers**
   - Ensure download client is set up: **Settings → Download Clients**
   - Review Lidarr activity: **Activity → Queue**
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-## Roadmap
-
-- [x] Core music playback features
-- [x] Queue page
-- [x] Synced lyrics
-- [x] Podcast support
-- [x] Audio Visualizer
-- [x] Equalizer
-- [x] Discover Weekly (Last.fm Integration)
-- [x] Your Top 50 (Last.fm Integration)
-- [x] Lidarr API Integration
-- [x] Quality of Life Features
-- [ ] Discord Rich Presence
-- [ ] Custom App Icon
-- [ ] Smart Playlists
-- [ ] More Quality of Life Features
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
