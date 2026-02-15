@@ -167,7 +167,6 @@ export default function GenreDiscovery() {
   if (isLoading) {
     return (
       <div className="mb-8">
-        <Skeleton className="h-10 w-64 mb-6" />
         <div className="space-y-6">
           {[...Array(3)].map((_, i) => (
             <div key={i}>
@@ -198,13 +197,6 @@ export default function GenreDiscovery() {
 
   return (
     <div className="mb-8">
-      <div className="mb-6">
-        <h2 className="text-3xl font-bold mb-2">Discover by Genre</h2>
-        <p className="text-muted-foreground">
-          Explore albums from genres you love
-        </p>
-      </div>
-
       <div className="space-y-6">
         {genres.map((genre, index) => (
           <GenreRow key={genre} genre={genre} index={index} />
