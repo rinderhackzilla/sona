@@ -34,7 +34,7 @@ export default function Top50YearPage() {
               <Info className="h-6 w-6 mt-0.5 text-muted-foreground" />
               <div className="flex-1">
                 <CardTitle className="text-xl mb-3">
-                  Setup Top 50 Year
+                  Setup Your Top 50
                 </CardTitle>
                 <CardDescription className="text-base">
                   Get your top 50 most played tracks from the last 12 months based on your Last.fm listening history.
@@ -81,7 +81,7 @@ export default function Top50YearPage() {
       <div className="w-full px-8 py-6">
         <div className="max-w-2xl mx-auto mt-12 text-center">
           <Trophy className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-          <h2 className="text-2xl font-semibold mb-4">Top 50 of {year}</h2>
+          <h2 className="text-2xl font-semibold mb-4">Your Top 50</h2>
           <p className="text-muted-foreground mb-6">
             Your Top 50 playlist hasn't been generated yet.
           </p>
@@ -138,12 +138,12 @@ export default function Top50YearPage() {
     <div className="w-full">
       <ImageHeader
         type="Personalized Playlist"
-        title={`Top 50 of ${year}`}
+        title="Your Top 50"
         subtitle="Your most played tracks from the last 12 months"
         coverArtId={coverArt}
         coverArtType="album"
         coverArtSize="700"
-        coverArtAlt="Top 50 Year"
+        coverArtAlt="Your Top 50"
         badges={badges}
         isPlaylist={true}
       />
