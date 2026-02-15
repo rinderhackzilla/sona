@@ -69,7 +69,7 @@ Sona is a fork of Aonsoku, customized and enhanced for Windows desktop use. This
 - **Equalizer:** Built-in 10-band equalizer with presets and custom settings for personalized sound control.
 - **Discover Weekly:** Personalized weekly playlists powered by Last.fm integration, automatically generated every Monday with ~50 songs from similar artists.
 - **Your Top 50:** Your top 50 most played tracks from the last 12 months, synced from Last.fm listening history.
-- **Lidarr Integration:** Send music requests directly to Lidarr via API for automated music collection management.
+- **Lidarr Integration:** Send music requests directly to Lidarr via API for automated music collection management via the search bar.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
