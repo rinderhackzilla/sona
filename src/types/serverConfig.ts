@@ -95,6 +95,12 @@ interface IIntegrations {
     apiKey: string
     setApiKey: (value: string) => void
   }
+  lastfm: {
+    username: string
+    setUsername: (value: string) => void
+    apiKey: string
+    setApiKey: (value: string) => void
+  }
 }
 
 // When changing the desktop data types
