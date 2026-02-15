@@ -1,5 +1,5 @@
 import Autoplay from 'embla-carousel-autoplay'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { Play } from 'lucide-react'
 import { ImageLoader } from '@/app/components/image-loader'
@@ -134,13 +134,25 @@ export default function AlbumHeader({
   subtitle,
 }: AlbumHeaderProps) {
   const [api, setApi] = useState<CarouselApi>()
-  const { data: onRepeat, isLoading: onRepeatLoading } = useOnRepeat()
+  const { data: onRepeat, isLoading: onRepeatLoading, error: onRepeatError } = useOnRepeat()
+
+  // Debug logging
+  useEffect(() => {
+    console.log('[AlbumHeader] On Repeat Status:', {
+      isLoading: onRepeatLoading,
+      hasData: !!onRepeat,
+      hasSong: !!onRepeat?.song,
+      error: onRepeatError,
+      data: onRepeat,
+    })
+  }, [onRepeat, onRepeatLoading, onRepeatError])
 
   // Combine On Repeat with albums
   const carouselItems = []
   
   // Add On Repeat as first item if available
   if (onRepeat?.song) {
+    console.log('[AlbumHeader] Adding On Repeat to carousel:', onRepeat)
     carouselItems.push({
       type: 'onRepeat' as const,
       data: onRepeat,
@@ -154,6 +166,8 @@ export default function AlbumHeader({
       data: album,
     })
   })
+
+  console.log('[AlbumHeader] Total carousel items:', carouselItems.length, carouselItems)
 
   if (carouselItems.length === 0 && !onRepeatLoading) return null
 
