@@ -119,7 +119,7 @@ export function ThisIsArtist() {
               Daily Playlist
             </p>
             <h2 className="text-4xl 2xl:text-5xl font-bold leading-tight">
-              This is<br />{artist.name}
+              This is...<br />{artist.name}
             </h2>
           </div>
 
