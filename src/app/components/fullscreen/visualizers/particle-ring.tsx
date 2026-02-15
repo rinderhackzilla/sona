@@ -42,9 +42,9 @@ export function ParticleRing() {
         particlesRef.current.push({
           angle: (Math.PI * 2 * i) / particleCount,
           radius: Math.min(width, height) * 0.3,
-          size: 2 + Math.random() * 3,
-          speed: (0.01 + Math.random() * 0.02) * 0.75, // 25% slower
-          alpha: 0.5 + Math.random() * 0.5,
+          size: (2 + Math.random() * 3) * 1.25, // 25% larger
+          speed: (0.01 + Math.random() * 0.02) * 0.5, // 33% slower (was 0.75)
+          alpha: 0.7 + Math.random() * 0.3, // Increased base alpha
           colorIndex: i % 4, // Cycle through 4 colors
         })
       }
@@ -105,14 +105,12 @@ export function ParticleRing() {
         const y = centerY + Math.sin(particle.angle) * particleRadius
 
         // Increased base opacity and size
-        const baseOpacity = 0.6
-        const opacity = baseOpacity + enhancedFrequency * 0.4
+        const baseOpacity = 0.75 // Increased from 0.6
+        const opacity = baseOpacity + enhancedFrequency * 0.25
 
         // Get color from palette (cycles through all 4)
         const colorHex =
-          colors.length > 1
-            ? colors[particle.colorIndex]
-            : colors[0]
+          colors.length > 1 ? colors[particle.colorIndex] : colors[0]
 
         // Convert hex to rgba
         const hexToRgba = (hex: string, alpha: number) => {
@@ -127,10 +125,10 @@ export function ParticleRing() {
           return `rgba(${r}, ${g}, ${b}, ${alpha})`
         }
 
-        // Draw particle
+        // Draw particle with stronger glow
         ctx.fillStyle = hexToRgba(colorHex, opacity)
         ctx.globalAlpha = opacity
-        ctx.shadowBlur = 15 * enhancedFrequency
+        ctx.shadowBlur = 20 * enhancedFrequency // Increased from 15
         ctx.shadowColor = hexToRgba(colorHex, enhancedFrequency)
         ctx.beginPath()
         ctx.arc(
