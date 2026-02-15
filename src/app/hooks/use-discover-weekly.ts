@@ -1,15 +1,10 @@
 import { useState, useEffect, useCallback } from 'react'
 import { generateDiscoverWeekly, shouldRegeneratePlaylist } from '@/service/discover-weekly'
+import { useAppIntegrations } from '@/store/app.store'
 import type { Song } from '@/types/responses/song'
 
 const STORAGE_KEY = 'discover_weekly_playlist'
 const STORAGE_KEY_METADATA = 'discover_weekly_metadata'
-const STORAGE_KEY_LASTFM = 'lastfm_config'
-
-interface LastFmConfig {
-  username: string
-  apiKey: string
-}
 
 interface PlaylistMetadata {
   generatedAt: string
@@ -18,26 +13,14 @@ interface PlaylistMetadata {
 }
 
 export function useDiscoverWeekly() {
+  const { lastfm } = useAppIntegrations()
   const [playlist, setPlaylist] = useState<Song[]>([])
   const [isGenerating, setIsGenerating] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [lastGenerated, setLastGenerated] = useState<string | null>(null)
   const [artistsUsed, setArtistsUsed] = useState<string[]>([])
 
-  // Load Last.fm config
-  const getLastFmConfig = useCallback((): LastFmConfig | null => {
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY_LASTFM)
-      if (!stored) return null
-      const config = JSON.parse(stored)
-      if (!config.username || !config.apiKey) return null
-      return config
-    } catch {
-      return null
-    }
-  }, [])
-
-  const isConfigured = getLastFmConfig() !== null
+  const isConfigured = !!(lastfm.username && lastfm.apiKey)
 
   // Load playlist from localStorage
   useEffect(() => {
@@ -60,8 +43,7 @@ export function useDiscoverWeekly() {
 
   // Generate new playlist
   const generate = useCallback(async () => {
-    const config = getLastFmConfig()
-    if (!config) {
+    if (!isConfigured) {
       setError('Last.fm not configured')
       return
     }
@@ -71,8 +53,8 @@ export function useDiscoverWeekly() {
 
     try {
       const result = await generateDiscoverWeekly({
-        username: config.username,
-        apiKey: config.apiKey,
+        username: lastfm.username,
+        apiKey: lastfm.apiKey,
         targetArtists: 15,
         songsPerArtist: 4,
       })
@@ -92,7 +74,7 @@ export function useDiscoverWeekly() {
     } finally {
       setIsGenerating(false)
     }
-  }, [getLastFmConfig])
+  }, [isConfigured, lastfm.username, lastfm.apiKey])
 
   // Check if playlist should be regenerated
   const checkAndRegenerate = useCallback(async () => {
