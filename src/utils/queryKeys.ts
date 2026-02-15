@@ -13,6 +13,7 @@ const album = {
   mostPlayed: 'get-most-played-albums',
   recentlyPlayed: 'get-recently-played-albums',
   random: 'get-random-albums',
+  byGenre: 'get-albums-by-genre',
 }
 
 const artist = {
@@ -39,7 +40,9 @@ const radio = {
 
 const search = 'search-key'
 
-const genre = 'get-all-genres'
+const genre = {
+  all: 'get-all-genres',
+}
 
 const update = {
   serverInfo: 'get-server-info',
