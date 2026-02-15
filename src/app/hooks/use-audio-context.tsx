@@ -39,6 +39,7 @@ export function useAudioContext(audio: HTMLAudioElement | null) {
   const audioContextRef = useRef<IAudioContext | null>(null)
   const sourceNodeRef = useRef<IAudioSource | null>(null)
   const gainNodeRef = useRef<IGainNode<IAudioContext> | null>(null)
+  const visualizerGainRef = useRef<GainNode | null>(null)
   const eqFiltersRef = useRef<IBiquadFilterNode<IAudioContext>[]>([])
   const analyserRef = useRef<AnalyserNode | null>(null)
 
@@ -57,6 +58,14 @@ export function useAudioContext(audio: HTMLAudioElement | null) {
 
     if (!gainNodeRef.current) {
       gainNodeRef.current = audioContext.createGain()
+    }
+
+    // Create visualizer-specific gain node (fixed at 25% for consistent visualization)
+    if (!visualizerGainRef.current) {
+      const vizGain = audioContext.createGain() as GainNode
+      vizGain.gain.value = 0.25 // Fixed 25% volume for visualizer
+      visualizerGainRef.current = vizGain
+      logger.info('[AudioContext] Created visualizer gain node at 25%')
     }
 
     // Create analyser for visualizer
@@ -84,28 +93,31 @@ export function useAudioContext(audio: HTMLAudioElement | null) {
       logger.info('Created EQ filters', { count: filters.length })
     }
 
-    // Connect audio chain: source -> EQ filters -> analyser -> gainNode -> destination
+    // Connect main audio chain: source -> EQ filters -> gainNode -> destination
     let prevNode: AudioNode = sourceNodeRef.current
     
     // Connect all EQ filters in series
-    eqFiltersRef.current.forEach((filter, index) => {
+    eqFiltersRef.current.forEach((filter) => {
       prevNode.connect(filter)
       prevNode = filter
     })
     
-    // Connect to analyser (for visualizer)
-    if (analyserRef.current) {
-      prevNode.connect(analyserRef.current)
-      prevNode = analyserRef.current
-    }
-    
-    // Connect to gain node
+    // Connect to main gain node (for master volume)
     prevNode.connect(gainNodeRef.current)
     
     // Connect gain node to destination
     gainNodeRef.current.connect(audioContext.destination)
 
-    logger.info('Audio chain connected: source -> EQ -> analyser -> gain -> destination')
+    // Separate visualizer chain: last EQ filter -> visualizer gain -> analyser
+    // This splits off BEFORE the master gain node
+    const lastEqFilter = eqFiltersRef.current[eqFiltersRef.current.length - 1]
+    if (lastEqFilter && visualizerGainRef.current && analyserRef.current) {
+      lastEqFilter.connect(visualizerGainRef.current)
+      visualizerGainRef.current.connect(analyserRef.current)
+      logger.info('Visualizer chain connected: EQ -> visualizer gain (25%) -> analyser')
+    }
+
+    logger.info('Audio chain connected: source -> EQ -> gain -> destination (+ visualizer branch)')
   }, [audio, isSong, replayGainError])
 
   const resumeContext = useCallback(async () => {
@@ -133,6 +145,7 @@ export function useAudioContext(audio: HTMLAudioElement | null) {
           ...replayGain,
         })
 
+        // Only update master gain, NOT visualizer gain
         gainNodeRef.current.gain.setValueAtTime(gainValue, currentTime)
       }
     },
@@ -143,6 +156,10 @@ export function useAudioContext(audio: HTMLAudioElement | null) {
     if (sourceNodeRef.current) {
       sourceNodeRef.current.disconnect()
       sourceNodeRef.current = null
+    }
+    if (visualizerGainRef.current) {
+      visualizerGainRef.current.disconnect()
+      visualizerGainRef.current = null
     }
     if (analyserRef.current) {
       analyserRef.current.disconnect()
