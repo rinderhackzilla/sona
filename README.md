@@ -134,23 +134,29 @@ The audio visualizer requires a **CORS proxy** to access Navidrome's audio strea
 - **Navidrome server** accessible on your network
 - **CORS Proxy** (included in `cors-proxy/` directory)
 
-#### Setup Steps
+#### Quick Setup
 
-1. **Start the CORS Proxy:**
+1. **Configure the Proxy:**
    ```bash
    cd cors-proxy
+   cp .env.example .env
+   ```
+   
+   Edit `.env` with your Navidrome settings:
+   ```bash
+   PROXY_PORT=4534
+   LISTEN_HOST=0.0.0.0
+   NAVIDROME_HOST=192.168.0.163
+   NAVIDROME_PORT=4533
+   NAVIDROME_PROTOCOL=http
+   ```
+
+2. **Start the Proxy:**
+   ```bash
    node server.js
    ```
    
-   The proxy starts on `http://localhost:4534` and forwards requests to your Navidrome server.
-
-2. **Configure Custom Target (Optional):**
-   ```bash
-   NAVIDROME_HOST=192.168.0.163 \
-   NAVIDROME_PORT=4533 \
-   NAVIDROME_PROTOCOL=http \
-   node server.js
-   ```
+   The proxy will start on `http://localhost:4534` and forward to your Navidrome server.
 
 3. **Update Sona Server URL:**
    - Open Sona settings (⚙️)
@@ -162,84 +168,79 @@ The audio visualizer requires a **CORS proxy** to access Navidrome's audio strea
    - Enable **Audio Visualizer**
    - Select your preferred visualization style (Bars, Waveform, Circular, Spectrum)
 
-5. **Run as Background Service (Linux - Optional):**
+#### Running as a Service
+
+**Linux (systemd):**
+```bash
+sudo nano /etc/systemd/system/navidrome-cors-proxy.service
+```
+
+Add:
+```ini
+[Unit]
+Description=Navidrome CORS Proxy for Sona Audio Visualizer
+After=network.target
+
+[Service]
+Type=simple
+User=YOUR_USERNAME
+WorkingDirectory=/path/to/sona/cors-proxy
+ExecStart=/usr/bin/node /path/to/sona/cors-proxy/server.js
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
+```
+
+Enable:
+```bash
+sudo systemctl daemon-reload
+sudo systemctl enable --now navidrome-cors-proxy
+```
+
+**Windows (NSSM):**
+
+See [`cors-proxy/README.md`](cors-proxy/README.md) for Windows service setup.
+
+#### Alternative: Caddy Reverse Proxy
    
-   Create systemd service:
-   ```bash
-   sudo nano /etc/systemd/system/navidrome-cors-proxy.service
-   ```
+If you use Caddy, add CORS headers directly (no separate proxy needed):
 
-   Add:
-   ```ini
-   [Unit]
-   Description=Navidrome CORS Proxy for Sona Audio Visualizer
-   After=network.target
+```caddyfile
+navidrome.yourdomain.com {
+    reverse_proxy localhost:4533 {
+        header_up Host {upstream_hostport}
+    }
+    
+    @audio {
+        path /rest/stream*
+        path /rest/download*
+    }
+    
+    header @audio {
+        Access-Control-Allow-Origin *
+        Access-Control-Allow-Headers "range, content-type, authorization"
+        Access-Control-Expose-Headers "Content-Length, Content-Range"
+    }
+}
+```
 
-   [Service]
-   Type=simple
-   User=YOUR_USERNAME
-   WorkingDirectory=/path/to/sona/cors-proxy
-   ExecStart=/usr/bin/node /path/to/sona/cors-proxy/server.js
-   Restart=always
-   Environment="NAVIDROME_HOST=YOUR_NAVIDROME_IP"
-   Environment="NAVIDROME_PORT=4533"
-
-   [Install]
-   WantedBy=multi-user.target
-   ```
-
-   Enable and start:
-   ```bash
-   sudo systemctl daemon-reload
-   sudo systemctl enable navidrome-cors-proxy
-   sudo systemctl start navidrome-cors-proxy
-   ```
-
-6. **Caddy Reverse Proxy (Alternative - Recommended):**
-   
-   If you use Caddy, you can add CORS headers directly:
-   
-   ```caddyfile
-   navidrome.yourdomain.com {
-       reverse_proxy localhost:4533 {
-           header_up Host {upstream_hostport}
-       }
-       
-       @audio {
-           path /rest/stream*
-           path /rest/download*
-       }
-       
-       header @audio {
-           Access-Control-Allow-Origin *
-           Access-Control-Allow-Headers "range, content-type"
-           Access-Control-Expose-Headers "Content-Length, Content-Range"
-       }
-   }
-   ```
-   
-   Then use `https://navidrome.yourdomain.com` directly in Sona (no separate proxy needed).
+Then use `https://navidrome.yourdomain.com` directly in Sona.
 
 #### Troubleshooting
 
 - **Visualizer Not Working:**
   - Ensure CORS proxy is running: `curl http://localhost:4534/rest/ping`
-  - Check Sona server URL points to proxy, not directly to Navidrome
+  - Check Sona uses proxy URL, not direct Navidrome URL
   - Verify audio is playing
   
-- **Port Already in Use:**
-  ```bash
-  # Use different port
-  PROXY_PORT=4535 node server.js
-  ```
+- **Configuration Issues:**
+  - Check `.env` file exists in `cors-proxy/` directory
+  - Verify `NAVIDROME_HOST` and `NAVIDROME_PORT` are correct
+  - Test Navidrome directly: `curl http://YOUR_NAVIDROME_IP:4533/rest/ping`
 
-- **Connection Refused:**
-  ```bash
-  # Test Navidrome directly
-  curl http://YOUR_NAVIDROME_IP:4533/rest/ping
-  ```
-
-For more details, see [`cors-proxy/README.md`](cors-proxy/README.md).
+For detailed configuration options, see [`cors-proxy/README.md`](cors-proxy/README.md).
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
