@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   HeaderFallback,
@@ -22,6 +23,16 @@ import { ROUTES } from '@/routes/routesList'
 export default function Home() {
   const { t } = useTranslation()
   const showThisIsArtist = useAppStore((state) => state.integrations.lastfm.showThisIsArtist)
+  const [isWideScreen, setIsWideScreen] = useState(window.innerWidth >= 1300)
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsWideScreen(window.innerWidth >= 1300)
+    }
+
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
 
   const similarArtists = useGetSimilarArtistsDiscovery()
 
@@ -57,37 +68,28 @@ export default function Home() {
     },
   ]
 
+  const showTwoColumns = showThisIsArtist && isWideScreen
+
   return (
     <div className="w-full px-8 py-6">
-      {/* Hero Section - Conditional Layout with custom breakpoint */}
-      {showThisIsArtist ? (
-        <div className="grid grid-cols-1 gap-6 mb-8" style={{ gridTemplateColumns: window.innerWidth >= 1300 ? 'repeat(2, minmax(0, 1fr))' : '1fr' }}>
-          {/* Hero Carousel */}
-          <div className="min-h-[450px] flex items-stretch">
-            {similarArtists.isFetching || similarArtists.isLoading ? (
-              <HeaderFallback />
-            ) : (
-              <AlbumHeader albums={similarArtists.data?.list || []} />
-            )}
-          </div>
+      {/* Hero Section - Conditional Layout */}
+      <div className={`grid gap-6 mb-8 ${showTwoColumns ? 'grid-cols-2' : 'grid-cols-1'}`}>
+        {/* Hero Carousel */}
+        <div className="min-h-[450px] flex items-stretch">
+          {similarArtists.isFetching || similarArtists.isLoading ? (
+            <HeaderFallback />
+          ) : (
+            <AlbumHeader albums={similarArtists.data?.list || []} />
+          )}
+        </div>
 
-          {/* This is Artist */}
+        {/* This is Artist - Only shown if enabled */}
+        {showThisIsArtist && (
           <div className="min-h-[450px] flex items-stretch">
             <ThisIsArtist />
           </div>
-        </div>
-      ) : (
-        <div className="mb-8">
-          {/* Hero Carousel Full Width */}
-          <div className="min-h-[450px] flex items-stretch">
-            {similarArtists.isFetching || similarArtists.isLoading ? (
-              <HeaderFallback />
-            ) : (
-              <AlbumHeader albums={similarArtists.data?.list || []} />
-            )}
-          </div>
-        </div>
-      )}
+        )}
+      </div>
 
       {/* Genre Discovery Section */}
       <GenreDiscovery />
