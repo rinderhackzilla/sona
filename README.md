@@ -12,11 +12,6 @@
     <br />
     <br />
     Forked from <a href="https://github.com/victoralvesf/aonsoku">Aonsoku</a>
-    <br />
-    <br />
-    <a href="https://github.com/sgtspeerock/sona/issues/new?labels=bug">Report Bug</a>
-    ·
-    <a href="https://github.com/sgtspeerock/sona/issues/new?labels=enhancement">Request Feature</a>
   </p>
 
   [![React][React.js]][React-url] [![Electron][Electron]][Electron-url]
@@ -35,7 +30,7 @@
       <a href="#planned-features">Planned Features</a>
     </li>
     <li>
-      <a href="#screenshots">Screenshots</a>
+      <a href="#todo">Todo</a>
     </li>
     <li>
       <a href="#getting-started">Getting Started</a>
@@ -82,15 +77,15 @@ Sona continues to evolve with the following enhancements on the roadmap:
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-## Screenshots
+## Todo
 
-<a href="https://raw.githubusercontent.com/victoralvesf/aonsoku/main/media/home.png"><img src="https://raw.githubusercontent.com/victoralvesf/aonsoku/main/media/home.png" width="49.5%"/></a> <a href="https://raw.githubusercontent.com/victoralvesf/aonsoku/main/media/album.png"><img src="https://raw.githubusercontent.com/victoralvesf/aonsoku/main/media/album.png" width="49.5%"/></a>
+Current development tasks in progress:
 
-<a href="https://raw.githubusercontent.com/victoralvesf/aonsoku/main/media/playlist.png"><img src="https://raw.githubusercontent.com/victoralvesf/aonsoku/main/media/playlist.png" width="49.5%"/></a> <a href="https://raw.githubusercontent.com/victoralvesf/aonsoku/main/media/albums.png"><img src="https://raw.githubusercontent.com/victoralvesf/aonsoku/main/media/albums.png" width="49.5%"/></a>
-
-<a href="https://raw.githubusercontent.com/victoralvesf/aonsoku/main/media/albumsByArtist.png"><img src="https://raw.githubusercontent.com/victoralvesf/aonsoku/main/media/albumsByArtist.png" width="49.5%"/></a> <a href="https://raw.githubusercontent.com/victoralvesf/aonsoku/main/media/artist.png"><img src="https://raw.githubusercontent.com/victoralvesf/aonsoku/main/media/artist.png" width="49.5%"/></a>
-
-<a href="https://raw.githubusercontent.com/victoralvesf/aonsoku/main/media/player.png"><img src="https://raw.githubusercontent.com/victoralvesf/aonsoku/main/media/player.png" width="49.5%"/></a> <a href="https://raw.githubusercontent.com/victoralvesf/aonsoku/main/media/lyrics.png"><img src="https://raw.githubusercontent.com/victoralvesf/aonsoku/main/media/lyrics.png" width="49.5%"/></a>
+- [ ] Discord Rich Presence integration
+- [ ] Custom app icon design
+- [ ] Settings persistence improvements
+- [ ] Performance optimizations
+- [ ] Documentation updates
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -145,6 +140,8 @@ pnpm run electron:build:win
 - [x] Discover Weekly (Last.fm Integration)
 - [x] Lidarr API Integration
 - [x] Quality of Life Features
+- [ ] Discord Rich Presence
+- [ ] Custom App Icon
 - [ ] Smart Playlists
 - [ ] More Quality of Life Features
 
