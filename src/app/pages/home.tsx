@@ -8,6 +8,7 @@ import PreviewList from '@/app/components/home/preview-list'
 import GenreDiscovery from '@/app/components/home/genre-discovery'
 import { Top50Year } from '@/app/components/home/top-50-year'
 import { DiscoverWeekly } from '@/app/components/home/discover-weekly'
+import { DiscoverWeeklyCard } from '@/app/components/home/discover-weekly-card'
 import { ThisIsArtist } from '@/app/components/home/this-is-artist'
 import { useAppStore } from '@/store/app.store'
 import {
@@ -68,11 +69,19 @@ export default function Home() {
         )}
       </div>
 
-      {/* This is Artist - Only shown if enabled */}
+      {/* Split Row: Discover Weekly + This is Artist */}
       {showThisIsArtist && (
         <div className="mb-8">
-          <div className="h-[300px] w-full">
-            <ThisIsArtist />
+          <div className="grid grid-cols-2 gap-4">
+            {/* Discover Weekly Card - Left */}
+            <div className="h-[300px]">
+              <DiscoverWeeklyCard />
+            </div>
+            
+            {/* This is Artist - Right */}
+            <div className="h-[300px]">
+              <ThisIsArtist />
+            </div>
           </div>
         </div>
       )}
