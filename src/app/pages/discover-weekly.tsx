@@ -1,5 +1,5 @@
 import { RefreshCw, Sparkles, Info, Play, Shuffle } from 'lucide-react'
-import { CoverMosaic } from '@/app/components/discover-weekly/cover-mosaic'
+import { LastfmAvatar } from '@/app/components/discover-weekly/lastfm-avatar'
 import { BadgesData } from '@/app/components/header-info'
 import ListWrapper from '@/app/components/list-wrapper'
 import { Button } from '@/app/components/ui/button'
@@ -8,11 +8,13 @@ import { DataTable } from '@/app/components/ui/data-table'
 import { useDiscoverWeekly } from '@/app/hooks/use-discover-weekly'
 import { songsColumns } from '@/app/tables/songs-columns'
 import { usePlayerActions } from '@/store/player.store'
+import { useAppIntegrations } from '@/store/app.store'
 import { ColumnFilter } from '@/types/columnFilter'
 import { convertSecondsToHumanRead } from '@/utils/convertSecondsToTime'
 
 export default function DiscoverWeeklyPage() {
   const columns = songsColumns()
+  const { lastfm } = useAppIntegrations()
   const {
     playlist,
     isGenerating,
@@ -137,13 +139,17 @@ export default function DiscoverWeeklyPage() {
 
   return (
     <div className="w-full">
-      {/* Custom Header with Mosaic Cover */}
+      {/* Custom Header with Last.fm Avatar */}
       <div className="relative w-full">
         <div className="flex flex-col md:flex-row gap-6 p-8 pb-6">
-          {/* Mosaic Cover */}
+          {/* Last.fm Avatar */}
           <div className="flex-shrink-0">
             <div className="w-48 h-48 md:w-56 md:h-56 lg:w-64 lg:h-64 rounded-lg overflow-hidden shadow-2xl">
-              <CoverMosaic songs={playlist} size={256} />
+              <LastfmAvatar 
+                username={lastfm.username} 
+                apiKey={lastfm.apiKey}
+                size={256} 
+              />
             </div>
           </div>
 
@@ -165,7 +171,7 @@ export default function DiscoverWeeklyPage() {
             )}
 
             <p className="text-base text-muted-foreground mb-6">
-              Your personalized mix based on Last.fm listening history
+              Personalized for <span className="font-medium">{lastfm.username}</span> based on Last.fm listening history
             </p>
 
             {/* Badges */}
