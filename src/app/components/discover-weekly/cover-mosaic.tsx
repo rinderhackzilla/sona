@@ -30,15 +30,21 @@ export function CoverMosaic({ songs, size = 700 }: CoverMosaicProps) {
     const coverSize = size / gridSize
     const totalCovers = gridSize * gridSize
 
-    // Select unique covers
-    const uniqueCovers = [...new Set(songs.slice(0, totalCovers).map(s => s.coverArt))]
-      .filter(Boolean)
+    // Take first N songs (allow duplicates to fill grid)
+    const coversToShow = songs
       .slice(0, totalCovers)
+      .map(s => s.coverArt)
+      .filter(Boolean)
+
+    // If we don't have enough covers, repeat some to fill the grid
+    while (coversToShow.length < totalCovers && coversToShow.length > 0) {
+      coversToShow.push(coversToShow[coversToShow.length % coversToShow.length])
+    }
 
     let loadedImages = 0
 
     // Load and draw all images
-    uniqueCovers.forEach(async (coverArt, index) => {
+    coversToShow.forEach(async (coverArt, index) => {
       if (!coverArt) return
 
       try {
@@ -59,7 +65,7 @@ export function CoverMosaic({ songs, size = 700 }: CoverMosaicProps) {
           loadedImages++
           
           // Apply gradient overlay after all images loaded
-          if (loadedImages === uniqueCovers.length) {
+          if (loadedImages === coversToShow.length) {
             applyGradientOverlay(ctx, size)
           }
         }
@@ -75,7 +81,7 @@ export function CoverMosaic({ songs, size = 700 }: CoverMosaicProps) {
           ctx.fillRect(x, y, coverSize, coverSize)
           
           loadedImages++
-          if (loadedImages === uniqueCovers.length) {
+          if (loadedImages === coversToShow.length) {
             applyGradientOverlay(ctx, size)
           }
         }
@@ -94,7 +100,7 @@ export function CoverMosaic({ songs, size = 700 }: CoverMosaicProps) {
         ctx.fillRect(x, y, coverSize, coverSize)
         
         loadedImages++
-        if (loadedImages === uniqueCovers.length) {
+        if (loadedImages === coversToShow.length) {
           applyGradientOverlay(ctx, size)
         }
       }
