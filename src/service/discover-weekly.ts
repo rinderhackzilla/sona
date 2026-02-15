@@ -65,6 +65,7 @@ async function findArtistInLibrary(
 
 /**
  * Get random songs from an artist using Subsonic's getTopSongs
+ * CHANGED: Only returns 1 song per artist
  */
 async function getArtistSongs(
   artistName: string,
@@ -79,12 +80,12 @@ async function getArtistSongs(
       return []
     }
 
-    // Shuffle and take requested amount
+    // CHANGED: Always return only 1 song per artist
     const shuffled = topSongs.sort(() => Math.random() - 0.5)
-    const selected = shuffled.slice(0, count)
+    const selected = shuffled.slice(0, 1)
 
     console.log(
-      `[DiscoverWeekly] Got ${selected.length} songs from ${artistName}`,
+      `[DiscoverWeekly] Got ${selected.length} song from ${artistName}`,
     )
 
     return selected
@@ -99,6 +100,7 @@ async function getArtistSongs(
 
 /**
  * Main Discover Weekly generation function
+ * CHANGED: Target 50 total artists (more similar, fewer listened)
  */
 export async function generateDiscoverWeekly(
   config: DiscoverWeeklyConfig,
@@ -106,8 +108,8 @@ export async function generateDiscoverWeekly(
   const {
     username,
     apiKey,
-    targetArtists = 15,
-    songsPerArtist = 4,
+    targetArtists = 50, // CHANGED: Increased from 15 to 50
+    songsPerArtist = 1, // CHANGED: 1 song per artist
   } = config
 
   console.log('[DiscoverWeekly] Starting generation...')
@@ -130,11 +132,13 @@ export async function generateDiscoverWeekly(
   const topArtists = Array.from(topArtistsMap.values())
 
   // Step 2: Get similar artists for each top artist
+  // CHANGED: Increased similar artist search depth
   const similarArtistsMap = new Map<string, ArtistWithMatch>()
 
-  for (const topArtist of topArtists.slice(0, 10)) {
+  // CHANGED: Use more top artists to get more similar recommendations
+  for (const topArtist of topArtists.slice(0, 20)) {
     try {
-      const similar = await lastfm.getSimilarArtists(topArtist.name, apiKey, 20)
+      const similar = await lastfm.getSimilarArtists(topArtist.name, apiKey, 30)
 
       similar.forEach((simArtist) => {
         const key = simArtist.name.toLowerCase()
@@ -187,7 +191,7 @@ export async function generateDiscoverWeekly(
     `[DiscoverWeekly] Found ${foundArtists.length}/${targetArtists} artists in library`,
   )
 
-  // Step 4: Get songs from found artists
+  // Step 4: Get songs from found artists (1 per artist)
   const allSongs: Song[] = []
 
   for (const artist of foundArtists) {
