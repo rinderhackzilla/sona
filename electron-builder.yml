@@ -4,17 +4,24 @@ copyright: Copyright © 2026 rinderhack
 icon: ./build/icon.ico
 artifactName: '${productName}-v${version}-${os}-${arch}.${ext}'
 
-# Disable ASAR to fix ICU data loading issues
-asar: false
-
 directories:
   buildResources: build
+  output: dist
 
 files:
   - '!**/*'
   - 'out/**'
   - '!out/renderer/screenshots{,/**}'
   - 'package.json'
+  # Include Electron resources for ICU
+  - from: node_modules/electron/dist
+    to: .
+    filter:
+      - '*.pak'
+      - '*.bin'
+      - 'icudtl.dat'
+      - 'v8_context_snapshot.bin'
+      - 'snapshot_blob.bin'
 
 extraResources:
   - from: resources
