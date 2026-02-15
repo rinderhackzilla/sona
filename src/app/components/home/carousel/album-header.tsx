@@ -78,7 +78,7 @@ function AlbumHeaderItem({ album }: { album: Albums }) {
         <div className="flex-1 flex flex-col gap-3 min-w-0">
           <div>
             <p className="text-sm text-muted-foreground mb-2">
-              Recommended Album
+              Recommended album
             </p>
             <Link
               to={ROUTES.ALBUM.PAGE(album.id)}
