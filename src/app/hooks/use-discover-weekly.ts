@@ -26,21 +26,27 @@ export function useDiscoverWeekly() {
 
   const isConfigured = !!(lastfm.username && lastfm.apiKey)
 
-  // Load playlist from localStorage on mount
+  // Load playlist from localStorage on mount (async to avoid sync state updates)
   useEffect(() => {
     if (hasLoadedRef.current) return
     hasLoadedRef.current = true
 
-    try {
-      const { playlist: storedPlaylist, metadata: storedMetadata } = loadPlaylist()
-      
-      if (storedPlaylist.length > 0 && storedMetadata) {
-        setPlaylist(storedPlaylist)
-        setMetadata(storedMetadata)
+    // Use setTimeout to make this fully async
+    const loadAsync = async () => {
+      try {
+        const { playlist: storedPlaylist, metadata: storedMetadata } = loadPlaylist()
+        
+        if (storedPlaylist.length > 0 && storedMetadata) {
+          setPlaylist(storedPlaylist)
+          setMetadata(storedMetadata)
+        }
+      } catch (error) {
+        console.error('[DiscoverWeekly Hook] Failed to load playlist:', error)
       }
-    } catch (error) {
-      console.error('[DiscoverWeekly Hook] Failed to load playlist:', error)
     }
+
+    // Delay to ensure this runs async
+    setTimeout(loadAsync, 0)
   }, [])
 
   // Catch-up check on mount (only once per session)
