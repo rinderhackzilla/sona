@@ -32,7 +32,7 @@ export function FrequencyCircle() {
       const height = canvas.offsetHeight
       const centerX = width / 2
       const centerY = height / 2
-      const radius = Math.min(width, height) * 0.14
+      const radius = Math.min(width, height) * 0.25 // Increased from 0.14 to 0.25
 
       ctx.clearRect(0, 0, width, height)
 
@@ -66,7 +66,7 @@ export function FrequencyCircle() {
           normalizedValue = Math.min(1, normalizedValue * 1.1)
         }
 
-        const barHeight = normalizedValue * radius * 1.2 // Increased from 0.65 for longer bars
+        const barHeight = normalizedValue * radius * 1.0 // Adjusted to 1.0 with larger base radius
 
         const x1 = centerX + Math.cos(angle) * radius
         const y1 = centerY + Math.sin(angle) * radius
