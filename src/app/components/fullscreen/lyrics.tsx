@@ -82,9 +82,11 @@ function SyncedLyrics({ lyrics }: LyricProps) {
           <p
             onClick={() => skipToTime(line.startMillisecond)}
             className={clsx(
-              'text-shadow-lg my-5 cursor-pointer hover:opacity-100 duration-500',
-              'transition-[opacity,transform] motion-reduce:transition-none',
-              active ? 'opacity-100 scale-125' : 'opacity-50',
+              'my-5 cursor-pointer hover:opacity-100 duration-500',
+              'transition-[opacity,transform,text-shadow] motion-reduce:transition-none',
+              active 
+                ? 'opacity-100 scale-125 drop-shadow-[0_0_8px_hsl(var(--primary))] text-shadow-[0_0_12px_hsl(var(--primary)/0.5)]' 
+                : 'opacity-50',
             )}
           >
             {line.content}
