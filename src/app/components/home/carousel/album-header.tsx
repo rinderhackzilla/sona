@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Play } from 'lucide-react'
 import { ImageLoader } from '@/app/components/image-loader'
+import { OnRepeatItem } from '@/app/components/home/carousel/on-repeat-item'
 import {
   Carousel,
   CarouselApi,
@@ -16,6 +17,7 @@ import { ROUTES } from '@/routes/routesList'
 import { Albums } from '@/types/responses/album'
 import { subsonic } from '@/service/subsonic'
 import { usePlayerActions } from '@/store/player.store'
+import { useOnRepeat } from '@/app/hooks/use-on-repeat'
 import { cn } from '@/lib/utils'
 
 interface AlbumHeaderProps {
@@ -132,8 +134,28 @@ export default function AlbumHeader({
   subtitle,
 }: AlbumHeaderProps) {
   const [api, setApi] = useState<CarouselApi>()
+  const { data: onRepeat, isLoading: onRepeatLoading } = useOnRepeat()
 
-  if (albums.length === 0) return null
+  // Combine On Repeat with albums
+  const carouselItems = []
+  
+  // Add On Repeat as first item if available
+  if (onRepeat?.song) {
+    carouselItems.push({
+      type: 'onRepeat' as const,
+      data: onRepeat,
+    })
+  }
+
+  // Add regular albums
+  albums.forEach((album) => {
+    carouselItems.push({
+      type: 'album' as const,
+      data: album,
+    })
+  })
+
+  if (carouselItems.length === 0 && !onRepeatLoading) return null
 
   return (
     <div className="mb-8">
@@ -162,12 +184,19 @@ export default function AlbumHeader({
           className="ml-0 flex transform-gpu"
           style={{ borderRadius: 'calc(var(--radius) - 2px)' }}
         >
-          {albums.map((album) => (
+          {carouselItems.map((item, index) => (
             <CarouselItem
-              key={album.id}
+              key={item.type === 'onRepeat' ? 'on-repeat' : item.data.id}
               className="pl-0 basis-full maskImage-carousel-item"
             >
-              <AlbumHeaderItem album={album} />
+              {item.type === 'onRepeat' ? (
+                <OnRepeatItem
+                  song={item.data.song}
+                  playcount={item.data.playcount}
+                />
+              ) : (
+                <AlbumHeaderItem album={item.data} />
+              )}
             </CarouselItem>
           ))}
         </CarouselContent>
