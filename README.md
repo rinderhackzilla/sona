@@ -129,56 +129,135 @@ pnpm run electron:build:win
 
 ### Audio Visualizer Setup
 
-The audio visualizer requires access to your system's audio output to display real-time visualizations.
+The audio visualizer requires a **CORS proxy** to access Navidrome's audio streams, as Navidrome doesn't send the necessary CORS headers for Web Audio API.
 
 #### Requirements
-- **Windows:** Windows 10/11 with audio loopback support
-- **Audio Driver:** WASAPI-compatible audio device (most modern audio devices support this)
+- **Node.js** installed
+- **Navidrome server** accessible on your network
+- **CORS Proxy** (included in `cors-proxy/` directory)
 
-#### Configuration Steps
+#### Setup Steps
 
-1. **Enable Visualizer:**
-   - Open Sona settings (⚙️ icon in sidebar)
-   - Navigate to **Player** settings
-   - Enable **"Audio Visualizer"** toggle
+1. **Start the CORS Proxy:**
+   ```bash
+   cd cors-proxy
+   node server.js
+   ```
+   
+   The proxy starts on `http://localhost:4534` and forwards requests to your Navidrome server.
 
-2. **Select Visualization Style:**
-   - Choose from multiple visualization presets:
-     - Bars
-     - Waveform
-     - Circular
-     - Spectrum
-   - Adjust visualization sensitivity if needed
+2. **Configure Custom Target (Optional):**
+   ```bash
+   NAVIDROME_HOST=192.168.0.163 \
+   NAVIDROME_PORT=4533 \
+   NAVIDROME_PROTOCOL=http \
+   node server.js
+   ```
 
-3. **Audio Permissions:**
-   - Windows may prompt for audio access permissions
-   - Grant Sona permission to access audio loopback
-   - If visualizer doesn't work, check Windows Privacy settings:
-     - Go to **Settings → Privacy → Microphone**
-     - Ensure desktop apps can access audio
+3. **Update Sona Server URL:**
+   - Open Sona settings (⚙️)
+   - Change server URL from `http://192.168.0.163:4533` to `http://localhost:4534`
+   - Save and reconnect
 
-4. **Troubleshooting:**
-   - If visualizer shows no activity:
-     - Ensure audio is actually playing
-     - Try restarting the app
-     - Check that your audio device is set as default in Windows
-     - Update audio drivers if issues persist
+4. **Enable Visualizer in Sona:**
+   - Go to **Settings → Player**
+   - Enable **Audio Visualizer**
+   - Select your preferred visualization style (Bars, Waveform, Circular, Spectrum)
+
+5. **Run as Background Service (Linux - Optional):**
+   
+   Create systemd service:
+   ```bash
+   sudo nano /etc/systemd/system/navidrome-cors-proxy.service
+   ```
+
+   Add:
+   ```ini
+   [Unit]
+   Description=Navidrome CORS Proxy for Sona Audio Visualizer
+   After=network.target
+
+   [Service]
+   Type=simple
+   User=YOUR_USERNAME
+   WorkingDirectory=/path/to/sona/cors-proxy
+   ExecStart=/usr/bin/node /path/to/sona/cors-proxy/server.js
+   Restart=always
+   Environment="NAVIDROME_HOST=YOUR_NAVIDROME_IP"
+   Environment="NAVIDROME_PORT=4533"
+
+   [Install]
+   WantedBy=multi-user.target
+   ```
+
+   Enable and start:
+   ```bash
+   sudo systemctl daemon-reload
+   sudo systemctl enable navidrome-cors-proxy
+   sudo systemctl start navidrome-cors-proxy
+   ```
+
+6. **Caddy Reverse Proxy (Alternative - Recommended):**
+   
+   If you use Caddy, you can add CORS headers directly:
+   
+   ```caddyfile
+   navidrome.yourdomain.com {
+       reverse_proxy localhost:4533 {
+           header_up Host {upstream_hostport}
+       }
+       
+       @audio {
+           path /rest/stream*
+           path /rest/download*
+       }
+       
+       header @audio {
+           Access-Control-Allow-Origin *
+           Access-Control-Allow-Headers "range, content-type"
+           Access-Control-Expose-Headers "Content-Length, Content-Range"
+       }
+   }
+   ```
+   
+   Then use `https://navidrome.yourdomain.com` directly in Sona (no separate proxy needed).
+
+#### Troubleshooting
+
+- **Visualizer Not Working:**
+  - Ensure CORS proxy is running: `curl http://localhost:4534/rest/ping`
+  - Check Sona server URL points to proxy, not directly to Navidrome
+  - Verify audio is playing
+  
+- **Port Already in Use:**
+  ```bash
+  # Use different port
+  PROXY_PORT=4535 node server.js
+  ```
+
+- **Connection Refused:**
+  ```bash
+  # Test Navidrome directly
+  curl http://YOUR_NAVIDROME_IP:4533/rest/ping
+  ```
+
+For more details, see [`cors-proxy/README.md`](cors-proxy/README.md).
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ### Lidarr Integration Setup
 
-Connect Sona to your Lidarr instance to request and download missing albums/artists directly from the player.
+Connect Sona directly to your Lidarr instance via API to request and download missing albums/artists.
 
 #### Requirements
-- **Lidarr Instance:** A running Lidarr server (v1.0.0 or higher recommended)
-- **API Access:** Lidarr API key with write permissions
-- **Network Access:** Sona must be able to reach your Lidarr instance (same network or via reverse proxy)
+- **Lidarr Instance:** Running Lidarr server (v1.0.0 or higher)
+- **API Key:** Lidarr API key with write permissions
+- **Network Access:** Sona must be able to reach Lidarr (same network or via reverse proxy)
 
 #### Configuration Steps
 
 1. **Get Your Lidarr API Key:**
-   - Open your Lidarr web interface
+   - Open Lidarr web interface
    - Go to **Settings → General**
    - Scroll to **Security** section
    - Copy your **API Key**
@@ -187,36 +266,46 @@ Connect Sona to your Lidarr instance to request and download missing albums/arti
    - Open Sona settings (⚙️ icon in sidebar)
    - Navigate to **Integrations** tab
    - Find the **Lidarr** section
-   - Enter the following information:
-     - **Lidarr URL:** Your Lidarr instance URL (e.g., `http://192.168.1.100:8686` or `https://lidarr.yourdomain.com`)
-     - **API Key:** Paste the API key from step 1
-   - Click **Save** or **Test Connection** to verify
+   - Enter:
+     - **Lidarr URL:** `http://192.168.0.163:8686` (or your Lidarr address)
+     - **API Key:** Paste your API key
+   - Click **Test Connection** to verify
 
 3. **Using Lidarr Integration:**
    - Browse to any artist in Sona
-   - If the artist is not in your Lidarr library, you'll see a **"Request via Lidarr"** button
-   - Click the button to:
-     - Add the artist to Lidarr
-     - Automatically monitor for new releases
-     - Trigger search for missing albums (based on your Lidarr configuration)
+   - If artist is not in your Lidarr library, you'll see **"Request via Lidarr"** button
+   - Click to:
+     - Add artist to Lidarr
+     - Monitor for new releases
+     - Trigger search for missing albums
    - Check Lidarr for download progress
 
-4. **Troubleshooting:**
-   - **Connection Failed:**
-     - Verify Lidarr URL is correct and includes port number
-     - Ensure Lidarr is accessible from Sona's machine
-     - Check firewall settings
-     - For HTTPS connections, ensure SSL certificate is valid
+4. **Lidarr Prerequisites:**
    
-   - **API Errors:**
-     - Regenerate API key in Lidarr if connection keeps failing
-     - Check Lidarr logs for authentication errors
-     - Ensure API key has not been revoked
-   
-   - **Request Not Working:**
-     - Verify Lidarr quality profiles are configured
-     - Check that Lidarr has indexers configured
-     - Ensure download client is set up in Lidarr
+   Ensure Lidarr is properly configured:
+   - **Quality Profiles:** At least one configured
+   - **Root Folder:** Music library path set
+   - **Indexers:** Configured for searching
+   - **Download Client:** qBittorrent, Transmission, etc. set up
+
+#### Troubleshooting
+
+- **Connection Failed:**
+  - Verify Lidarr URL includes protocol (`http://` or `https://`) and port
+  - Test access: `curl http://YOUR_LIDARR_IP:8686/api/v1/system/status -H "X-Api-Key: YOUR_API_KEY"`
+  - Check firewall/network settings
+  - For HTTPS, ensure valid SSL certificate
+
+- **API Errors:**
+  - Regenerate API key in Lidarr if authentication fails
+  - Check Lidarr logs: **System → Logs**
+  - Ensure API key has not been revoked
+
+- **Request Not Working:**
+  - Verify quality profiles exist: **Settings → Profiles**
+  - Check indexers are configured: **Settings → Indexers**
+  - Ensure download client is set up: **Settings → Download Clients**
+  - Review Lidarr activity: **Activity → Queue**
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
