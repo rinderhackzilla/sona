@@ -58,11 +58,7 @@ export default function Home() {
       {similarArtists.isFetching || similarArtists.isLoading ? (
         <HeaderFallback />
       ) : (
-        <AlbumHeader
-          albums={similarArtists.data?.list || []}
-          title="Discover Similar Artists"
-          subtitle="Albums from artists similar to what you listen to"
-        />
+        <AlbumHeader albums={similarArtists.data?.list || []} />
       )}
 
       {/* Genre Discovery Section */}
