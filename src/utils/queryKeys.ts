@@ -14,6 +14,7 @@ const album = {
   recentlyPlayed: 'get-recently-played-albums',
   random: 'get-random-albums',
   byGenre: 'get-albums-by-genre',
+  similarArtists: 'get-similar-artists-albums',
 }
 
 const artist = {
