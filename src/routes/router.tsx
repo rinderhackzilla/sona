@@ -25,6 +25,7 @@ import { ROUTES } from '@/routes/routesList'
 // Direct imports (not lazy) to avoid suspense issues
 import BaseLayout from '@/app/layout/base'
 import DiscoverWeekly from '@/app/pages/discover-weekly'
+import Top50Year from '@/app/pages/top-50-year'
 
 const Album = lazy(() => import('@/app/pages/albums/album'))
 const AlbumsList = lazy(() => import('@/app/pages/albums/list'))
@@ -60,6 +61,12 @@ export const router = createHashRouter([
             <Home />
           </Suspense>
         ),
+      },
+      {
+        id: 'top-50-year',
+        path: ROUTES.LIBRARY.TOP_50_YEAR,
+        errorElement: <ErrorPage />,
+        element: <Top50Year />,
       },
       {
         id: 'discover-weekly',
