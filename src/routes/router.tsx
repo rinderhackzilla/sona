@@ -22,10 +22,10 @@ import { loginLoader } from '@/routes/loginLoader'
 import { podcastsLoader, protectedLoader } from '@/routes/protectedLoader'
 import { ROUTES } from '@/routes/routesList'
 
-// Import DiscoverWeekly directly (not lazy) to avoid suspense issues
+// Direct imports (not lazy) to avoid suspense issues
+import BaseLayout from '@/app/layout/base'
 import DiscoverWeekly from '@/app/pages/discover-weekly'
 
-const BaseLayout = lazy(() => import('@/app/layout/base'))
 const Album = lazy(() => import('@/app/pages/albums/album'))
 const AlbumsList = lazy(() => import('@/app/pages/albums/list'))
 const Artist = lazy(() => import('@/app/pages/artists/artist'))
