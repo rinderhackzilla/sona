@@ -1,10 +1,9 @@
 import { memo, useCallback, useEffect, useRef, useState } from 'react'
-import { getSongStreamUrl } from '@/api/httpClient'
+import { getSongStreamUrl, getCoverArtUrl } from '@/api/httpClient'
 import { getProxyURL } from '@/api/podcastClient'
 import { MiniPlayerButton } from '@/app/components/mini-player/button'
 import { RadioInfo } from '@/app/components/player/radio-info'
 import { TrackInfo } from '@/app/components/player/track-info'
-import { subsonic } from '@/service/subsonic'
 import { podcasts } from '@/service/podcasts'
 import {
   getVolume,
@@ -81,13 +80,22 @@ export function Player() {
   const [backgroundImage, setBackgroundImage] = useState<string | null>(null)
 
   useEffect(() => {
-    if (isSong && song?.coverArt) {
-      const imageUrl = subsonic.getCoverArtUrl(song.coverArt, '400')
-      setBackgroundImage(imageUrl)
-    } else {
-      setBackgroundImage(null)
+    const loadBackgroundImage = async () => {
+      if (isSong && song?.coverArt) {
+        try {
+          const imageUrl = await getCoverArtUrl(song.coverArt, 'song', '400')
+          setBackgroundImage(imageUrl)
+        } catch (error) {
+          console.error('Error loading background image:', error)
+          setBackgroundImage(null)
+        }
+      } else {
+        setBackgroundImage(null)
+      }
     }
-  }, [isSong, song])
+
+    loadBackgroundImage()
+  }, [isSong, song?.coverArt])
 
   const getAudioRef = useCallback(() => {
     if (isRadio) return radioRef
