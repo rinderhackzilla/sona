@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { toast } from 'react-toastify'
 import { getRabbitHoleService } from '@/service/rabbit-hole'
 import { usePlayerActions } from '@/store/player.store'
-import { useSettingsStore } from '@/store/settings.store'
+import { useAppIntegrations } from '@/store/app.store'
 import type { ISong } from '@/types/responses/song'
 
 interface RabbitHoleParams {
@@ -18,7 +18,8 @@ interface RabbitHoleParams {
 export function useRabbitHole() {
   const { t } = useTranslation()
   const { setSongList } = usePlayerActions()
-  const lastfmApiKey = useSettingsStore((state) => state.lastfm.apiKey)
+  const { lastfm } = useAppIntegrations()
+  const lastfmApiKey = lastfm.apiKey
 
   const mutation = useMutation({
     mutationFn: async (params: RabbitHoleParams) => {
