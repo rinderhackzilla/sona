@@ -183,23 +183,21 @@ export function Player() {
   }
 
   return (
-    <footer className="border-t h-[--player-height] w-full flex items-center fixed bottom-0 left-0 right-0 z-40 bg-background relative overflow-hidden">
+    <footer className="border-t h-[--player-height] w-full flex items-center fixed bottom-0 left-0 right-0 z-40 bg-background overflow-hidden">
       {/* Blurred Album Cover Background */}
       {isSong && song && (
-        <div className="absolute inset-0 z-0 pointer-events-none">
+        <div className="absolute inset-0 pointer-events-none">
           <ImageLoader id={song.coverArt} type="song" size={400}>
             {(src) => (
-              <div className="relative w-full h-full">
-                <img
-                  src={src}
-                  alt=""
-                  className="absolute left-0 top-0 h-full w-auto object-cover blur-3xl opacity-30 scale-110"
-                  style={{
-                    maskImage: 'linear-gradient(to right, black 0%, black 40%, transparent 100%)',
-                    WebkitMaskImage: 'linear-gradient(to right, black 0%, black 40%, transparent 100%)',
-                  }}
-                />
-              </div>
+              <img
+                src={src}
+                alt=""
+                className="absolute left-0 top-0 h-full w-auto object-cover blur-3xl opacity-30 scale-110"
+                style={{
+                  maskImage: 'linear-gradient(to right, black 0%, black 40%, transparent 100%)',
+                  WebkitMaskImage: 'linear-gradient(to right, black 0%, black 40%, transparent 100%)',
+                }}
+              />
             )}
           </ImageLoader>
         </div>
