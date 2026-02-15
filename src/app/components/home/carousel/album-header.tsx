@@ -38,7 +38,7 @@ function AlbumHeaderItem({ album }: { album: Albums }) {
   }
 
   return (
-    <div className="relative w-full h-full min-h-[250px] overflow-hidden">
+    <div className="relative w-full h-[250px] 2xl:h-[300px] overflow-hidden">
       {/* Background Image with Blur */}
       <ImageLoader id={album.coverArt} type="album">
         {(src) => (
@@ -172,7 +172,7 @@ export default function AlbumHeader({
   if (carouselItems.length === 0 && !onRepeatLoading) return null
 
   return (
-    <div className="h-full w-full">
+    <div>
       {title && (
         <div className="mb-4">
           <h2 className="text-3xl font-bold">{title}</h2>
@@ -183,7 +183,7 @@ export default function AlbumHeader({
       )}
 
       <Carousel
-        className="w-full h-full border rounded-lg overflow-hidden"
+        className="w-full border rounded-lg overflow-hidden"
         opts={{
           loop: true,
         }}
@@ -195,13 +195,13 @@ export default function AlbumHeader({
         setApi={setApi}
       >
         <CarouselContent
-          className="ml-0 flex h-full transform-gpu"
+          className="ml-0 flex transform-gpu"
           style={{ borderRadius: 'calc(var(--radius) - 2px)' }}
         >
           {carouselItems.map((item, index) => (
             <CarouselItem
               key={item.type === 'onRepeat' ? 'on-repeat' : item.data.id}
-              className="pl-0 basis-full h-full maskImage-carousel-item"
+              className="pl-0 basis-full maskImage-carousel-item"
             >
               {item.type === 'onRepeat' ? (
                 <OnRepeatItem
