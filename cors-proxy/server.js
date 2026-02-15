@@ -3,12 +3,33 @@
 const http = require('http');
 const https = require('https');
 const { URL } = require('url');
+const fs = require('fs');
+const path = require('path');
 
-// Configuration
-const PROXY_PORT = 4534;
+// Load .env file if it exists
+const envPath = path.join(__dirname, '.env');
+if (fs.existsSync(envPath)) {
+  const envContent = fs.readFileSync(envPath, 'utf-8');
+  envContent.split('\n').forEach(line => {
+    const trimmedLine = line.trim();
+    if (trimmedLine && !trimmedLine.startsWith('#')) {
+      const [key, ...valueParts] = trimmedLine.split('=');
+      if (key && valueParts.length > 0) {
+        const value = valueParts.join('=').trim();
+        // Only set if not already set by environment
+        if (!process.env[key]) {
+          process.env[key] = value;
+        }
+      }
+    }
+  });
+}
+
+// Configuration with defaults
+const PROXY_PORT = parseInt(process.env.PROXY_PORT) || 4534;
 const LISTEN_HOST = process.env.LISTEN_HOST || '0.0.0.0';
 const TARGET_HOST = process.env.NAVIDROME_HOST || '192.168.0.163';
-const TARGET_PORT = process.env.NAVIDROME_PORT || 4533;
+const TARGET_PORT = parseInt(process.env.NAVIDROME_PORT) || 4533;
 const TARGET_PROTOCOL = process.env.NAVIDROME_PROTOCOL || 'http';
 
 const TARGET_URL = `${TARGET_PROTOCOL}://${TARGET_HOST}:${TARGET_PORT}`;
@@ -17,7 +38,8 @@ console.log(`
 🎵 Navidrome CORS Proxy Server
 `);
 console.log(`Proxy:  http://${LISTEN_HOST}:${PROXY_PORT}`);
-console.log(`Target: ${TARGET_URL}\n`);
+console.log(`Target: ${TARGET_URL}`);
+console.log(`Config: ${fs.existsSync(envPath) ? '.env file' : 'environment variables'}\n`);
 
 const server = http.createServer((req, res) => {
   // Handle preflight OPTIONS requests
@@ -80,14 +102,15 @@ const server = http.createServer((req, res) => {
 
 server.listen(PROXY_PORT, LISTEN_HOST, () => {
   console.log(`✅ CORS Proxy running on http://${LISTEN_HOST}:${PROXY_PORT}`);
-  console.log(`\n💡 Update your app to use: http://192.168.0.163:${PROXY_PORT}`);
+  console.log(`\n💡 Update your app to use: http://localhost:${PROXY_PORT}`);
+  console.log(`   (or http://<your-server-ip>:${PROXY_PORT} if running remotely)`);
   console.log(`\nPress Ctrl+C to stop\n`);
 });
 
 server.on('error', (err) => {
   if (err.code === 'EADDRINUSE') {
     console.error(`\n❌ Error: Port ${PROXY_PORT} is already in use`);
-    console.error('   Stop the other process or choose a different port\n');
+    console.error('   Stop the other process or choose a different port in .env\n');
   } else {
     console.error('\n❌ Server error:', err.message, '\n');
   }
