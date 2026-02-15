@@ -59,24 +59,35 @@ export default function Home() {
 
   return (
     <div className="w-full px-8 py-6">
-      {/* Hero Section - Conditional Layout */}
-      <div className={`grid gap-6 mb-8 ${showThisIsArtist ? 'grid-cols-1 lg:grid-cols-2' : 'grid-cols-1'}`}>
-        {/* Hero Carousel */}
-        <div className="lg:col-span-1 min-h-[450px] flex items-stretch">
-          {similarArtists.isFetching || similarArtists.isLoading ? (
-            <HeaderFallback />
-          ) : (
-            <AlbumHeader albums={similarArtists.data?.list || []} />
-          )}
-        </div>
+      {/* Hero Section - Conditional Layout with custom breakpoint */}
+      {showThisIsArtist ? (
+        <div className="grid grid-cols-1 gap-6 mb-8" style={{ gridTemplateColumns: window.innerWidth >= 1300 ? 'repeat(2, minmax(0, 1fr))' : '1fr' }}>
+          {/* Hero Carousel */}
+          <div className="min-h-[450px] flex items-stretch">
+            {similarArtists.isFetching || similarArtists.isLoading ? (
+              <HeaderFallback />
+            ) : (
+              <AlbumHeader albums={similarArtists.data?.list || []} />
+            )}
+          </div>
 
-        {/* This is Artist - Only shown if enabled */}
-        {showThisIsArtist && (
-          <div className="lg:col-span-1 min-h-[450px] flex items-stretch">
+          {/* This is Artist */}
+          <div className="min-h-[450px] flex items-stretch">
             <ThisIsArtist />
           </div>
-        )}
-      </div>
+        </div>
+      ) : (
+        <div className="mb-8">
+          {/* Hero Carousel Full Width */}
+          <div className="min-h-[450px] flex items-stretch">
+            {similarArtists.isFetching || similarArtists.isLoading ? (
+              <HeaderFallback />
+            ) : (
+              <AlbumHeader albums={similarArtists.data?.list || []} />
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Genre Discovery Section */}
       <GenreDiscovery />
