@@ -68,24 +68,33 @@ export default function Home() {
     },
   ]
 
-  const showTwoColumns = showThisIsArtist && isWideScreen
+  const shouldShowTwoColumns = showThisIsArtist && isWideScreen
 
   return (
     <div className="w-full px-8 py-6">
-      {/* Hero Section - Conditional Layout */}
-      <div className={`grid gap-6 mb-8 ${showTwoColumns ? 'grid-cols-2' : 'grid-cols-1'}`}>
+      {/* Hero Section */}
+      <div 
+        className="grid gap-6 mb-8"
+        style={{
+          gridTemplateColumns: shouldShowTwoColumns ? 'repeat(2, 1fr)' : '1fr'
+        }}
+      >
         {/* Hero Carousel */}
-        <div className="min-h-[450px] flex items-stretch">
+        <div className="min-h-[450px] w-full">
           {similarArtists.isFetching || similarArtists.isLoading ? (
-            <HeaderFallback />
+            <div className="h-full">
+              <HeaderFallback />
+            </div>
           ) : (
-            <AlbumHeader albums={similarArtists.data?.list || []} />
+            <div className="h-full">
+              <AlbumHeader albums={similarArtists.data?.list || []} />
+            </div>
           )}
         </div>
 
         {/* This is Artist - Only shown if enabled */}
         {showThisIsArtist && (
-          <div className="min-h-[450px] flex items-stretch">
+          <div className="min-h-[450px] w-full">
             <ThisIsArtist />
           </div>
         )}
