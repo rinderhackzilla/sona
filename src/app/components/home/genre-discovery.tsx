@@ -2,9 +2,12 @@ import { useGetGenreDiscovery, useGetAlbumsByGenre } from '@/app/hooks/use-home'
 import { Link } from 'react-router-dom'
 import { ROUTES } from '@/routes/routesList'
 import { Music } from 'lucide-react'
-import { AlbumListResponse } from '@/types/responses/album'
 import { Skeleton } from '@/app/components/ui/skeleton'
-import AlbumCard from '@/app/components/cards/album-card'
+import { PreviewCard } from '@/app/components/preview-card/card'
+import { ImageLoader } from '@/app/components/image-loader'
+import { subsonic } from '@/service/subsonic'
+import { usePlayerActions } from '@/store/player.store'
+import { Albums } from '@/types/responses/album'
 
 interface GenreRowProps {
   genre: string
@@ -13,6 +16,14 @@ interface GenreRowProps {
 
 function GenreRow({ genre, index }: GenreRowProps) {
   const { data, isLoading } = useGetAlbumsByGenre(genre, 8)
+  const { setSongList } = usePlayerActions()
+
+  async function handlePlayAlbum(album: Albums) {
+    const response = await subsonic.albums.getOne(album.id)
+    if (response) {
+      setSongList(response.song, 0)
+    }
+  }
 
   if (isLoading) {
     return (
@@ -62,7 +73,27 @@ function GenreRow({ genre, index }: GenreRowProps) {
       <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
         {data.list.map((album) => (
           <div key={album.id} className="min-w-[180px]">
-            <AlbumCard album={album} />
+            <PreviewCard.Root>
+              <PreviewCard.ImageWrapper link={ROUTES.ALBUM.PAGE(album.id)}>
+                <ImageLoader id={album.coverArt} type="album">
+                  {(src) => <PreviewCard.Image src={src} alt={album.name} />}
+                </ImageLoader>
+                <PreviewCard.PlayButton
+                  onClick={() => handlePlayAlbum(album)}
+                />
+              </PreviewCard.ImageWrapper>
+              <PreviewCard.InfoWrapper>
+                <PreviewCard.Title link={ROUTES.ALBUM.PAGE(album.id)}>
+                  {album.name}
+                </PreviewCard.Title>
+                <PreviewCard.Subtitle
+                  enableLink={album.artistId !== undefined}
+                  link={ROUTES.ARTIST.PAGE(album.artistId ?? '')}
+                >
+                  {album.artist}
+                </PreviewCard.Subtitle>
+              </PreviewCard.InfoWrapper>
+            </PreviewCard.Root>
           </div>
         ))}
       </div>
