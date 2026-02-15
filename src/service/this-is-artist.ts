@@ -1,6 +1,6 @@
 import { subsonic } from '@/service/subsonic'
 import type { Song } from '@/types/responses/song'
-import type { Artist } from '@/types/responses/artist'
+import type { ISimilarArtist } from '@/types/responses/artist'
 
 interface LastFmTrack {
   name: string
@@ -65,18 +65,12 @@ async function getArtistTopTracks(
 /**
  * Select a random artist from library
  */
-async function selectRandomArtist(): Promise<Artist> {
+async function selectRandomArtist(): Promise<ISimilarArtist> {
   console.log('[ThisIsArtist] Fetching all artists from library...')
   
-  const response = await subsonic.artists.getAll()
-  const allArtists: Artist[] = []
+  const allArtists = await subsonic.artists.getAll()
 
-  // Flatten artist list from all indexes
-  response.artists.index.forEach((index) => {
-    allArtists.push(...index.artist)
-  })
-
-  if (allArtists.length === 0) {
+  if (!allArtists || allArtists.length === 0) {
     throw new Error('No artists found in library')
   }
 
@@ -93,12 +87,17 @@ async function selectRandomArtist(): Promise<Artist> {
  * Get all songs for an artist from Navidrome
  */
 async function getArtistSongs(artistId: string): Promise<Song[]> {
-  const response = await subsonic.artists.getById(artistId)
+  const artist = await subsonic.artists.getOne(artistId)
+  
+  if (!artist) {
+    throw new Error(`Artist not found: ${artistId}`)
+  }
+
   const songs: Song[] = []
 
   // Collect all songs from all albums
-  if (response.artist.album) {
-    for (const album of response.artist.album) {
+  if (artist.album) {
+    for (const album of artist.album) {
       if (album.song) {
         songs.push(...album.song)
       }
@@ -144,7 +143,7 @@ export async function generateThisIsArtist(
   config: GenerateConfig
 ): Promise<{
   playlist: Song[]
-  artist: Artist
+  artist: ISimilarArtist
 }> {
   console.log('[ThisIsArtist] 🎵 Starting playlist generation...')
 
