@@ -6,6 +6,7 @@ import {
 import AlbumHeader from '@/app/components/home/carousel/album-header'
 import PreviewList from '@/app/components/home/preview-list'
 import GenreDiscovery from '@/app/components/home/genre-discovery'
+import { Top50Year } from '@/app/components/home/top-50-year'
 import { DiscoverWeekly } from '@/app/components/home/discover-weekly'
 import {
   useGetMostPlayed,
@@ -64,6 +65,9 @@ export default function Home() {
 
       {/* Genre Discovery Section */}
       <GenreDiscovery />
+
+      {/* Top 50 Year Section */}
+      <Top50Year />
 
       {/* Discover Weekly Section */}
       <DiscoverWeekly />
