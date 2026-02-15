@@ -8,7 +8,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/app/components/ui/tooltip'
-import { cn } from '@/utils/cn'
+import { cn } from '@/lib/utils'
 
 interface RabbitHoleButtonProps {
   type: 'artist' | 'album'
