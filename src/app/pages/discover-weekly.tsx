@@ -1,4 +1,3 @@
-import { useEffect } from 'react'
 import { RefreshCw, Sparkles, Play, Shuffle, Info } from 'lucide-react'
 import { Button } from '@/app/components/ui/button'
 import { Card, CardDescription, CardHeader, CardTitle } from '@/app/components/ui/card'
@@ -13,17 +12,11 @@ export default function DiscoverWeeklyPage() {
     lastGenerated,
     artistsUsed,
     generate,
-    checkAndRegenerate,
     isConfigured,
   } = useDiscoverWeekly()
   const { setSongList } = usePlayerActions()
 
-  // Check if playlist needs regeneration on mount
-  useEffect(() => {
-    if (isConfigured && !isGenerating) {
-      checkAndRegenerate()
-    }
-  }, [isConfigured, isGenerating, checkAndRegenerate])
+  // Note: Catch-up check happens automatically in the hook on mount
 
   if (!isConfigured) {
     return (
