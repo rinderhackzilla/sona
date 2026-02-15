@@ -72,16 +72,16 @@ export default function Home() {
 
   return (
     <div className="w-full px-8 py-6">
-      {/* Hero Section - Same width as genre discovery below */}
+      {/* Hero Section */}
       <div className="mb-8">
         <div 
-          className="grid gap-4"
+          className="grid gap-4 w-full max-w-full overflow-hidden"
           style={{
-            gridTemplateColumns: shouldShowTwoColumns ? 'repeat(2, 1fr)' : '1fr'
+            gridTemplateColumns: shouldShowTwoColumns ? 'repeat(2, minmax(0, 1fr))' : '1fr'
           }}
         >
           {/* Hero Carousel */}
-          <div className="h-[400px]">
+          <div className="h-[400px] w-full max-w-full min-w-0">
             {similarArtists.isFetching || similarArtists.isLoading ? (
               <HeaderFallback />
             ) : (
@@ -91,7 +91,7 @@ export default function Home() {
 
           {/* This is Artist - Only shown if enabled */}
           {showThisIsArtist && (
-            <div className="h-[400px]">
+            <div className="h-[400px] w-full max-w-full min-w-0">
               <ThisIsArtist />
             </div>
           )}
