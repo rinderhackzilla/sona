@@ -32,7 +32,7 @@ export function FrequencyCircle() {
       const height = canvas.offsetHeight
       const centerX = width / 2
       const centerY = height / 2
-      const radius = Math.min(width, height) * 0.28
+      const radius = Math.min(width, height) * 0.14 // Reduced from 0.28 (50% smaller)
 
       ctx.clearRect(0, 0, width, height)
 
