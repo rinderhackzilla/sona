@@ -9,6 +9,7 @@ import GenreDiscovery from '@/app/components/home/genre-discovery'
 import { Top50Year } from '@/app/components/home/top-50-year'
 import { DiscoverWeekly } from '@/app/components/home/discover-weekly'
 import { ThisIsArtist } from '@/app/components/home/this-is-artist'
+import { useAppStore } from '@/store/app.store'
 import {
   useGetMostPlayed,
   useGetRandomAlbums,
@@ -20,6 +21,7 @@ import { ROUTES } from '@/routes/routesList'
 
 export default function Home() {
   const { t } = useTranslation()
+  const showThisIsArtist = useAppStore((state) => state.integrations.lastfm.showThisIsArtist)
 
   const similarArtists = useGetSimilarArtistsDiscovery()
 
@@ -57,10 +59,10 @@ export default function Home() {
 
   return (
     <div className="w-full px-8 py-6">
-      {/* Hero Section - 2 Column Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        {/* Left: Hero Carousel */}
-        <div className="lg:col-span-1">
+      {/* Hero Section - Conditional Layout */}
+      <div className={`grid gap-6 mb-8 ${showThisIsArtist ? 'grid-cols-1 lg:grid-cols-2' : 'grid-cols-1'}`}>
+        {/* Hero Carousel */}
+        <div className="lg:col-span-1 min-h-[450px] flex items-stretch">
           {similarArtists.isFetching || similarArtists.isLoading ? (
             <HeaderFallback />
           ) : (
@@ -68,10 +70,12 @@ export default function Home() {
           )}
         </div>
 
-        {/* Right: This is Artist */}
-        <div className="lg:col-span-1">
-          <ThisIsArtist />
-        </div>
+        {/* This is Artist - Only shown if enabled */}
+        {showThisIsArtist && (
+          <div className="lg:col-span-1 min-h-[450px] flex items-stretch">
+            <ThisIsArtist />
+          </div>
+        )}
       </div>
 
       {/* Genre Discovery Section */}
