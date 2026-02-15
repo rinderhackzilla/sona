@@ -79,7 +79,6 @@ Sona is a fork of Aonsoku, customized and enhanced for Windows desktop use. This
 Sona continues to evolve with the following enhancements on the roadmap:
 
 - [ ] Discord Rich Presence integration
-- [ ] Custom app icon design
 - [ ] **Smart Playlists:** Dynamic playlists based on custom rules and filters
 - [ ] **Enhanced Quality of Life Features:** Additional UI/UX improvements and convenience features
 
