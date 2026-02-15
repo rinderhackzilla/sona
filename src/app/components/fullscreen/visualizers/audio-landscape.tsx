@@ -1,9 +1,11 @@
 import { useEffect, useRef } from 'react'
 import { useAudioAnalyser } from '@/app/hooks/use-audio-analyser'
+import { useSongColor } from '@/store/player.store'
 
 export function AudioLandscape() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const { frequencyData } = useAudioAnalyser()
+  const { currentSongColorPalette } = useSongColor()
   const offsetRef = useRef(0)
   const historyRef = useRef<number[][]>([])
 
@@ -33,10 +35,20 @@ export function AudioLandscape() {
 
       ctx.clearRect(0, 0, width, height)
 
-      const accentHSL = getComputedStyle(document.documentElement)
-        .getPropertyValue('--accent')
-        .trim()
-      const [h, s, l] = accentHSL.split(' ')
+      // Get colors from palette or fallback
+      const color1 = currentSongColorPalette
+        ? currentSongColorPalette.vibrant
+        : null
+      const color2 = currentSongColorPalette
+        ? currentSongColorPalette.accent
+        : null
+
+      const getFallbackColor = () => {
+        const accentHSL = getComputedStyle(document.documentElement)
+          .getPropertyValue('--accent')
+          .trim()
+        return accentHSL
+      }
 
       // Add current frequency snapshot to history
       const snapshot = Array.from(frequencyData.slice(0, 64))
@@ -88,18 +100,27 @@ export function AudioLandscape() {
         ctx.lineTo(startX, y)
         ctx.closePath()
 
-        // Gradient fill from bottom to top
+        // Gradient fill with palette colors
         const gradient = ctx.createLinearGradient(0, y, 0, y - 150 * scale)
-        gradient.addColorStop(0, `hsla(${h}, 100%, 30%, ${0.3 * progress})`)
-        gradient.addColorStop(1, `hsla(${h}, 100%, 60%, ${0.7 * progress})`)
+        if (color1 && color2) {
+          gradient.addColorStop(0, hexToRgba(color1, 0.3 * progress))
+          gradient.addColorStop(1, hexToRgba(color2, 0.7 * progress))
+          ctx.strokeStyle = hexToRgba(color2, 0.6 + progress * 0.4)
+          ctx.shadowColor = hexToRgba(color2, progress * 0.5)
+        } else {
+          const [h] = getFallbackColor().split(' ')
+          gradient.addColorStop(0, `hsla(${h}, 100%, 30%, ${0.3 * progress})`)
+          gradient.addColorStop(1, `hsla(${h}, 100%, 60%, ${0.7 * progress})`)
+          ctx.strokeStyle = `hsla(${h}, 100%, ${60 + progress * 20}%, ${0.6 + progress * 0.4})`
+          ctx.shadowColor = `hsla(${h}, 100%, 60%, ${progress * 0.5})`
+        }
+
         ctx.fillStyle = gradient
         ctx.fill()
 
         // Wireframe on top
-        ctx.strokeStyle = `hsla(${h}, 100%, ${60 + progress * 20}%, ${0.6 + progress * 0.4})`
         ctx.lineWidth = 1 + progress * 1.5
         ctx.shadowBlur = 8 * progress
-        ctx.shadowColor = `hsla(${h}, 100%, 60%, ${progress * 0.5})`
         ctx.stroke()
       }
 
@@ -114,7 +135,7 @@ export function AudioLandscape() {
       cancelAnimationFrame(animationId)
       window.removeEventListener('resize', updateSize)
     }
-  }, [frequencyData])
+  }, [frequencyData, currentSongColorPalette])
 
   return (
     <canvas
@@ -123,4 +144,12 @@ export function AudioLandscape() {
       style={{ imageRendering: 'auto' }}
     />
   )
+}
+
+// Helper function
+function hexToRgba(hex: string, alpha: number): string {
+  const r = parseInt(hex.slice(1, 3), 16)
+  const g = parseInt(hex.slice(3, 5), 16)
+  const b = parseInt(hex.slice(5, 7), 16)
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`
 }
