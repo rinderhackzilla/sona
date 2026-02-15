@@ -33,7 +33,7 @@ export function RadialSpectrum() {
       const height = canvas.offsetHeight
       const centerX = width / 2
       const centerY = height / 2
-      const maxRadius = Math.min(width, height) * 0.35
+      const maxRadius = Math.min(width, height) * 0.45 // Increased from 0.35
 
       ctx.clearRect(0, 0, width, height)
 
@@ -70,12 +70,13 @@ export function RadialSpectrum() {
           normalizedValue = Math.min(1, normalizedValue * 1.1)
         }
 
-        const barLength = normalizedValue * maxRadius * 0.75
+        const barLength = normalizedValue * maxRadius * 0.85 // Increased from 0.75
 
-        const x1 = centerX + Math.cos(angle) * 30
-        const y1 = centerY + Math.sin(angle) * 30
-        const x2 = centerX + Math.cos(angle) * (30 + barLength)
-        const y2 = centerY + Math.sin(angle) * (30 + barLength)
+        const innerRadius = 50 // Increased from 30
+        const x1 = centerX + Math.cos(angle) * innerRadius
+        const y1 = centerY + Math.sin(angle) * innerRadius
+        const x2 = centerX + Math.cos(angle) * (innerRadius + barLength)
+        const y2 = centerY + Math.sin(angle) * (innerRadius + barLength)
 
         // Create gradient with 4 colors cycling through bars
         const gradient = ctx.createLinearGradient(x1, y1, x2, y2)
@@ -131,7 +132,7 @@ export function RadialSpectrum() {
         }
         ctx.lineWidth = 3
         ctx.beginPath()
-        ctx.arc(centerX, centerY, 25 * pulseScale + i * 5, 0, Math.PI * 2)
+        ctx.arc(centerX, centerY, 40 * pulseScale + i * 8, 0, Math.PI * 2) // Increased from 25
         ctx.stroke()
       }
 
