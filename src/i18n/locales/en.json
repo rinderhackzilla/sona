@@ -17,7 +17,9 @@
     "playlists": "Playlists",
     "radios": "Radios",
     "podcasts": "Podcasts",
-    "emptyPlaylist": "No playlists created yet"
+    "emptyPlaylist": "No playlists created yet",
+    "discoverWeekly": "Discover Weekly",
+    "yourTop50": "Your Top 50"
   },
   "menu": {
     "language": "Language",
