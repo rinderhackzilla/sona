@@ -1,6 +1,6 @@
 import { useMutation } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
-import { toast } from 'sonner'
+import { toast } from 'react-toastify'
 import { getRabbitHoleService } from '@/service/rabbit-hole'
 import { usePlayerActions } from '@/store/player.store'
 import { useSettingsStore } from '@/store/settings.store'
