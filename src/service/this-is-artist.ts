@@ -31,7 +31,7 @@ interface TopTracksResponse {
 const LASTFM_API_URL = 'https://ws.audioscrobbler.com/2.0/'
 const TARGET_SONGS = 30
 const TOP_TRACKS_COUNT = 15 // Get top 15 from Last.fm, fill rest with random
-const MAX_RETRIES = 20 // Try up to 20 different artists
+const MAX_RETRIES = 10 // Try up to 10 different artists
 
 interface GenerateConfig {
   username: string
@@ -89,23 +89,28 @@ async function selectRandomArtist(excludeIds: Set<string> = new Set()): Promise<
 
 /**
  * Get all songs for an artist from Navidrome
+ * Fetches each album individually to get songs
  */
 async function getArtistSongs(artistId: string): Promise<Song[]> {
   try {
     const artist = await subsonic.artists.getOne(artistId)
     
-    if (!artist) {
+    if (!artist || !artist.album || artist.album.length === 0) {
       return []
     }
 
     const songs: Song[] = []
 
-    // Collect all songs from all albums
-    if (artist.album) {
-      for (const album of artist.album) {
-        if (album.song) {
-          songs.push(...album.song)
+    // Fetch each album to get songs (Albums type doesn't include songs)
+    for (const albumRef of artist.album) {
+      try {
+        const fullAlbum = await subsonic.albums.getOne(albumRef.id)
+        if (fullAlbum && fullAlbum.song && fullAlbum.song.length > 0) {
+          songs.push(...fullAlbum.song)
         }
+      } catch (error) {
+        console.warn(`[ThisIsArtist] Failed to fetch album ${albumRef.id}:`, error)
+        // Continue with next album
       }
     }
 
@@ -172,7 +177,7 @@ export async function generateThisIsArtist(
         throw new Error(`No artists available in library (tried ${excludedArtists.size} artists)`)
       }
 
-      console.log(`[ThisIsArtist] Attempt ${attempts}/${MAX_RETRIES}: Selected "${artist.name}"`)
+      console.log(`[ThisIsArtist] Attempt ${attempts}/${MAX_RETRIES}: Selected "${artist.name}" (${artist.albumCount} albums)`)
 
       // Step 2: Get all songs from artist
       const artistSongs = await getArtistSongs(artist.id)
