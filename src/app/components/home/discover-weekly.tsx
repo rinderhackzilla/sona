@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
-import { RefreshCw, Sparkles, Settings, Play, Shuffle } from 'lucide-react'
+import { RefreshCw, Sparkles, Play, Shuffle, Info } from 'lucide-react'
 import { Button } from '@/app/components/ui/button'
-import { Card, CardDescription, CardHeader } from '@/app/components/ui/card'
+import { Card, CardDescription, CardHeader, CardTitle } from '@/app/components/ui/card'
 import { useDiscoverWeekly } from '@/app/hooks/use-discover-weekly'
 import { usePlayerActions } from '@/store/player.store'
 
@@ -31,21 +31,15 @@ export function DiscoverWeekly() {
         <Card className="border-dashed">
           <CardHeader>
             <div className="flex items-start gap-3">
-              <Sparkles className="h-5 w-5 mt-0.5 text-muted-foreground" />
+              <Info className="h-5 w-5 mt-0.5 text-muted-foreground" />
               <div className="flex-1">
+                <CardTitle className="text-base mb-2">
+                  Discover Weekly
+                </CardTitle>
                 <CardDescription>
-                  Configure Last.fm credentials to get personalized song
-                  recommendations based on your listening history.
-                  <Button
-                    variant="link"
-                    className="h-auto p-0 ml-1"
-                    onClick={() => {
-                      window.location.hash = '#/settings/integrations'
-                    }}
-                  >
-                    <Settings className="h-3 w-3 mr-1" />
-                    Go to Settings
-                  </Button>
+                  Get personalized song recommendations based on your Last.fm listening history.
+                  <br />
+                  <strong>Setup:</strong> Configure your Last.fm username and API key in the sidebar settings (⚙️) → Integrations.
                 </CardDescription>
               </div>
             </div>
