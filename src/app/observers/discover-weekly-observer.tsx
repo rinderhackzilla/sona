@@ -6,6 +6,9 @@ import { isDesktop } from '@/utils/desktop'
 /**
  * Observer component that listens to Electron IPC events
  * for Discover Weekly scheduler notifications
+ * 
+ * Note: This observer only handles scheduled events from Electron Main Process.
+ * It does NOT perform catch-up on mount (the hook handles that).
  */
 export function DiscoverWeeklyObserver() {
   const { lastfm } = useAppIntegrations()
@@ -24,6 +27,13 @@ export function DiscoverWeeklyObserver() {
       // Check if Last.fm is configured
       if (!lastfm.username || !lastfm.apiKey) {
         console.log('[DiscoverWeekly Observer] Last.fm not configured, skipping')
+        return
+      }
+
+      // Only handle 'monday-trigger' events, skip 'check' events
+      // The hook handles catch-up on mount to avoid conflicts
+      if (data.event === 'check') {
+        console.log('[DiscoverWeekly Observer] Ignoring check event (hook handles catch-up)')
         return
       }
 
