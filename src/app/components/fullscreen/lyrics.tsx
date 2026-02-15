@@ -3,12 +3,20 @@ import clsx from 'clsx'
 import { ComponentPropsWithoutRef, useEffect, useRef, useState } from 'react'
 import { isSafari } from 'react-device-detect'
 import { useTranslation } from 'react-i18next'
+import { Link } from 'react-router-dom'
 import { Lrc } from 'react-lrc'
 import { ImageLoader } from '@/app/components/image-loader'
+import { SongMenuOptions } from '@/app/components/song/menu-options'
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuTrigger,
+} from '@/app/components/ui/context-menu'
 import {
   ScrollArea,
   scrollAreaViewportSelector,
 } from '@/app/components/ui/scroll-area'
+import { ROUTES } from '@/routes/routesList'
 import { subsonic } from '@/service/subsonic'
 import { usePlayerRef, usePlayerSonglist } from '@/store/player.store'
 import { ILyric } from '@/types/responses/song'
@@ -18,10 +26,10 @@ interface LyricProps {
 }
 
 export function LyricsTab() {
-  const { currentSong } = usePlayerSonglist()
+  const { currentSong, currentIndex } = usePlayerSonglist()
   const { t } = useTranslation()
 
-  const { id, artist, title, duration, album, coverArt } = currentSong
+  const { id, artist, artistId, title, album, albumId, duration, coverArt } = currentSong
 
   const { data: lyrics, isLoading } = useQuery({
     queryKey: ['get-lyrics', artist, title, duration],
@@ -56,9 +64,42 @@ export function LyricsTab() {
 
         {/* Song Details */}
         <div className="flex flex-col gap-1">
-          <h2 className="text-xl font-bold truncate">{title}</h2>
-          <p className="text-lg text-muted-foreground truncate">{artist}</p>
-          {album && (
+          <ContextMenu>
+            <ContextMenuTrigger asChild>
+              <h2 className="text-xl font-bold truncate cursor-pointer hover:underline">
+                {title}
+              </h2>
+            </ContextMenuTrigger>
+            <ContextMenuContent>
+              <SongMenuOptions
+                variant="context"
+                song={currentSong}
+                index={currentIndex}
+              />
+            </ContextMenuContent>
+          </ContextMenu>
+
+          {artistId && (
+            <Link
+              to={ROUTES.ARTIST.PAGE(artistId)}
+              className="text-lg text-muted-foreground truncate hover:text-foreground hover:underline transition-colors"
+            >
+              {artist}
+            </Link>
+          )}
+          {!artistId && (
+            <p className="text-lg text-muted-foreground truncate">{artist}</p>
+          )}
+
+          {album && albumId && (
+            <Link
+              to={ROUTES.ALBUM.PAGE(albumId)}
+              className="text-sm text-muted-foreground truncate hover:text-foreground hover:underline transition-colors"
+            >
+              {album}
+            </Link>
+          )}
+          {album && !albumId && (
             <p className="text-sm text-muted-foreground truncate">{album}</p>
           )}
         </div>
