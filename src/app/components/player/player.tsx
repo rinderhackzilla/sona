@@ -4,6 +4,7 @@ import { getProxyURL } from '@/api/podcastClient'
 import { MiniPlayerButton } from '@/app/components/mini-player/button'
 import { RadioInfo } from '@/app/components/player/radio-info'
 import { TrackInfo } from '@/app/components/player/track-info'
+import { ImageLoader } from '@/app/components/image-loader'
 import { podcasts } from '@/service/podcasts'
 import {
   getVolume,
@@ -182,8 +183,30 @@ export function Player() {
   }
 
   return (
-    <footer className="border-t h-[--player-height] w-full flex items-center fixed bottom-0 left-0 right-0 z-40 bg-background">
-      <div className="w-full h-full grid grid-cols-player gap-2 px-4">
+    <footer className="border-t h-[--player-height] w-full flex items-center fixed bottom-0 left-0 right-0 z-40 bg-background relative overflow-hidden">
+      {/* Blurred Album Cover Background */}
+      {isSong && song && (
+        <div className="absolute inset-0 z-0 pointer-events-none">
+          <ImageLoader id={song.coverArt} type="song" size={400}>
+            {(src) => (
+              <div className="relative w-full h-full">
+                <img
+                  src={src}
+                  alt=""
+                  className="absolute left-0 top-0 h-full w-auto object-cover blur-3xl opacity-30 scale-110"
+                  style={{
+                    maskImage: 'linear-gradient(to right, black 0%, black 40%, transparent 100%)',
+                    WebkitMaskImage: 'linear-gradient(to right, black 0%, black 40%, transparent 100%)',
+                  }}
+                />
+              </div>
+            )}
+          </ImageLoader>
+        </div>
+      )}
+
+      {/* Content Layer */}
+      <div className="w-full h-full grid grid-cols-player gap-2 px-4 relative z-10">
         {/* Track Info */}
         <div className="flex items-center gap-2 w-full">
           {isSong && <MemoTrackInfo song={song} />}
