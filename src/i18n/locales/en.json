@@ -508,8 +508,17 @@
         "url": "Please provide a valid URL.",
         "homepageUrlLength": "Homepage URL must be at least 10 characters",
         "streamUrlLength": "Stream URL must be at least 10 characters"
-      }
+          }
     }
+  },
+  "rabbitHole": {
+    "button": "Rabbit Hole",
+    "tooltip": "Generate a 50-song discovery queue based on similar music",
+    "loading": "Creating your Rabbit Hole...",
+    "queueCreated": "Created {{count}}-song Rabbit Hole queue!",
+    "noSongsFound": "No similar songs found in your library",
+    "error": "Failed to generate discovery queue",
+    "apiKeyMissing": "Last.fm API key not configured in settings"
   },
   "time": {
     "days_one": "{{days}} day",
