@@ -128,8 +128,8 @@ function AlbumHeaderItem({ album }: { album: Albums }) {
 
 export default function AlbumHeader({
   albums,
-  title = 'Discover Similar Artists',
-  subtitle = 'Based on your listening history',
+  title,
+  subtitle,
 }: AlbumHeaderProps) {
   const [api, setApi] = useState<CarouselApi>()
 
