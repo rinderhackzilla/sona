@@ -28,6 +28,12 @@ interface OnRepeatResult {
   error?: string
 }
 
+interface Top50YearResult {
+  tracks: LastfmTrack[]
+  totalTracks: number
+  error?: string
+}
+
 /**
  * Get the most played track from the last 7 days
  * @returns The "On Repeat" track with play count
@@ -84,6 +90,48 @@ export async function getOnRepeat(
     return {
       track: null,
       playcount: 0,
+      error: error instanceof Error ? error.message : 'Unknown error',
+    }
+  }
+}
+
+/**
+ * Get top 50 tracks from the last 12 months
+ * @returns Top 50 tracks with play counts
+ */
+export async function getTop50Year(
+  config: LastfmConfig
+): Promise<Top50YearResult> {
+  try {
+    const response = await fetch(
+      `https://ws.audioscrobbler.com/2.0/?method=user.gettoptracks&user=${config.username}&api_key=${config.apiKey}&period=12month&limit=50&format=json`
+    )
+
+    if (!response.ok) {
+      throw new Error(`Last.fm API error: ${response.status}`)
+    }
+
+    const data = await response.json()
+    console.log('[Last.fm Features] Top 50 Year raw response:', data)
+
+    if (data.error) {
+      throw new Error(data.message || 'Last.fm API error')
+    }
+
+    const tracks = data.toptracks?.track || []
+    const trackArray = Array.isArray(tracks) ? tracks : [tracks]
+
+    console.log('[Last.fm Features] Found', trackArray.length, 'tracks')
+
+    return {
+      tracks: trackArray,
+      totalTracks: trackArray.length,
+    }
+  } catch (error) {
+    console.error('[Last.fm Features] Top 50 Year error:', error)
+    return {
+      tracks: [],
+      totalTracks: 0,
       error: error instanceof Error ? error.message : 'Unknown error',
     }
   }
@@ -157,4 +205,22 @@ export async function findTrackInNavidrome(
     console.error('[Last.fm Features] Error finding track in Navidrome:', error)
     return null
   }
+}
+
+/**
+ * Find multiple tracks in Navidrome
+ * @param tracks Array of {artistName, trackName} objects
+ * @returns Array of found songs (null for not found)
+ */
+export async function findTracksInNavidrome(
+  tracks: Array<{ artistName: string; trackName: string; playcount?: number }>
+): Promise<Array<any | null>> {
+  const results = await Promise.all(
+    tracks.map(async (track) => {
+      const song = await findTrackInNavidrome(track.artistName, track.trackName)
+      return song ? { ...song, lastfmPlaycount: track.playcount } : null
+    })
+  )
+
+  return results
 }
