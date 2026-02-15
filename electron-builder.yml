@@ -4,6 +4,9 @@ copyright: Copyright © 2026 rinderhack
 icon: ./build/icon.ico
 artifactName: '${productName}-v${version}-${os}-${arch}.${ext}'
 
+# Disable ASAR to fix ICU data loading issues
+asar: false
+
 directories:
   buildResources: build
 
@@ -16,13 +19,6 @@ files:
 extraResources:
   - from: resources
     to: resources
-  # Include ICU data files to fix "Invalid file descriptor to ICU data" error
-  - from: node_modules/electron/dist
-    to: .
-    filter:
-      - icudtl.dat
-      - '**/*.pak'
-      - '**/*.bin'
 
 win:
   executableName: Sona
