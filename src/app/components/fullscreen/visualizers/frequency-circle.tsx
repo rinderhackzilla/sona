@@ -36,14 +36,12 @@ export function FrequencyCircle() {
 
       ctx.clearRect(0, 0, width, height)
 
-      // Get colors from palette or fallback
-      const colors = currentSongColorPalette
-        ? [
-            currentSongColorPalette.vibrant,
-            currentSongColorPalette.accent,
-            currentSongColorPalette.dominant,
-            currentSongColorPalette.muted,
-          ]
+      // Get 2 colors for gradient
+      const color1 = currentSongColorPalette
+        ? currentSongColorPalette.vibrant
+        : null
+      const color2 = currentSongColorPalette
+        ? currentSongColorPalette.accent
         : null
 
       const getFallbackColor = () => {
@@ -56,7 +54,7 @@ export function FrequencyCircle() {
       const barCount = Math.min(frequencyData.length, 64)
       const angleStep = (Math.PI * 2) / barCount
 
-      // Draw bars with cycling colors
+      // Draw bars with uniform gradient (all bars same color gradient)
       for (let i = 0; i < barCount; i++) {
         const angle = i * angleStep - Math.PI / 2
 
@@ -77,13 +75,11 @@ export function FrequencyCircle() {
 
         const gradient = ctx.createLinearGradient(x1, y1, x2, y2)
 
-        if (colors) {
-          // Cycle through palette colors
-          const colorIndex = Math.floor((i / barCount) * 4)
-          const hex = colors[colorIndex]
-          gradient.addColorStop(0, hexToRgba(hex, 0.5))
-          gradient.addColorStop(1, hexToRgba(hex, normalizedValue))
-          ctx.shadowColor = hexToRgba(hex, normalizedValue * 0.8)
+        if (color1 && color2) {
+          // Gradient from color1 to color2
+          gradient.addColorStop(0, hexToRgba(color1, 0.5))
+          gradient.addColorStop(1, hexToRgba(color2, normalizedValue))
+          ctx.shadowColor = hexToRgba(color1, normalizedValue * 0.8)
         } else {
           const [h] = getFallbackColor().split(' ')
           gradient.addColorStop(0, `hsla(${h}, 100%, 50%, 0.5)`)
@@ -103,9 +99,9 @@ export function FrequencyCircle() {
 
       ctx.shadowBlur = 0
 
-      // Circle outline with vibrant color
-      if (colors) {
-        ctx.strokeStyle = hexToRgba(colors[0], 0.7)
+      // Circle outline with first color
+      if (color1) {
+        ctx.strokeStyle = hexToRgba(color1, 0.7)
       } else {
         const [h] = getFallbackColor().split(' ')
         ctx.strokeStyle = `hsla(${h}, 100%, 60%, 0.7)`
