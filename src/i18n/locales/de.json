@@ -2,7 +2,7 @@
   "sidebar": {
     "radios": "Radios",
     "home": "Startseite",
-    "search": "Suche…",
+    "search": "…Suche",
     "miniSearch": "Suchen",
     "library": "Bibliothek",
     "artists": "Künstler",
@@ -604,7 +604,7 @@
     "privacy": {
       "services": {
         "group": "Externe Dienste",
-        "description": "Legt fest welche Dienste Aonsoku verwenden kann",
+        "description": "Legt fest welche Dienste Sona verwenden kann",
         "lrclib": {
           "info": "LRCLIB wird für Liedtexte verwendet.",
           "label": "LRCLIB"
@@ -620,7 +620,7 @@
         "description": "Sichtbarkeit und Anordnung der Abschnitte in der Seitenleiste verwalten."
       },
       "podcast": {
-        "description": "Aktivieren Sie die Integration mit dem Aonsoku Podcasts-Dienst.",
+        "description": "Aktivieren Sie die Integration mit dem Sona Podcasts-Dienst.",
         "enabled": {
           "label": "Integration aktivieren"
         },
@@ -660,6 +660,16 @@
         "description": "Verbinde mit deiner Lidarr-Instanz für Album-Requests.",
         "url": {
           "label": "Lidarr URL"
+        },
+        "apiKey": {
+          "label": "API Key"
+        }
+      },
+      "lastfm": {
+        "group": "Last.fm",
+        "description": "Verbinden Sie Ihr Last.fm-Konto, um personalisierte Musikempfehlungen zu erhalten.",
+        "username": {
+          "label": "Benutzername"
         },
         "apiKey": {
           "label": "API Key"
