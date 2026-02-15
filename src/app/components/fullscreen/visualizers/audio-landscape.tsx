@@ -33,7 +33,25 @@ export function AudioLandscape() {
       const width = canvas.offsetWidth
       const height = canvas.offsetHeight
 
-      ctx.clearRect(0, 0, width, height)
+      // Full canvas vertical gradient background
+      const bgGradient = ctx.createLinearGradient(0, 0, 0, height)
+      
+      if (currentSongColorPalette) {
+        // Gradient from top (dominant) to bottom (muted)
+        bgGradient.addColorStop(0, hexToRgba(currentSongColorPalette.dominant, 0.15))
+        bgGradient.addColorStop(0.5, hexToRgba(currentSongColorPalette.vibrant, 0.1))
+        bgGradient.addColorStop(1, hexToRgba(currentSongColorPalette.muted, 0.2))
+      } else {
+        const accentHSL = getComputedStyle(document.documentElement)
+          .getPropertyValue('--accent')
+          .trim()
+        const [h] = accentHSL.split(' ')
+        bgGradient.addColorStop(0, `hsla(${h}, 100%, 20%, 0.1)`)
+        bgGradient.addColorStop(1, `hsla(${h}, 100%, 10%, 0.2)`)
+      }
+
+      ctx.fillStyle = bgGradient
+      ctx.fillRect(0, 0, width, height)
 
       // Get colors from palette or fallback
       const color1 = currentSongColorPalette
