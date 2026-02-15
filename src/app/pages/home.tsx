@@ -61,13 +61,11 @@ export default function Home() {
     <div className="w-full px-8 py-6">
       {/* Hero Carousel */}
       <div className="mb-4">
-        <div className="h-[300px] w-full">
-          {similarArtists.isFetching || similarArtists.isLoading ? (
-            <HeaderFallback />
-          ) : (
-            <AlbumHeader albums={similarArtists.data?.list || []} />
-          )}
-        </div>
+        {similarArtists.isFetching || similarArtists.isLoading ? (
+          <HeaderFallback />
+        ) : (
+          <AlbumHeader albums={similarArtists.data?.list || []} />
+        )}
       </div>
 
       {/* This is Artist - Only shown if enabled */}
