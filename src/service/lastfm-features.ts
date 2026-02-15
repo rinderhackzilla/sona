@@ -11,7 +11,8 @@ interface LastfmConfig {
 interface LastfmTrack {
   name: string
   artist: {
-    '#text': string
+    '#text'?: string
+    name?: string
     mbid?: string
   }
   playcount: string
@@ -22,6 +23,8 @@ interface LastfmTrack {
 interface OnRepeatResult {
   track: LastfmTrack | null
   playcount: number
+  artistName?: string
+  trackName?: string
   error?: string
 }
 
@@ -42,6 +45,7 @@ export async function getOnRepeat(
     }
 
     const data = await response.json()
+    console.log('[Last.fm Features] Raw API response:', data)
 
     if (data.error) {
       throw new Error(data.message || 'Last.fm API error')
@@ -58,10 +62,22 @@ export async function getOnRepeat(
     }
 
     const topTrack = Array.isArray(tracks) ? tracks[0] : tracks
+    console.log('[Last.fm Features] Top track:', topTrack)
+
+    // Extract artist name - can be in different formats
+    const artistName = topTrack.artist?.['#text'] || 
+                      topTrack.artist?.name || 
+                      (typeof topTrack.artist === 'string' ? topTrack.artist : null)
+    
+    const trackName = topTrack.name
+
+    console.log('[Last.fm Features] Extracted:', { artistName, trackName })
 
     return {
       track: topTrack,
       playcount: parseInt(topTrack.playcount || '0', 10),
+      artistName: artistName || 'Unknown',
+      trackName: trackName || 'Unknown',
     }
   } catch (error) {
     console.error('[Last.fm Features] On Repeat error:', error)
@@ -85,28 +101,58 @@ export async function findTrackInNavidrome(
     // Import subsonic service dynamically to avoid circular deps
     const { subsonic } = await import('@/service/subsonic')
     
+    console.log('[Last.fm Features] Searching for:', { artistName, trackName })
+
     // Search for track
     const searchQuery = `${artistName} ${trackName}`
     const results = await subsonic.search.get({
       query: searchQuery,
-      songCount: 5,
+      songCount: 10,
       artistCount: 0,
       albumCount: 0,
     })
+
+    console.log('[Last.fm Features] Search results:', results)
 
     if (!results?.song || results.song.length === 0) {
       console.warn(`[Last.fm Features] Track not found in Navidrome: ${searchQuery}`)
       return null
     }
 
-    // Find best match
-    const exactMatch = results.song.find(
+    // Find best match - try exact first, then fuzzy
+    const normalizeString = (str: string) => 
+      str.toLowerCase().trim().replace(/[^a-z0-9\s]/g, '')
+
+    const artistNorm = normalizeString(artistName)
+    const trackNorm = normalizeString(trackName)
+
+    // Try exact match first
+    let match = results.song.find(
       (song) =>
-        song.artist.toLowerCase() === artistName.toLowerCase() &&
-        song.title.toLowerCase() === trackName.toLowerCase()
+        normalizeString(song.artist) === artistNorm &&
+        normalizeString(song.title) === trackNorm
     )
 
-    return exactMatch || results.song[0]
+    // If no exact match, try partial match on both
+    if (!match) {
+      match = results.song.find(
+        (song) =>
+          normalizeString(song.artist).includes(artistNorm) &&
+          normalizeString(song.title).includes(trackNorm)
+      )
+    }
+
+    // If still no match, just match on title
+    if (!match) {
+      match = results.song.find((song) =>
+        normalizeString(song.title).includes(trackNorm)
+      )
+    }
+
+    const result = match || results.song[0]
+    console.log('[Last.fm Features] Found song:', result)
+
+    return result
   } catch (error) {
     console.error('[Last.fm Features] Error finding track in Navidrome:', error)
     return null
