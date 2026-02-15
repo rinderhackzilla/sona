@@ -8,6 +8,7 @@ import {
   PodcastIcon,
   RadioIcon,
   SparklesIcon,
+  TrophyIcon,
 } from 'lucide-react'
 import { ElementType, memo } from 'react'
 import { ROUTES } from '@/routes/routesList'
@@ -21,6 +22,7 @@ const Library = memo(LibraryIcon)
 const Podcast = memo(PodcastIcon)
 const Heart = memo(HeartIcon)
 const Sparkles = memo(SparklesIcon)
+const Trophy = memo(TrophyIcon)
 
 export interface ISidebarItem {
   id: string
@@ -41,6 +43,7 @@ export enum SidebarItems {
   PodcastAll = 'podcast-all',
   PodcastLatest = 'podcast-latest',
   DiscoverWeekly = 'discover-weekly',
+  Top50Year = 'top-50-year',
 }
 
 export const mainNavItems = [
@@ -58,6 +61,12 @@ export const libraryItems = [
     title: 'Discover Weekly',
     route: ROUTES.LIBRARY.DISCOVER_WEEKLY,
     icon: Sparkles,
+  },
+  {
+    id: SidebarItems.Top50Year,
+    title: 'Top 50 Year',
+    route: ROUTES.LIBRARY.TOP_50_YEAR,
+    icon: Trophy,
   },
   {
     id: SidebarItems.Artists,
