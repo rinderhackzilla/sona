@@ -33,25 +33,7 @@ export function AudioLandscape() {
       const width = canvas.offsetWidth
       const height = canvas.offsetHeight
 
-      // Full canvas vertical gradient background
-      const bgGradient = ctx.createLinearGradient(0, 0, 0, height)
-      
-      if (currentSongColorPalette) {
-        // Gradient from top (dominant) to bottom (muted)
-        bgGradient.addColorStop(0, hexToRgba(currentSongColorPalette.dominant, 0.15))
-        bgGradient.addColorStop(0.5, hexToRgba(currentSongColorPalette.vibrant, 0.1))
-        bgGradient.addColorStop(1, hexToRgba(currentSongColorPalette.muted, 0.2))
-      } else {
-        const accentHSL = getComputedStyle(document.documentElement)
-          .getPropertyValue('--accent')
-          .trim()
-        const [h] = accentHSL.split(' ')
-        bgGradient.addColorStop(0, `hsla(${h}, 100%, 20%, 0.1)`)
-        bgGradient.addColorStop(1, `hsla(${h}, 100%, 10%, 0.2)`)
-      }
-
-      ctx.fillStyle = bgGradient
-      ctx.fillRect(0, 0, width, height)
+      ctx.clearRect(0, 0, width, height)
 
       // Get colors from palette or fallback
       const color1 = currentSongColorPalette
@@ -59,6 +41,9 @@ export function AudioLandscape() {
         : null
       const color2 = currentSongColorPalette
         ? currentSongColorPalette.accent
+        : null
+      const color3 = currentSongColorPalette
+        ? currentSongColorPalette.muted
         : null
 
       const getFallbackColor = () => {
@@ -118,17 +103,23 @@ export function AudioLandscape() {
         ctx.lineTo(startX, y)
         ctx.closePath()
 
-        // Gradient fill with palette colors
-        const gradient = ctx.createLinearGradient(0, y, 0, y - 150 * scale)
-        if (color1 && color2) {
-          gradient.addColorStop(0, hexToRgba(color1, 0.3 * progress))
-          gradient.addColorStop(1, hexToRgba(color2, 0.7 * progress))
+        // Vertical gradient on each landscape shape (top to bottom)
+        const shapeTopY = y - 150 * scale
+        const shapeBottomY = y
+        const gradient = ctx.createLinearGradient(0, shapeTopY, 0, shapeBottomY)
+
+        if (color1 && color2 && color3) {
+          // Gradient from top (vibrant) to middle (accent) to bottom (muted)
+          gradient.addColorStop(0, hexToRgba(color1, 0.7 * progress))
+          gradient.addColorStop(0.5, hexToRgba(color2, 0.5 * progress))
+          gradient.addColorStop(1, hexToRgba(color3, 0.3 * progress))
           ctx.strokeStyle = hexToRgba(color2, 0.6 + progress * 0.4)
           ctx.shadowColor = hexToRgba(color2, progress * 0.5)
         } else {
           const [h] = getFallbackColor().split(' ')
-          gradient.addColorStop(0, `hsla(${h}, 100%, 30%, ${0.3 * progress})`)
-          gradient.addColorStop(1, `hsla(${h}, 100%, 60%, ${0.7 * progress})`)
+          gradient.addColorStop(0, `hsla(${h}, 100%, 60%, ${0.7 * progress})`)
+          gradient.addColorStop(0.5, `hsla(${h}, 100%, 50%, ${0.5 * progress})`)
+          gradient.addColorStop(1, `hsla(${h}, 100%, 30%, ${0.3 * progress})`)
           ctx.strokeStyle = `hsla(${h}, 100%, ${60 + progress * 20}%, ${0.6 + progress * 0.4})`
           ctx.shadowColor = `hsla(${h}, 100%, 60%, ${progress * 0.5})`
         }
