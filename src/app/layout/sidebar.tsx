@@ -64,7 +64,7 @@ export const libraryItems = [
   },
   {
     id: SidebarItems.Top50Year,
-    title: 'Top 50 Year',
+    title: 'Your Top 50',
     route: ROUTES.LIBRARY.TOP_50_YEAR,
     icon: Trophy,
   },
