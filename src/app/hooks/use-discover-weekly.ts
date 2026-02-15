@@ -1,15 +1,18 @@
 import { useState, useEffect, useCallback } from 'react'
-import { generateDiscoverWeekly, shouldRegeneratePlaylist } from '@/service/discover-weekly'
+import {
+  loadPlaylist,
+  generateAndSavePlaylist,
+  shouldGeneratePlaylist,
+  checkAndCatchUp,
+} from '@/service/discover-weekly-manager'
 import { useAppIntegrations } from '@/store/app.store'
 import type { Song } from '@/types/responses/song'
-
-const STORAGE_KEY = 'discover_weekly_playlist'
-const STORAGE_KEY_METADATA = 'discover_weekly_metadata'
 
 interface PlaylistMetadata {
   generatedAt: string
   artistsUsed: string[]
   totalSongs: number
+  weekKey: string
 }
 
 export function useDiscoverWeekly() {
@@ -17,31 +20,69 @@ export function useDiscoverWeekly() {
   const [playlist, setPlaylist] = useState<Song[]>([])
   const [isGenerating, setIsGenerating] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [lastGenerated, setLastGenerated] = useState<string | null>(null)
-  const [artistsUsed, setArtistsUsed] = useState<string[]>([])
+  const [metadata, setMetadata] = useState<PlaylistMetadata | null>(null)
+  const [hasCheckedCatchup, setHasCheckedCatchup] = useState(false)
 
   const isConfigured = !!(lastfm.username && lastfm.apiKey)
 
-  // Load playlist from localStorage
+  // Load playlist from localStorage on mount
   useEffect(() => {
-    try {
-      const storedPlaylist = localStorage.getItem(STORAGE_KEY)
-      const storedMetadata = localStorage.getItem(STORAGE_KEY_METADATA)
-
-      if (storedPlaylist && storedMetadata) {
-        const parsedPlaylist = JSON.parse(storedPlaylist)
-        const parsedMetadata: PlaylistMetadata = JSON.parse(storedMetadata)
-
-        setPlaylist(parsedPlaylist)
-        setLastGenerated(parsedMetadata.generatedAt)
-        setArtistsUsed(parsedMetadata.artistsUsed)
-      }
-    } catch (error) {
-      console.error('[DiscoverWeekly] Failed to load from storage:', error)
+    const { playlist: storedPlaylist, metadata: storedMetadata } = loadPlaylist()
+    
+    if (storedPlaylist.length > 0 && storedMetadata) {
+      setPlaylist(storedPlaylist)
+      setMetadata(storedMetadata)
     }
   }, [])
 
-  // Generate new playlist
+  // Catch-up check on mount (only once per session)
+  useEffect(() => {
+    if (!isConfigured || hasCheckedCatchup || isGenerating) {
+      return
+    }
+
+    const performCatchup = async () => {
+      setHasCheckedCatchup(true)
+      
+      // Check if generation is needed
+      if (!shouldGeneratePlaylist()) {
+        console.log('[DiscoverWeekly Hook] No catch-up needed')
+        return
+      }
+
+      console.log('[DiscoverWeekly Hook] Performing catch-up generation...')
+      setIsGenerating(true)
+      setError(null)
+
+      try {
+        const success = await checkAndCatchUp({
+          username: lastfm.username,
+          apiKey: lastfm.apiKey,
+          targetArtists: 15,
+          songsPerArtist: 4,
+        })
+
+        if (success) {
+          // Reload playlist after generation
+          const { playlist: newPlaylist, metadata: newMetadata } = loadPlaylist()
+          setPlaylist(newPlaylist)
+          setMetadata(newMetadata)
+        }
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'Catch-up failed'
+        setError(message)
+        console.error('[DiscoverWeekly Hook] Catch-up error:', error)
+      } finally {
+        setIsGenerating(false)
+      }
+    }
+
+    // Delay by 2 seconds to not block initial render
+    const timeoutId = setTimeout(performCatchup, 2000)
+    return () => clearTimeout(timeoutId)
+  }, [isConfigured, hasCheckedCatchup, isGenerating, lastfm.username, lastfm.apiKey])
+
+  // Manual generation (force=true)
   const generate = useCallback(async () => {
     if (!isConfigured) {
       setError('Last.fm not configured')
@@ -52,62 +93,35 @@ export function useDiscoverWeekly() {
     setError(null)
 
     try {
-      const result = await generateDiscoverWeekly({
-        username: lastfm.username,
-        apiKey: lastfm.apiKey,
-        targetArtists: 15,
-        songsPerArtist: 4,
-      })
+      const result = await generateAndSavePlaylist(
+        {
+          username: lastfm.username,
+          apiKey: lastfm.apiKey,
+          targetArtists: 15,
+          songsPerArtist: 4,
+        },
+        true // Force regeneration
+      )
 
-      // Save to localStorage
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(result.playlist))
-      localStorage.setItem(STORAGE_KEY_METADATA, JSON.stringify(result.metadata))
-
-      // Update state
       setPlaylist(result.playlist)
-      setLastGenerated(result.metadata.generatedAt)
-      setArtistsUsed(result.metadata.artistsUsed)
+      setMetadata(result.metadata)
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Unknown error'
+      const message = error instanceof Error ? error.message : 'Generation failed'
       setError(message)
-      console.error('[DiscoverWeekly] Generation failed:', error)
+      console.error('[DiscoverWeekly Hook] Manual generation error:', error)
     } finally {
       setIsGenerating(false)
     }
   }, [isConfigured, lastfm.username, lastfm.apiKey])
 
-  // Check if playlist should be regenerated
-  const checkAndRegenerate = useCallback(async () => {
-    const shouldRegenerate = await shouldRegeneratePlaylist(lastGenerated)
-    if (shouldRegenerate) {
-      console.log('[DiscoverWeekly] Auto-regenerating playlist (Monday)')
-      await generate()
-    }
-  }, [lastGenerated, generate])
-
-  // Auto-check every hour if it's Monday and needs regeneration
-  useEffect(() => {
-    if (!isConfigured) return
-
-    // Check immediately
-    checkAndRegenerate()
-
-    // Check every hour
-    const interval = setInterval(() => {
-      checkAndRegenerate()
-    }, 60 * 60 * 1000) // 1 hour
-
-    return () => clearInterval(interval)
-  }, [isConfigured, checkAndRegenerate])
-
   return {
     playlist,
     isGenerating,
     error,
-    lastGenerated,
-    artistsUsed,
+    lastGenerated: metadata?.generatedAt || null,
+    artistsUsed: metadata?.artistsUsed || [],
+    weekKey: metadata?.weekKey || null,
     generate,
-    checkAndRegenerate,
     isConfigured,
   }
 }
