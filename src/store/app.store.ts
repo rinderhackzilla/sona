@@ -71,6 +71,20 @@ export const useAppStore = createWithEqualityFn<IAppContext>()(
                 })
               },
             },
+            lastfm: {
+              username: '',
+              setUsername: (value) => {
+                set((state) => {
+                  state.integrations.lastfm.username = value
+                })
+              },
+              apiKey: '',
+              setApiKey: (value) => {
+                set((state) => {
+                  state.integrations.lastfm.apiKey = value
+                })
+              },
+            },
           },
           podcasts: {
             active: false,
