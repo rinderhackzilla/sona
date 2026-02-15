@@ -22,6 +22,9 @@ import { loginLoader } from '@/routes/loginLoader'
 import { podcastsLoader, protectedLoader } from '@/routes/protectedLoader'
 import { ROUTES } from '@/routes/routesList'
 
+// Import DiscoverWeekly directly (not lazy) to avoid suspense issues
+import DiscoverWeekly from '@/app/pages/discover-weekly'
+
 const BaseLayout = lazy(() => import('@/app/layout/base'))
 const Album = lazy(() => import('@/app/pages/albums/album'))
 const AlbumsList = lazy(() => import('@/app/pages/albums/list'))
@@ -41,7 +44,6 @@ const Episode = lazy(() => import('@/app/pages/podcasts/episode'))
 const LatestEpisodes = lazy(
   () => import('@/app/pages/podcasts/latest-episodes'),
 )
-const DiscoverWeekly = lazy(() => import('@/app/pages/discover-weekly'))
 
 export const router = createHashRouter([
   {
@@ -63,11 +65,7 @@ export const router = createHashRouter([
         id: 'discover-weekly',
         path: ROUTES.LIBRARY.DISCOVER_WEEKLY,
         errorElement: <ErrorPage />,
-        element: (
-          <Suspense fallback={<HomeFallback />}>
-            <DiscoverWeekly />
-          </Suspense>
-        ),
+        element: <DiscoverWeekly />,
       },
       {
         id: 'artists',
