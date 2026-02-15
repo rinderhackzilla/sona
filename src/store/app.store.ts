@@ -84,6 +84,12 @@ export const useAppStore = createWithEqualityFn<IAppContext>()(
                   state.integrations.lastfm.apiKey = value
                 })
               },
+              showThisIsArtist: true,
+              setShowThisIsArtist: (value) => {
+                set((state) => {
+                  state.integrations.lastfm.showThisIsArtist = value
+                })
+              },
             },
           },
           podcasts: {
