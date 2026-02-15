@@ -11,11 +11,14 @@ import {
   Root,
 } from '@/app/components/settings/section'
 import { Input } from '@/app/components/ui/input'
+import { Switch } from '@/app/components/ui/switch'
 import { useAppIntegrations } from '@/store/app.store'
 
 export function LastFM() {
   const { t } = useTranslation()
   const { lastfm } = useAppIntegrations()
+
+  const isConfigured = Boolean(lastfm.username && lastfm.apiKey)
 
   return (
     <Root>
@@ -50,6 +53,27 @@ export function LastFM() {
               value={lastfm.apiKey}
               onChange={(e) => lastfm.setApiKey(e.target.value)}
             />
+          </ContentItemForm>
+        </ContentItem>
+        <ContentSeparator />
+        <ContentItem>
+          <ContentItemTitle>
+            Show "This is [Artist]" on Homepage
+          </ContentItemTitle>
+          <ContentItemForm>
+            <div className="flex items-center gap-3">
+              <Switch
+                checked={lastfm.showThisIsArtist}
+                onCheckedChange={lastfm.setShowThisIsArtist}
+                disabled={!isConfigured}
+              />
+              <span className="text-sm text-muted-foreground">
+                {isConfigured 
+                  ? 'Display daily artist playlist on homepage' 
+                  : 'Configure Last.fm credentials first'
+                }
+              </span>
+            </div>
           </ContentItemForm>
         </ContentItem>
       </Content>
