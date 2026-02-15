@@ -31,14 +31,15 @@ export function useOnRepeat() {
         apiKey: lastfm.apiKey,
       })
 
-      if (!result.track || result.error) {
-        console.warn('[On Repeat] No track found:', result.error)
+      if (!result.track || result.error || !result.artistName || !result.trackName) {
+        console.warn('[On Repeat] No track found:', result.error || 'Missing data')
         return null
       }
 
-      const lastfmTrack = result.track
-      const artistName = lastfmTrack.artist['#text']
-      const trackName = lastfmTrack.name
+      const artistName = result.artistName
+      const trackName = result.trackName
+
+      console.log('[On Repeat] Looking for:', { artistName, trackName })
 
       // Find matching song in Navidrome
       const song = await findTrackInNavidrome(artistName, trackName)
@@ -47,6 +48,8 @@ export function useOnRepeat() {
         console.warn(`[On Repeat] Track not found in Navidrome: ${artistName} - ${trackName}`)
         return null
       }
+
+      console.log('[On Repeat] Success! Found song:', song)
 
       return {
         song,
