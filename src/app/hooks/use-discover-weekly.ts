@@ -70,8 +70,8 @@ export function useDiscoverWeekly() {
         const success = await checkAndCatchUp({
           username: lastfm.username,
           apiKey: lastfm.apiKey,
-          targetArtists: 15,
-          songsPerArtist: 4,
+          targetArtists: 50, // CHANGED: 50 artists
+          songsPerArtist: 1,  // CHANGED: 1 song per artist
         })
 
         if (success) {
@@ -109,8 +109,8 @@ export function useDiscoverWeekly() {
         {
           username: lastfm.username,
           apiKey: lastfm.apiKey,
-          targetArtists: 15,
-          songsPerArtist: 4,
+          targetArtists: 50, // CHANGED: 50 artists
+          songsPerArtist: 1,  // CHANGED: 1 song per artist
         },
         true // Force regeneration
       )
