@@ -1,11 +1,11 @@
 import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import { RefreshCw, Sparkles } from 'lucide-react'
+import { RefreshCw, Sparkles, Settings } from 'lucide-react'
 import { PreviewList } from './preview-list'
 import { Button } from '@/app/components/ui/button'
+import { Card, CardDescription, CardHeader } from '@/app/components/ui/card'
 import { useDiscoverWeekly } from '@/app/hooks/use-discover-weekly'
 import { useAudioPlayer } from '@/store/player.store'
-import { Alert, AlertDescription } from '@/app/components/ui/alert'
 
 export function DiscoverWeekly() {
   const { t } = useTranslation()
@@ -31,22 +31,29 @@ export function DiscoverWeekly() {
   if (!isConfigured) {
     return (
       <div className="mb-6">
-        <Alert>
-          <Sparkles className="h-4 w-4" />
-          <AlertDescription>
-            {t('home.discoverWeekly.configure')}
-            <Button
-              variant="link"
-              className="h-auto p-0 ml-1"
-              onClick={() => {
-                // Navigate to settings - you'll need to implement this
-                window.location.hash = '#/settings/integrations'
-              }}
-            >
-              {t('home.discoverWeekly.goToSettings')}
-            </Button>
-          </AlertDescription>
-        </Alert>
+        <Card className="border-dashed">
+          <CardHeader>
+            <div className="flex items-start gap-3">
+              <Sparkles className="h-5 w-5 mt-0.5 text-muted-foreground" />
+              <div className="flex-1">
+                <CardDescription>
+                  Configure Last.fm credentials to get personalized song
+                  recommendations based on your listening history.
+                  <Button
+                    variant="link"
+                    className="h-auto p-0 ml-1"
+                    onClick={() => {
+                      window.location.hash = '#/settings/integrations'
+                    }}
+                  >
+                    <Settings className="h-3 w-3 mr-1" />
+                    Go to Settings
+                  </Button>
+                </CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+        </Card>
       </div>
     )
   }
@@ -54,11 +61,13 @@ export function DiscoverWeekly() {
   if (error) {
     return (
       <div className="mb-6">
-        <Alert variant="destructive">
-          <AlertDescription>
-            {t('home.discoverWeekly.error')}: {error}
-          </AlertDescription>
-        </Alert>
+        <Card className="border-destructive">
+          <CardHeader>
+            <CardDescription className="text-destructive">
+              Error generating Discover Weekly: {error}
+            </CardDescription>
+          </CardHeader>
+        </Card>
       </div>
     )
   }
@@ -68,7 +77,7 @@ export function DiscoverWeekly() {
       <div className="mb-6">
         <div className="flex items-center gap-2 text-muted-foreground">
           <RefreshCw className="h-4 w-4 animate-spin" />
-          <span>{t('home.discoverWeekly.generating')}</span>
+          <span>Generating your personalized playlist...</span>
         </div>
       </div>
     )
@@ -80,7 +89,7 @@ export function DiscoverWeekly() {
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-semibold flex items-center gap-2">
             <Sparkles className="h-5 w-5" />
-            {t('home.discoverWeekly.title')}
+            Discover Weekly
           </h2>
           <Button
             variant="outline"
@@ -89,7 +98,7 @@ export function DiscoverWeekly() {
             disabled={isGenerating}
           >
             <RefreshCw className="h-4 w-4 mr-2" />
-            {t('home.discoverWeekly.generate')}
+            Generate Playlist
           </Button>
         </div>
       </div>
@@ -106,13 +115,12 @@ export function DiscoverWeekly() {
         <div>
           <h2 className="text-xl font-semibold flex items-center gap-2">
             <Sparkles className="h-5 w-5" />
-            {t('home.discoverWeekly.title')}
+            Discover Weekly
           </h2>
           {lastUpdated && (
             <p className="text-sm text-muted-foreground mt-1">
-              {t('home.discoverWeekly.lastUpdated', { date: lastUpdated })}
-              {artistsUsed.length > 0 &&
-                ` • ${artistsUsed.length} ${t('home.discoverWeekly.artists')}`}
+              Last updated {lastUpdated}
+              {artistsUsed.length > 0 && ` • ${artistsUsed.length} artists`}
             </p>
           )}
         </div>
@@ -123,7 +131,7 @@ export function DiscoverWeekly() {
           disabled={isGenerating}
         >
           <RefreshCw className="h-4 w-4 mr-2" />
-          {t('home.discoverWeekly.refresh')}
+          Refresh
         </Button>
       </div>
 
