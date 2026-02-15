@@ -672,7 +672,7 @@
     "privacy": {
       "services": {
         "group": "External Services",
-        "description": "Manage the external services that Aonsoku can access.",
+        "description": "Manage the external services that Sona can access.",
         "lrclib": {
           "info": "LRCLIB is used to find song lyrics.",
           "label": "LRCLIB",
@@ -695,7 +695,7 @@
       },
       "podcast": {
         "group": "Podcasts",
-        "description": "Enable integration with the Aonsoku Podcasts service.",
+        "description": "Enable integration with the Sona Podcasts service.",
         "enabled": {
           "label": "Enable Integration"
         },
@@ -743,6 +743,16 @@
         "description": "Connect to your Lidarr instance for album requests.",
         "url": {
           "label": "Lidarr URL"
+        },
+        "apiKey": {
+          "label": "API Key"
+        }
+      },
+      "lastfm": {
+        "group": "Last.fm",
+        "description": "Connect your Last.fm account to enable personalized music recommendations.",
+        "username": {
+          "label": "Username"
         },
         "apiKey": {
           "label": "API Key"
