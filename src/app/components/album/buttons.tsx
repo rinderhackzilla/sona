@@ -1,6 +1,8 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { Rabbit } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Actions } from '@/app/components/actions'
+import { useRabbitHole } from '@/app/hooks/use-rabbit-hole'
 import { subsonic } from '@/service/subsonic'
 import { useAppPages } from '@/store/app.store'
 import { usePlayerActions } from '@/store/player.store'
@@ -17,6 +19,7 @@ export function AlbumButtons({ album, showInfoButton }: AlbumButtonsProps) {
   const { t } = useTranslation()
   const { setSongList } = usePlayerActions()
   const { showInfoPanel, toggleShowInfoPanel } = useAppPages()
+  const { startRabbitHole, isLoading: rabbitHoleLoading } = useRabbitHole()
 
   const isAlbumStarred = album.starred !== undefined
 
@@ -40,6 +43,15 @@ export function AlbumButtons({ album, showInfoButton }: AlbumButtonsProps) {
     })
   }
 
+  function handleRabbitHole() {
+    startRabbitHole({
+      type: 'album',
+      artistName: album.artist,
+      albumName: album.name,
+      albumId: album.id,
+    })
+  }
+
   const buttonsTooltips = {
     play: t('playlist.buttons.play', { name: album.name }),
     shuffle: t('playlist.buttons.shuffle', { name: album.name }),
@@ -52,6 +64,7 @@ export function AlbumButtons({ album, showInfoButton }: AlbumButtonsProps) {
     info: () => {
       return showInfoPanel ? t('generic.hideDetails') : t('generic.showDetails')
     },
+    rabbitHole: t('rabbitHole.tooltip'),
   }
 
   return (
@@ -72,6 +85,14 @@ export function AlbumButtons({ album, showInfoButton }: AlbumButtonsProps) {
           <Actions.ShuffleIcon />
         </Actions.Button>
       )}
+
+      <Actions.Button
+        tooltip={buttonsTooltips.rabbitHole}
+        onClick={handleRabbitHole}
+        disabled={rabbitHoleLoading}
+      >
+        <Rabbit className="h-5 w-5" />
+      </Actions.Button>
 
       <Actions.Button
         tooltip={buttonsTooltips.like()}
