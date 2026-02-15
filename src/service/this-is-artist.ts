@@ -1,4 +1,4 @@
-import { subsonic } from '@/service/subsonic-service'
+import { subsonic } from '@/service/subsonic'
 import type { Song } from '@/types/responses/song'
 import type { Artist } from '@/types/responses/artist'
 
