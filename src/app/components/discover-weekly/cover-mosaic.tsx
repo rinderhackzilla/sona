@@ -21,6 +21,10 @@ export function CoverMosaic({ songs, size = 700 }: CoverMosaicProps) {
     canvas.width = size
     canvas.height = size
 
+    // Clear canvas
+    ctx.fillStyle = '#1a1a1a'
+    ctx.fillRect(0, 0, size, size)
+
     // Determine grid: 2x2 for 4 covers, 3x3 for 9 covers
     const gridSize = songs.length >= 9 ? 3 : 2
     const coverSize = size / gridSize
@@ -34,36 +38,59 @@ export function CoverMosaic({ songs, size = 700 }: CoverMosaicProps) {
     let loadedImages = 0
 
     // Load and draw all images
-    uniqueCovers.forEach((coverArt, index) => {
+    uniqueCovers.forEach(async (coverArt, index) => {
       if (!coverArt) return
 
-      const img = new Image()
-      img.crossOrigin = 'anonymous'
-      
-      img.onload = () => {
-        const row = Math.floor(index / gridSize)
-        const col = index % gridSize
-        const x = col * coverSize
-        const y = row * coverSize
-
-        ctx.drawImage(img, x, y, coverSize, coverSize)
-
-        loadedImages++
+      try {
+        // Get cover art URL (async)
+        const url = await getCoverArtUrl(coverArt, 'album', '300')
         
-        // Apply gradient overlay after all images loaded
-        if (loadedImages === uniqueCovers.length) {
-          applyGradientOverlay(ctx, size)
+        const img = new Image()
+        img.crossOrigin = 'anonymous'
+        
+        img.onload = () => {
+          const row = Math.floor(index / gridSize)
+          const col = index % gridSize
+          const x = col * coverSize
+          const y = row * coverSize
+
+          ctx.drawImage(img, x, y, coverSize, coverSize)
+
+          loadedImages++
+          
+          // Apply gradient overlay after all images loaded
+          if (loadedImages === uniqueCovers.length) {
+            applyGradientOverlay(ctx, size)
+          }
         }
-      }
 
-      img.onerror = () => {
-        // Draw placeholder on error
+        img.onerror = () => {
+          // Draw placeholder on error
+          const row = Math.floor(index / gridSize)
+          const col = index % gridSize
+          const x = col * coverSize
+          const y = row * coverSize
+          
+          ctx.fillStyle = '#2a2a2a'
+          ctx.fillRect(x, y, coverSize, coverSize)
+          
+          loadedImages++
+          if (loadedImages === uniqueCovers.length) {
+            applyGradientOverlay(ctx, size)
+          }
+        }
+
+        img.src = url
+      } catch (error) {
+        console.error('Failed to load cover art:', error)
+        
+        // Draw placeholder
         const row = Math.floor(index / gridSize)
         const col = index % gridSize
         const x = col * coverSize
         const y = row * coverSize
         
-        ctx.fillStyle = '#1a1a1a'
+        ctx.fillStyle = '#2a2a2a'
         ctx.fillRect(x, y, coverSize, coverSize)
         
         loadedImages++
@@ -71,8 +98,6 @@ export function CoverMosaic({ songs, size = 700 }: CoverMosaicProps) {
           applyGradientOverlay(ctx, size)
         }
       }
-
-      img.src = getCoverArtUrl(coverArt, '300')
     })
   }, [songs, size])
 
@@ -88,9 +113,9 @@ export function CoverMosaic({ songs, size = 700 }: CoverMosaicProps) {
 function applyGradientOverlay(ctx: CanvasRenderingContext2D, size: number) {
   // Create gradient overlay (purple/blue theme)
   const gradient = ctx.createLinearGradient(0, 0, size, size)
-  gradient.addColorStop(0, 'rgba(139, 92, 246, 0.3)') // violet-500
-  gradient.addColorStop(0.5, 'rgba(99, 102, 241, 0.25)') // indigo-500
-  gradient.addColorStop(1, 'rgba(59, 130, 246, 0.3)') // blue-500
+  gradient.addColorStop(0, 'rgba(139, 92, 246, 0.35)') // violet-500
+  gradient.addColorStop(0.5, 'rgba(99, 102, 241, 0.3)') // indigo-500
+  gradient.addColorStop(1, 'rgba(59, 130, 246, 0.35)') // blue-500
 
   ctx.fillStyle = gradient
   ctx.fillRect(0, 0, size, size)
