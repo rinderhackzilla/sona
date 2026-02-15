@@ -5,6 +5,8 @@ import {
 } from '@/app/components/fallbacks/home-fallbacks'
 import HomeHeader from '@/app/components/home/carousel/header'
 import PreviewList from '@/app/components/home/preview-list'
+import QuickAccess from '@/app/components/home/quick-access'
+import GenreDiscovery from '@/app/components/home/genre-discovery'
 import {
   useGetMostPlayed,
   useGetRandomAlbums,
@@ -53,28 +55,48 @@ export default function Home() {
 
   return (
     <div className="w-full px-8 py-6">
+      {/* Hero Section */}
       {isFetching || isLoading ? (
         <HeaderFallback />
       ) : (
         <HomeHeader songs={randomSongs || []} />
       )}
 
-      {sections.map((section) => {
-        if (section.loader) {
-          return <PreviewListFallback key={section.title} />
-        }
+      {/* Quick Access Cards */}
+      <QuickAccess />
 
-        if (!section.data || !section.data?.list) return null
+      {/* Genre Discovery Section */}
+      <GenreDiscovery />
 
-        return (
-          <PreviewList
-            key={section.title}
-            title={section.title}
-            moreRoute={section.route}
-            list={section.data.list}
-          />
-        )
-      })}
+      {/* Library Sections - 2 Column Grid on Desktop */}
+      <div className="mb-6">
+        <h2 className="text-3xl font-bold mb-2">Your Library</h2>
+        <p className="text-muted-foreground">Recent and popular albums</p>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-8 gap-y-4">
+        {sections.map((section) => {
+          if (section.loader) {
+            return (
+              <div key={section.title} className="lg:col-span-1">
+                <PreviewListFallback />
+              </div>
+            )
+          }
+
+          if (!section.data || !section.data?.list) return null
+
+          return (
+            <div key={section.title} className="lg:col-span-1">
+              <PreviewList
+                title={section.title}
+                moreRoute={section.route}
+                list={section.data.list}
+              />
+            </div>
+          )
+        })}
+      </div>
     </div>
   )
 }
