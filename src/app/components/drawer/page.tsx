@@ -92,7 +92,8 @@ export function MainDrawerPage() {
             </Button>
           </div>
           <div className="flex w-full h-full mt-8 px-[6%] mb-0">
-            <CurrentSongInfo />
+            {/* Show CurrentSongInfo only for Queue */}
+            {queueState && <CurrentSongInfo />}
 
             <div className="flex flex-1 justify-center relative">
               <ActiveContent active={queueState}>
