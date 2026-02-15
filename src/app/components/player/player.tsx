@@ -1,10 +1,10 @@
-import { memo, useCallback, useEffect, useRef } from 'react'
+import { memo, useCallback, useEffect, useRef, useState } from 'react'
 import { getSongStreamUrl } from '@/api/httpClient'
 import { getProxyURL } from '@/api/podcastClient'
 import { MiniPlayerButton } from '@/app/components/mini-player/button'
 import { RadioInfo } from '@/app/components/player/radio-info'
 import { TrackInfo } from '@/app/components/player/track-info'
-import { ImageLoader } from '@/app/components/image-loader'
+import { subsonic } from '@/service/subsonic'
 import { podcasts } from '@/service/podcasts'
 import {
   getVolume,
@@ -76,6 +76,18 @@ export function Player() {
   const song = currentList[currentSongIndex]
   const radio = radioList[currentSongIndex]
   const podcast = podcastList[currentSongIndex]
+
+  // Get album cover URL for background
+  const [backgroundImage, setBackgroundImage] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (isSong && song?.coverArt) {
+      const imageUrl = subsonic.getCoverArtUrl(song.coverArt, '400')
+      setBackgroundImage(imageUrl)
+    } else {
+      setBackgroundImage(null)
+    }
+  }, [isSong, song])
 
   const getAudioRef = useCallback(() => {
     if (isRadio) return radioRef
@@ -185,22 +197,20 @@ export function Player() {
   return (
     <footer className="border-t h-[--player-height] w-full flex items-center fixed bottom-0 left-0 right-0 z-40 bg-background overflow-hidden">
       {/* Blurred Album Cover Background */}
-      {isSong && song && (
-        <div className="absolute inset-0 pointer-events-none">
-          <ImageLoader id={song.coverArt} type="song" size={400}>
-            {(src) => (
-              <img
-                src={src}
-                alt=""
-                className="absolute left-0 top-0 h-full w-auto object-cover blur-3xl opacity-30 scale-110"
-                style={{
-                  maskImage: 'linear-gradient(to right, black 0%, black 40%, transparent 100%)',
-                  WebkitMaskImage: 'linear-gradient(to right, black 0%, black 40%, transparent 100%)',
-                }}
-              />
-            )}
-          </ImageLoader>
-        </div>
+      {backgroundImage && (
+        <div 
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            backgroundImage: `url(${backgroundImage})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'left center',
+            filter: 'blur(60px)',
+            opacity: 0.3,
+            transform: 'scale(1.1)',
+            maskImage: 'linear-gradient(to right, black 0%, black 40%, transparent 100%)',
+            WebkitMaskImage: 'linear-gradient(to right, black 0%, black 40%, transparent 100%)',
+          }}
+        />
       )}
 
       {/* Content Layer */}
