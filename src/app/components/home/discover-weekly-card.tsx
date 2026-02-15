@@ -77,88 +77,82 @@ export function DiscoverWeeklyCard() {
   const coverArt = playlist[0]?.coverArt
 
   return (
-    <Link to={ROUTES.DISCOVER_WEEKLY} className="block">
-      <div className="relative w-full h-full overflow-hidden border rounded-lg transition-transform hover:scale-[1.02] cursor-pointer">
-        {/* Background Image with Blur */}
-        {coverArt && (
-          <ImageLoader id={coverArt} type="album" size="300">
-            {(src) => (
-              <>
-                <div
-                  className="absolute inset-0 bg-cover bg-center blur-2xl scale-110 opacity-40"
-                  style={{ backgroundImage: `url(${src})` }}
-                />
-                <div className="absolute inset-0 bg-gradient-to-r from-background/80 via-background/60 to-background/80" />
-              </>
-            )}
-          </ImageLoader>
-        )}
-        {!coverArt && (
-          <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-purple-500/10" />
-        )}
+    <div className="relative w-full h-full overflow-hidden border rounded-lg">
+      {/* Background Image with Blur */}
+      {coverArt && (
+        <ImageLoader id={coverArt} type="album" size="300">
+          {(src) => (
+            <>
+              <div
+                className="absolute inset-0 bg-cover bg-center blur-2xl scale-110 opacity-40"
+                style={{ backgroundImage: `url(${src})` }}
+              />
+              <div className="absolute inset-0 bg-gradient-to-r from-background/80 via-background/60 to-background/80" />
+            </>
+          )}
+        </ImageLoader>
+      )}
+      {!coverArt && (
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-purple-500/10" />
+      )}
 
-        {/* Content */}
-        <div className="relative h-full flex items-center gap-6 px-8 z-10">
-          {/* Cover Image - Left Side */}
-          <div className="flex-shrink-0 relative">
-            {coverArt ? (
-              <ImageLoader id={coverArt} type="album" size="300">
-                {(src, isLoadingImage) => (
-                  <>
-                    {src && (
-                      <img
-                        src={src}
-                        alt="Discover Weekly"
-                        className="w-[180px] h-[180px] 2xl:w-[220px] 2xl:h-[220px] rounded-lg shadow-2xl object-cover"
-                      />
-                    )}
-                    {!src && !isLoadingImage && (
-                      <div className="w-[180px] h-[180px] 2xl:w-[220px] 2xl:h-[220px] rounded-lg shadow-2xl bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center">
-                        <Calendar className="h-16 w-16 text-muted-foreground" />
-                      </div>
-                    )}
-                  </>
-                )}
-              </ImageLoader>
-            ) : (
-              <div className="w-[180px] h-[180px] 2xl:w-[220px] 2xl:h-[220px] rounded-lg shadow-2xl bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center">
-                <Calendar className="h-16 w-16 text-muted-foreground" />
-              </div>
-            )}
+      {/* Content */}
+      <div className="relative h-full flex items-center gap-6 px-8 z-10">
+        {/* Cover Image - Left Side - Wrapped in Link */}
+        <Link to={ROUTES.DISCOVER_WEEKLY} className="flex-shrink-0 relative">
+          {coverArt ? (
+            <ImageLoader id={coverArt} type="album" size="300">
+              {(src, isLoadingImage) => (
+                <>
+                  {src && (
+                    <img
+                      src={src}
+                      alt="Discover Weekly"
+                      className="w-[180px] h-[180px] 2xl:w-[220px] 2xl:h-[220px] rounded-lg shadow-2xl object-cover cursor-pointer transition-transform hover:scale-105"
+                    />
+                  )}
+                  {!src && !isLoadingImage && (
+                    <div className="w-[180px] h-[180px] 2xl:w-[220px] 2xl:h-[220px] rounded-lg shadow-2xl bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center">
+                      <Calendar className="h-16 w-16 text-muted-foreground" />
+                    </div>
+                  )}
+                </>
+              )}
+            </ImageLoader>
+          ) : (
+            <div className="w-[180px] h-[180px] 2xl:w-[220px] 2xl:h-[220px] rounded-lg shadow-2xl bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center">
+              <Calendar className="h-16 w-16 text-muted-foreground" />
+            </div>
+          )}
+        </Link>
+
+        {/* Info - Right Side */}
+        <div className="flex-1 flex flex-col gap-3 min-w-0">
+          <div>
+            <p className="text-sm text-muted-foreground mb-2">
+              Your Weekly Mix
+            </p>
+            <h2 className="text-4xl 2xl:text-5xl font-bold leading-tight">
+              Discover<br />Weekly
+            </h2>
           </div>
 
-          {/* Info - Right Side */}
-          <div className="flex-1 flex flex-col gap-3 min-w-0">
-            <div>
-              <p className="text-sm text-muted-foreground mb-2">
-                Your Weekly Mix
-              </p>
-              <h2 className="text-4xl 2xl:text-5xl font-bold leading-tight">
-                Discover<br />Weekly
-              </h2>
-            </div>
-
-            <div className="flex items-center gap-3">
-              <span className="text-sm text-muted-foreground">
-                {playlist.length} {playlist.length === 1 ? 'song' : 'songs'}
-              </span>
-            </div>
-
-            <Button
-              onClick={(e) => {
-                e.preventDefault()
-                e.stopPropagation()
-                handlePlay()
-              }}
-              className="w-fit gap-2"
-              size="lg"
-            >
-              <Play className="w-5 h-5" fill="currentColor" />
-              Play
-            </Button>
+          <div className="flex items-center gap-3">
+            <span className="text-sm text-muted-foreground">
+              {playlist.length} {playlist.length === 1 ? 'song' : 'songs'}
+            </span>
           </div>
+
+          <Button
+            onClick={handlePlay}
+            className="w-fit gap-2"
+            size="lg"
+          >
+            <Play className="w-5 h-5" fill="currentColor" />
+            Play
+          </Button>
         </div>
       </div>
-    </Link>
+    </div>
   )
 }
