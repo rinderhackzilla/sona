@@ -1,4 +1,3 @@
-import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   HeaderFallback,
@@ -23,16 +22,6 @@ import { ROUTES } from '@/routes/routesList'
 export default function Home() {
   const { t } = useTranslation()
   const showThisIsArtist = useAppStore((state) => state.integrations.lastfm.showThisIsArtist)
-  const [isWideScreen, setIsWideScreen] = useState(window.innerWidth >= 1300)
-
-  useEffect(() => {
-    const handleResize = () => {
-      setIsWideScreen(window.innerWidth >= 1300)
-    }
-
-    window.addEventListener('resize', handleResize)
-    return () => window.removeEventListener('resize', handleResize)
-  }, [])
 
   const similarArtists = useGetSimilarArtistsDiscovery()
 
@@ -68,35 +57,27 @@ export default function Home() {
     },
   ]
 
-  const shouldShowTwoColumns = showThisIsArtist && isWideScreen
-
   return (
     <div className="w-full px-8 py-6">
-      {/* Hero Section */}
-      <div className="mb-8">
-        <div 
-          className="grid gap-4 w-full max-w-full overflow-hidden"
-          style={{
-            gridTemplateColumns: shouldShowTwoColumns ? 'repeat(2, minmax(0, 1fr))' : '1fr'
-          }}
-        >
-          {/* Hero Carousel */}
-          <div className="h-[300px] w-full max-w-full min-w-0">
-            {similarArtists.isFetching || similarArtists.isLoading ? (
-              <HeaderFallback />
-            ) : (
-              <AlbumHeader albums={similarArtists.data?.list || []} />
-            )}
-          </div>
-
-          {/* This is Artist - Only shown if enabled */}
-          {showThisIsArtist && (
-            <div className="h-[300px] w-full max-w-full min-w-0">
-              <ThisIsArtist />
-            </div>
+      {/* Hero Carousel */}
+      <div className="mb-4">
+        <div className="h-[300px] w-full">
+          {similarArtists.isFetching || similarArtists.isLoading ? (
+            <HeaderFallback />
+          ) : (
+            <AlbumHeader albums={similarArtists.data?.list || []} />
           )}
         </div>
       </div>
+
+      {/* This is Artist - Only shown if enabled */}
+      {showThisIsArtist && (
+        <div className="mb-8">
+          <div className="h-[300px] w-full">
+            <ThisIsArtist />
+          </div>
+        </div>
+      )}
 
       {/* Genre Discovery Section */}
       <GenreDiscovery />
