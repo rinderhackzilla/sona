@@ -58,6 +58,7 @@ Sona is a fork of Aonsoku, customized and enhanced for Windows desktop use. This
 
 ## Features
 
+### Core Features
 - **Subsonic Integration:** Sona integrates with your Navidrome or Subsonic server, providing you with easy access to your music collection.
 - **Intuitive UI:** Modern, clean and user-friendly interface designed to enhance your music listening experience.
 - **Podcast Support:** Easily access, manage, and listen to your favorite podcasts directly within the app.
@@ -65,10 +66,18 @@ Sona is a fork of Aonsoku, customized and enhanced for Windows desktop use. This
 - **Unsynchronized Lyrics:** Display embedded unsynchronized lyrics from your songs.
 - **Radio:** Listen to radio shows directly within Sona if your server supports it.
 - **Scrobble:** Sync played songs with your server.
+
+### Audio Features
 - **Audio Visualizer:** Real-time audio visualization with multiple visual styles for an immersive listening experience.
 - **Equalizer:** Built-in 10-band equalizer with presets and custom settings for personalized sound control.
-- **Discover Weekly:** Personalized weekly playlists powered by Last.fm integration, automatically generated every Monday with ~50 songs from similar artists.
-- **Your Top 50:** Your top 50 most played tracks from the last 12 months, synced from Last.fm listening history.
+
+### Music Discovery & Playlists
+- **Discover Weekly:** Personalized weekly playlists powered by Last.fm integration, automatically generated every Monday with ~50 songs from similar artists based on your listening history.
+- **Your Top 50:** Your top 50 most played tracks from the last 12 months, synced from Last.fm listening history and updated weekly.
+- **Rabbit Hole:** Generate a 50-song discovery queue on-demand with tracks from similar artists. Perfect for diving deep into your music taste and finding new favorites.
+- **Daily Lists:** Discover top tracks from your favorite artists. Each day features a different artist from your library with their most popular songs.
+
+### Integrations
 - **Lidarr Integration:** Send music requests directly to Lidarr via API for automated music collection management via the search bar.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
@@ -78,8 +87,6 @@ Sona is a fork of Aonsoku, customized and enhanced for Windows desktop use. This
 Sona continues to evolve with the following enhancements on the roadmap:
 
 - [ ] Discord Rich Presence integration
-- [ ] **Smart Playlists:** Dynamic playlists based on custom rules and filters
-- [ ] **Enhanced Quality of Life Features:** Additional UI/UX improvements and convenience features
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
