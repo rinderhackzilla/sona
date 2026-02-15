@@ -8,6 +8,7 @@ import PreviewList from '@/app/components/home/preview-list'
 import GenreDiscovery from '@/app/components/home/genre-discovery'
 import { Top50Year } from '@/app/components/home/top-50-year'
 import { DiscoverWeekly } from '@/app/components/home/discover-weekly'
+import { ThisIsArtist } from '@/app/components/home/this-is-artist'
 import {
   useGetMostPlayed,
   useGetRandomAlbums,
@@ -56,12 +57,22 @@ export default function Home() {
 
   return (
     <div className="w-full px-8 py-6">
-      {/* Hero Section - Similar Artists Discovery */}
-      {similarArtists.isFetching || similarArtists.isLoading ? (
-        <HeaderFallback />
-      ) : (
-        <AlbumHeader albums={similarArtists.data?.list || []} />
-      )}
+      {/* Hero Section - 2 Column Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        {/* Left: Hero Carousel */}
+        <div className="lg:col-span-1">
+          {similarArtists.isFetching || similarArtists.isLoading ? (
+            <HeaderFallback />
+          ) : (
+            <AlbumHeader albums={similarArtists.data?.list || []} />
+          )}
+        </div>
+
+        {/* Right: This is Artist */}
+        <div className="lg:col-span-1">
+          <ThisIsArtist />
+        </div>
+      </div>
 
       {/* Genre Discovery Section */}
       <GenreDiscovery />
