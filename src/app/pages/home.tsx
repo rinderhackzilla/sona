@@ -6,6 +6,7 @@ import {
 import AlbumHeader from '@/app/components/home/carousel/album-header'
 import PreviewList from '@/app/components/home/preview-list'
 import GenreDiscovery from '@/app/components/home/genre-discovery'
+import { DiscoverWeekly } from '@/app/components/home/discover-weekly'
 import {
   useGetMostPlayed,
   useGetRandomAlbums,
@@ -63,6 +64,9 @@ export default function Home() {
 
       {/* Genre Discovery Section */}
       <GenreDiscovery />
+
+      {/* Discover Weekly Section */}
+      <DiscoverWeekly />
 
       {/* Library Sections - 2 Column Grid on Desktop */}
       <div className="mb-6">
