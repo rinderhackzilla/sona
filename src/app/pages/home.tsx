@@ -3,22 +3,22 @@ import {
   HeaderFallback,
   PreviewListFallback,
 } from '@/app/components/fallbacks/home-fallbacks'
-import HomeHeader from '@/app/components/home/carousel/header'
+import AlbumHeader from '@/app/components/home/carousel/album-header'
 import PreviewList from '@/app/components/home/preview-list'
 import GenreDiscovery from '@/app/components/home/genre-discovery'
 import {
   useGetMostPlayed,
   useGetRandomAlbums,
-  useGetRandomSongs,
   useGetRecentlyAdded,
   useGetRecentlyPlayed,
+  useGetSimilarArtistsDiscovery,
 } from '@/app/hooks/use-home'
 import { ROUTES } from '@/routes/routesList'
 
 export default function Home() {
   const { t } = useTranslation()
 
-  const { data: randomSongs, isLoading, isFetching } = useGetRandomSongs()
+  const similarArtists = useGetSimilarArtistsDiscovery()
 
   const recentlyPlayed = useGetRecentlyPlayed()
   const mostPlayed = useGetMostPlayed()
@@ -54,11 +54,15 @@ export default function Home() {
 
   return (
     <div className="w-full px-8 py-6">
-      {/* Hero Section */}
-      {isFetching || isLoading ? (
+      {/* Hero Section - Similar Artists Discovery */}
+      {similarArtists.isFetching || similarArtists.isLoading ? (
         <HeaderFallback />
       ) : (
-        <HomeHeader songs={randomSongs || []} />
+        <AlbumHeader
+          albums={similarArtists.data?.list || []}
+          title="Discover Similar Artists"
+          subtitle="Albums from artists similar to what you listen to"
+        />
       )}
 
       {/* Genre Discovery Section */}
