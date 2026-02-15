@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import {
   loadPlaylist,
   generateAndSavePlaylist,
@@ -21,7 +21,7 @@ export function useDiscoverWeekly() {
   const [isGenerating, setIsGenerating] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [metadata, setMetadata] = useState<PlaylistMetadata | null>(null)
-  const [hasCheckedCatchup, setHasCheckedCatchup] = useState(false)
+  const hasCheckedCatchupRef = useRef(false)
 
   const isConfigured = !!(lastfm.username && lastfm.apiKey)
 
@@ -37,12 +37,13 @@ export function useDiscoverWeekly() {
 
   // Catch-up check on mount (only once per session)
   useEffect(() => {
-    if (!isConfigured || hasCheckedCatchup || isGenerating) {
+    if (!isConfigured || hasCheckedCatchupRef.current) {
       return
     }
 
     const performCatchup = async () => {
-      setHasCheckedCatchup(true)
+      // Mark as checked (using ref to avoid re-renders)
+      hasCheckedCatchupRef.current = true
       
       // Check if generation is needed
       if (!shouldGeneratePlaylist()) {
@@ -80,7 +81,7 @@ export function useDiscoverWeekly() {
     // Delay by 2 seconds to not block initial render
     const timeoutId = setTimeout(performCatchup, 2000)
     return () => clearTimeout(timeoutId)
-  }, [isConfigured, hasCheckedCatchup, isGenerating, lastfm.username, lastfm.apiKey])
+  }, [isConfigured, lastfm.username, lastfm.apiKey])
 
   // Manual generation (force=true)
   const generate = useCallback(async () => {
