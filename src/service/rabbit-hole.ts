@@ -1,177 +1,180 @@
-import { lastfm } from './lastfm'
 import { subsonic } from './subsonic'
 import type { ISong } from '@/types/responses/song'
 
-interface RabbitHoleOptions {
-  artistName?: string
-  albumName?: string
-  albumId?: string
-  artistId?: string
-  lastfmApiKey: string
+/**
+ * Rabbit Hole Service
+ * 
+ * Generates a discovery queue of ~50 similar songs based on Last.fm recommendations.
+ * Uses Last.fm API to find similar artists, then searches for those artists in your
+ * Subsonic library to build a queue of songs you'll probably love.
+ */
+
+interface LastFmArtistResponse {
+  similarartists: {
+    artist: Array<{
+      name: string
+      match: string
+    }>
+  }
 }
 
-/**
- * Rabbit Hole: Create a 50-song queue with:
- * - Similar artists
- * - Similar tracks
- * - More from the same artist
- */
-export class RabbitHoleService {
-  private lastfmApiKey: string
-
-  constructor(lastfmApiKey: string) {
-    this.lastfmApiKey = lastfmApiKey
+interface LastFmTrackResponse {
+  similartracks: {
+    track: Array<{
+      name: string
+      artist: {
+        name: string
+      }
+    }>
   }
+}
 
-  /**
-   * Generate Rabbit Hole queue for an artist
-   */
-  async generateForArtist(
-    artistName: string,
-    artistId?: string,
-  ): Promise<ISong[]> {
-    const songs: ISong[] = []
+class RabbitHoleService {
+  constructor(private apiKey: string) {}
 
+  async generateForArtist(artistName: string, artistId?: string): Promise<ISong[]> {
     try {
-      // 1. Get similar artists from Last.fm (15 artists)
-      const similarArtists = await lastfm.getSimilarArtists(
-        artistName,
-        this.lastfmApiKey,
-        15,
-      )
-
-      // 2. Get songs from similar artists (2-3 songs each = ~30-45 songs)
-      for (const similar of similarArtists) {
+      // Get similar artists from Last.fm
+      const similarArtists = await this.getSimilarArtists(artistName)
+      
+      // Search for songs from similar artists in Subsonic
+      const allSongs: ISong[] = []
+      
+      for (const artist of similarArtists.slice(0, 15)) {
         try {
-          const artistResult = await subsonic.search.searchArtists(similar.name)
-          if (artistResult.length > 0) {
-            const artist = artistResult[0]
-            const artistSongs = await subsonic.artists.getTopSongs(
-              artist.id,
-              3, // 3 songs per similar artist
-            )
-            songs.push(...artistSongs)
-
-            if (songs.length >= 50) break
+          const searchResult = await subsonic.search.get({
+            query: artist.name,
+            artistCount: 1,
+            albumCount: 0,
+            songCount: 10,
+          })
+          
+          if (searchResult?.song && searchResult.song.length > 0) {
+            allSongs.push(...searchResult.song)
           }
-        } catch (err) {
-          console.warn(`Could not fetch songs for ${similar.name}:`, err)
+        } catch (error) {
+          console.warn(`Could not fetch songs for ${artist.name}:`, error)
         }
       }
-
-      // 3. Fill up with more from the original artist if needed
-      if (songs.length < 50 && artistId) {
+      
+      // If we have the artist ID, add some of their top songs too
+      if (artistId && allSongs.length < 30) {
         try {
-          const additionalNeeded = 50 - songs.length
-          const artistSongs = await subsonic.artists.getTopSongs(
-            artistId,
-            additionalNeeded,
-          )
-          songs.push(...artistSongs)
-        } catch (err) {
-          console.warn('Could not fetch additional artist songs:', err)
+          const artistData = await subsonic.artists.getOne(artistId)
+          if (artistData?.album && artistData.album.length > 0) {
+            // Get a few songs from their albums
+            for (const album of artistData.album.slice(0, 3)) {
+              const searchResult = await subsonic.search.get({
+                query: artistName,
+                artistCount: 0,
+                albumCount: 0,
+                songCount: 5,
+              })
+              
+              if (searchResult?.song) {
+                allSongs.push(...searchResult.song)
+              }
+            }
+          }
+        } catch (error) {
+          console.warn('Could not fetch additional artist songs:', error)
         }
       }
-
-      // 4. Shuffle and limit to exactly 50
-      return this.shuffleAndLimit(songs, 50)
+      
+      // Shuffle and return up to 50 songs
+      return this.shuffleAndLimit(allSongs, 50)
     } catch (error) {
-      console.error('Error generating Rabbit Hole for artist:', error)
-      throw new Error('Failed to generate Rabbit Hole')
+      console.error('Rabbit Hole generation failed:', error)
+      return []
     }
   }
 
-  /**
-   * Generate Rabbit Hole queue for an album
-   */
   async generateForAlbum(
     artistName: string,
     albumName: string,
     albumId: string,
   ): Promise<ISong[]> {
-    const songs: ISong[] = []
-
-    try {
-      // 1. Get the album's songs first
-      const albumSongs = await subsonic.albums.getAlbum(albumId)
-      songs.push(...albumSongs.song)
-
-      // 2. Get similar artists
-      const similarArtists = await lastfm.getSimilarArtists(
-        artistName,
-        this.lastfmApiKey,
-        15,
-      )
-
-      // 3. Get songs from similar artists
-      for (const similar of similarArtists) {
-        if (songs.length >= 50) break
-
-        try {
-          const artistResult = await subsonic.search.searchArtists(similar.name)
-          if (artistResult.length > 0) {
-            const artist = artistResult[0]
-            const artistSongs = await subsonic.artists.getTopSongs(
-              artist.id,
-              3,
-            )
-            songs.push(...artistSongs)
-          }
-        } catch (err) {
-          console.warn(`Could not fetch songs for ${similar.name}:`, err)
-        }
-      }
-
-      // 4. Fill with random songs from library if still not enough
-      if (songs.length < 50) {
-        try {
-          const randomSongs = await subsonic.songs.getRandomSongs(
-            50 - songs.length,
-          )
-          songs.push(...randomSongs)
-        } catch (err) {
-          console.warn('Could not fetch random songs:', err)
-        }
-      }
-
-      return this.shuffleAndLimit(songs, 50)
-    } catch (error) {
-      console.error('Error generating Rabbit Hole for album:', error)
-      throw new Error('Failed to generate Rabbit Hole')
-    }
-  }
-
-  /**
-   * Generate Rabbit Hole queue for a song
-   */
-  async generateForSong(
-    artistName: string,
-    trackName: string,
-  ): Promise<ISong[]> {
-    // For songs, use artist-based approach
+    // For albums, just use the artist-based approach
     return this.generateForArtist(artistName)
   }
 
-  /**
-   * Shuffle array and limit to specified count
-   */
-  private shuffleAndLimit<T>(array: T[], limit: number): T[] {
+  async generateForSong(artistName: string, trackName: string): Promise<ISong[]> {
+    try {
+      // Get similar tracks from Last.fm
+      const similarTracks = await this.getSimilarTracks(artistName, trackName)
+      
+      // Search for those tracks in Subsonic
+      const allSongs: ISong[] = []
+      
+      for (const track of similarTracks.slice(0, 50)) {
+        try {
+          const searchQuery = `${track.artist.name} ${track.name}`
+          const searchResult = await subsonic.search.get({
+            query: searchQuery,
+            artistCount: 0,
+            albumCount: 0,
+            songCount: 3,
+          })
+          
+          if (searchResult?.song && searchResult.song.length > 0) {
+            allSongs.push(searchResult.song[0])
+          }
+        } catch (error) {
+          console.warn(`Could not fetch track ${track.name}:`, error)
+        }
+      }
+      
+      return this.shuffleAndLimit(allSongs, 50)
+    } catch (error) {
+      console.error('Rabbit Hole generation failed:', error)
+      return []
+    }
+  }
+
+  private async getSimilarArtists(artistName: string): Promise<Array<{ name: string; match: string }>> {
+    const url = `https://ws.audioscrobbler.com/2.0/?method=artist.getsimilar&artist=${encodeURIComponent(artistName)}&api_key=${this.apiKey}&format=json&limit=15`
+    
+    const response = await fetch(url)
+    if (!response.ok) {
+      throw new Error(`Last.fm API error: ${response.statusText}`)
+    }
+    
+    const data = (await response.json()) as LastFmArtistResponse
+    return data.similarartists?.artist || []
+  }
+
+  private async getSimilarTracks(
+    artistName: string,
+    trackName: string,
+  ): Promise<Array<{ name: string; artist: { name: string } }>> {
+    const url = `https://ws.audioscrobbler.com/2.0/?method=track.getsimilar&artist=${encodeURIComponent(artistName)}&track=${encodeURIComponent(trackName)}&api_key=${this.apiKey}&format=json&limit=50`
+    
+    const response = await fetch(url)
+    if (!response.ok) {
+      throw new Error(`Last.fm API error: ${response.statusText}`)
+    }
+    
+    const data = (await response.json()) as LastFmTrackResponse
+    return data.similartracks?.track || []
+  }
+
+  private shuffleAndLimit(songs: ISong[], limit: number): ISong[] {
+    // Remove duplicates by ID
+    const uniqueSongs = Array.from(
+      new Map(songs.map((song) => [song.id, song])).values(),
+    )
+    
     // Fisher-Yates shuffle
-    const shuffled = [...array]
+    const shuffled = [...uniqueSongs]
     for (let i = shuffled.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1))
       ;[shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
     }
+    
     return shuffled.slice(0, limit)
   }
 }
 
-// Singleton instance
-let rabbitHoleInstance: RabbitHoleService | null = null
-
-export function getRabbitHoleService(lastfmApiKey: string): RabbitHoleService {
-  if (!rabbitHoleInstance || rabbitHoleInstance['lastfmApiKey'] !== lastfmApiKey) {
-    rabbitHoleInstance = new RabbitHoleService(lastfmApiKey)
-  }
-  return rabbitHoleInstance
+export function getRabbitHoleService(apiKey: string): RabbitHoleService {
+  return new RabbitHoleService(apiKey)
 }
