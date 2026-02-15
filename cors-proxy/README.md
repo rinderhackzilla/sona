@@ -15,14 +15,14 @@ cd cors-proxy
 node server.js
 ```
 
-The proxy will start on `http://localhost:4534` and forward to `http://192.168.0.163:4533`.
+The proxy will start on `http://[SERVER IP]:4534` and forward to `http://[SERVER IP]:4533`.
 
 ### Configuration
 
 You can customize the target using environment variables:
 
 ```bash
-NAVIDROME_HOST=192.168.0.163 \
+NAVIDROME_HOST=[SERVER IP] \
 NAVIDROME_PORT=4533 \
 NAVIDROME_PROTOCOL=http \
 node server.js
@@ -32,12 +32,12 @@ node server.js
 
 Change your Navidrome server URL from:
 ```
-http://192.168.0.163:4533
+http://[SERVER IP]:4533
 ```
 
 To:
 ```
-http://localhost:4534
+http://[SERVER IP]:4534
 ```
 
 ### Run as Background Service (Linux)
@@ -57,8 +57,8 @@ After=network.target
 [Service]
 Type=simple
 User=joe
-WorkingDirectory=/home/joe/sona/cors-proxy
-ExecStart=/usr/bin/node /home/joe/sona/cors-proxy/server.js
+WorkingDirectory=/path/to/sona/cors-proxy
+ExecStart=/usr/bin/node /path/to/sona/cors-proxy/server.js
 Restart=always
 Environment="NAVIDROME_HOST=192.168.0.163"
 Environment="NAVIDROME_PORT=4533"
@@ -77,8 +77,8 @@ sudo systemctl status navidrome-cors-proxy
 
 ## How It Works
 
-1. Your app connects to `localhost:4534`
-2. Proxy forwards requests to Navidrome at `192.168.0.163:4533`
+1. Your app connects to `[SERVER IP]:4534`
+2. Proxy forwards requests to Navidrome at `[SERVER IP]:4533`
 3. Proxy adds CORS headers to all responses:
    - `Access-Control-Allow-Origin: *`
    - `Access-Control-Allow-Headers: range, content-type`
@@ -102,7 +102,7 @@ PROXY_PORT=4535 node server.js
 
 Make sure Navidrome is running and accessible:
 ```bash
-curl http://192.168.0.163:4533
+curl http://[SERVER IP]:4533
 ```
 
 ## License
