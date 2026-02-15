@@ -114,7 +114,7 @@ pnpm run electron:dev
 To build the Windows .exe installer:
 
 ```sh
-pnpm run electron:build:win
+npm run build:win
 ```
 
 ### Recommended IDE Setup
