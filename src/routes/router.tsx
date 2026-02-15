@@ -41,6 +41,7 @@ const Episode = lazy(() => import('@/app/pages/podcasts/episode'))
 const LatestEpisodes = lazy(
   () => import('@/app/pages/podcasts/latest-episodes'),
 )
+const DiscoverWeekly = lazy(() => import('@/app/pages/discover-weekly'))
 
 export const router = createHashRouter([
   {
@@ -55,6 +56,16 @@ export const router = createHashRouter([
         element: (
           <Suspense fallback={<HomeFallback />}>
             <Home />
+          </Suspense>
+        ),
+      },
+      {
+        id: 'discover-weekly',
+        path: ROUTES.LIBRARY.DISCOVER_WEEKLY,
+        errorElement: <ErrorPage />,
+        element: (
+          <Suspense fallback={<HomeFallback />}>
+            <DiscoverWeekly />
           </Suspense>
         ),
       },
