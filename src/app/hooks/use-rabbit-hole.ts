@@ -27,6 +27,14 @@ export function useRabbitHole() {
         throw new Error('Last.fm API key not configured')
       }
 
+      // Show loading toast
+      toast(t('rabbitHole.loading'), {
+        autoClose: false,
+        type: 'default',
+        isLoading: true,
+        toastId: 'rabbit-hole',
+      })
+
       const rabbitHoleService = getRabbitHoleService(lastfmApiKey)
       let songs: ISong[] = []
 
@@ -61,6 +69,9 @@ export function useRabbitHole() {
       return songs
     },
     onSuccess: (songs) => {
+      // Dismiss loading toast
+      toast.dismiss('rabbit-hole')
+
       if (songs.length === 0) {
         toast.error(t('rabbitHole.noSongsFound'))
         return
@@ -74,6 +85,9 @@ export function useRabbitHole() {
       )
     },
     onError: (error) => {
+      // Dismiss loading toast
+      toast.dismiss('rabbit-hole')
+
       console.error('Rabbit Hole error:', error)
       
       if (error instanceof Error) {
