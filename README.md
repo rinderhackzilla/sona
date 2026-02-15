@@ -66,17 +66,19 @@ Sona is a fork of Aonsoku, customized and enhanced for Windows desktop use. This
 - **Unsynchronized Lyrics:** Display embedded unsynchronized lyrics from your songs.
 - **Radio:** Listen to radio shows directly within Sona if your server supports it.
 - **Scrobble:** Sync played songs with your server.
+- **Audio Visualizer:** Real-time audio visualization with multiple visual styles for an immersive listening experience.
+- **Equalizer:** Built-in 10-band equalizer with presets and custom settings for personalized sound control.
+- **Discover Weekly:** Personalized weekly playlists powered by Last.fm integration, automatically generated every Monday.
+- **Lidarr Integration:** Send music requests directly to Lidarr via API for automated music collection management.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ## Planned Features
 
-Sona aims to extend beyond the original Aonsoku with the following enhancements:
+Sona continues to evolve with the following enhancements on the roadmap:
 
-- **Audio Visualizer:** Real-time audio visualization for an immersive listening experience
-- **Equalizer:** Built-in equalizer with presets and custom settings for personalized sound
-- **Music Discovery:** Enhanced music discovery features to explore new artists and albums
-- **Lidarr Integration:** Send music requests directly to Lidarr via API for automated music collection management
+- **Smart Playlists:** Dynamic playlists based on custom rules and filters
+- **Enhanced Quality of Life Features:** Additional UI/UX improvements and convenience features
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -138,10 +140,13 @@ pnpm run electron:build:win
 - [x] Queue page
 - [x] Synced lyrics
 - [x] Podcast support
-- [ ] Audio Visualizer
-- [ ] Equalizer
-- [ ] Enhanced Music Discovery
-- [ ] Lidarr API Integration
+- [x] Audio Visualizer
+- [x] Equalizer
+- [x] Discover Weekly (Last.fm Integration)
+- [x] Lidarr API Integration
+- [x] Quality of Life Features
+- [ ] Smart Playlists
+- [ ] More Quality of Life Features
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
