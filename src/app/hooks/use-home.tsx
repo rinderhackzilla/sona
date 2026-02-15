@@ -120,3 +120,96 @@ export const useGetGenreDiscovery = () => {
     isLoading: genresLoading,
   }
 }
+
+// Get similar artists discovery based on listening history
+export const useGetSimilarArtistsDiscovery = () => {
+  const { data: mostPlayed } = useGetMostPlayed()
+  const { data: recentlyPlayed } = useGetRecentlyPlayed()
+
+  // Extract top artists and genres from listening history
+  const { topArtists, topGenres, topArtistIds } = useMemo(() => {
+    const artistCounts = new Map<string, { count: number; id: string; genre?: string }>()
+    const genreCounts = new Map<string, number>()
+    const artistIds = new Set<string>()
+
+    // Combine most played and recently played
+    const allAlbums = [
+      ...(mostPlayed?.list || []),
+      ...(recentlyPlayed?.list || []),
+    ]
+
+    allAlbums.forEach((album) => {
+      if (album.artist && album.artistId) {
+        artistIds.add(album.artistId)
+        const current = artistCounts.get(album.artist) || { count: 0, id: album.artistId, genre: album.genre }
+        artistCounts.set(album.artist, {
+          ...current,
+          count: current.count + 1,
+        })
+      }
+
+      if (album.genre) {
+        genreCounts.set(album.genre, (genreCounts.get(album.genre) || 0) + 1)
+      }
+    })
+
+    // Get top 5 artists
+    const topArtistsList = Array.from(artistCounts.entries())
+      .sort((a, b) => b[1].count - a[1].count)
+      .slice(0, 5)
+      .map(([name, data]) => ({ name, ...data }))
+
+    // Get top 3 genres
+    const topGenresList = Array.from(genreCounts.entries())
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 3)
+      .map(([genre]) => genre)
+
+    return {
+      topArtists: topArtistsList,
+      topGenres: topGenresList,
+      topArtistIds: Array.from(artistIds),
+    }
+  }, [mostPlayed, recentlyPlayed])
+
+  // Fetch random albums from top genres (excluding top artists)
+  return useQuery({
+    queryKey: [queryKeys.album.similarArtists, topGenres, topArtistIds],
+    queryFn: async () => {
+      if (topGenres.length === 0) {
+        // Fallback to random albums if no genres found
+        return subsonic.albums.getAlbumList({
+          size: 10,
+          type: 'random',
+        })
+      }
+
+      // Get albums from one of the top genres
+      const randomGenre = topGenres[Math.floor(Math.random() * topGenres.length)]
+      const albums = await subsonic.albums.getAlbumList({
+        size: 50, // Get more to filter
+        type: 'byGenre',
+        genre: randomGenre,
+      })
+
+      if (!albums?.list) return { list: [], albumsCount: 0 }
+
+      // Filter out albums from top artists (to show discovery)
+      const discoveryAlbums = albums.list.filter(
+        (album) => !topArtistIds.includes(album.artistId || '')
+      )
+
+      // Shuffle and take 10
+      const shuffled = discoveryAlbums
+        .sort(() => Math.random() - 0.5)
+        .slice(0, 10)
+
+      return {
+        list: shuffled,
+        albumsCount: shuffled.length,
+      }
+    },
+    enabled: !!mostPlayed || !!recentlyPlayed,
+    staleTime: convertMinutesToMs(10), // Refresh every 10 minutes
+  })
+}
