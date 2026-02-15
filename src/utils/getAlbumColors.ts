@@ -46,14 +46,14 @@ export async function getAlbumColorPalette(
 
       if (a < 128) continue // Skip transparent
 
-      // Skip very dark and very light colors
+      // Skip very dark and very light colors (more aggressive)
       const brightness = (r + g + b) / 3
-      if (brightness < 20 || brightness > 235) continue
+      if (brightness < 30 || brightness > 220) continue
 
       // Quantize colors to reduce variations
-      const qr = Math.round(r / 16) * 16
-      const qg = Math.round(g / 16) * 16
-      const qb = Math.round(b / 16) * 16
+      const qr = Math.round(r / 20) * 20
+      const qg = Math.round(g / 20) * 20
+      const qb = Math.round(b / 20) * 20
 
       const key = `${qr},${qg},${qb}`
       colorMap.set(key, (colorMap.get(key) || 0) + 1)
@@ -82,17 +82,21 @@ export async function getAlbumColorPalette(
       }
     }
 
-    // 1. Dominant: Most frequent color
-    const dominant = rgbToHex(colors[0].r, colors[0].g, colors[0].b)
+    // 1. Dominant: Most frequent color (but boosted saturation)
+    const dominantColor = colors[0]
+    const dominant = boostSaturation(dominantColor.r, dominantColor.g, dominantColor.b, 1.2)
 
-    // 2. Vibrant: Highest saturation
-    const vibrant = findMostVibrant(colors)
+    // 2. Vibrant: Highest saturation (boosted more)
+    const vibrant = findMostVibrant(colors, 1.3)
 
     // 3. Muted: Lowest saturation but not too dark/light
     const muted = findMostMuted(colors)
 
-    // 4. Accent: Complementary to dominant
-    const accent = getComplementaryColor(colors[0])
+    // 4. Accent: Complementary to vibrant (not dominant)
+    const vibrantRgb = hexToRgb(vibrant)
+    const accent = getComplementaryColor(vibrantRgb)
+
+    console.log('🎨 Extracted colors:', { dominant, vibrant, muted, accent })
 
     return {
       dominant,
@@ -104,6 +108,17 @@ export async function getAlbumColorPalette(
     console.error('Color extraction failed:', error)
     return null
   }
+}
+
+function hexToRgb(hex: string): { r: number; g: number; b: number } {
+  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex)
+  return result
+    ? {
+        r: parseInt(result[1], 16),
+        g: parseInt(result[2], 16),
+        b: parseInt(result[3], 16),
+      }
+    : { r: 0, g: 0, b: 0 }
 }
 
 function rgbToHex(r: number, g: number, b: number): string {
@@ -145,21 +160,35 @@ function rgbToHsl(r: number, g: number, b: number): {
   return { h: h * 360, s, l }
 }
 
+function boostSaturation(
+  r: number,
+  g: number,
+  b: number,
+  factor: number,
+): string {
+  const { h, s, l } = rgbToHsl(r, g, b)
+  const boostedS = Math.min(1, s * factor)
+  const { r: newR, g: newG, b: newB } = hslToRgb(h, boostedS, l)
+  return rgbToHex(Math.round(newR), Math.round(newG), Math.round(newB))
+}
+
 function findMostVibrant(
   colors: Array<{ r: number; g: number; b: number; count: number }>,
+  boostFactor: number = 1.0,
 ): string {
   let maxSaturation = 0
   let vibrant = colors[0]
 
   for (const color of colors) {
-    const { s } = rgbToHsl(color.r, color.g, color.b)
-    if (s > maxSaturation) {
+    const { s, l } = rgbToHsl(color.r, color.g, color.b)
+    // Prefer colors with good lightness
+    if (l > 0.3 && l < 0.7 && s > maxSaturation) {
       maxSaturation = s
       vibrant = color
     }
   }
 
-  return rgbToHex(vibrant.r, vibrant.g, vibrant.b)
+  return boostSaturation(vibrant.r, vibrant.g, vibrant.b, boostFactor)
 }
 
 function findMostMuted(
@@ -171,7 +200,7 @@ function findMostMuted(
   for (const color of colors) {
     const { s, l } = rgbToHsl(color.r, color.g, color.b)
     // Avoid very dark or very light colors
-    if (l > 0.2 && l < 0.8 && s < minSaturation) {
+    if (l > 0.3 && l < 0.7 && s < minSaturation) {
       minSaturation = s
       muted = color
     }
@@ -188,8 +217,11 @@ function getComplementaryColor(color: {
   const { h, s, l } = rgbToHsl(color.r, color.g, color.b)
   const complementaryH = (h + 180) % 360
 
+  // Boost saturation for accent
+  const boostedS = Math.min(1, s * 1.2)
+
   // Convert back to RGB
-  const { r, g, b } = hslToRgb(complementaryH, s, l)
+  const { r, g, b } = hslToRgb(complementaryH, boostedS, l)
   return rgbToHex(Math.round(r), Math.round(g), Math.round(b))
 }
 
