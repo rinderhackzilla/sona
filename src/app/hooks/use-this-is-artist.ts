@@ -7,11 +7,11 @@ import {
   startDailyScheduler,
 } from '@/service/this-is-artist-manager'
 import type { Song } from '@/types/responses/song'
-import type { Artist } from '@/types/responses/artist'
+import type { ISimilarArtist } from '@/types/responses/artist'
 
 interface UseThisIsArtistReturn {
   playlist: Song[]
-  artist: Artist | null
+  artist: ISimilarArtist | null
   isGenerating: boolean
   error: string | null
   lastGenerated: string | null
@@ -23,7 +23,7 @@ interface UseThisIsArtistReturn {
 export function useThisIsArtist(): UseThisIsArtistReturn {
   const lastfmConfig = useAppStore((state) => state.integrations.lastfm)
   const [playlist, setPlaylist] = useState<Song[]>([])
-  const [artist, setArtist] = useState<Artist | null>(null)
+  const [artist, setArtist] = useState<ISimilarArtist | null>(null)
   const [isGenerating, setIsGenerating] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [lastGenerated, setLastGenerated] = useState<string | null>(null)
