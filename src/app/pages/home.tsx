@@ -81,7 +81,7 @@ export default function Home() {
           }}
         >
           {/* Hero Carousel */}
-          <div className="h-[400px] w-full max-w-full min-w-0">
+          <div className="h-[300px] w-full max-w-full min-w-0">
             {similarArtists.isFetching || similarArtists.isLoading ? (
               <HeaderFallback />
             ) : (
@@ -91,7 +91,7 @@ export default function Home() {
 
           {/* This is Artist - Only shown if enabled */}
           {showThisIsArtist && (
-            <div className="h-[400px] w-full max-w-full min-w-0">
+            <div className="h-[300px] w-full max-w-full min-w-0">
               <ThisIsArtist />
             </div>
           )}
