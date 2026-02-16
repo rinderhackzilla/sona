@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { checkAndCatchUp } from '@/service/discover-weekly-manager'
 import { useAppIntegrations } from '@/store/app.store'
+import { usePlaylistDialog } from '@/app/context/playlist-dialog-context'
 import { isDesktop } from '@/utils/desktop'
 
 /**
@@ -12,6 +13,7 @@ import { isDesktop } from '@/utils/desktop'
  */
 export function DiscoverWeeklyObserver() {
   const { lastfm } = useAppIntegrations()
+  const { showPlaylistSaved } = usePlaylistDialog()
 
   useEffect(() => {
     // Only run in Electron desktop app
@@ -41,20 +43,15 @@ export function DiscoverWeeklyObserver() {
         const wasGenerated = await checkAndCatchUp({
           username: lastfm.username,
           apiKey: lastfm.apiKey,
-          targetArtists: 15,
-          songsPerArtist: 4,
+          targetArtists: 50, // CHANGED: 50 artists
+          songsPerArtist: 1,  // CHANGED: 1 song per artist
         })
 
         if (wasGenerated) {
           console.log('[DiscoverWeekly Observer] ✓ Playlist generated successfully')
           
-          // Optionally show notification
-          if ('Notification' in window && Notification.permission === 'granted') {
-            new Notification('Discover Weekly', {
-              body: 'Your personalized playlist has been updated!',
-              icon: '/icon.png',
-            })
-          }
+          // Show modal instead of system notification
+          showPlaylistSaved('Discover Weekly', 50)
         } else {
           console.log('[DiscoverWeekly Observer] No generation needed')
         }
@@ -75,7 +72,7 @@ export function DiscoverWeeklyObserver() {
         removeListener()
       }
     }
-  }, [lastfm.username, lastfm.apiKey])
+  }, [lastfm.username, lastfm.apiKey, showPlaylistSaved])
 
   // This is an observer component, it doesn't render anything
   return null
