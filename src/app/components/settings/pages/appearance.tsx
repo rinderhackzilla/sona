@@ -21,7 +21,7 @@ import {
 } from '@/app/components/ui/select'
 import { useFullscreenPlayerSettings } from '@/store/player.store'
 import { useLang } from '@/store/lang.store'
-import { ThemeSettingsPicker } from '../appearance/theme'
+import { ThemeSettingsPicker } from './appearance/theme'
 
 const languages = [
   { code: 'de', name: 'Deutsch', flag: 'DE' },
