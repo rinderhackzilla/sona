@@ -199,7 +199,7 @@ export const useAppStore = createWithEqualityFn<IAppContext>()(
                 state.settings.openDialog = value
               })
             },
-            currentPage: 'appearance',
+            currentPage: 'appearance' as 'appearance' | 'player' | 'content' | 'services',
             setCurrentPage: (page) => {
               set((state) => {
                 state.settings.currentPage = page
