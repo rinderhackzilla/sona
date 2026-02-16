@@ -12,6 +12,7 @@ import { usePlayerActions } from '@/store/player.store'
 import { ColumnFilter } from '@/types/columnFilter'
 import { convertSecondsToHumanRead } from '@/utils/convertSecondsToTime'
 import { exportPlaylist } from '@/service/export-playlist'
+import { toast } from 'react-toastify'
 
 export default function Top50YearPage() {
   const columns = songsColumns()
@@ -135,25 +136,23 @@ export default function Top50YearPage() {
   }
 
   const handleSaveAsPlaylist = async () => {
-    setIsSaving(true)
-    try {
-      const playlistName = `Your Top 50 - ${year}`
-      await exportPlaylist({
-        name: playlistName,
-        songs: playlist,
-        comment: `Your top ${totalTracks} most played tracks from ${year}. Generated on ${lastUpdated || new Date().toLocaleDateString()}`,
-        isPublic: false,
-      })
-
-      console.log(`[Your Top 50] ✓ Playlist saved: "${playlistName}"`)
-      alert(`Playlist "${playlistName}" has been saved to your library!`)
-    } catch (error) {
-      console.error('[Your Top 50] Save failed:', error)
-      alert(`Failed to save playlist: ${error instanceof Error ? error.message : 'Unknown error'}`)
-    } finally {
-      setIsSaving(false)
-    }
+  setIsSaving(true)
+  try {
+    const playlistName = `Your Top 50 - ${year}`
+    await exportPlaylist({
+      name: playlistName,
+      songs: playlist,
+      comment: `Your top ${totalTracks} most played tracks from ${year}. Generated on ${lastUpdated || new Date().toLocaleDateString()}`,
+      isPublic: false,
+    })
+    toast.success(`Playlist "${playlistName}" has been saved to your library!`)
+  } catch (error) {
+    console.error('[Your Top 50] Save failed:', error)
+    toast.error(`Failed to save playlist: ${error instanceof Error ? error.message : 'Unknown error'}`)
+  } finally {
+    setIsSaving(false)
   }
+}
 
   // Use first song's cover art as playlist cover
   const coverArt = playlist.length > 0 ? playlist[0].coverArt : undefined
