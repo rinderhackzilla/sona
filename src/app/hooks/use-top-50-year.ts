@@ -11,7 +11,7 @@ interface Top50YearData {
   year: number
 }
 
-const CACHE_KEY = 'top50Year'
+const CACHE_KEY = `top50Year_${lastfm.username}`
 
 /**
  * Hook to get Top 50 tracks from the last 12 months
