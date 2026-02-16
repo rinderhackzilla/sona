@@ -1,6 +1,5 @@
 import { useTranslation } from 'react-i18next'
 import { Dialog, DialogContent, DialogTitle } from '@/app/components/ui/dialog'
-import { ScrollArea } from '@/app/components/ui/scroll-area'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/app/components/ui/tabs'
 import { useAppSettings } from '@/store/app.store'
 import { Paintbrush, Music, FileText, Globe } from 'lucide-react'
@@ -20,11 +19,13 @@ const tabs = [
 export function SettingsDialog() {
   const { t } = useTranslation()
   const { openDialog, setOpenDialog, currentPage, setCurrentPage } = useAppSettings()
+  const { version } = getAppInfo()
 
   return (
     <Dialog open={openDialog} onOpenChange={setOpenDialog}>
       <DialogContent
-        className="overflow-hidden p-0 h-[600px] max-h-[700px] max-w-3xl"
+        className="overflow-hidden p-0 max-w-3xl flex flex-col"
+        style={{ height: '600px', maxHeight: '85vh' }}
         aria-describedby={undefined}
       >
         <DialogTitle className="sr-only">{t('settings.label')}</DialogTitle>
@@ -34,7 +35,7 @@ export function SettingsDialog() {
           onValueChange={(value) => setCurrentPage(value as any)}
           className="flex flex-col h-full"
         >
-          <div className="border-b px-6 pt-6 pb-4">
+          <div className="border-b px-6 pt-6 pb-4 flex-shrink-0">
             <TabsList className="grid w-full grid-cols-4 h-auto gap-2">
               {tabs.map(({ value, label, icon: Icon }) => (
                 <TabsTrigger
@@ -49,24 +50,21 @@ export function SettingsDialog() {
             </TabsList>
           </div>
 
-          <ScrollArea className="flex-1 overflow-auto">
-  <div className="p-6 pb-8">
-    {tabs.map(({ value, component: Component }) => (
-      <TabsContent key={value} value={value} className="mt-0">
-        <Component />
-      </TabsContent>
-    ))}
-  </div>
-</ScrollArea>
+          <div className="flex-1 overflow-y-auto">
+            <div className="p-6">
+              {tabs.map(({ value, component: Component }) => (
+                <TabsContent key={value} value={value} className="mt-0">
+                  <Component />
+                </TabsContent>
+              ))}
+            </div>
+          </div>
 
-{/* Footer mit Version - NEU */}
-<div className="border-t px-6 py-3 bg-background-foreground">
-  <p className="text-xs text-muted-foreground text-center">
-    Sona v{/* import { getAppInfo } from '@/utils/appName' am Anfang */}
-    {/* dann hier: */}
-    {getAppInfo().version}
-  </p>
-</div>
+          <div className="border-t px-6 py-3 bg-background-foreground flex-shrink-0">
+            <p className="text-xs text-muted-foreground text-center">
+              Sona v{version}
+            </p>
+          </div>
         </Tabs>
       </DialogContent>
     </Dialog>
