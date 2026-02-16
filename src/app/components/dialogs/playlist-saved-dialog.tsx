@@ -22,18 +22,20 @@ export function PlaylistSavedDialog({
   trackCount,
 }: PlaylistSavedDialogProps) {
   return (
-    <AlertDialog open={open} onOpenChange={onClose}>
+    <AlertDialog open={open}>
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>✓ Playlist gespeichert</AlertDialogTitle>
           <AlertDialogDescription>
-            Deine personalisierte <strong>{playlistName}</strong> Playlist wurde erfolgreich aktualisiert!
-            <br />
-            <br />
+            Deine personalisierte <strong>{playlistName}</strong> wurde erfolgreich aktualisiert!
             {trackCount > 0 && (
-              <span className="text-sm text-muted-foreground">
-                {trackCount} {trackCount === 1 ? 'Track' : 'Tracks'} verfügbar
-              </span>
+              <>
+                <br />
+                <br />
+                <span className="text-sm text-muted-foreground">
+                  {trackCount} {trackCount === 1 ? 'Track' : 'Tracks'} verfügbar
+                </span>
+              </>
             )}
           </AlertDialogDescription>
         </AlertDialogHeader>
