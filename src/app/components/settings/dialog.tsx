@@ -48,8 +48,8 @@ export function SettingsDialog() {
             </TabsList>
           </div>
 
-          <ScrollArea className="flex-1">
-            <div className="p-6">
+          <ScrollArea className="flex-1 overflow-auto">
+  <div className="p-6 pb-8">
               {tabs.map(({ value, component: Component }) => (
                 <TabsContent key={value} value={value} className="mt-0">
                   <Component />
