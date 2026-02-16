@@ -66,6 +66,7 @@ Sona is a fork of Aonsoku, customized and enhanced for Windows desktop use. This
 - **Unsynchronized Lyrics:** Display embedded unsynchronized lyrics from your songs.
 - **Radio:** Listen to radio shows directly within Sona if your server supports it.
 - **Scrobble:** Sync played songs with your server.
+- **Discord Rich Presence:** Show off your music taste to your Discord friends.
 
 ### Audio Features
 - **Audio Visualizer:** Real-time audio visualization with multiple visual styles for an immersive listening experience.
@@ -84,9 +85,7 @@ Sona is a fork of Aonsoku, customized and enhanced for Windows desktop use. This
 
 ## Planned Features
 
-Sona continues to evolve with the following enhancements on the roadmap:
-
-- [ ] Discord Rich Presence integration
+Sona will continue to evolve with new features on the go. Right now, the roadmap with planned enhancements is complete.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
