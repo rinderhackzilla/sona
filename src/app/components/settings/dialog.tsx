@@ -8,6 +8,7 @@ import { AppearancePage } from './pages/appearance'
 import { PlayerPage } from './pages/player'
 import { ContentPage } from './pages/content'
 import { ServicesPage } from './pages/services'
+import { getAppInfo } from '@/utils/appName'
 
 const tabs = [
   { value: 'appearance', label: 'Appearance', icon: Paintbrush, component: AppearancePage },
