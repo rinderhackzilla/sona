@@ -3,7 +3,44 @@ import { usePlayerStore } from '@/store/player.store'
 import { ISong } from '@/types/responses/song'
 import { isDesktop } from './desktop'
 
-function send(song: ISong, currentTime = 0, duration = 0) {
+async function fetchLastFmCoverArt(
+  artist: string,
+  album: string,
+  apiKey: string,
+): Promise<string | null> {
+  if (!apiKey || !artist || !album) return null
+
+  try {
+    const url = new URL('https://ws.audioscrobbler.com/2.0/')
+    url.searchParams.set('method', 'album.getinfo')
+    url.searchParams.set('artist', artist)
+    url.searchParams.set('album', album)
+    url.searchParams.set('api_key', apiKey)
+    url.searchParams.set('format', 'json')
+
+    const response = await fetch(url.toString())
+    if (!response.ok) return null
+
+    const data = await response.json()
+
+    // Last.fm gibt Bilder in verschiedenen Größen zurück, wir nehmen 'extralarge'
+    const images: Array<{ '#text': string; size: string }> =
+      data.album?.image ?? []
+
+    const image =
+      images.find((i) => i.size === 'extralarge') ||
+      images.find((i) => i.size === 'large')
+
+    const imageUrl = image?.['#text']
+
+    // Last.fm gibt manchmal leere Strings zurück
+    return imageUrl && imageUrl.length > 0 ? imageUrl : null
+  } catch {
+    return null
+  }
+}
+
+async function send(song: ISong, currentTime = 0, duration = 0) {
   if (!isDesktop()) return
 
   const { rpcEnabled } = useAppStore.getState().accounts.discord
@@ -19,6 +56,9 @@ function send(song: ISong, currentTime = 0, duration = 0) {
   const startTime = Math.floor(Date.now() - currentTimeInMs)
   const endTime = Math.floor(Date.now() - currentTimeInMs + durationInMs)
 
+  const { apiKey } = useAppStore.getState().integrations.lastfm
+  const coverArtUrl = await fetchLastFmCoverArt(artist, song.album, apiKey)
+
   window.api.setDiscordRpcActivity({
     trackName: song.title,
     albumName: song.album,
@@ -26,6 +66,7 @@ function send(song: ISong, currentTime = 0, duration = 0) {
     startTime,
     endTime,
     duration,
+    coverArtUrl: coverArtUrl ?? undefined,
   })
 }
 
