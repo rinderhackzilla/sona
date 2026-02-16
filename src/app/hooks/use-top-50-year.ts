@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useAppIntegrations, useAppStore } from '@/store/app.store'
 import { getTop50Year, findTracksInNavidrome } from '@/service/lastfm-features'
+import { usePlaylistDialog } from '@/app/context/playlist-dialog-context'
 import type { Song } from '@/types/responses/song'
 
 interface Top50YearData {
@@ -19,6 +20,7 @@ const CACHE_KEY = 'top50Year'
 export function useTop50Year() {
   const { lastfm } = useAppIntegrations()
   const queryClient = useQueryClient()
+  const { showPlaylistSaved } = usePlaylistDialog()
   const isConfigured = !!(lastfm.username && lastfm.apiKey)
 
   const currentYear = new Date().getFullYear()
@@ -125,6 +127,9 @@ export function useTop50Year() {
       // Update query cache
       queryClient.setQueryData(['top50Year', lastfm.username], data)
       console.log('[Top 50 Year] Playlist generated successfully')
+      
+      // Show modal dialog
+      showPlaylistSaved('Top 50 des Jahres', data.totalTracks)
     },
     onError: (error) => {
       console.error('[Top 50 Year] Generation failed:', error)
