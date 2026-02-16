@@ -11,10 +11,7 @@ interface Top50YearData {
   year: number
 }
 
-export function useTop50Year() {
-  const { lastfm } = useAppIntegrations()
-  const CACHE_KEY = `top50Year_${lastfm.username}` // ← hier
-  const queryClient = useQueryClient()
+const CACHE_KEY = 'top50Year'
 
 /**
  * Hook to get Top 50 tracks from the last 12 months
