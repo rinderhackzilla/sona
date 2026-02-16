@@ -14,8 +14,8 @@ export async function setDiscordRpcActivity(payload: RpcPayload) {
   try {
     RPC.init()
     RPC.set({
-      details: payload.trackName,
-      state: `${payload.artist} • ${payload.albumName}`,
+      details: payload.trackName,   // Song
+      state: payload.artist,        // Artist
       timestamps: {
         start: payload.startTime,
         end: payload.endTime,
@@ -23,9 +23,9 @@ export async function setDiscordRpcActivity(payload: RpcPayload) {
       assets: {
         large_image: payload.coverArtUrl ?? DEFAULT_LARGE_IMAGE,
         small_image: DEFAULT_SMALL_IMAGE,
-        large_text: payload.albumName,
-      },
-    })
+        large_text: payload.albumName,  // Album (dritte Zeile)
+  },
+})
   } catch {}
 }
 
