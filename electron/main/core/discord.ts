@@ -67,6 +67,7 @@ function init() {
   discord.on('disconnected', () => {
     setTimeout(() => loginRPC(), 1000).unref()
   })
+
   loginRPC()
 }
 
@@ -86,17 +87,18 @@ function loginRPC() {
 }
 
 function set(data: IActivity | null) {
-  if (!discord || !discord.user) return
-
   if (data) {
     data.instance = true
     data.type = ActivityType.Listening
   }
+
   const payload = {
     pid: process.pid,
     activity: data,
   }
   lastPayload = payload
+
+  if (!discord || !discord.user) return
 
   // @ts-expect-error raw request
   discord.request('SET_ACTIVITY', payload)
