@@ -12,6 +12,7 @@ import { usePlayerActions } from '@/store/player.store'
 import { ColumnFilter } from '@/types/columnFilter'
 import { convertSecondsToHumanRead } from '@/utils/convertSecondsToTime'
 import { exportPlaylist } from '@/service/export-playlist'
+import { toast } from 'react-toastify'
 
 export default function DiscoverWeeklyPage() {
   const columns = songsColumns()
@@ -137,27 +138,24 @@ export default function DiscoverWeeklyPage() {
     setSongList(shuffled, 0)
   }
 
-  const handleSaveAsPlaylist = async () => {
-    setIsSaving(true)
-    try {
-      const playlistName = `Discover Weekly ${weekKey || new Date().toISOString().split('T')[0]}`
-      await exportPlaylist({
-        name: playlistName,
-        songs: playlist,
-        comment: `Generated on ${lastUpdated || new Date().toLocaleDateString()} with ${artistsUsed.length} artists`,
-        isPublic: false,
-      })
-
-      console.log(`[Discover Weekly] ✓ Playlist saved: "${playlistName}"`)
-      alert(`Playlist "${playlistName}" has been saved to your library!`)
-    } catch (error) {
-      console.error('[Discover Weekly] Save failed:', error)
-      alert(`Failed to save playlist: ${error instanceof Error ? error.message : 'Unknown error'}`)
-    } finally {
-      setIsSaving(false)
-    }
+const handleSaveAsPlaylist = async () => {
+  setIsSaving(true)
+  try {
+    const playlistName = `Discover Weekly ${weekKey || new Date().toISOString().split('T')[0]}`
+    await exportPlaylist({
+      name: playlistName,
+      songs: playlist,
+      comment: `Generated on ${lastUpdated || new Date().toLocaleDateString()} with ${artistsUsed.length} artists`,
+      isPublic: false,
+    })
+    toast.success(`Playlist "${playlistName}" has been saved to your library!`)
+  } catch (error) {
+    console.error('[Discover Weekly] Save failed:', error)
+    toast.error(`Failed to save playlist: ${error instanceof Error ? error.message : 'Unknown error'}`)
+  } finally {
+    setIsSaving(false)
   }
-
+}
   // Use first song's cover art as playlist cover
   const coverArt = playlist.length > 0 ? playlist[0].coverArt : undefined
 
