@@ -50,13 +50,22 @@ export function SettingsDialog() {
 
           <ScrollArea className="flex-1 overflow-auto">
   <div className="p-6 pb-8">
-              {tabs.map(({ value, component: Component }) => (
-                <TabsContent key={value} value={value} className="mt-0">
-                  <Component />
-                </TabsContent>
-              ))}
-            </div>
-          </ScrollArea>
+    {tabs.map(({ value, component: Component }) => (
+      <TabsContent key={value} value={value} className="mt-0">
+        <Component />
+      </TabsContent>
+    ))}
+  </div>
+</ScrollArea>
+
+{/* Footer mit Version - NEU */}
+<div className="border-t px-6 py-3 bg-background-foreground">
+  <p className="text-xs text-muted-foreground text-center">
+    Sona v{/* import { getAppInfo } from '@/utils/appName' am Anfang */}
+    {/* dann hier: */}
+    {getAppInfo().version}
+  </p>
+</div>
         </Tabs>
       </DialogContent>
     </Dialog>
