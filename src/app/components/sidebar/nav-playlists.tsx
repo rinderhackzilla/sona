@@ -37,14 +37,14 @@ export function NavPlaylists() {
         <SidebarPlaylistButtons />
       </div>
       <MainSidebarContent
-        className={clsx(
-          'flex pl-4 h-full overflow-x-clip transition-[margin,opacity]',
-          'group-data-[collapsible=icon]:-mt-8 group-data-[collapsible=icon]:opacity-0',
-          'group-data-[collapsible=icon]:pointer-events-none',
-        )}
-      >
-        <ScrollArea className="pb-4">
-          <MainSidebarMenu className="pr-4">
+  className={clsx(
+    'flex pl-4 h-full overflow-hidden transition-[margin,opacity]', 
+    'group-data-[collapsible=icon]:-mt-8 group-data-[collapsible=icon]:opacity-0',
+    'group-data-[collapsible=icon]:pointer-events-none',
+  )}
+>
+  <ScrollArea className="pb-4 w-full">
+    <MainSidebarMenu className="pr-4">
             {hasPlaylists &&
               playlists.map((playlist) => (
                 <SidebarPlaylistItem key={playlist.id} playlist={playlist} />
