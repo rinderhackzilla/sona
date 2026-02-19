@@ -24,10 +24,10 @@ export function NavPlaylists() {
   const hasPlaylists = playlists !== undefined && playlists.length > 0
 
   return (
-    <div className="flex flex-col flex-1 min-h-0">
+    <MainSidebarContent className="flex flex-col min-h-0">
       <div
         className={clsx(
-          'flex items-center justify-between px-4 mt-4 overflow-x-clip flex-shrink-0',
+          'flex items-center justify-between px-4 pt-4 pb-2 flex-shrink-0',
           'transition-opacity group-data-[collapsible=icon]:opacity-0',
           'group-data-[collapsible=icon]:pointer-events-none',
         )}
@@ -36,24 +36,16 @@ export function NavPlaylists() {
         <SidebarPlaylistButtons />
       </div>
       
-      <MainSidebarContent
-        className={clsx(
-          'flex pl-4 min-h-0 overflow-hidden transition-[margin,opacity]',
-          'group-data-[collapsible=icon]:-mt-8 group-data-[collapsible=icon]:opacity-0',
-          'group-data-[collapsible=icon]:pointer-events-none',
-        )}
-      >
-        <ScrollArea className="pb-4 w-full">
-          <MainSidebarMenu className="pr-4">
-            {hasPlaylists &&
-              playlists.map((playlist) => (
-                <SidebarPlaylistItem key={playlist.id} playlist={playlist} />
-              ))}
+      <ScrollArea className="flex-1 px-4">
+        <MainSidebarMenu className="pb-4">
+          {hasPlaylists &&
+            playlists.map((playlist) => (
+              <SidebarPlaylistItem key={playlist.id} playlist={playlist} />
+            ))}
 
-            {!hasPlaylists && <EmptyPlaylistsMessage />}
-          </MainSidebarMenu>
-        </ScrollArea>
-      </MainSidebarContent>
-    </div>
+          {!hasPlaylists && <EmptyPlaylistsMessage />}
+        </MainSidebarMenu>
+      </ScrollArea>
+    </MainSidebarContent>
   )
 }
