@@ -24,27 +24,27 @@ export function NavPlaylists() {
   const hasPlaylists = playlists !== undefined && playlists.length > 0
 
   return (
-    <>
+    <div className="flex flex-col flex-1 min-h-0">
       <div
         className={clsx(
-          'flex items-center justify-between px-4 mt-4 overflow-x-clip',
+          'flex items-center justify-between px-4 mt-4 overflow-x-clip flex-shrink-0',
           'transition-opacity group-data-[collapsible=icon]:opacity-0',
           'group-data-[collapsible=icon]:pointer-events-none',
         )}
       >
         <MainSidebarGroupLabel>{t('sidebar.playlists')}</MainSidebarGroupLabel>
-
         <SidebarPlaylistButtons />
       </div>
+      
       <MainSidebarContent
-  className={clsx(
-    'flex pl-4 overflow-hidden transition-[margin,opacity]',  
-    'group-data-[collapsible=icon]:-mt-8 group-data-[collapsible=icon]:opacity-0',
-    'group-data-[collapsible=icon]:pointer-events-none',
-  )}
->
-  <ScrollArea className="pb-4 w-full h-full"> 
-    <MainSidebarMenu className="pr-4">
+        className={clsx(
+          'flex pl-4 min-h-0 overflow-hidden transition-[margin,opacity]',
+          'group-data-[collapsible=icon]:-mt-8 group-data-[collapsible=icon]:opacity-0',
+          'group-data-[collapsible=icon]:pointer-events-none',
+        )}
+      >
+        <ScrollArea className="pb-4 w-full">
+          <MainSidebarMenu className="pr-4">
             {hasPlaylists &&
               playlists.map((playlist) => (
                 <SidebarPlaylistItem key={playlist.id} playlist={playlist} />
@@ -54,6 +54,6 @@ export function NavPlaylists() {
           </MainSidebarMenu>
         </ScrollArea>
       </MainSidebarContent>
-    </>
+    </div>
   )
 }
