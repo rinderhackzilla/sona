@@ -5,6 +5,7 @@ import {
   MainSidebarHeader,
   MainSidebarRail,
 } from '@/app/components/ui/main-sidebar'
+import { ScrollArea } from '@/app/components/ui/scroll-area'
 import { MiniSidebarSearch } from './mini-search'
 import { SidebarMiniSeparator } from './mini-separator'
 import { MobileCloseButton } from './mobile-close-button'
@@ -22,12 +23,16 @@ export function AppSidebar({
         <CommandMenu />
       </MainSidebarHeader>
       <MiniSidebarSearch />
-      <NavMain />
-      <SidebarMiniSeparator />
-      <div className="flex-none">
-        <NavLibrary />
-      </div>
-      <NavPlaylists />
+      
+      <MainSidebarContent className="overflow-hidden">
+        <ScrollArea className="h-full">
+          <NavMain />
+          <SidebarMiniSeparator />
+          <NavLibrary />
+          <NavPlaylists />
+        </ScrollArea>
+      </MainSidebarContent>
+      
       <MainSidebarRail />
     </MainSidebar>
   )
