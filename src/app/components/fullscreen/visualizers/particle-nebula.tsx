@@ -47,7 +47,7 @@ export function ParticleNebula() {
       const accentHSL = getComputedStyle(document.documentElement)
         .getPropertyValue('--accent')
         .trim()
-      const [h, s, l] = accentHSL.split(' ')
+      const [h, _s, _l] = accentHSL.split(' ')
 
       // Get average frequency for particle generation
       const avgFreq = frequencyData.reduce((a, b) => a + b, 0) / frequencyData.length

@@ -1,4 +1,4 @@
-import { Calendar, Music, Play, Info } from 'lucide-react'
+import { Calendar, Play, Info } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { Button } from '@/app/components/ui/button'
 import { ImageLoader } from '@/app/components/image-loader'

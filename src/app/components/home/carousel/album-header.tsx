@@ -133,7 +133,7 @@ export default function AlbumHeader({
   title,
   subtitle,
 }: AlbumHeaderProps) {
-  const [api, setApi] = useState<CarouselApi>()
+  const [_api, setApi] = useState<CarouselApi>()
   const { data: onRepeat, isLoading: onRepeatLoading, error: onRepeatError } = useOnRepeat()
 
   // Debug logging

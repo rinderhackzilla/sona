@@ -57,7 +57,7 @@ export function EqualizerModal({ open, onOpenChange }: EqualizerModalProps) {
     const state = getEqState()
     setIsEnabled(state.enabled)
     setGains(state.gains)
-  }, [open])
+  }, [])
 
   const handleGainChange = (index: number, value: number) => {
     const newGains = [...gains]

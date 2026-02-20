@@ -34,7 +34,7 @@ export function Integrations() {
     } catch (error) {
       console.error('Failed to migrate Last.fm config:', error)
     }
-  }, [])
+  }, [lastfmConfig.apiKey, lastfmConfig.setApiKey, lastfmConfig.setUsername, lastfmConfig.username])
 
   // Sync local state with store
   useEffect(() => {

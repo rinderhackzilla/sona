@@ -231,7 +231,9 @@ function hslToRgb(
   l: number,
 ): { r: number; g: number; b: number } {
   h /= 360
-  let r: number, g: number, b: number
+  let r: number
+  let g: number
+  let b: number
 
   if (s === 0) {
     r = g = b = l

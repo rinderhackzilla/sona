@@ -1,7 +1,6 @@
 import clsx from 'clsx'
 import { ChevronDownIcon } from 'lucide-react'
 import { ComponentPropsWithoutRef, useMemo } from 'react'
-import { LazyLoadImage } from 'react-lazy-load-image-component'
 import { getSimpleCoverArtUrl } from '@/api/httpClient'
 import { LyricsTab } from '@/app/components/fullscreen/lyrics'
 import { QueueSettings } from '@/app/components/fullscreen/settings'

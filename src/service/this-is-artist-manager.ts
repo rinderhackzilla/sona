@@ -28,7 +28,7 @@ function getDateKey(date: Date = new Date()): string {
 /**
  * Get midnight of today
  */
-function getMidnightToday(): Date {
+function _getMidnightToday(): Date {
   const midnight = new Date()
   midnight.setHours(0, 0, 0, 0)
   return midnight

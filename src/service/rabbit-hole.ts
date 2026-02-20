@@ -63,7 +63,7 @@ class RabbitHoleService {
           const artistData = await subsonic.artists.getOne(artistId)
           if (artistData?.album && artistData.album.length > 0) {
             // Get a few songs from their albums
-            for (const album of artistData.album.slice(0, 3)) {
+            for (const _album of artistData.album.slice(0, 3)) {
               const searchResult = await subsonic.search.get({
                 query: artistName,
                 artistCount: 0,

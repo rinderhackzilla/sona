@@ -1,6 +1,5 @@
 import { RefreshCw, Music, Play, Info } from 'lucide-react'
 import { Button } from '@/app/components/ui/button'
-import { Card } from '@/app/components/ui/card'
 import { ImageLoader } from '@/app/components/image-loader'
 import { useThisIsArtist } from '@/app/hooks/use-this-is-artist'
 import { usePlayerActions } from '@/store/player.store'

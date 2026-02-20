@@ -59,7 +59,7 @@ function GenreRow({ genre, index }: GenreRowProps) {
           </div>
         </div>
         <div className="flex gap-4">
-          {[...Array(6)].map((_, i) => (
+          {[...new Array(6)].map((_, i) => (
             <div key={i} className="basis-1/6">
               <Skeleton className="aspect-square rounded-lg" />
               <Skeleton className="h-4 w-full mt-2" />
@@ -168,7 +168,7 @@ export default function GenreDiscovery() {
     return (
       <div className="mb-8">
         <div className="space-y-6">
-          {[...Array(3)].map((_, i) => (
+          {[...new Array(3)].map((_, i) => (
             <div key={i}>
               <div className="flex items-center justify-between mb-4">
                 <Skeleton className="h-8 w-48" />
@@ -178,7 +178,7 @@ export default function GenreDiscovery() {
                 </div>
               </div>
               <div className="flex gap-4">
-                {[...Array(6)].map((_, j) => (
+                {[...new Array(6)].map((_, j) => (
                   <div key={j} className="basis-1/6">
                     <Skeleton className="aspect-square rounded-lg" />
                     <Skeleton className="h-4 w-full mt-2" />
