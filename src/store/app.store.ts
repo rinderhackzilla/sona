@@ -157,6 +157,18 @@ export const useAppStore = createWithEqualityFn<IAppContext>()(
                 state.pages.imagesCacheLayerEnabled = value
               })
             },
+            autoPlaylistImport: false,
+            setAutoPlaylistImport: (value) => {
+              set((state) => {
+                state.pages.autoPlaylistImport = value
+              })
+            },
+            playlistOrder: [],
+            setPlaylistOrder: (order) => {
+              set((state) => {
+                state.pages.playlistOrder = order
+              })
+            },
           },
           desktop: {
             data: {
@@ -441,4 +453,10 @@ export const useAppImagesCacheLayer = () =>
   useAppStore((state) => ({
     imagesCacheLayerEnabled: state.pages.imagesCacheLayerEnabled,
     setImagesCacheLayerEnabled: state.pages.setImagesCacheLayerEnabled,
+  }))
+
+export const usePlaylistOrder = () =>
+  useAppStore((state) => ({
+    playlistOrder: state.pages.playlistOrder,
+    setPlaylistOrder: state.pages.setPlaylistOrder,
   }))

@@ -1,3 +1,4 @@
+import { Clock, Disc } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import {
   HeaderFallback,
@@ -10,8 +11,6 @@ import { DiscoverWeeklyCard } from '@/app/components/home/discover-weekly-card'
 import { ThisIsArtist } from '@/app/components/home/this-is-artist'
 import { useAppStore } from '@/store/app.store'
 import {
-  useGetMostPlayed,
-  useGetRandomAlbums,
   useGetRecentlyAdded,
   useGetRecentlyPlayed,
   useGetSimilarArtistsDiscovery,
@@ -23,43 +22,13 @@ export default function Home() {
   const showThisIsArtist = useAppStore((state) => state.integrations.lastfm.showThisIsArtist)
 
   const similarArtists = useGetSimilarArtistsDiscovery()
-
   const recentlyPlayed = useGetRecentlyPlayed()
-  const mostPlayed = useGetMostPlayed()
   const recentlyAdded = useGetRecentlyAdded()
-  const randomAlbums = useGetRandomAlbums()
-
-  const sections = [
-    {
-      title: t('home.recentlyPlayed'),
-      data: recentlyPlayed.data,
-      loader: recentlyPlayed.isLoading,
-      route: ROUTES.ALBUMS.RECENTLY_PLAYED,
-    },
-    {
-      title: t('home.mostPlayed'),
-      data: mostPlayed.data,
-      loader: mostPlayed.isLoading,
-      route: ROUTES.ALBUMS.MOST_PLAYED,
-    },
-    {
-      title: t('home.recentlyAdded'),
-      data: recentlyAdded.data,
-      loader: recentlyAdded.isLoading,
-      route: ROUTES.ALBUMS.RECENTLY_ADDED,
-    },
-    {
-      title: t('home.explore'),
-      data: randomAlbums.data,
-      loader: randomAlbums.isLoading,
-      route: ROUTES.ALBUMS.RANDOM,
-    },
-  ]
 
   return (
-    <div className="w-full px-8 py-6">
+    <div className="w-full px-4 sm:px-8 py-6">
       {/* Hero Carousel */}
-      <div className="mb-4">
+      <div className="mb-6">
         {similarArtists.isFetching || similarArtists.isLoading ? (
           <HeaderFallback />
         ) : (
@@ -67,55 +36,44 @@ export default function Home() {
         )}
       </div>
 
-      {/* Split Row: Discover Weekly + This is Artist */}
+      {/* Discover Weekly + This Is Artist */}
       {showThisIsArtist && (
         <div className="mb-8">
-          <div className="grid grid-cols-2 gap-4">
-            {/* Discover Weekly Card - Left */}
-            <div className="h-[300px]">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="min-h-[220px] sm:min-h-[260px]">
               <DiscoverWeeklyCard />
             </div>
-            
-            {/* This is Artist - Right */}
-            <div className="h-[300px]">
+            <div className="min-h-[220px] sm:min-h-[260px]">
               <ThisIsArtist />
             </div>
           </div>
         </div>
       )}
 
-      {/* Genre Discovery Section */}
+      {/* Genre Discovery */}
       <GenreDiscovery />
 
-      {/* Library Sections - 2 Column Grid on Desktop */}
-      <div className="mb-6">
-        <h2 className="text-3xl font-bold mb-2">Your Library</h2>
-        <p className="text-muted-foreground">Recent and popular albums</p>
-      </div>
+      {/* Recently Played */}
+      {recentlyPlayed.isLoading && <PreviewListFallback />}
+      {recentlyPlayed.data?.list && (
+        <PreviewList
+          title={t('home.recentlyPlayed')}
+          icon={<Clock className="w-6 h-6 text-muted-foreground" />}
+          moreRoute={ROUTES.ALBUMS.RECENTLY_PLAYED}
+          list={recentlyPlayed.data.list}
+        />
+      )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-8 gap-y-4">
-        {sections.map((section) => {
-          if (section.loader) {
-            return (
-              <div key={section.title} className="lg:col-span-1">
-                <PreviewListFallback />
-              </div>
-            )
-          }
-
-          if (!section.data || !section.data?.list) return null
-
-          return (
-            <div key={section.title} className="lg:col-span-1">
-              <PreviewList
-                title={section.title}
-                moreRoute={section.route}
-                list={section.data.list}
-              />
-            </div>
-          )
-        })}
-      </div>
+      {/* Recently Added */}
+      {recentlyAdded.isLoading && <PreviewListFallback />}
+      {recentlyAdded.data?.list && (
+        <PreviewList
+          title={t('home.recentlyAdded')}
+          icon={<Disc className="w-6 h-6 text-muted-foreground" />}
+          moreRoute={ROUTES.ALBUMS.RECENTLY_ADDED}
+          list={recentlyAdded.data.list}
+        />
+      )}
     </div>
   )
 }

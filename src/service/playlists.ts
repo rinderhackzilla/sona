@@ -108,6 +108,18 @@ export async function createWithDetails(data: CreateParams) {
   }
 }
 
+async function reorderSongs(playlistId: string, songIds: string[]) {
+  const query = new URLSearchParams({ playlistId })
+  songIds.forEach((id) => query.append('songId', id))
+
+  await httpClient<SinglePlaylistResponse>(
+    `/createPlaylist?${query.toString()}`,
+    {
+      method: 'GET',
+    },
+  )
+}
+
 export const playlists = {
   getAll,
   getOne,
@@ -115,4 +127,5 @@ export const playlists = {
   create,
   createWithDetails,
   update,
+  reorderSongs,
 }

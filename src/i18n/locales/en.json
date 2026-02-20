@@ -3,7 +3,20 @@
     "recentlyPlayed": "Recently played",
     "mostPlayed": "Most played",
     "recentlyAdded": "Recently added",
-    "explore": "Explore"
+    "explore": "Explore",
+    "discoverWeekly": "Discover Weekly",
+    "weeklyMix": "Your Weekly Mix",
+    "weeklyMixSoon": "Your weekly playlist will be generated soon",
+    "recommendedAlbum": "Recommended album",
+    "browse": "Browse →",
+    "generating": "Generating...",
+    "generatePlaylist": "Generate your daily playlist",
+    "generate": "Generate",
+    "configureLastfm": "Configure Last.fm in Settings → Integrations",
+    "mostPlayedTrack": "Your most played track this week",
+    "playsThisWeek_one": "{{count}} play this week",
+    "playsThisWeek_other": "{{count}} plays this week",
+    "playNow": "Play Now"
   },
   "sidebar": {
     "home": "Home",
@@ -19,7 +32,8 @@
     "podcasts": "Podcasts",
     "emptyPlaylist": "No playlists created yet",
     "discoverWeekly": "Discover Weekly",
-    "yourTop50": "Your Top 50"
+    "yourTop50": "Your Top 50",
+    "genres": "Genres"
   },
   "menu": {
     "language": "Language",
@@ -40,7 +54,12 @@
         "poster": "Poster"
       }
     },
-    "beta": "Beta"
+    "beta": "Beta",
+    "error": "Error",
+    "shuffle": "Shuffle",
+    "playAll": "Play All",
+    "saveAsPlaylist": "Save as Playlist",
+    "saving": "Saving..."
   },
   "theme": {
     "label": "Theme",
@@ -192,6 +211,16 @@
   "favorites": {
     "noSongList": "You haven't added any songs to favorites yet!"
   },
+  "genres": {
+    "count_one": "{{count}} genre",
+    "count_other": "{{count}} genres",
+    "albumCount_one": "{{count}} album",
+    "albumCount_other": "{{count}} albums",
+    "buttons": {
+      "play": "Play {{genre}}",
+      "shuffle": "Shuffle {{genre}}"
+    }
+  },
   "artist": {
     "headline": "Artist",
     "buttons": {
@@ -322,7 +351,8 @@
       "albumPeak": "Album peak",
       "channelCount": "Channel count",
       "samplingRate": "Sampling rate",
-      "bitDepth": "Bit depth"
+      "bitDepth": "Bit depth",
+      "dateAdded": "Date added"
     },
     "buttons": {
       "play": "Play {{title}} by {{artist}}",
@@ -592,6 +622,10 @@
     "songError": "Unable to play the song, check the Server!"
   },
   "update": {
+    "label": "Updates",
+    "description": "Check for new versions of the app",
+    "checkForUpdates": "Check for Updates",
+    "checking": "Checking…",
     "dialog": {
       "title": "New Version Available!",
       "remindLater": "Remind Me Later",
@@ -605,7 +639,9 @@
   },
   "about": {
     "client": "Client",
+    "clientDescription": "Music streaming client",
     "server": "Server",
+    "serverDescription": "Connected Subsonic-compatible server",
     "version": "Version",
     "type": "Type",
     "apiVersion": "API Version",
@@ -619,6 +655,13 @@
   },
   "settings": {
     "label": "Settings",
+    "tabs": {
+      "appearance": "Appearance",
+      "player": "Player",
+      "content": "Content",
+      "services": "Services",
+      "about": "System"
+    },
     "options": {
       "appearance": "Appearance",
       "language": "Language & Region",
@@ -769,7 +812,88 @@
           "label": "API Key"
         }
       }
+    },
+    "io": {
+      "group": "Settings Backup",
+      "description": "Export your settings as a JSON file or restore from a backup",
+      "export": {
+        "label": "Export Settings",
+        "button": "Export"
+      },
+      "import": {
+        "label": "Import Settings",
+        "button": "Import"
+      },
+      "toast": {
+        "importSuccess": "Settings imported successfully",
+        "importError": "Failed to import: invalid or unsupported file"
+      }
+    },
+    "player": {
+      "audioProcessing": {
+        "group": "Audio Processing"
+      },
+      "crossfade": {
+        "label": "Crossfade",
+        "info": "Smoothly fade between songs during playback"
+      },
+      "playlists": {
+        "group": "Playlists",
+        "description": "Manage playlist import behavior",
+        "autoImport": {
+          "label": "Automatic Playlist Import"
+        }
+      },
+      "interface": {
+        "group": "Interface",
+        "description": "Customize the player interface"
+      },
+      "cache": {
+        "label": "Cache Album Artwork"
+      },
+      "desktop": {
+        "group": "Desktop",
+        "description": "Desktop-specific features"
+      },
+      "tray": {
+        "label": "Close to System Tray"
+      }
     }
+  },
+  "discoverWeekly": {
+    "setupTitle": "Setup Discover Weekly",
+    "setupDescription": "Get personalized song recommendations based on your Last.fm listening history.",
+    "setupPrefix": "Setup:",
+    "setupInstructions": "Configure your Last.fm username and API key in the sidebar settings (⚙️) → Integrations.",
+    "generatingPlaylist": "Generating your personalized playlist...",
+    "emptyTitle": "Discover Weekly",
+    "emptyDescription": "Your personalized playlist hasn't been generated yet.",
+    "generatePlaylist": "Generate Playlist",
+    "headerType": "Personalized Playlist",
+    "headerSubtitle": "Your personalized mix based on Last.fm listening history",
+    "updated": "Updated {{date}}",
+    "artistCount_one": "{{count}} artist",
+    "artistCount_other": "{{count}} artists",
+    "noSongs": "No songs in your Discover Weekly yet",
+    "savedSuccess": "Playlist \"{{name}}\" has been saved to your library!",
+    "saveError": "Failed to save playlist: {{message}}"
+  },
+  "top50": {
+    "setupTitle": "Setup Your Top 50",
+    "setupDescription": "Get your top 50 most played tracks from the last 12 months based on your Last.fm listening history.",
+    "setupPrefix": "Setup:",
+    "setupInstructions": "Configure your Last.fm username and API key in the sidebar settings (⚙️) → Integrations.",
+    "generatingPlaylist": "Generating your Top 50 playlist...",
+    "emptyTitle": "Your Top 50",
+    "emptyDescription": "Your Top 50 playlist hasn't been generated yet.",
+    "generatePlaylist": "Generate Playlist",
+    "headerType": "Personalized Playlist",
+    "headerTitle": "Your Top 50",
+    "headerSubtitle": "Your most played tracks from the last 12 months",
+    "updated": "Updated {{date}}",
+    "noSongs": "No songs in your Top 50 yet",
+    "savedSuccess": "Playlist \"{{name}}\" has been saved to your library!",
+    "saveError": "Failed to save playlist: {{message}}"
   },
   "dayjs": {
     "relativeTime": {

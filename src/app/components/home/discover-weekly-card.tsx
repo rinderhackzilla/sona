@@ -1,5 +1,6 @@
 import { Calendar, Play, Info } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Button } from '@/app/components/ui/button'
 import { ImageLoader } from '@/app/components/image-loader'
 import { useDiscoverWeekly } from '@/app/hooks/use-discover-weekly'
@@ -7,6 +8,7 @@ import { usePlayerActions } from '@/store/player.store'
 import { ROUTES } from '@/routes/routesList'
 
 export function DiscoverWeeklyCard() {
+  const { t } = useTranslation()
   const { playlist, isGenerating, error, isConfigured } = useDiscoverWeekly()
   const { setSongList } = usePlayerActions()
 
@@ -16,9 +18,9 @@ export function DiscoverWeeklyCard() {
         <div className="relative h-full flex items-center justify-center p-8 z-10">
           <div className="text-center max-w-sm">
             <Info className="h-6 w-6 mx-auto mb-2 text-muted-foreground" />
-            <h3 className="font-semibold mb-1 text-sm">Discover Weekly</h3>
+            <h3 className="font-semibold mb-1 text-sm">{t('home.discoverWeekly')}</h3>
             <p className="text-xs text-muted-foreground">
-              Configure Last.fm in Settings → Integrations
+              {t('home.configureLastfm')}
             </p>
           </div>
         </div>
@@ -45,7 +47,7 @@ export function DiscoverWeeklyCard() {
         <div className="relative h-full flex items-center justify-center z-10">
           <div className="flex flex-col items-center gap-2">
             <Calendar className="h-6 w-6 animate-pulse text-muted-foreground" />
-            <span className="text-xs text-muted-foreground">Loading...</span>
+            <span className="text-xs text-muted-foreground">{t('generic.loading')}</span>
           </div>
         </div>
       </div>
@@ -59,9 +61,9 @@ export function DiscoverWeeklyCard() {
         <div className="relative h-full flex items-center justify-center p-8 z-10">
           <div className="text-center">
             <Calendar className="h-8 w-8 mx-auto mb-3 text-muted-foreground" />
-            <h3 className="font-semibold mb-2 text-sm">Discover Weekly</h3>
+            <h3 className="font-semibold mb-2 text-sm">{t('home.discoverWeekly')}</h3>
             <p className="text-xs text-muted-foreground">
-              Your weekly playlist will be generated soon
+              {t('home.weeklyMixSoon')}
             </p>
           </div>
         </div>
@@ -97,63 +99,66 @@ export function DiscoverWeeklyCard() {
       )}
 
       {/* Content */}
-      <div className="relative h-full flex items-center gap-6 px-8 z-10">
+      <div className="relative h-full flex items-stretch gap-4 sm:gap-6 px-4 sm:px-8 z-10">
         {/* Cover Image - Left Side - Linked to Discover Weekly page */}
-        <Link
-          to={ROUTES.LIBRARY.DISCOVER_WEEKLY}
-          className="flex-shrink-0 relative"
-        >
-          {coverArt ? (
-            <ImageLoader id={coverArt} type="album" size="300">
-              {(src, isLoadingImage) => (
-                <>
-                  {src && (
-                    <img
-                      src={src}
-                      alt="Discover Weekly"
-                      className="w-[180px] h-[180px] 2xl:w-[220px] 2xl:h-[220px] rounded-lg shadow-2xl object-cover cursor-pointer transition-transform hover:scale-105"
-                    />
-                  )}
-                  {!src && !isLoadingImage && (
-                    <div className="w-[180px] h-[180px] 2xl:w-[220px] 2xl:h-[220px] rounded-lg shadow-2xl bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center">
-                      <Calendar className="h-16 w-16 text-muted-foreground" />
-                    </div>
-                  )}
-                </>
-              )}
-            </ImageLoader>
-          ) : (
-            <div className="w-[180px] h-[180px] 2xl:w-[220px] 2xl:h-[220px] rounded-lg shadow-2xl bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center">
-              <Calendar className="h-16 w-16 text-muted-foreground" />
-            </div>
-          )}
-        </Link>
+        <div className="flex-shrink-0 flex items-center">
+          <Link
+            to={ROUTES.LIBRARY.DISCOVER_WEEKLY}
+            className="relative"
+          >
+            {coverArt ? (
+              <ImageLoader id={coverArt} type="album" size="300">
+                {(src, isLoadingImage) => (
+                  <>
+                    {src && (
+                      <img
+                        src={src}
+                        alt={t('home.discoverWeekly')}
+                        className="w-[120px] h-[120px] sm:w-[160px] sm:h-[160px] 2xl:w-[220px] 2xl:h-[220px] rounded-lg shadow-2xl object-cover cursor-pointer transition-transform hover:scale-105"
+                      />
+                    )}
+                    {!src && !isLoadingImage && (
+                      <div className="w-[120px] h-[120px] sm:w-[160px] sm:h-[160px] 2xl:w-[220px] 2xl:h-[220px] rounded-lg shadow-2xl bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center">
+                        <Calendar className="h-16 w-16 text-muted-foreground" />
+                      </div>
+                    )}
+                  </>
+                )}
+              </ImageLoader>
+            ) : (
+              <div className="w-[120px] h-[120px] sm:w-[160px] sm:h-[160px] 2xl:w-[220px] 2xl:h-[220px] rounded-lg shadow-2xl bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center">
+                <Calendar className="h-16 w-16 text-muted-foreground" />
+              </div>
+            )}
+          </Link>
+        </div>
 
         {/* Info - Right Side */}
-        <div className="flex-1 flex flex-col gap-3 min-w-0">
+        <div className="flex-1 flex flex-col justify-between min-w-0 py-6 sm:py-8" style={{ containerType: 'inline-size' }}>
           <div>
-            <p className="text-sm text-muted-foreground mb-2">
-              Your Weekly Mix
+            <p className="text-xs sm:text-sm text-muted-foreground mb-1 sm:mb-2">
+              {t('home.weeklyMix')}
             </p>
-            <h2 className="text-4xl 2xl:text-5xl font-bold leading-tight">
-              Discover<br />Weekly
+            <h2 className="font-bold leading-none" style={{ fontSize: 'clamp(1.5rem, 10cqi, 4.5rem)' }}>
+              {t('home.discoverWeekly').split(' ').map((word, i) => (
+                <span key={i} className="block">{word}</span>
+              ))}
             </h2>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex flex-col gap-2">
             <span className="text-sm text-muted-foreground">
-              {playlist.length} {playlist.length === 1 ? 'song' : 'songs'}
+              {t('playlist.songCount', { count: playlist.length })}
             </span>
+            <Button
+              onClick={handlePlay}
+              className="w-fit gap-2"
+              size="sm"
+            >
+              <Play className="w-4 h-4" fill="currentColor" />
+              {t('options.play')}
+            </Button>
           </div>
-
-          <Button
-            onClick={handlePlay}
-            className="w-fit gap-2"
-            size="lg"
-          >
-            <Play className="w-5 h-5" fill="currentColor" />
-            Play
-          </Button>
         </div>
       </div>
     </div>

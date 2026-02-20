@@ -14,3 +14,4 @@ export type ColumnFilter =
   | 'starred'
   | 'select'
   | 'remove'
+  | 'created'

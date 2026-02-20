@@ -1,4 +1,4 @@
-import { Rabbit } from 'lucide-react'
+import { Copy, Rabbit } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useRabbitHole } from '@/app/hooks/use-rabbit-hole'
 import { OptionsButtons } from '@/app/components/options/buttons'
@@ -42,6 +42,10 @@ export function ArtistOptions({ artist }: ArtistOptionsProps) {
     startDownload(artist.id)
   }
 
+  function handleCopyArtist() {
+    navigator.clipboard.writeText(artist.name)
+  }
+
   function handleRabbitHole() {
     startRabbitHole({
       type: 'artist',
@@ -68,6 +72,13 @@ export function ArtistOptions({ artist }: ArtistOptionsProps) {
         >
           <Rabbit className="h-4 w-4" />
           <span>{t('rabbitHole.button')}</span>
+        </DropdownMenuItem>
+      </DropdownMenuGroup>
+      <DropdownMenuSeparator />
+      <DropdownMenuGroup>
+        <DropdownMenuItem onClick={handleCopyArtist} className="gap-2">
+          <Copy className="h-4 w-4" />
+          <span>Copy Artist Name</span>
         </DropdownMenuItem>
       </DropdownMenuGroup>
     </>

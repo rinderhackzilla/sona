@@ -7,6 +7,7 @@ import { TrackInfo } from '@/app/components/player/track-info'
 import { podcasts } from '@/service/podcasts'
 import {
   getVolume,
+  useCrossfadeSettings,
   usePlayerActions,
   usePlayerIsPlaying,
   usePlayerLoop,
@@ -53,6 +54,8 @@ export function Player() {
   const audioRef = useRef<HTMLAudioElement>(null)
   const radioRef = useRef<HTMLAudioElement>(null)
   const podcastRef = useRef<HTMLAudioElement>(null)
+  const fadeIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const fadeOutStartedRef = useRef(false)
   const {
     setAudioPlayerRef,
     setCurrentDuration,
@@ -71,6 +74,33 @@ export function Player() {
   const currentPlaybackRate = usePlayerStore().playerState.currentPlaybackRate
   const { replayGainType, replayGainPreAmp, replayGainDefaultGain } =
     useReplayGainState()
+  const { enabled: crossfadeEnabled } = useCrossfadeSettings()
+
+  const CROSSFADE_DURATION_S = 3
+
+  const clearFade = useCallback(() => {
+    if (fadeIntervalRef.current !== null) {
+      clearInterval(fadeIntervalRef.current)
+      fadeIntervalRef.current = null
+    }
+  }, [])
+
+  const startFadeVolume = useCallback(
+    (audio: HTMLAudioElement, targetVolume: number, durationMs: number) => {
+      clearFade()
+      const startVol = audio.volume
+      const steps = Math.max(10, Math.floor(durationMs / 30))
+      const stepMs = durationMs / steps
+      const delta = (targetVolume - startVol) / steps
+      let step = 0
+      fadeIntervalRef.current = setInterval(() => {
+        step++
+        audio.volume = Math.max(0, Math.min(1, startVol + delta * step))
+        if (step >= steps) clearFade()
+      }, stepMs)
+    },
+    [clearFade],
+  )
 
   const song = currentList[currentSongIndex]
   const radio = radioList[currentSongIndex]
@@ -163,14 +193,34 @@ export function Player() {
 
     const currentProgress = Math.floor(audio.currentTime)
     setProgress(currentProgress)
-  }, [getAudioRef, setProgress])
+
+    if (
+      crossfadeEnabled &&
+      isSong &&
+      !fadeOutStartedRef.current &&
+      isFinite(audio.duration) &&
+      audio.duration > CROSSFADE_DURATION_S * 2
+    ) {
+      const timeLeft = audio.duration - audio.currentTime
+      if (timeLeft > 0 && timeLeft <= CROSSFADE_DURATION_S) {
+        fadeOutStartedRef.current = true
+        startFadeVolume(audio, 0, timeLeft * 1000)
+      }
+    }
+  }, [getAudioRef, setProgress, crossfadeEnabled, isSong, startFadeVolume])
 
   const setupInitialVolume = useCallback(() => {
     const audio = getAudioRef().current
     if (!audio) return
 
-    audio.volume = getVolume() / 100
-  }, [getAudioRef])
+    const targetVolume = getVolume() / 100
+    if (crossfadeEnabled && isSong) {
+      audio.volume = 0
+      startFadeVolume(audio, targetVolume, CROSSFADE_DURATION_S * 1000)
+    } else {
+      audio.volume = targetVolume
+    }
+  }, [getAudioRef, crossfadeEnabled, isSong, startFadeVolume])
 
   const sendFinishProgress = useCallback(() => {
     if (!isPodcast || !podcast) return
@@ -184,6 +234,17 @@ export function Player() {
         logger.error('Error sending complete progress', error)
       })
   }, [isPodcast, podcast])
+
+  // Reset crossfade state when a new song starts
+  useEffect(() => {
+    fadeOutStartedRef.current = false
+    clearFade()
+  }, [song?.id, clearFade])
+
+  // Cleanup interval on unmount
+  useEffect(() => {
+    return () => clearFade()
+  }, [clearFade])
 
   function getTrackReplayGain(): ReplayGainParams {
     const preAmp = replayGainPreAmp

@@ -7,6 +7,7 @@ import { SongQualityBadge } from '@/app/components/song/quality-badge'
 import PlaySongButton from '@/app/components/table/play-button'
 import { SongTableActions } from '@/app/components/table/song-actions'
 import { TableSongTitle } from '@/app/components/table/song-title'
+import { TableLikeButton } from '@/app/components/table/like-button'
 import { DataTableColumnHeader } from '@/app/components/ui/data-table-column-header'
 import { SimpleTooltip } from '@/app/components/ui/simple-tooltip'
 import i18n from '@/i18n'
@@ -27,7 +28,11 @@ const MemoDataTableColumnHeader = memo(
   DataTableColumnHeader,
 ) as typeof DataTableColumnHeader
 
-export function songsColumns(): ColumnDefType<ISong>[] {
+interface SongsColumnsConfig {
+  showHeartInSelect?: boolean
+}
+
+export function songsColumns({ showHeartInSelect = true }: SongsColumnsConfig = {}): ColumnDefType<ISong>[] {
   return [
     {
       id: 'index',
@@ -74,6 +79,26 @@ export function songsColumns(): ColumnDefType<ISong>[] {
           />
         )
       },
+    },
+    {
+      id: 'starred',
+      accessorKey: 'starred',
+      style: {
+        width: 40,
+        maxWidth: 40,
+      },
+      header: () => (
+        <MemoSimpleTooltip text={i18n.t('table.columns.favorite')}>
+          <HeartIcon className="w-4 h-4" />
+        </MemoSimpleTooltip>
+      ),
+      cell: ({ row }) => (
+        <TableLikeButton
+          type="song"
+          entityId={row.original.id}
+          starred={typeof row.original.starred === 'string'}
+        />
+      ),
     },
     {
       id: 'title',
@@ -256,18 +281,45 @@ export function songsColumns(): ColumnDefType<ISong>[] {
       },
     },
     {
+      id: 'created',
+      accessorKey: 'created',
+      enableSorting: true,
+      sortingFn: 'alphanumeric',
+      style: {
+        width: 150,
+        maxWidth: 150,
+      },
+      className: 'hidden lg:flex',
+      header: ({ column, table }) => (
+        <MemoDataTableColumnHeader column={column} table={table}>
+          {i18n.t('table.columns.dateAdded')}
+        </MemoDataTableColumnHeader>
+      ),
+      cell: ({ row }) => {
+        const { created } = row.original
+        if (!created) return ''
+        return (
+          <span className="text-muted-foreground">
+            {dateTime(created).format('ll')}
+          </span>
+        )
+      },
+    },
+    {
       id: 'select',
       style: {
         width: 120,
         maxWidth: 120,
         justifyContent: 'end',
       },
-      header: () => (
-        <MemoSimpleTooltip text={i18n.t('table.columns.favorite')}>
-          <HeartIcon className="w-4 h-4 mr-2" />
-        </MemoSimpleTooltip>
-      ),
-      cell: ({ row }) => <MemoSongTableActions row={row} />,
+      header: showHeartInSelect
+        ? () => (
+            <MemoSimpleTooltip text={i18n.t('table.columns.favorite')}>
+              <HeartIcon className="w-4 h-4 mr-2" />
+            </MemoSimpleTooltip>
+          )
+        : '',
+      cell: ({ row }) => <MemoSongTableActions row={row} showHeart={showHeartInSelect} />,
     },
   ]
 }

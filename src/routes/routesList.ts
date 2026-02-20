@@ -6,6 +6,7 @@ const LIBRARY = {
   ARTISTS: '/library/artists',
   SONGS: '/library/songs',
   ALBUMS: '/library/albums',
+  GENRES: '/library/genres',
   FAVORITES: '/library/favorites',
   PLAYLISTS: '/library/playlists',
   PODCASTS: '/library/podcasts',
@@ -68,6 +69,11 @@ const EPISODES = {
   LATEST: `${LIBRARY.EPISODES}/latest`,
 }
 
+const GENRE = {
+  PAGE: (genre: string) => `/library/genres/${encodeURIComponent(genre)}`,
+  PATH: '/library/genres/:genre',
+}
+
 const SERVER_CONFIG = '/server-config'
 
 export const ROUTES = {
@@ -80,5 +86,6 @@ export const ROUTES = {
   PLAYLIST,
   PODCASTS,
   EPISODES,
+  GENRE,
   SERVER_CONFIG,
 }

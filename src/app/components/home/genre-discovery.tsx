@@ -1,163 +1,84 @@
-import { useEffect, useState } from 'react'
-import { useGetGenreDiscovery, useGetAlbumsByGenre } from '@/app/hooks/use-home'
 import { Link } from 'react-router-dom'
-import { ROUTES } from '@/routes/routesList'
 import { Music } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { Skeleton } from '@/app/components/ui/skeleton'
-import { PreviewCard } from '@/app/components/preview-card/card'
 import { ImageLoader } from '@/app/components/image-loader'
-import {
-  Carousel,
-  type CarouselApi,
-  CarouselContent,
-  CarouselItem,
-} from '@/app/components/ui/carousel'
-import { CarouselButton } from '@/app/components/ui/carousel-button'
-import { subsonic } from '@/service/subsonic'
-import { usePlayerActions } from '@/store/player.store'
-import { Albums } from '@/types/responses/album'
+import { useGetGenreDiscovery, useGetAlbumsByGenre } from '@/app/hooks/use-home'
+import { ROUTES } from '@/routes/routesList'
 
-interface GenreRowProps {
+const gradients = [
+  'from-purple-500/20 to-pink-500/20',
+  'from-blue-500/20 to-cyan-500/20',
+  'from-orange-500/20 to-red-500/20',
+]
+
+const iconColors = [
+  'text-purple-400',
+  'text-blue-400',
+  'text-orange-400',
+]
+
+interface GenreCardProps {
   genre: string
   index: number
 }
 
-function GenreRow({ genre, index }: GenreRowProps) {
+function GenreCard({ genre, index }: GenreCardProps) {
+  const { t } = useTranslation()
   const { data, isLoading } = useGetAlbumsByGenre(genre, 16)
-  const { setSongList } = usePlayerActions()
-  const [api, setApi] = useState<CarouselApi>()
-  const [canScrollPrev, setCanScrollPrev] = useState<boolean>(false)
-  const [canScrollNext, setCanScrollNext] = useState<boolean>(false)
-
-  useEffect(() => {
-    if (!api) return
-
-    setCanScrollPrev(api.canScrollPrev())
-    setCanScrollNext(api.canScrollNext())
-
-    api.on('select', () => {
-      setCanScrollPrev(api.canScrollPrev())
-      setCanScrollNext(api.canScrollNext())
-    })
-  }, [api])
-
-  async function handlePlayAlbum(album: Albums) {
-    const response = await subsonic.albums.getOne(album.id)
-    if (response) {
-      setSongList(response.song, 0)
-    }
-  }
-
-  if (isLoading) {
-    return (
-      <div className="mb-6">
-        <div className="flex items-center justify-between mb-4">
-          <Skeleton className="h-8 w-48" />
-          <div className="flex gap-2">
-            <Skeleton className="w-8 h-8 rounded-full" />
-            <Skeleton className="w-8 h-8 rounded-full" />
-          </div>
-        </div>
-        <div className="flex gap-4">
-          {[...new Array(6)].map((_, i) => (
-            <div key={i} className="basis-1/6">
-              <Skeleton className="aspect-square rounded-lg" />
-              <Skeleton className="h-4 w-full mt-2" />
-              <Skeleton className="h-3 w-2/3 mt-1" />
-            </div>
-          ))}
-        </div>
-      </div>
-    )
-  }
 
   if (!data?.list || data.list.length === 0) return null
 
-  const gradients = [
-    'from-purple-500/10 to-pink-500/10',
-    'from-blue-500/10 to-cyan-500/10',
-    'from-orange-500/10 to-red-500/10',
-  ]
+  const albums = data.list.slice(0, 3)
 
   return (
-    <div className="mb-6">
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-3">
-          <div
-            className={`p-2 rounded-lg bg-gradient-to-br ${gradients[index % 3]}`}
-          >
-            <Music className="w-5 h-5" />
+    <Link to={ROUTES.ALBUMS.GENRE(genre)} className="group block">
+      <div
+        className={`relative rounded-xl overflow-hidden bg-gradient-to-br ${gradients[index % 3]} border border-border/50 h-[148px] sm:h-[164px] hover:border-primary/40 transition-colors p-4`}
+      >
+        <div className="flex justify-between h-full">
+          {/* Left: icon + name + count + link hint */}
+          <div className="flex flex-col justify-between min-w-0 pr-3">
+            <div>
+              <Music className={`w-4 h-4 mb-2 ${iconColors[index % 3]}`} />
+              <h3 className="text-base font-bold leading-snug truncate">{genre}</h3>
+              {data?.list && (
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  {t('genres.albumCount', { count: data.list.length })}
+                </p>
+              )}
+              {isLoading && <Skeleton className="h-3 w-16 mt-1" />}
+            </div>
+            <span className="text-xs text-muted-foreground group-hover:text-primary transition-colors">
+              {t('home.browse')}
+            </span>
           </div>
-          <div>
-            <h3 className="text-xl font-semibold">{genre}</h3>
-            <p className="text-sm text-muted-foreground">
-              Based on your listening
-            </p>
-          </div>
-        </div>
-        <div className="flex items-center gap-4">
-          <Link
-            to={`${ROUTES.ALBUMS.INDEX}?genre=${encodeURIComponent(genre)}`}
-            className="text-sm text-muted-foreground hover:text-primary hover:underline"
-          >
-            See all
-          </Link>
-          <div className="flex gap-2">
-            <CarouselButton
-              direction="prev"
-              disabled={!canScrollPrev}
-              onClick={() => api?.scrollPrev()}
-            />
-            <CarouselButton
-              direction="next"
-              disabled={!canScrollNext}
-              onClick={() => api?.scrollNext()}
-            />
-          </div>
-        </div>
-      </div>
 
-      <div className="transform-gpu">
-        <Carousel
-          opts={{
-            align: 'start',
-            slidesToScroll: 'auto',
-          }}
-          setApi={setApi}
-        >
-          <CarouselContent>
-            {data.list.map((album) => (
-              <CarouselItem
-                key={album.id}
-                className="basis-1/6 2xl:basis-1/8"
-              >
-                <PreviewCard.Root>
-                  <PreviewCard.ImageWrapper link={ROUTES.ALBUM.PAGE(album.id)}>
-                    <ImageLoader id={album.coverArt} type="album">
-                      {(src) => <PreviewCard.Image src={src} alt={album.name} />}
-                    </ImageLoader>
-                    <PreviewCard.PlayButton
-                      onClick={() => handlePlayAlbum(album)}
-                    />
-                  </PreviewCard.ImageWrapper>
-                  <PreviewCard.InfoWrapper>
-                    <PreviewCard.Title link={ROUTES.ALBUM.PAGE(album.id)}>
-                      {album.name}
-                    </PreviewCard.Title>
-                    <PreviewCard.Subtitle
-                      enableLink={album.artistId !== undefined}
-                      link={ROUTES.ARTIST.PAGE(album.artistId ?? '')}
-                    >
-                      {album.artist}
-                    </PreviewCard.Subtitle>
-                  </PreviewCard.InfoWrapper>
-                </PreviewCard.Root>
-              </CarouselItem>
-            ))}
-          </CarouselContent>
-        </Carousel>
+          {/* Right: stacked album thumbs */}
+          <div className="flex flex-col gap-1.5 justify-center flex-shrink-0">
+            {isLoading
+              ? [...Array(3)].map((_, i) => (
+                  <Skeleton key={i} className="w-11 h-11 rounded-md" />
+                ))
+              : albums.map((album) => (
+                  <ImageLoader key={album.id} id={album.coverArt} type="album" size="150">
+                    {(src) =>
+                      src ? (
+                        <img
+                          src={src}
+                          alt={album.name}
+                          className="w-11 h-11 rounded-md object-cover shadow-md"
+                        />
+                      ) : (
+                        <div className="w-11 h-11 rounded-md bg-muted" />
+                      )
+                    }
+                  </ImageLoader>
+                ))}
+          </div>
+        </div>
       </div>
-    </div>
+    </Link>
   )
 }
 
@@ -167,26 +88,9 @@ export default function GenreDiscovery() {
   if (isLoading) {
     return (
       <div className="mb-8">
-        <div className="space-y-6">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {[...new Array(3)].map((_, i) => (
-            <div key={i}>
-              <div className="flex items-center justify-between mb-4">
-                <Skeleton className="h-8 w-48" />
-                <div className="flex gap-2">
-                  <Skeleton className="w-8 h-8 rounded-full" />
-                  <Skeleton className="w-8 h-8 rounded-full" />
-                </div>
-              </div>
-              <div className="flex gap-4">
-                {[...new Array(6)].map((_, j) => (
-                  <div key={j} className="basis-1/6">
-                    <Skeleton className="aspect-square rounded-lg" />
-                    <Skeleton className="h-4 w-full mt-2" />
-                    <Skeleton className="h-3 w-2/3 mt-1" />
-                  </div>
-                ))}
-              </div>
-            </div>
+            <Skeleton key={i} className="h-[148px] sm:h-[164px] rounded-xl" />
           ))}
         </div>
       </div>
@@ -197,9 +101,9 @@ export default function GenreDiscovery() {
 
   return (
     <div className="mb-8">
-      <div className="space-y-6">
-        {genres.map((genre, index) => (
-          <GenreRow key={genre} genre={genre} index={index} />
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        {genres.slice(0, 3).map((genre, index) => (
+          <GenreCard key={genre} genre={genre} index={index} />
         ))}
       </div>
     </div>

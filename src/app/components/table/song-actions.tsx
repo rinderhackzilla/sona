@@ -6,9 +6,10 @@ import { ISong } from '@/types/responses/song'
 
 interface SongTableActionsProps {
   row: Row<ISong>
+  showHeart?: boolean
 }
 
-export function SongTableActions({ row }: SongTableActionsProps) {
+export function SongTableActions({ row, showHeart = true }: SongTableActionsProps) {
   return (
     <div className="flex gap-1 items-center">
       <TableActionButton
@@ -20,11 +21,13 @@ export function SongTableActions({ row }: SongTableActionsProps) {
           />
         }
       />
-      <TableLikeButton
-        type="song"
-        entityId={row.original.id}
-        starred={typeof row.original.starred === 'string'}
-      />
+      {showHeart && (
+        <TableLikeButton
+          type="song"
+          entityId={row.original.id}
+          starred={typeof row.original.starred === 'string'}
+        />
+      )}
     </div>
   )
 }

@@ -71,6 +71,11 @@ interface IReplayGain {
   actions: IReplayGainActions
 }
 
+interface ICrossfade {
+  enabled: boolean
+  setEnabled: (value: boolean) => void
+}
+
 interface IFullscreen {
   autoFullscreenEnabled: boolean
   setAutoFullscreenEnabled: (value: boolean) => void
@@ -132,6 +137,7 @@ export interface IPlayerSettings {
   fullscreen: IFullscreen
   lyrics: ILyrics
   replayGain: IReplayGain
+  crossfade: ICrossfade
   privacy: IPrivacySettings
   colors: IColorsSettings
 }
@@ -164,6 +170,7 @@ export interface IPlayerActions {
   setNextOnQueue: (songlist: ISong[]) => void
   setLastOnQueue: (songlist: ISong[]) => void
   removeSongFromQueue: (id: string) => void
+  reorderQueue: (fromIndex: number, toIndex: number) => void
   setMainDrawerState: (state: boolean) => void
   setQueueState: (state: boolean) => void
   toggleQueueAction: () => void

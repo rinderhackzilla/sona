@@ -89,12 +89,31 @@ export default function ImageHeader({
               <AlbumHeaderFallback />
             </div>
           )}
+
+          {/* Blurred background image */}
+          {!isLoading && src && (
+            <div className="absolute inset-0 z-0 overflow-hidden">
+              <img
+                src={src}
+                alt=""
+                aria-hidden="true"
+                className="w-full h-full object-cover scale-125"
+                style={{ filter: 'blur(24px)' }}
+              />
+              {bgColor && (
+                <div
+                  className="absolute inset-0"
+                  style={{ backgroundColor: bgColor, opacity: 0.4 }}
+                />
+              )}
+            </div>
+          )}
+
           <div
             className={cn(
-              'w-full px-8 py-6 flex gap-4 absolute inset-0',
-              'bg-gradient-to-b from-background/20 to-background/50',
+              'w-full px-8 py-6 flex gap-4 absolute inset-0 z-10',
+              'bg-gradient-to-b from-background/10 to-background/70',
             )}
-            style={{ backgroundColor: bgColor }}
           >
             <div
               className={cn(

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { ImageLoader } from '@/app/components/image-loader'
@@ -18,6 +18,7 @@ import { Albums } from '@/types/responses/album'
 interface PreviewListProps {
   list: Albums[]
   title: string
+  icon?: ReactNode
   showMore?: boolean
   moreTitle?: string
   moreRoute?: string
@@ -26,6 +27,7 @@ interface PreviewListProps {
 export default function PreviewList({
   list,
   title,
+  icon,
   showMore = true,
   moreTitle,
   moreRoute,
@@ -67,12 +69,15 @@ export default function PreviewList({
   return (
     <div className="w-full flex flex-col mt-4">
       <div className="my-4 flex justify-between items-center">
-        <h3
-          className="scroll-m-20 text-2xl font-semibold tracking-tight"
-          data-testid="preview-list-title"
-        >
-          {title}
-        </h3>
+        <div className="flex items-center gap-2">
+          {icon}
+          <h3
+            className="scroll-m-20 text-2xl font-semibold tracking-tight"
+            data-testid="preview-list-title"
+          >
+            {title}
+          </h3>
+        </div>
         <div className="flex items-center gap-4">
           {showMore && moreRoute && (
             <Link to={moreRoute} data-testid="preview-list-show-more">
@@ -111,7 +116,7 @@ export default function PreviewList({
             {list.map((album, index) => (
               <CarouselItem
                 key={album.id}
-                className="basis-1/6 2xl:basis-1/8"
+                className="basis-1/2 sm:basis-1/3 md:basis-1/4 lg:basis-1/5 2xl:basis-1/6"
                 data-testid={`preview-list-carousel-item-${index}`}
               >
                 <PreviewCard.Root>

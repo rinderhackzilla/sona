@@ -12,6 +12,20 @@ import {
   Table,
   useReactTable,
 } from '@tanstack/react-table'
+import {
+  DndContext,
+  DragEndEvent,
+  DragOverlay,
+  DragStartEvent,
+  PointerSensor,
+  closestCenter,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core'
+import {
+  SortableContext,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable'
 import clsx from 'clsx'
 import { Disc2Icon, XIcon } from 'lucide-react'
 import {
@@ -71,6 +85,8 @@ interface DataTableProps<TData, TValue> {
   showDiscNumber?: boolean
   variant?: 'classic' | 'modern'
   dataType?: 'song' | 'artist' | 'playlist' | 'radio'
+  onReorder?: (fromIndex: number, toIndex: number) => void
+  enableSorting?: boolean
 }
 
 let isTap = false
@@ -91,6 +107,8 @@ export function DataTable<TData, TValue>({
   showDiscNumber = false,
   variant = 'classic',
   dataType = 'song',
+  onReorder,
+  enableSorting,
 }: DataTableProps<TData, TValue>) {
   const { t } = useTranslation()
   const newColumns = columns.filter((column) => {
@@ -101,9 +119,18 @@ export function DataTable<TData, TValue>({
   const [sorting, setSorting] = useState<SortingState>([])
   const [rowSelection, setRowSelection] = useState({})
   const [lastRowSelected, setLastRowSelected] = useState<number | null>(null)
+  const [activeRowIndex, setActiveRowIndex] = useState<number | null>(null)
 
   const isClassic = variant === 'classic'
   const isModern = variant === 'modern'
+  const isSortable = !!onReorder
+  const isSortingEnabled = enableSorting ?? !isSortable
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: { distance: 8 },
+    }),
+  )
 
   const selectedRows = useMemo(
     () => Object.keys(rowSelection).map(Number),
@@ -132,7 +159,7 @@ export function DataTable<TData, TValue>({
     onSortingChange: setSorting,
     getSortedRowModel: getSortedRowModel(),
     onRowSelectionChange: setRowSelection,
-    enableSorting: true,
+    enableSorting: isSortingEnabled,
     sortingFns: {
       customSortFn: (rowA, rowB, columnId) => {
         return rowA.original[columnId].localeCompare(rowB.original[columnId])
@@ -149,6 +176,12 @@ export function DataTable<TData, TValue>({
   })
 
   const { rows } = table.getRowModel()
+
+  // Drag reorder is only active when no column sort is applied
+  const isDragReorderActive = isSortable && sorting.length === 0
+
+  // Sortable IDs are index strings so they stay stable relative to the rendered order
+  const sortableIds = useMemo(() => rows.map((_, i) => i.toString()), [rows])
 
   const selectAllShortcut = useCallback(
     (state = true) => {
@@ -339,7 +372,72 @@ export function DataTable<TData, TValue>({
     isTap = false
   }
 
-  return (
+  function handleDragStart(event: DragStartEvent) {
+    setActiveRowIndex(parseInt(event.active.id as string))
+  }
+
+  function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event
+    setActiveRowIndex(null)
+    if (!over || active.id === over.id) return
+    const fromIndex = parseInt(active.id as string)
+    const toIndex = parseInt(over.id as string)
+    onReorder?.(fromIndex, toIndex)
+  }
+
+  const activeRow = activeRowIndex !== null ? rows[activeRowIndex] : null
+
+  const rowList = rows?.length ? (
+    rows.map((row, index) => (
+      <Fragment key={row.id}>
+        {showDiscNumber &&
+          !isSingleDisk &&
+          discNumberIndexes.includes(index) && (
+            <div
+              className={clsx(
+                'w-full h-14 flex flex-row items-center transition-colors text-muted-foreground',
+                isClassic && 'border-b',
+              )}
+              role="row"
+            >
+              <div className="w-12 flex items-center justify-center">
+                <Disc2Icon strokeWidth={1.75} />
+              </div>
+              <span className="font-medium ml-[7px]">
+                {t('album.table.discNumber', {
+                  number: (row.original as DiscNumber).discNumber,
+                })}
+              </span>
+            </div>
+          )}
+        <MemoTableRow
+          index={index}
+          row={row}
+          contextMenuOptions={getContextMenuOptions(row)}
+          isPrevRowSelected={isPrevRowSelected}
+          isNextRowSelected={isNextRowSelected}
+          variant={variant}
+          dataType={dataType}
+          sortableId={isDragReorderActive ? index.toString() : undefined}
+          onClick={(e) => handleClicks(e, row)}
+          onDoubleClick={(e) => handleRowDbClick(e, row)}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={(e) => handleRowTap(e, row)}
+          onTouchCancel={handleTouchCancel}
+          onContextMenu={(e) => handleClicks(e, row)}
+        />
+      </Fragment>
+    ))
+  ) : (
+    <div role="row">
+      <div className="flex h-24 items-center justify-center p-2" role="cell">
+        {noRowsMessage}
+      </div>
+    </div>
+  )
+
+  const tableContent = (
     <>
       {showSearch && searchColumn && (
         <div className="flex items-center mb-4" data-testid="table-search">
@@ -392,6 +490,8 @@ export function DataTable<TData, TValue>({
                   )}
                   role="row"
                 >
+                  {/* Spacer matching the drag handle width */}
+                  {isDragReorderActive && <div className="w-6 shrink-0" />}
                   {headerGroup.headers.map((header) => {
                     const columnDef = header.column
                       .columnDef as ColumnDefType<TData>
@@ -420,64 +520,49 @@ export function DataTable<TData, TValue>({
             </div>
           )}
           <div className="[&_div:last-child]:border-0">
-            <div className="w-full h-full overflow-hidden">
-              {rows?.length ? (
-                rows.map((row, index) => (
-                  <Fragment key={row.id}>
-                    {showDiscNumber &&
-                      !isSingleDisk &&
-                      discNumberIndexes.includes(index) && (
-                        <div
-                          className={clsx(
-                            'w-full h-14 flex flex-row items-center transition-colors text-muted-foreground',
-                            isClassic && 'border-b',
-                          )}
-                          role="row"
-                        >
-                          <div className="w-12 flex items-center justify-center">
-                            <Disc2Icon strokeWidth={1.75} />
-                          </div>
-                          <span className="font-medium ml-[7px]">
-                            {t('album.table.discNumber', {
-                              number: (row.original as DiscNumber).discNumber,
-                            })}
-                          </span>
-                        </div>
-                      )}
-                    <MemoTableRow
-                      index={index}
-                      row={row}
-                      contextMenuOptions={getContextMenuOptions(row)}
-                      isPrevRowSelected={isPrevRowSelected}
-                      isNextRowSelected={isNextRowSelected}
-                      variant={variant}
-                      dataType={dataType}
-                      onClick={(e) => handleClicks(e, row)}
-                      onDoubleClick={(e) => handleRowDbClick(e, row)}
-                      onTouchStart={handleTouchStart}
-                      onTouchMove={handleTouchMove}
-                      onTouchEnd={(e) => handleRowTap(e, row)}
-                      onTouchCancel={handleTouchCancel}
-                      onContextMenu={(e) => handleClicks(e, row)}
-                    />
-                  </Fragment>
-                ))
-              ) : (
-                <div role="row">
-                  <div
-                    className="flex h-24 items-center justify-center p-2"
-                    role="cell"
-                  >
-                    {noRowsMessage}
-                  </div>
-                </div>
-              )}
-            </div>
+            <div className="w-full h-full overflow-hidden">{rowList}</div>
           </div>
         </div>
       </div>
 
       {showPagination && <DataTablePagination table={table} />}
     </>
+  )
+
+  if (!isSortable) {
+    return tableContent
+  }
+
+  if (!isDragReorderActive) {
+    return tableContent
+  }
+
+  return (
+    <DndContext
+      sensors={sensors}
+      collisionDetection={closestCenter}
+      onDragStart={handleDragStart}
+      onDragEnd={handleDragEnd}
+    >
+      <SortableContext items={sortableIds} strategy={verticalListSortingStrategy}>
+        {tableContent}
+      </SortableContext>
+
+      <DragOverlay dropAnimation={null}>
+        {activeRow ? (
+          <MemoTableRow
+            index={activeRowIndex!}
+            row={activeRow}
+            contextMenuOptions={undefined}
+            isPrevRowSelected={() => false}
+            isNextRowSelected={() => false}
+            variant={variant}
+            dataType={dataType}
+            sortableId={undefined}
+            className="shadow-xl border border-foreground/20 bg-popover rounded-md cursor-grabbing opacity-95"
+          />
+        ) : null}
+      </DragOverlay>
+    </DndContext>
   )
 }

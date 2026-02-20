@@ -64,6 +64,7 @@ interface DataTableProps<TData, TValue> {
   hasNextPage?: boolean
   scrollToIndex?: boolean
   currentSongIndex?: number
+  enableSorting?: boolean
 }
 
 export function DataTableList<TData, TValue>({
@@ -81,6 +82,7 @@ export function DataTableList<TData, TValue>({
   hasNextPage,
   scrollToIndex = false,
   currentSongIndex,
+  enableSorting = false,
 }: DataTableProps<TData, TValue>) {
   const newColumns = columns.filter((column) => {
     return columnFilter?.includes(column.id as ColumnFilter)
@@ -109,7 +111,7 @@ export function DataTableList<TData, TValue>({
       onSortingChange: setSorting,
       getSortedRowModel: getSortedRowModel(),
       onRowSelectionChange: setRowSelection,
-      enableSorting: false,
+      enableSorting,
       sortingFns: {
         customSortFn: <T extends { original: Record<string, string> }>(
           rowA: T,
@@ -137,6 +139,7 @@ export function DataTableList<TData, TValue>({
       columnSearch,
       sorting,
       rowSelection,
+      enableSorting,
     ],
   )
 

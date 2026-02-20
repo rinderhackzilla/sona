@@ -1,4 +1,4 @@
-import { Rabbit } from 'lucide-react'
+import { Copy, Rabbit } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { OptionsButtons } from '@/app/components/options/buttons'
 import { DownloadOptionHandler } from '@/app/components/options/download-handler'
@@ -36,6 +36,16 @@ export function SongMenuOptions({
   } = useOptions()
   const { startRabbitHole, isLoading } = useRabbitHole()
   const songIndexes = [index.toString()]
+
+  const handleCopyTitle = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    navigator.clipboard.writeText(song.title)
+  }
+
+  const handleCopyArtist = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    navigator.clipboard.writeText(song.artist ?? '')
+  }
 
   const handleRabbitHole = (e: React.MouseEvent) => {
     e.stopPropagation()
@@ -100,6 +110,21 @@ export function SongMenuOptions({
           }}
         />
       </DownloadOptionHandler>
+      <ContextMenuSeparator />
+      <RabbitHoleMenuItem
+        onClick={handleCopyTitle}
+        className="cursor-pointer"
+      >
+        <Copy className="mr-2 h-4 w-4" />
+        <span>Copy Track Name</span>
+      </RabbitHoleMenuItem>
+      <RabbitHoleMenuItem
+        onClick={handleCopyArtist}
+        className="cursor-pointer"
+      >
+        <Copy className="mr-2 h-4 w-4" />
+        <span>Copy Artist</span>
+      </RabbitHoleMenuItem>
       <ContextMenuSeparator />
       <OptionsButtons.SongInfo
         variant={variant}

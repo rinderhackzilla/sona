@@ -117,6 +117,21 @@ function MainSidebarProvider({
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [toggleMainSidebar])
 
+  // Auto-collapse at ≤1300px, auto-expand at ≥1350px.
+  React.useEffect(() => {
+    const handleResize = () => {
+      if (isMobile) return
+      if (window.innerWidth <= 1300) {
+        setOpen(false)
+      } else if (window.innerWidth >= 1350) {
+        setOpen(true)
+      }
+    }
+
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [isMobile, setOpen])
+
   // We add a state so that we can do data-state="expanded" or "collapsed".
   // This makes it easier to style the sidebar with Tailwind classes.
   const state = open ? 'expanded' : 'collapsed'

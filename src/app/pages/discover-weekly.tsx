@@ -1,5 +1,6 @@
 import { RefreshCw, Sparkles, Info, Play, Shuffle, Save } from 'lucide-react'
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import ImageHeader from '@/app/components/album/image-header'
 import { BadgesData } from '@/app/components/header-info'
 import ListWrapper from '@/app/components/list-wrapper'
@@ -16,6 +17,7 @@ import { toast } from 'react-toastify'
 
 export default function DiscoverWeeklyPage() {
   const columns = songsColumns()
+  const { t } = useTranslation()
   const {
     playlist,
     isGenerating,
@@ -40,13 +42,13 @@ export default function DiscoverWeeklyPage() {
               <Info className="h-6 w-6 mt-0.5 text-muted-foreground" />
               <div className="flex-1">
                 <CardTitle className="text-xl mb-3">
-                  Setup Discover Weekly
+                  {t('discoverWeekly.setupTitle')}
                 </CardTitle>
                 <CardDescription className="text-base">
-                  Get personalized song recommendations based on your Last.fm listening history.
+                  {t('discoverWeekly.setupDescription')}
                   <br />
                   <br />
-                  <strong>Setup:</strong> Configure your Last.fm username and API key in the sidebar settings (⚙️) → Integrations.
+                  <strong>{t('discoverWeekly.setupPrefix')}</strong> {t('discoverWeekly.setupInstructions')}
                 </CardDescription>
               </div>
             </div>
@@ -61,7 +63,7 @@ export default function DiscoverWeeklyPage() {
       <div className="w-full px-8 py-6">
         <Card className="border-destructive max-w-2xl mx-auto mt-12">
           <CardHeader>
-            <CardTitle className="text-destructive">Error</CardTitle>
+            <CardTitle className="text-destructive">{t('generic.error')}</CardTitle>
             <CardDescription className="text-destructive">
               {error}
             </CardDescription>
@@ -76,7 +78,7 @@ export default function DiscoverWeeklyPage() {
       <div className="w-full px-8 py-6">
         <div className="flex items-center justify-center gap-3 mt-12">
           <RefreshCw className="h-5 w-5 animate-spin" />
-          <span className="text-lg">Generating your personalized playlist...</span>
+          <span className="text-lg">{t('discoverWeekly.generatingPlaylist')}</span>
         </div>
       </div>
     )
@@ -87,9 +89,9 @@ export default function DiscoverWeeklyPage() {
       <div className="w-full px-8 py-6">
         <div className="max-w-2xl mx-auto mt-12 text-center">
           <Sparkles className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-          <h2 className="text-2xl font-semibold mb-4">Discover Weekly</h2>
+          <h2 className="text-2xl font-semibold mb-4">{t('discoverWeekly.emptyTitle')}</h2>
           <p className="text-muted-foreground mb-6">
-            Your personalized playlist hasn't been generated yet.
+            {t('discoverWeekly.emptyDescription')}
           </p>
           <Button
             size="lg"
@@ -97,7 +99,7 @@ export default function DiscoverWeeklyPage() {
             disabled={isGenerating}
           >
             <Sparkles className="h-4 w-4 mr-2" />
-            Generate Playlist
+            {t('discoverWeekly.generatePlaylist')}
           </Button>
         </div>
       </div>
@@ -115,8 +117,10 @@ export default function DiscoverWeeklyPage() {
   const totalDuration = playlist.reduce((acc, song) => acc + song.duration, 0)
   const duration = convertSecondsToHumanRead(totalDuration)
 
-  const songCount = `${playlist.length} ${playlist.length === 1 ? 'song' : 'songs'}`
-  const artistsCount = artistsUsed.length > 0 ? `${artistsUsed.length} artists` : null
+  const songCount = t('playlist.songCount', { count: playlist.length })
+  const artistsCount = artistsUsed.length > 0
+    ? t('discoverWeekly.artistCount', { count: artistsUsed.length })
+    : null
 
   const lastUpdated = lastGenerated
     ? new Date(lastGenerated).toLocaleDateString()
@@ -126,7 +130,7 @@ export default function DiscoverWeeklyPage() {
     { content: songCount, type: 'text' },
     { content: duration, type: 'text' },
     { content: artistsCount, type: 'text' },
-    { content: lastUpdated ? `Updated ${lastUpdated}` : null, type: 'text' },
+    { content: lastUpdated ? t('discoverWeekly.updated', { date: lastUpdated }) : null, type: 'text' },
   ]
 
   const handlePlayAll = () => {
@@ -148,10 +152,10 @@ const handleSaveAsPlaylist = async () => {
       comment: `Generated on ${lastUpdated || new Date().toLocaleDateString()} with ${artistsUsed.length} artists`,
       isPublic: false,
     })
-    toast.success(`Playlist "${playlistName}" has been saved to your library!`)
+    toast.success(t('discoverWeekly.savedSuccess', { name: playlistName }))
   } catch (error) {
     console.error('[Discover Weekly] Save failed:', error)
-    toast.error(`Failed to save playlist: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    toast.error(t('discoverWeekly.saveError', { message: error instanceof Error ? error.message : 'Unknown error' }))
   } finally {
     setIsSaving(false)
   }
@@ -162,13 +166,13 @@ const handleSaveAsPlaylist = async () => {
   return (
     <div className="w-full">
       <ImageHeader
-        type="Personalized Playlist"
-        title="Discover Weekly"
-        subtitle="Your personalized mix based on Last.fm listening history"
+        type={t('discoverWeekly.headerType')}
+        title={t('discoverWeekly.emptyTitle')}
+        subtitle={t('discoverWeekly.headerSubtitle')}
         coverArtId={coverArt}
         coverArtType="album"
         coverArtSize="700"
-        coverArtAlt="Discover Weekly"
+        coverArtAlt={t('discoverWeekly.emptyTitle')}
         badges={badges}
         isPlaylist={true}
       />
@@ -181,7 +185,7 @@ const handleSaveAsPlaylist = async () => {
             onClick={handlePlayAll}
           >
             <Play className="h-4 w-4 mr-2" />
-            Play All
+            {t('generic.playAll')}
           </Button>
           <Button
             variant="outline"
@@ -189,7 +193,7 @@ const handleSaveAsPlaylist = async () => {
             onClick={handlePlayShuffle}
           >
             <Shuffle className="h-4 w-4 mr-2" />
-            Shuffle
+            {t('generic.shuffle')}
           </Button>
           <Button
             variant="outline"
@@ -197,8 +201,7 @@ const handleSaveAsPlaylist = async () => {
             onClick={generate}
             disabled={isGenerating}
           >
-            <RefreshCw className="h-4 w-4 mr-2" />
-            Refresh
+            <RefreshCw className="h-4 w-4" />
           </Button>
           <Button
             variant="outline"
@@ -207,7 +210,7 @@ const handleSaveAsPlaylist = async () => {
             disabled={isSaving}
           >
             <Save className="h-4 w-4 mr-2" />
-            {isSaving ? 'Saving...' : 'Save as Playlist'}
+            {isSaving ? t('generic.saving') : t('generic.saveAsPlaylist')}
           </Button>
         </div>
 
@@ -216,7 +219,7 @@ const handleSaveAsPlaylist = async () => {
           data={playlist}
           handlePlaySong={(row) => setSongList(playlist, row.index)}
           columnFilter={columnsToShow}
-          noRowsMessage="No songs in your Discover Weekly yet"
+          noRowsMessage={t('discoverWeekly.noSongs')}
           variant="modern"
         />
       </ListWrapper>

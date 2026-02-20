@@ -109,12 +109,6 @@ export function ContentPage() {
     <div className="space-y-6">
       {/* Lyrics */}
       <Root>
-        <Header>
-          <HeaderTitle>{t('settings.audio.lyrics.group', 'Lyrics')}</HeaderTitle>
-          <HeaderDescription>
-            {t('settings.audio.lyrics.description', 'Configure lyrics display preferences')}
-          </HeaderDescription>
-        </Header>
         <Content>
           <ContentItem>
             <ContentItemTitle info={t('settings.audio.lyrics.preferSynced.info')}>

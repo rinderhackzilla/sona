@@ -1,0 +1,4015 @@
+diff --git a/package.json b/package.json
+index 08142d4..ba1eeb5 100644
+--- a/package.json
++++ b/package.json
+@@ -1,326 +1,164 @@
+-{
+-  "name": "Sona",
+-  "private": true,
+-  "version": "0.13.2",
+-  "description": "A modern desktop client for Navidrome/Subsonic servers.",
+-  "author": {
+-    "name": "rinderhack"
+-  },
+-  "main": "./out/main/index.js",
+-  "type": "module",
+-  "productName": "Sona",
+-  "scripts": {
+-    "dev": "vite",
+-    "build": "tsc && vite build",
+-    "preview": "vite preview",
+-    "lint": "biome lint",
+-    "lint:fix": "biome lint --write",
+-    "lint:check": "biome check --write",
+-    "lint:format": "biome format --write",
+-    "cy:open": "cypress open",
+-    "test": "cypress run --component",
+-    "electron:start": "electron-vite preview",
+-    "electron:dev": "electron-vite dev",
+-    "electron:build": "electron-vite build",
+-    "postinstall": "electron-builder install-app-deps",
+-    "build:unpack": "npm run electron:build && electron-builder --dir",
+-    "build:win": "npm run electron:build && electron-builder --win",
+-    "build:mac": "npm run electron:build && electron-builder --mac",
+-    "build:linux": "npm run electron:build && electron-builder --linux",
+-    "ci:build:win": "electron-builder --win --publish always",
+-    "ci:build:mac": "electron-builder --mac --publish always",
+-    "ci:build:linux": "electron-builder --linux --publish always",
+-    "prepare": "husky"
+-  },
+-  "repository": {
+-    "url": "https://github.com/sgtspeerock/sona"
+-  },
+-  "dependencies": {
+-    "@chriscodesthings/random-css-hex-color": "^1.1.0",
+-    "@electron-toolkit/preload": "^3.0.1",
+-    "@electron-toolkit/utils": "^4.0.0",
+-    "@hookform/resolvers": "^3.10.0",
+-    "@radix-ui/react-alert-dialog": "^1.1.15",
+-    "@radix-ui/react-aspect-ratio": "^1.1.8",
+-    "@radix-ui/react-avatar": "^1.1.11",
+-    "@radix-ui/react-checkbox": "^1.3.3",
+-    "@radix-ui/react-collapsible": "^1.1.12",
+-    "@radix-ui/react-context-menu": "^2.2.16",
+-    "@radix-ui/react-dialog": "^1.1.15",
+-    "@radix-ui/react-dropdown-menu": "^2.1.16",
+-    "@radix-ui/react-hover-card": "^1.1.15",
+-    "@radix-ui/react-label": "^2.1.8",
+-    "@radix-ui/react-menubar": "^1.1.16",
+-    "@radix-ui/react-popover": "^1.1.15",
+-    "@radix-ui/react-scroll-area": "^1.2.10",
+-    "@radix-ui/react-select": "^2.2.6",
+-    "@radix-ui/react-separator": "^1.1.8",
+-    "@radix-ui/react-slider": "^1.3.6",
+-    "@radix-ui/react-slot": "^1.2.4",
+-    "@radix-ui/react-switch": "^1.2.6",
+-    "@radix-ui/react-tabs": "^1.1.13",
+-    "@radix-ui/react-tooltip": "^1.2.8",
+-    "@tanstack/react-query": "^5.71.10",
+-    "@tanstack/react-table": "^8.21.2",
+-    "@tanstack/react-virtual": "^3.13.6",
+-    "@virtual-grid/react": "^2.0.3",
+-    "bufferutil": "^4.0.9",
+-    "butterchurn": "^3.0.0-beta.4",
+-    "butterchurn-presets": "^3.0.0-beta.4",
+-    "class-variance-authority": "^0.7.1",
+-    "clsx": "^2.1.1",
+-    "cmdk": "^1.1.1",
+-    "crypto-js": "^4.2.0",
+-    "dayjs": "^1.11.13",
+-    "discord-rpc": "^4.0.1",
+-    "electron-dl": "^4.0.0",
+-    "electron-store": "^11.0.2",
+-    "electron-updater": "^6.7.3",
+-    "embla-carousel-autoplay": "^8.6.0",
+-    "embla-carousel-react": "^8.6.0",
+-    "fast-average-color": "^9.5.0",
+-    "html-to-text": "^9.0.5",
+-    "i18next": "^23.16.8",
+-    "i18next-browser-languagedetector": "^8.0.4",
+-    "idb-keyval": "^6.2.2",
+-    "immer": "^10.1.1",
+-    "linkify-it": "^5.0.0",
+-    "lodash": "^4.17.23",
+-    "lucide-react": "^0.563.0",
+-    "react": "^18.3.1",
+-    "react-country-flag": "^3.1.0",
+-    "react-device-detect": "^2.2.3",
+-    "react-dom": "^18.3.1",
+-    "react-fast-marquee": "^1.6.5",
+-    "react-hook-form": "^7.55.0",
+-    "react-hotkeys-hook": "^4.6.1",
+-    "react-i18next": "^14.1.3",
+-    "react-lazy-load-image-component": "^1.6.3",
+-    "react-lrc": "^3.2.1",
+-    "react-markdown": "^10.1.0",
+-    "react-router-dom": "^6.30.3",
+-    "react-toastify": "^10.0.6",
+-    "remark-gfm": "^4.0.1",
+-    "standardized-audio-context": "^25.3.77",
+-    "tailwind-extended-shadows": "^0.4.1",
+-    "tailwind-extended-shadows-merge": "^0.2.2",
+-    "tailwind-merge": "^2.6.0",
+-    "tailwindcss-animate": "^1.0.7",
+-    "use-debounce": "^10.0.4",
+-    "utf-8-validate": "^6.0.5",
+-    "vaul": "^0.9.9",
+-    "yet-another-react-lightbox": "^3.22.0",
+-    "zod": "^3.24.2",
+-    "zustand": "^4.5.6"
+-  },
+-  "devDependencies": {
+-    "@biomejs/biome": "2.0.6",
+-    "@electron-toolkit/tsconfig": "^1.0.1",
+-    "@types/crypto-js": "^4.2.2",
+-    "@types/discord-rpc": "4.0.1",
+-    "@types/html-to-text": "^9.0.4",
+-    "@types/linkify-it": "^5.0.0",
+-    "@types/lodash": "^4.17.16",
+-    "@types/node": "^22.14.0",
+-    "@types/react": "^18.3.20",
+-    "@types/react-dom": "^18.3.6",
+-    "@types/react-lazy-load-image-component": "^1.6.4",
+-    "@vitejs/plugin-react": "^5.1.2",
+-    "autoprefixer": "^10.4.21",
+-    "cypress": "^15.9.0",
+-    "cypress-real-events": "^1.15.0",
+-    "electron": "^40.1.0",
+-    "electron-builder": "^26.4.0",
+-    "electron-vite": "^5.0.0",
+-    "husky": "^9.1.7",
+-    "postcss": "^8.5.3",
+-    "tailwindcss": "^3.4.19",
+-    "terser": "^5.39.0",
+-    "typescript": "^5.8.2",
+-    "vite": "^7.3.1"
+-  },
+-  "pnpm": {
+-    "onlyBuiltDependencies": ["cypress", "electron", "esbuild"],
+-    "overrides": {
+-      "brace-expansion": "^2.0.2",
+-      "glob": "^11.0.0",
+-      "tar": "^7.5.7"
+-    }
+-  },
+-  "electron": {
+-    "window": {
+-      "defaultWidth": 960,
+-      "defaultHeight": 600,
+-      "defaultBgColor": "#060e23"
+-    }
+-  }
+-}
+-
+-
+-
+-=======
+-{
+-  "name": "Sona",
+-  "private": true,
+-  "version": "0.13.1",
+-  "description": "A modern desktop client for Navidrome/Subsonic servers.",
+-  "author": {
+-    "name": "rinderhack"
+-  },
+-  "main": "./out/main/index.js",
+-  "type": "module",
+-  "productName": "Sona",
+-  "scripts": {
+-    "dev": "vite",
+-    "build": "tsc && vite build",
+-    "preview": "vite preview",
+-    "lint": "biome lint",
+-    "lint:fix": "biome lint --write",
+-    "lint:check": "biome check --write",
+-    "lint:format": "biome format --write",
+-    "cy:open": "cypress open",
+-    "test": "cypress run --component",
+-    "electron:start": "electron-vite preview",
+-    "electron:dev": "electron-vite dev",
+-    "electron:build": "electron-vite build",
+-    "postinstall": "electron-builder install-app-deps",
+-    "build:unpack": "npm run electron:build && electron-builder --dir",
+-    "build:win": "npm run electron:build && electron-builder --win",
+-    "build:mac": "npm run electron:build && electron-builder --mac",
+-    "build:linux": "npm run electron:build && electron-builder --linux",
+-    "ci:build:win": "electron-builder --win --publish always",
+-    "ci:build:mac": "electron-builder --mac --publish always",
+-    "ci:build:linux": "electron-builder --linux --publish always",
+-    "prepare": "husky"
+-  },
+-  "repository": {
+-    "url": "https://github.com/sgtspeerock/sona"
+-  },
+-  "dependencies": {
+-    "@chriscodesthings/random-css-hex-color": "^1.1.0",
+-    "@electron-toolkit/preload": "^3.0.1",
+-    "@electron-toolkit/utils": "^4.0.0",
+-    "@hookform/resolvers": "^3.10.0",
+-    "@radix-ui/react-alert-dialog": "^1.1.15",
+-    "@radix-ui/react-aspect-ratio": "^1.1.8",
+-    "@radix-ui/react-avatar": "^1.1.11",
+-    "@radix-ui/react-checkbox": "^1.3.3",
+-    "@radix-ui/react-collapsible": "^1.1.12",
+-    "@radix-ui/react-context-menu": "^2.2.16",
+-    "@radix-ui/react-dialog": "^1.1.15",
+-    "@radix-ui/react-dropdown-menu": "^2.1.16",
+-    "@radix-ui/react-hover-card": "^1.1.15",
+-    "@radix-ui/react-label": "^2.1.8",
+-    "@radix-ui/react-menubar": "^1.1.16",
+-    "@radix-ui/react-popover": "^1.1.15",
+-    "@radix-ui/react-progress": "^1.1.8",
+-    "@radix-ui/react-scroll-area": "^1.2.10",
+-    "@radix-ui/react-select": "^2.2.6",
+-    "@radix-ui/react-separator": "^1.1.8",
+-    "@radix-ui/react-slider": "^1.3.6",
+-    "@radix-ui/react-slot": "^1.2.4",
+-    "@radix-ui/react-switch": "^1.2.6",
+-    "@radix-ui/react-tabs": "^1.1.13",
+-    "@radix-ui/react-tooltip": "^1.2.8",
+-    "@tanstack/react-query": "^5.71.10",
+-    "@tanstack/react-table": "^8.21.2",
+-    "@tanstack/react-virtual": "^3.13.6",
+-    "@virtual-grid/react": "^2.0.3",
+-    "bufferutil": "^4.0.9",
+-    "butterchurn": "^3.0.0-beta.4",
+-    "butterchurn-presets": "^3.0.0-beta.4",
+-    "class-variance-authority": "^0.7.1",
+-    "clsx": "^2.1.1",
+-    "cmdk": "^1.1.1",
+-    "crypto-js": "^4.2.0",
+-    "dayjs": "^1.11.13",
+-    "discord-rpc": "^4.0.1",
+-    "electron-dl": "^4.0.0",
+-    "electron-store": "^11.0.2",
+-    "electron-updater": "^6.7.3",
+-    "embla-carousel-autoplay": "^8.6.0",
+-    "embla-carousel-react": "^8.6.0",
+-    "fast-average-color": "^9.5.0",
+-    "html-to-text": "^9.0.5",
+-    "i18next": "^23.16.8",
+-    "i18next-browser-languagedetector": "^8.0.4",
+-    "idb-keyval": "^6.2.2",
+-    "immer": "^10.1.1",
+-    "linkify-it": "^5.0.0",
+-    "lodash": "^4.17.23",
+-    "lucide-react": "^0.563.0",
+-    "react": "^18.3.1",
+-    "react-country-flag": "^3.1.0",
+-    "react-device-detect": "^2.2.3",
+-    "react-dom": "^18.3.1",
+-    "react-fast-marquee": "^1.6.5",
+-    "react-hook-form": "^7.55.0",
+-    "react-hotkeys-hook": "^4.6.1",
+-    "react-i18next": "^14.1.3",
+-    "react-lazy-load-image-component": "^1.6.3",
+-    "react-lrc": "^3.2.1",
+-    "react-markdown": "^10.1.0",
+-    "react-router-dom": "^6.30.3",
+-    "react-toastify": "^10.0.6",
+-    "remark-gfm": "^4.0.1",
+-    "standardized-audio-context": "^25.3.77",
+-    "tailwind-extended-shadows": "^0.4.1",
+-    "tailwind-extended-shadows-merge": "^0.2.2",
+-    "tailwind-merge": "^2.6.0",
+-    "tailwindcss-animate": "^1.0.7",
+-    "use-debounce": "^10.0.4",
+-    "utf-8-validate": "^6.0.5",
+-    "vaul": "^0.9.9",
+-    "yet-another-react-lightbox": "^3.22.0",
+-    "zod": "^3.24.2",
+-    "zustand": "^4.5.6"
+-  },
+-  "devDependencies": {
+-    "@biomejs/biome": "2.0.6",
+-    "@electron-toolkit/tsconfig": "^1.0.1",
+-    "@types/crypto-js": "^4.2.2",
+-    "@types/discord-rpc": "4.0.1",
+-    "@types/html-to-text": "^9.0.4",
+-    "@types/linkify-it": "^5.0.0",
+-    "@types/lodash": "^4.17.16",
+-    "@types/node": "^22.14.0",
+-    "@types/react": "^18.3.20",
+-    "@types/react-dom": "^18.3.6",
+-    "@types/react-lazy-load-image-component": "^1.6.4",
+-    "@vitejs/plugin-react": "^5.1.2",
+-    "autoprefixer": "^10.4.21",
+-    "cypress": "^15.9.0",
+-    "cypress-real-events": "^1.15.0",
+-    "electron": "^40.1.0",
+-    "electron-builder": "^26.4.0",
+-    "electron-vite": "^5.0.0",
+-    "husky": "^9.1.7",
+-    "postcss": "^8.5.3",
+-    "tailwindcss": "^3.4.19",
+-    "terser": "^5.39.0",
+-    "typescript": "^5.8.2",
+-    "vite": "^7.3.1"
+-  },
+-  "pnpm": {
+-    "onlyBuiltDependencies": [
+-      "cypress",
+-      "electron",
+-      "esbuild"
+-    ],
+-    "overrides": {
+-      "brace-expansion": "^2.0.2",
+-      "glob": "^11.0.0",
+-      "tar": "^7.5.7"
+-    }
+-  },
+-  "electron": {
+-    "window": {
+-      "defaultWidth": 960,
+-      "defaultHeight": 600,
+-      "defaultBgColor": "#060e23"
+-    }
+-  }
+-}
+->>>>>>> Stashed changes
+-
+-
++{
++  "name": "Sona",
++  "private": true,
++  "version": "0.14.0",
++  "description": "A modern desktop client for Navidrome/Subsonic servers.",
++  "author": {
++    "name": "rinderhack"
++  },
++  "main": "./out/main/index.js",
++  "type": "module",
++  "productName": "Sona",
++  "scripts": {
++    "dev": "vite",
++    "build": "tsc && vite build",
++    "preview": "vite preview",
++    "lint": "biome lint",
++    "lint:fix": "biome lint --write",
++    "lint:check": "biome check --write",
++    "lint:format": "biome format --write",
++    "cy:open": "cypress open",
++    "test": "cypress run --component",
++    "electron:start": "electron-vite preview",
++    "electron:dev": "electron-vite dev",
++    "electron:build": "electron-vite build",
++    "postinstall": "electron-builder install-app-deps",
++    "build:unpack": "npm run electron:build && electron-builder --dir",
++    "build:win": "npm run electron:build && electron-builder --win",
++    "build:mac": "npm run electron:build && electron-builder --mac",
++    "build:linux": "npm run electron:build && electron-builder --linux",
++    "ci:build:win": "electron-builder --win --publish always",
++    "ci:build:mac": "electron-builder --mac --publish always",
++    "ci:build:linux": "electron-builder --linux --publish always",
++    "prepare": "husky"
++  },
++  "repository": {
++    "url": "https://github.com/sgtspeerock/sona"
++  },
++  "dependencies": {
++    "@chriscodesthings/random-css-hex-color": "^1.1.0",
++    "@dnd-kit/core": "^6.3.1",
++    "@dnd-kit/sortable": "^10.0.0",
++    "@dnd-kit/utilities": "^3.2.2",
++    "@electron-toolkit/preload": "^3.0.1",
++    "@electron-toolkit/utils": "^4.0.0",
++    "@hookform/resolvers": "^3.10.0",
++    "@radix-ui/react-alert-dialog": "^1.1.15",
++    "@radix-ui/react-aspect-ratio": "^1.1.8",
++    "@radix-ui/react-avatar": "^1.1.11",
++    "@radix-ui/react-checkbox": "^1.3.3",
++    "@radix-ui/react-collapsible": "^1.1.12",
++    "@radix-ui/react-context-menu": "^2.2.16",
++    "@radix-ui/react-dialog": "^1.1.15",
++    "@radix-ui/react-dropdown-menu": "^2.1.16",
++    "@radix-ui/react-hover-card": "^1.1.15",
++    "@radix-ui/react-label": "^2.1.8",
++    "@radix-ui/react-menubar": "^1.1.16",
++    "@radix-ui/react-popover": "^1.1.15",
++    "@radix-ui/react-scroll-area": "^1.2.10",
++    "@radix-ui/react-select": "^2.2.6",
++    "@radix-ui/react-separator": "^1.1.8",
++    "@radix-ui/react-slider": "^1.3.6",
++    "@radix-ui/react-slot": "^1.2.4",
++    "@radix-ui/react-switch": "^1.2.6",
++    "@radix-ui/react-tabs": "^1.1.13",
++    "@radix-ui/react-tooltip": "^1.2.8",
++    "@tanstack/react-query": "^5.71.10",
++    "@tanstack/react-table": "^8.21.2",
++    "@tanstack/react-virtual": "^3.13.6",
++    "@virtual-grid/react": "^2.0.3",
++    "bufferutil": "^4.0.9",
++    "butterchurn": "^3.0.0-beta.4",
++    "butterchurn-presets": "^3.0.0-beta.4",
++    "class-variance-authority": "^0.7.1",
++    "clsx": "^2.1.1",
++    "cmdk": "^1.1.1",
++    "crypto-js": "^4.2.0",
++    "dayjs": "^1.11.13",
++    "discord-rpc": "^4.0.1",
++    "electron-dl": "^4.0.0",
++    "electron-store": "^11.0.2",
++    "electron-updater": "^6.7.3",
++    "embla-carousel-autoplay": "^8.6.0",
++    "embla-carousel-react": "^8.6.0",
++    "fast-average-color": "^9.5.0",
++    "html-to-text": "^9.0.5",
++    "i18next": "^23.16.8",
++    "i18next-browser-languagedetector": "^8.0.4",
++    "idb-keyval": "^6.2.2",
++    "immer": "^10.1.1",
++    "linkify-it": "^5.0.0",
++    "lodash": "^4.17.23",
++    "lucide-react": "^0.563.0",
++    "react": "^18.3.1",
++    "react-country-flag": "^3.1.0",
++    "react-device-detect": "^2.2.3",
++    "react-dom": "^18.3.1",
++    "react-fast-marquee": "^1.6.5",
++    "react-hook-form": "^7.55.0",
++    "react-hotkeys-hook": "^4.6.1",
++    "react-i18next": "^14.1.3",
++    "react-lazy-load-image-component": "^1.6.3",
++    "react-lrc": "^3.2.1",
++    "react-markdown": "^10.1.0",
++    "react-router-dom": "^6.30.3",
++    "react-toastify": "^10.0.6",
++    "remark-gfm": "^4.0.1",
++    "standardized-audio-context": "^25.3.77",
++    "tailwind-extended-shadows": "^0.4.1",
++    "tailwind-extended-shadows-merge": "^0.2.2",
++    "tailwind-merge": "^2.6.0",
++    "tailwindcss-animate": "^1.0.7",
++    "use-debounce": "^10.0.4",
++    "utf-8-validate": "^6.0.5",
++    "vaul": "^0.9.9",
++    "yet-another-react-lightbox": "^3.22.0",
++    "zod": "^3.24.2",
++    "zustand": "^4.5.6"
++  },
++  "devDependencies": {
++    "@biomejs/biome": "2.0.6",
++    "@electron-toolkit/tsconfig": "^1.0.1",
++    "@types/crypto-js": "^4.2.2",
++    "@types/discord-rpc": "4.0.1",
++    "@types/html-to-text": "^9.0.4",
++    "@types/linkify-it": "^5.0.0",
++    "@types/lodash": "^4.17.16",
++    "@types/node": "^22.14.0",
++    "@types/react": "^18.3.20",
++    "@types/react-dom": "^18.3.6",
++    "@types/react-lazy-load-image-component": "^1.6.4",
++    "@vitejs/plugin-react": "^5.1.2",
++    "autoprefixer": "^10.4.21",
++    "cypress": "^15.9.0",
++    "cypress-real-events": "^1.15.0",
++    "electron": "^40.1.0",
++    "electron-builder": "^26.4.0",
++    "electron-vite": "^5.0.0",
++    "husky": "^9.1.7",
++    "postcss": "^8.5.3",
++    "tailwindcss": "^3.4.19",
++    "terser": "^5.39.0",
++    "typescript": "^5.8.2",
++    "vite": "^7.3.1"
++  },
++  "pnpm": {
++    "onlyBuiltDependencies": [
++      "cypress",
++      "electron",
++      "esbuild"
++    ],
++    "overrides": {
++      "brace-expansion": "^2.0.2",
++      "glob": "^11.0.0",
++      "tar": "^7.5.7"
++    }
++  },
++  "electron": {
++    "window": {
++      "defaultWidth": 1100,
++      "defaultHeight": 600,
++      "defaultBgColor": "#060e23"
++    }
++  }
++}
+\ No newline at end of file
+diff --git a/pnpm-lock.yaml b/pnpm-lock.yaml
+index c8fa9dc..3021555 100644
+--- a/pnpm-lock.yaml
++++ b/pnpm-lock.yaml
+@@ -16,6 +16,15 @@ importers:
+       '@chriscodesthings/random-css-hex-color':
+         specifier: ^1.1.0
+         version: 1.1.0
++      '@dnd-kit/core':
++        specifier: ^6.3.1
++        version: 6.3.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
++      '@dnd-kit/sortable':
++        specifier: ^10.0.0
++        version: 10.0.0(@dnd-kit/core@6.3.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)
++      '@dnd-kit/utilities':
++        specifier: ^3.2.2
++        version: 3.2.2(react@18.3.1)
+       '@electron-toolkit/preload':
+         specifier: ^3.0.1
+         version: 3.0.1(electron@40.1.0)
+@@ -519,6 +528,28 @@ packages:
+     resolution: {integrity: sha512-0cp4PsWQ/9avqTVMCtZ+GirikIA36ikvjtHweU4/j8yLtgObI0+JUPhYFScgwlteveGB1rt3Cm8UhN04XayDig==}
+     engines: {node: '>= 8.9.0'}
+ 
++  '@dnd-kit/accessibility@3.1.1':
++    resolution: {integrity: sha512-2P+YgaXF+gRsIihwwY1gCsQSYnu9Zyj2py8kY5fFvUM1qm2WA2u639R6YNVfU4GWr+ZM5mqEsfHZZLoRONbemw==}
++    peerDependencies:
++      react: '>=16.8.0'
++
++  '@dnd-kit/core@6.3.1':
++    resolution: {integrity: sha512-xkGBRQQab4RLwgXxoqETICr6S5JlogafbhNsidmrkVv2YRs5MLwpjoF2qpiGjQt8S9AoxtIV603s0GIUpY5eYQ==}
++    peerDependencies:
++      react: '>=16.8.0'
++      react-dom: '>=16.8.0'
++
++  '@dnd-kit/sortable@10.0.0':
++    resolution: {integrity: sha512-+xqhmIIzvAYMGfBYYnbKuNicfSsk4RksY2XdmJhT+HAC01nix6fHCztU68jooFiMUB01Ky3F0FyOvhG/BZrWkg==}
++    peerDependencies:
++      '@dnd-kit/core': ^6.3.0
++      react: '>=16.8.0'
++
++  '@dnd-kit/utilities@3.2.2':
++    resolution: {integrity: sha512-+MKAJEOfaBe5SmV6t34p80MMKhjvUz0vRrvVJbPT0WElzaOJ/1xs+D+KDv+tD/NE5ujfrChEcshd4fLn0wpiqg==}
++    peerDependencies:
++      react: '>=16.8.0'
++
+   '@electron-toolkit/preload@3.0.1':
+     resolution: {integrity: sha512-EzoQmpK8jqqU8YnM5jRe0GJjGVJPke2KtANqz8QtN2JPT96ViOvProBdK5C6riCm0j1T8jjAGVQCZLQy9OVoIA==}
+     peerDependencies:
+@@ -5022,6 +5053,31 @@ snapshots:
+       ajv: 6.12.6
+       ajv-keywords: 3.5.2(ajv@6.12.6)
+ 
++  '@dnd-kit/accessibility@3.1.1(react@18.3.1)':
++    dependencies:
++      react: 18.3.1
++      tslib: 2.8.1
++
++  '@dnd-kit/core@6.3.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
++    dependencies:
++      '@dnd-kit/accessibility': 3.1.1(react@18.3.1)
++      '@dnd-kit/utilities': 3.2.2(react@18.3.1)
++      react: 18.3.1
++      react-dom: 18.3.1(react@18.3.1)
++      tslib: 2.8.1
++
++  '@dnd-kit/sortable@10.0.0(@dnd-kit/core@6.3.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)':
++    dependencies:
++      '@dnd-kit/core': 6.3.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
++      '@dnd-kit/utilities': 3.2.2(react@18.3.1)
++      react: 18.3.1
++      tslib: 2.8.1
++
++  '@dnd-kit/utilities@3.2.2(react@18.3.1)':
++    dependencies:
++      react: 18.3.1
++      tslib: 2.8.1
++
+   '@electron-toolkit/preload@3.0.1(electron@40.1.0)':
+     dependencies:
+       electron: 40.1.0
+diff --git a/src/app/components/album/image-header.tsx b/src/app/components/album/image-header.tsx
+index bf85261..973a691 100644
+--- a/src/app/components/album/image-header.tsx
++++ b/src/app/components/album/image-header.tsx
+@@ -89,12 +89,31 @@ export default function ImageHeader({
+               <AlbumHeaderFallback />
+             </div>
+           )}
++
++          {/* Blurred background image */}
++          {!isLoading && src && (
++            <div className="absolute inset-0 z-0 overflow-hidden">
++              <img
++                src={src}
++                alt=""
++                aria-hidden="true"
++                className="w-full h-full object-cover scale-125"
++                style={{ filter: 'blur(24px)' }}
++              />
++              {bgColor && (
++                <div
++                  className="absolute inset-0"
++                  style={{ backgroundColor: bgColor, opacity: 0.4 }}
++                />
++              )}
++            </div>
++          )}
++
+           <div
+             className={cn(
+-              'w-full px-8 py-6 flex gap-4 absolute inset-0',
+-              'bg-gradient-to-b from-background/20 to-background/50',
++              'w-full px-8 py-6 flex gap-4 absolute inset-0 z-10',
++              'bg-gradient-to-b from-background/10 to-background/70',
+             )}
+-            style={{ backgroundColor: bgColor }}
+           >
+             <div
+               className={cn(
+diff --git a/src/app/components/artist/options.tsx b/src/app/components/artist/options.tsx
+index 87b162d..6feb1e2 100644
+--- a/src/app/components/artist/options.tsx
++++ b/src/app/components/artist/options.tsx
+@@ -1,4 +1,4 @@
+-import { Rabbit } from 'lucide-react'
++import { Copy, Rabbit } from 'lucide-react'
+ import { useTranslation } from 'react-i18next'
+ import { useRabbitHole } from '@/app/hooks/use-rabbit-hole'
+ import { OptionsButtons } from '@/app/components/options/buttons'
+@@ -42,6 +42,10 @@ export function ArtistOptions({ artist }: ArtistOptionsProps) {
+     startDownload(artist.id)
+   }
+ 
++  function handleCopyArtist() {
++    navigator.clipboard.writeText(artist.name)
++  }
++
+   function handleRabbitHole() {
+     startRabbitHole({
+       type: 'artist',
+@@ -70,6 +74,13 @@ export function ArtistOptions({ artist }: ArtistOptionsProps) {
+           <span>{t('rabbitHole.button')}</span>
+         </DropdownMenuItem>
+       </DropdownMenuGroup>
++      <DropdownMenuSeparator />
++      <DropdownMenuGroup>
++        <DropdownMenuItem onClick={handleCopyArtist} className="gap-2">
++          <Copy className="h-4 w-4" />
++          <span>Copy Artist Name</span>
++        </DropdownMenuItem>
++      </DropdownMenuGroup>
+     </>
+   )
+ }
+diff --git a/src/app/components/home/carousel/album-header.tsx b/src/app/components/home/carousel/album-header.tsx
+index d0eca07..71140d6 100644
+--- a/src/app/components/home/carousel/album-header.tsx
++++ b/src/app/components/home/carousel/album-header.tsx
+@@ -2,6 +2,7 @@ import Autoplay from 'embla-carousel-autoplay'
+ import { useState, useEffect } from 'react'
+ import { Link } from 'react-router-dom'
+ import { Play } from 'lucide-react'
++import { useTranslation } from 'react-i18next'
+ import { ImageLoader } from '@/app/components/image-loader'
+ import { OnRepeatItem } from '@/app/components/home/carousel/on-repeat-item'
+ import {
+@@ -27,6 +28,7 @@ interface AlbumHeaderProps {
+ }
+ 
+ function AlbumHeaderItem({ album }: { album: Albums }) {
++  const { t } = useTranslation()
+   const { setSongList } = usePlayerActions()
+   const [imageLoaded, setImageLoaded] = useState(false)
+ 
+@@ -38,7 +40,7 @@ function AlbumHeaderItem({ album }: { album: Albums }) {
+   }
+ 
+   return (
+-    <div className="relative w-full h-[250px] 2xl:h-[300px] overflow-hidden">
++    <div className="relative w-full h-[200px] sm:h-[250px] 2xl:h-[300px] overflow-hidden">
+       {/* Background Image with Blur */}
+       <ImageLoader id={album.coverArt} type="album">
+         {(src) => (
+@@ -53,7 +55,7 @@ function AlbumHeaderItem({ album }: { album: Albums }) {
+       </ImageLoader>
+ 
+       {/* Content */}
+-      <div className="relative h-full flex items-center gap-6 px-8 z-10">
++      <div className="relative h-full flex items-center gap-4 sm:gap-6 px-4 sm:px-8 z-10">
+         {/* Album Cover */}
+         <Link
+           to={ROUTES.ALBUM.PAGE(album.id)}
+@@ -65,7 +67,7 @@ function AlbumHeaderItem({ album }: { album: Albums }) {
+                 src={src}
+                 alt={album.name}
+                 className={cn(
+-                  'w-[180px] h-[180px] 2xl:w-[220px] 2xl:h-[220px] rounded-lg shadow-2xl object-cover transition-all duration-300 group-hover:scale-105',
++                  'w-[120px] h-[120px] sm:w-[160px] sm:h-[160px] 2xl:w-[220px] 2xl:h-[220px] rounded-lg shadow-2xl object-cover transition-all duration-300 group-hover:scale-105',
+                   imageLoaded ? 'opacity-100' : 'opacity-0'
+                 )}
+                 onLoad={() => setImageLoaded(true)}
+@@ -75,28 +77,28 @@ function AlbumHeaderItem({ album }: { album: Albums }) {
+         </Link>
+ 
+         {/* Album Info */}
+-        <div className="flex-1 flex flex-col gap-3 min-w-0">
++        <div className="flex-1 flex flex-col gap-2 sm:gap-3 min-w-0">
+           <div>
+-            <p className="text-sm text-muted-foreground mb-2">
+-              Recommended album
++            <p className="text-xs sm:text-sm text-muted-foreground mb-1 sm:mb-2">
++              {t('home.recommendedAlbum')}
+             </p>
+             <Link
+               to={ROUTES.ALBUM.PAGE(album.id)}
+               className="hover:underline"
+             >
+-              <h2 className="text-4xl 2xl:text-5xl font-bold truncate">
++              <h2 className="text-2xl sm:text-3xl lg:text-4xl 2xl:text-5xl font-bold truncate">
+                 {album.name}
+               </h2>
+             </Link>
+             <Link
+               to={ROUTES.ARTIST.PAGE(album.artistId || '')}
+-              className="text-xl text-muted-foreground hover:text-primary hover:underline inline-block mt-1"
++              className="text-base sm:text-xl text-muted-foreground hover:text-primary hover:underline inline-block mt-1"
+             >
+               {album.artist}
+             </Link>
+           </div>
+ 
+-          <div className="flex items-center gap-3">
++          <div className="hidden sm:flex items-center gap-3">
+             {album.genre && (
+               <span className="px-3 py-1 text-xs rounded-full bg-primary/10 text-primary">
+                 {album.genre}
+@@ -109,7 +111,7 @@ function AlbumHeaderItem({ album }: { album: Albums }) {
+             )}
+             {album.songCount && (
+               <span className="text-sm text-muted-foreground">
+-                {album.songCount} {album.songCount === 1 ? 'song' : 'songs'}
++                {t('playlist.songCount', { count: album.songCount })}
+               </span>
+             )}
+           </div>
+@@ -117,10 +119,10 @@ function AlbumHeaderItem({ album }: { album: Albums }) {
+           <Button
+             onClick={handlePlayAlbum}
+             className="w-fit gap-2"
+-            size="lg"
++            size="sm"
+           >
+-            <Play className="w-5 h-5" fill="currentColor" />
+-            Play Album
++            <Play className="w-4 h-4" fill="currentColor" />
++            {t('options.play')}
+           </Button>
+         </div>
+       </div>
+@@ -136,23 +138,11 @@ export default function AlbumHeader({
+   const [api, setApi] = useState<CarouselApi>()
+   const { data: onRepeat, isLoading: onRepeatLoading, error: onRepeatError } = useOnRepeat()
+ 
+-  // Debug logging
+-  useEffect(() => {
+-    console.log('[AlbumHeader] On Repeat Status:', {
+-      isLoading: onRepeatLoading,
+-      hasData: !!onRepeat,
+-      hasSong: !!onRepeat?.song,
+-      error: onRepeatError,
+-      data: onRepeat,
+-    })
+-  }, [onRepeat, onRepeatLoading, onRepeatError])
+-
+   // Combine On Repeat with albums
+   const carouselItems = []
+   
+   // Add On Repeat as first item if available
+   if (onRepeat?.song) {
+-    console.log('[AlbumHeader] Adding On Repeat to carousel:', onRepeat)
+     carouselItems.push({
+       type: 'onRepeat' as const,
+       data: onRepeat,
+@@ -167,8 +157,6 @@ export default function AlbumHeader({
+     })
+   })
+ 
+-  console.log('[AlbumHeader] Total carousel items:', carouselItems.length, carouselItems)
+-
+   if (carouselItems.length === 0 && !onRepeatLoading) return null
+ 
+   return (
+diff --git a/src/app/components/home/carousel/on-repeat-item.tsx b/src/app/components/home/carousel/on-repeat-item.tsx
+index 5960623..11fc330 100644
+--- a/src/app/components/home/carousel/on-repeat-item.tsx
++++ b/src/app/components/home/carousel/on-repeat-item.tsx
+@@ -1,5 +1,6 @@
+ import { useState } from 'react'
+ import { Link } from 'react-router-dom'
++import { useTranslation } from 'react-i18next'
+ import { Play, Repeat } from 'lucide-react'
+ import { ImageLoader } from '@/app/components/image-loader'
+ import { Button } from '@/app/components/ui/button'
+@@ -14,6 +15,7 @@ interface OnRepeatItemProps {
+ }
+ 
+ export function OnRepeatItem({ song, playcount }: OnRepeatItemProps) {
++  const { t } = useTranslation()
+   const { setSongList } = usePlayerActions()
+   const [imageLoaded, setImageLoaded] = useState(false)
+ 
+@@ -71,7 +73,7 @@ export function OnRepeatItem({ song, playcount }: OnRepeatItemProps) {
+             <div className="flex items-center gap-2 mb-2">
+               <Repeat className="w-4 h-4 text-primary" />
+               <p className="text-sm text-primary font-medium">
+-                Your most played track this week
++                {t('home.mostPlayedTrack')}
+               </p>
+             </div>
+             <Link
+@@ -92,7 +94,7 @@ export function OnRepeatItem({ song, playcount }: OnRepeatItemProps) {
+ 
+           <div className="flex items-center gap-3">
+             <span className="px-3 py-1 text-xs rounded-full bg-primary/10 text-primary font-medium">
+-              {playcount} {playcount === 1 ? 'play' : 'plays'} this week
++              {t('home.playsThisWeek', { count: playcount })}
+             </span>
+             {song.genre && (
+               <span className="px-3 py-1 text-xs rounded-full bg-muted">
+@@ -112,7 +114,7 @@ export function OnRepeatItem({ song, playcount }: OnRepeatItemProps) {
+             size="lg"
+           >
+             <Play className="w-5 h-5" fill="currentColor" />
+-            Play Now
++            {t('home.playNow')}
+           </Button>
+         </div>
+       </div>
+diff --git a/src/app/components/home/discover-weekly-card.tsx b/src/app/components/home/discover-weekly-card.tsx
+index 2ced97a..72f06c6 100644
+--- a/src/app/components/home/discover-weekly-card.tsx
++++ b/src/app/components/home/discover-weekly-card.tsx
+@@ -1,5 +1,6 @@
+ import { Calendar, Music, Play, Info } from 'lucide-react'
+ import { Link } from 'react-router-dom'
++import { useTranslation } from 'react-i18next'
+ import { Button } from '@/app/components/ui/button'
+ import { ImageLoader } from '@/app/components/image-loader'
+ import { useDiscoverWeekly } from '@/app/hooks/use-discover-weekly'
+@@ -7,6 +8,7 @@ import { usePlayerActions } from '@/store/player.store'
+ import { ROUTES } from '@/routes/routesList'
+ 
+ export function DiscoverWeeklyCard() {
++  const { t } = useTranslation()
+   const { playlist, isGenerating, error, isConfigured } = useDiscoverWeekly()
+   const { setSongList } = usePlayerActions()
+ 
+@@ -16,9 +18,9 @@ export function DiscoverWeeklyCard() {
+         <div className="relative h-full flex items-center justify-center p-8 z-10">
+           <div className="text-center max-w-sm">
+             <Info className="h-6 w-6 mx-auto mb-2 text-muted-foreground" />
+-            <h3 className="font-semibold mb-1 text-sm">Discover Weekly</h3>
++            <h3 className="font-semibold mb-1 text-sm">{t('home.discoverWeekly')}</h3>
+             <p className="text-xs text-muted-foreground">
+-              Configure Last.fm in Settings → Integrations
++              {t('home.configureLastfm')}
+             </p>
+           </div>
+         </div>
+@@ -45,7 +47,7 @@ export function DiscoverWeeklyCard() {
+         <div className="relative h-full flex items-center justify-center z-10">
+           <div className="flex flex-col items-center gap-2">
+             <Calendar className="h-6 w-6 animate-pulse text-muted-foreground" />
+-            <span className="text-xs text-muted-foreground">Loading...</span>
++            <span className="text-xs text-muted-foreground">{t('generic.loading')}</span>
+           </div>
+         </div>
+       </div>
+@@ -59,9 +61,9 @@ export function DiscoverWeeklyCard() {
+         <div className="relative h-full flex items-center justify-center p-8 z-10">
+           <div className="text-center">
+             <Calendar className="h-8 w-8 mx-auto mb-3 text-muted-foreground" />
+-            <h3 className="font-semibold mb-2 text-sm">Discover Weekly</h3>
++            <h3 className="font-semibold mb-2 text-sm">{t('home.discoverWeekly')}</h3>
+             <p className="text-xs text-muted-foreground">
+-              Your weekly playlist will be generated soon
++              {t('home.weeklyMixSoon')}
+             </p>
+           </div>
+         </div>
+@@ -97,63 +99,66 @@ export function DiscoverWeeklyCard() {
+       )}
+ 
+       {/* Content */}
+-      <div className="relative h-full flex items-center gap-6 px-8 z-10">
++      <div className="relative h-full flex items-stretch gap-4 sm:gap-6 px-4 sm:px-8 z-10">
+         {/* Cover Image - Left Side - Linked to Discover Weekly page */}
+-        <Link
+-          to={ROUTES.LIBRARY.DISCOVER_WEEKLY}
+-          className="flex-shrink-0 relative"
+-        >
+-          {coverArt ? (
+-            <ImageLoader id={coverArt} type="album" size="300">
+-              {(src, isLoadingImage) => (
+-                <>
+-                  {src && (
+-                    <img
+-                      src={src}
+-                      alt="Discover Weekly"
+-                      className="w-[180px] h-[180px] 2xl:w-[220px] 2xl:h-[220px] rounded-lg shadow-2xl object-cover cursor-pointer transition-transform hover:scale-105"
+-                    />
+-                  )}
+-                  {!src && !isLoadingImage && (
+-                    <div className="w-[180px] h-[180px] 2xl:w-[220px] 2xl:h-[220px] rounded-lg shadow-2xl bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center">
+-                      <Calendar className="h-16 w-16 text-muted-foreground" />
+-                    </div>
+-                  )}
+-                </>
+-              )}
+-            </ImageLoader>
+-          ) : (
+-            <div className="w-[180px] h-[180px] 2xl:w-[220px] 2xl:h-[220px] rounded-lg shadow-2xl bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center">
+-              <Calendar className="h-16 w-16 text-muted-foreground" />
+-            </div>
+-          )}
+-        </Link>
++        <div className="flex-shrink-0 flex items-center">
++          <Link
++            to={ROUTES.LIBRARY.DISCOVER_WEEKLY}
++            className="relative"
++          >
++            {coverArt ? (
++              <ImageLoader id={coverArt} type="album" size="300">
++                {(src, isLoadingImage) => (
++                  <>
++                    {src && (
++                      <img
++                        src={src}
++                        alt={t('home.discoverWeekly')}
++                        className="w-[120px] h-[120px] sm:w-[160px] sm:h-[160px] 2xl:w-[220px] 2xl:h-[220px] rounded-lg shadow-2xl object-cover cursor-pointer transition-transform hover:scale-105"
++                      />
++                    )}
++                    {!src && !isLoadingImage && (
++                      <div className="w-[120px] h-[120px] sm:w-[160px] sm:h-[160px] 2xl:w-[220px] 2xl:h-[220px] rounded-lg shadow-2xl bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center">
++                        <Calendar className="h-16 w-16 text-muted-foreground" />
++                      </div>
++                    )}
++                  </>
++                )}
++              </ImageLoader>
++            ) : (
++              <div className="w-[120px] h-[120px] sm:w-[160px] sm:h-[160px] 2xl:w-[220px] 2xl:h-[220px] rounded-lg shadow-2xl bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center">
++                <Calendar className="h-16 w-16 text-muted-foreground" />
++              </div>
++            )}
++          </Link>
++        </div>
+ 
+         {/* Info - Right Side */}
+-        <div className="flex-1 flex flex-col gap-3 min-w-0">
++        <div className="flex-1 flex flex-col justify-between min-w-0 py-6 sm:py-8" style={{ containerType: 'inline-size' }}>
+           <div>
+-            <p className="text-sm text-muted-foreground mb-2">
+-              Your Weekly Mix
++            <p className="text-xs sm:text-sm text-muted-foreground mb-1 sm:mb-2">
++              {t('home.weeklyMix')}
+             </p>
+-            <h2 className="text-4xl 2xl:text-5xl font-bold leading-tight">
+-              Discover<br />Weekly
++            <h2 className="font-bold leading-none" style={{ fontSize: 'clamp(1.5rem, 10cqi, 4.5rem)' }}>
++              {t('home.discoverWeekly').split(' ').map((word, i) => (
++                <span key={i} className="block">{word}</span>
++              ))}
+             </h2>
+           </div>
+ 
+-          <div className="flex items-center gap-3">
++          <div className="flex flex-col gap-2">
+             <span className="text-sm text-muted-foreground">
+-              {playlist.length} {playlist.length === 1 ? 'song' : 'songs'}
++              {t('playlist.songCount', { count: playlist.length })}
+             </span>
++            <Button
++              onClick={handlePlay}
++              className="w-fit gap-2"
++              size="sm"
++            >
++              <Play className="w-4 h-4" fill="currentColor" />
++              {t('options.play')}
++            </Button>
+           </div>
+-
+-          <Button
+-            onClick={handlePlay}
+-            className="w-fit gap-2"
+-            size="lg"
+-          >
+-            <Play className="w-5 h-5" fill="currentColor" />
+-            Play
+-          </Button>
+         </div>
+       </div>
+     </div>
+diff --git a/src/app/components/home/genre-discovery.tsx b/src/app/components/home/genre-discovery.tsx
+index 7f78109..03f05cc 100644
+--- a/src/app/components/home/genre-discovery.tsx
++++ b/src/app/components/home/genre-discovery.tsx
+@@ -1,163 +1,84 @@
+-import { useEffect, useState } from 'react'
+-import { useGetGenreDiscovery, useGetAlbumsByGenre } from '@/app/hooks/use-home'
+ import { Link } from 'react-router-dom'
+-import { ROUTES } from '@/routes/routesList'
+ import { Music } from 'lucide-react'
++import { useTranslation } from 'react-i18next'
+ import { Skeleton } from '@/app/components/ui/skeleton'
+-import { PreviewCard } from '@/app/components/preview-card/card'
+ import { ImageLoader } from '@/app/components/image-loader'
+-import {
+-  Carousel,
+-  type CarouselApi,
+-  CarouselContent,
+-  CarouselItem,
+-} from '@/app/components/ui/carousel'
+-import { CarouselButton } from '@/app/components/ui/carousel-button'
+-import { subsonic } from '@/service/subsonic'
+-import { usePlayerActions } from '@/store/player.store'
+-import { Albums } from '@/types/responses/album'
++import { useGetGenreDiscovery, useGetAlbumsByGenre } from '@/app/hooks/use-home'
++import { ROUTES } from '@/routes/routesList'
++
++const gradients = [
++  'from-purple-500/20 to-pink-500/20',
++  'from-blue-500/20 to-cyan-500/20',
++  'from-orange-500/20 to-red-500/20',
++]
+ 
+-interface GenreRowProps {
++const iconColors = [
++  'text-purple-400',
++  'text-blue-400',
++  'text-orange-400',
++]
++
++interface GenreCardProps {
+   genre: string
+   index: number
+ }
+ 
+-function GenreRow({ genre, index }: GenreRowProps) {
+-  const { data, isLoading } = useGetAlbumsByGenre(genre, 16)
+-  const { setSongList } = usePlayerActions()
+-  const [api, setApi] = useState<CarouselApi>()
+-  const [canScrollPrev, setCanScrollPrev] = useState<boolean>(false)
+-  const [canScrollNext, setCanScrollNext] = useState<boolean>(false)
+-
+-  useEffect(() => {
+-    if (!api) return
+-
+-    setCanScrollPrev(api.canScrollPrev())
+-    setCanScrollNext(api.canScrollNext())
+-
+-    api.on('select', () => {
+-      setCanScrollPrev(api.canScrollPrev())
+-      setCanScrollNext(api.canScrollNext())
+-    })
+-  }, [api])
+-
+-  async function handlePlayAlbum(album: Albums) {
+-    const response = await subsonic.albums.getOne(album.id)
+-    if (response) {
+-      setSongList(response.song, 0)
+-    }
+-  }
+-
+-  if (isLoading) {
+-    return (
+-      <div className="mb-6">
+-        <div className="flex items-center justify-between mb-4">
+-          <Skeleton className="h-8 w-48" />
+-          <div className="flex gap-2">
+-            <Skeleton className="w-8 h-8 rounded-full" />
+-            <Skeleton className="w-8 h-8 rounded-full" />
+-          </div>
+-        </div>
+-        <div className="flex gap-4">
+-          {[...Array(6)].map((_, i) => (
+-            <div key={i} className="basis-1/6">
+-              <Skeleton className="aspect-square rounded-lg" />
+-              <Skeleton className="h-4 w-full mt-2" />
+-              <Skeleton className="h-3 w-2/3 mt-1" />
+-            </div>
+-          ))}
+-        </div>
+-      </div>
+-    )
+-  }
+-
+-  if (!data?.list || data.list.length === 0) return null
+-
+-  const gradients = [
+-    'from-purple-500/10 to-pink-500/10',
+-    'from-blue-500/10 to-cyan-500/10',
+-    'from-orange-500/10 to-red-500/10',
+-  ]
++function GenreCard({ genre, index }: GenreCardProps) {
++  const { t } = useTranslation()
++  const { data, isLoading } = useGetAlbumsByGenre(genre, 6)
++  const albums = data?.list?.slice(0, 3) ?? []
+ 
+   return (
+-    <div className="mb-6">
+-      <div className="flex items-center justify-between mb-4">
+-        <div className="flex items-center gap-3">
+-          <div
+-            className={`p-2 rounded-lg bg-gradient-to-br ${gradients[index % 3]}`}
+-          >
+-            <Music className="w-5 h-5" />
+-          </div>
+-          <div>
+-            <h3 className="text-xl font-semibold">{genre}</h3>
+-            <p className="text-sm text-muted-foreground">
+-              Based on your listening
+-            </p>
++    <Link
++      to={ROUTES.ALBUMS.GENRE(genre)}
++      className="group block"
++    >
++      <div
++        className={`relative rounded-xl overflow-hidden bg-gradient-to-br ${gradients[index % 3]} border border-border/50 h-[148px] sm:h-[164px] hover:border-primary/40 transition-colors p-4`}
++      >
++        <div className="flex justify-between h-full">
++          {/* Left: icon + name + count + link hint */}
++          <div className="flex flex-col justify-between min-w-0 pr-3">
++            <div>
++              <Music className={`w-4 h-4 mb-2 ${iconColors[index % 3]}`} />
++              <h3 className="text-base font-bold leading-snug truncate">{genre}</h3>
++              {data?.list && (
++                <p className="text-xs text-muted-foreground mt-0.5">
++                  {t('genres.albumCount', { count: data.list.length })}
++                </p>
++              )}
++              {isLoading && <Skeleton className="h-3 w-16 mt-1" />}
++            </div>
++            <span className="text-xs text-muted-foreground group-hover:text-primary transition-colors">
++              {t('home.browse')}
++            </span>
+           </div>
+-        </div>
+-        <div className="flex items-center gap-4">
+-          <Link
+-            to={`${ROUTES.ALBUMS.INDEX}?genre=${encodeURIComponent(genre)}`}
+-            className="text-sm text-muted-foreground hover:text-primary hover:underline"
+-          >
+-            See all
+-          </Link>
+-          <div className="flex gap-2">
+-            <CarouselButton
+-              direction="prev"
+-              disabled={!canScrollPrev}
+-              onClick={() => api?.scrollPrev()}
+-            />
+-            <CarouselButton
+-              direction="next"
+-              disabled={!canScrollNext}
+-              onClick={() => api?.scrollNext()}
+-            />
++
++          {/* Right: stacked album thumbs */}
++          <div className="flex flex-col gap-1.5 justify-center flex-shrink-0">
++            {isLoading
++              ? [...Array(3)].map((_, i) => (
++                  <Skeleton key={i} className="w-11 h-11 rounded-md" />
++                ))
++              : albums.map((album) => (
++                  <ImageLoader key={album.id} id={album.coverArt} type="album" size="150">
++                    {(src) =>
++                      src ? (
++                        <img
++                          src={src}
++                          alt={album.name}
++                          className="w-11 h-11 rounded-md object-cover shadow-md"
++                        />
++                      ) : (
++                        <div className="w-11 h-11 rounded-md bg-muted" />
++                      )
++                    }
++                  </ImageLoader>
++                ))}
+           </div>
+         </div>
+       </div>
+-
+-      <div className="transform-gpu">
+-        <Carousel
+-          opts={{
+-            align: 'start',
+-            slidesToScroll: 'auto',
+-          }}
+-          setApi={setApi}
+-        >
+-          <CarouselContent>
+-            {data.list.map((album) => (
+-              <CarouselItem
+-                key={album.id}
+-                className="basis-1/6 2xl:basis-1/8"
+-              >
+-                <PreviewCard.Root>
+-                  <PreviewCard.ImageWrapper link={ROUTES.ALBUM.PAGE(album.id)}>
+-                    <ImageLoader id={album.coverArt} type="album">
+-                      {(src) => <PreviewCard.Image src={src} alt={album.name} />}
+-                    </ImageLoader>
+-                    <PreviewCard.PlayButton
+-                      onClick={() => handlePlayAlbum(album)}
+-                    />
+-                  </PreviewCard.ImageWrapper>
+-                  <PreviewCard.InfoWrapper>
+-                    <PreviewCard.Title link={ROUTES.ALBUM.PAGE(album.id)}>
+-                      {album.name}
+-                    </PreviewCard.Title>
+-                    <PreviewCard.Subtitle
+-                      enableLink={album.artistId !== undefined}
+-                      link={ROUTES.ARTIST.PAGE(album.artistId ?? '')}
+-                    >
+-                      {album.artist}
+-                    </PreviewCard.Subtitle>
+-                  </PreviewCard.InfoWrapper>
+-                </PreviewCard.Root>
+-              </CarouselItem>
+-            ))}
+-          </CarouselContent>
+-        </Carousel>
+-      </div>
+-    </div>
++    </Link>
+   )
+ }
+ 
+@@ -167,26 +88,9 @@ export default function GenreDiscovery() {
+   if (isLoading) {
+     return (
+       <div className="mb-8">
+-        <div className="space-y-6">
++        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+           {[...Array(3)].map((_, i) => (
+-            <div key={i}>
+-              <div className="flex items-center justify-between mb-4">
+-                <Skeleton className="h-8 w-48" />
+-                <div className="flex gap-2">
+-                  <Skeleton className="w-8 h-8 rounded-full" />
+-                  <Skeleton className="w-8 h-8 rounded-full" />
+-                </div>
+-              </div>
+-              <div className="flex gap-4">
+-                {[...Array(6)].map((_, j) => (
+-                  <div key={j} className="basis-1/6">
+-                    <Skeleton className="aspect-square rounded-lg" />
+-                    <Skeleton className="h-4 w-full mt-2" />
+-                    <Skeleton className="h-3 w-2/3 mt-1" />
+-                  </div>
+-                ))}
+-              </div>
+-            </div>
++            <Skeleton key={i} className="h-[148px] sm:h-[164px] rounded-xl" />
+           ))}
+         </div>
+       </div>
+@@ -197,9 +101,9 @@ export default function GenreDiscovery() {
+ 
+   return (
+     <div className="mb-8">
+-      <div className="space-y-6">
+-        {genres.map((genre, index) => (
+-          <GenreRow key={genre} genre={genre} index={index} />
++      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
++        {genres.slice(0, 3).map((genre, index) => (
++          <GenreCard key={genre} genre={genre} index={index} />
+         ))}
+       </div>
+     </div>
+diff --git a/src/app/components/home/preview-list.tsx b/src/app/components/home/preview-list.tsx
+index 54159dd..5487f58 100644
+--- a/src/app/components/home/preview-list.tsx
++++ b/src/app/components/home/preview-list.tsx
+@@ -1,4 +1,4 @@
+-import { useEffect, useState } from 'react'
++import { useEffect, useState, type ReactNode } from 'react'
+ import { useTranslation } from 'react-i18next'
+ import { Link } from 'react-router-dom'
+ import { ImageLoader } from '@/app/components/image-loader'
+@@ -18,6 +18,7 @@ import { Albums } from '@/types/responses/album'
+ interface PreviewListProps {
+   list: Albums[]
+   title: string
++  icon?: ReactNode
+   showMore?: boolean
+   moreTitle?: string
+   moreRoute?: string
+@@ -26,6 +27,7 @@ interface PreviewListProps {
+ export default function PreviewList({
+   list,
+   title,
++  icon,
+   showMore = true,
+   moreTitle,
+   moreRoute,
+@@ -67,12 +69,15 @@ export default function PreviewList({
+   return (
+     <div className="w-full flex flex-col mt-4">
+       <div className="my-4 flex justify-between items-center">
+-        <h3
+-          className="scroll-m-20 text-2xl font-semibold tracking-tight"
+-          data-testid="preview-list-title"
+-        >
+-          {title}
+-        </h3>
++        <div className="flex items-center gap-2">
++          {icon}
++          <h3
++            className="scroll-m-20 text-2xl font-semibold tracking-tight"
++            data-testid="preview-list-title"
++          >
++            {title}
++          </h3>
++        </div>
+         <div className="flex items-center gap-4">
+           {showMore && moreRoute && (
+             <Link to={moreRoute} data-testid="preview-list-show-more">
+@@ -111,7 +116,7 @@ export default function PreviewList({
+             {list.map((album, index) => (
+               <CarouselItem
+                 key={album.id}
+-                className="basis-1/6 2xl:basis-1/8"
++                className="basis-1/2 sm:basis-1/3 md:basis-1/4 lg:basis-1/5 2xl:basis-1/6"
+                 data-testid={`preview-list-carousel-item-${index}`}
+               >
+                 <PreviewCard.Root>
+diff --git a/src/app/components/home/this-is-artist.tsx b/src/app/components/home/this-is-artist.tsx
+index 2d45d5c..bca82bd 100644
+--- a/src/app/components/home/this-is-artist.tsx
++++ b/src/app/components/home/this-is-artist.tsx
+@@ -1,4 +1,5 @@
+ import { RefreshCw, Music, Play, Info } from 'lucide-react'
++import { useTranslation } from 'react-i18next'
+ import { Button } from '@/app/components/ui/button'
+ import { Card } from '@/app/components/ui/card'
+ import { ImageLoader } from '@/app/components/image-loader'
+@@ -6,6 +7,7 @@ import { useThisIsArtist } from '@/app/hooks/use-this-is-artist'
+ import { usePlayerActions } from '@/store/player.store'
+ 
+ export function ThisIsArtist() {
++  const { t } = useTranslation()
+   const {
+     playlist,
+     artist,
+@@ -25,7 +27,7 @@ export function ThisIsArtist() {
+             <Info className="h-6 w-6 mx-auto mb-2 text-muted-foreground" />
+             <h3 className="font-semibold mb-1 text-sm">This is Artist</h3>
+             <p className="text-xs text-muted-foreground">
+-              Configure Last.fm in Settings → Integrations
++              {t('home.configureLastfm')}
+             </p>
+           </div>
+         </div>
+@@ -54,7 +56,7 @@ export function ThisIsArtist() {
+         <div className="relative h-full flex items-center justify-center z-10">
+           <div className="flex flex-col items-center gap-2">
+             <RefreshCw className="h-6 w-6 animate-spin text-muted-foreground" />
+-            <span className="text-xs text-muted-foreground">Generating...</span>
++            <span className="text-xs text-muted-foreground">{t('home.generating')}</span>
+           </div>
+         </div>
+       </div>
+@@ -70,7 +72,7 @@ export function ThisIsArtist() {
+             <Music className="h-8 w-8 mx-auto mb-3 text-muted-foreground" />
+             <h3 className="font-semibold mb-2 text-sm">This is Artist</h3>
+             <p className="text-xs text-muted-foreground mb-3">
+-              Generate your daily playlist
++              {t('home.generatePlaylist')}
+             </p>
+             <Button
+               variant="default"
+@@ -79,7 +81,7 @@ export function ThisIsArtist() {
+               disabled={isGenerating}
+             >
+               <RefreshCw className="h-3 w-3 mr-1.5" />
+-              Generate
++              {t('home.generate')}
+             </Button>
+           </div>
+         </div>
+@@ -111,70 +113,68 @@ export function ThisIsArtist() {
+       </ImageLoader>
+ 
+       {/* Content */}
+-      <div className="relative h-full flex items-center gap-6 px-8 z-10">
+-        {/* Info - Left Side (mirrored from hero slider) */}
+-        <div className="flex-1 flex flex-col gap-3 min-w-0">
++      <div className="relative h-full flex items-stretch gap-4 sm:gap-6 px-4 sm:px-8 z-10">
++        {/* Info - Left Side */}
++        <div className="flex-1 flex flex-col justify-between min-w-0 py-6 sm:py-8" style={{ containerType: 'inline-size' }}>
+           <div>
+-            <p className="text-sm text-muted-foreground mb-2">
+-              Daily Playlist
++            <p className="text-xs sm:text-sm text-muted-foreground mb-1 sm:mb-2">
++              This is...
+             </p>
+-            <h2 className="text-4xl 2xl:text-5xl font-bold leading-tight">
+-              This is...<br />{artist.name}
++            <h2 className="font-bold leading-tight" style={{ fontSize: 'clamp(1.25rem, 8cqi, 3rem)' }}>
++              {artist.name}
+             </h2>
+           </div>
+ 
+-          <div className="flex items-center gap-3">
+-            <span className="text-sm text-muted-foreground">
+-              {playlist.length} {playlist.length === 1 ? 'song' : 'songs'}
+-            </span>
+-            {lastGenerated && (
++          <div className="flex flex-col gap-2">
++            <div className="flex flex-col gap-0.5">
+               <span className="text-sm text-muted-foreground">
+-                • {new Date(lastGenerated).toLocaleDateString()}
++                {t('playlist.songCount', { count: playlist.length })}
+               </span>
+-            )}
++            </div>
++            <Button
++              onClick={handlePlay}
++              className="w-fit gap-2"
++              size="sm"
++            >
++              <Play className="w-4 h-4" fill="currentColor" />
++              {t('options.play')}
++            </Button>
+           </div>
+-
+-          <Button
+-            onClick={handlePlay}
+-            className="w-fit gap-2"
+-            size="lg"
+-          >
+-            <Play className="w-5 h-5" fill="currentColor" />
+-            Play
+-          </Button>
+         </div>
+ 
+         {/* Artist Image - Right Side */}
+-        <div className="flex-shrink-0 relative">
+-          <ImageLoader id={artist.coverArt} type="artist" size="300">
+-            {(artistCoverUrl, isLoadingImage) => (
+-              <>
+-                {artistCoverUrl && (
+-                  <img
+-                    src={artistCoverUrl}
+-                    alt={artist.name}
+-                    className="w-[180px] h-[180px] 2xl:w-[220px] 2xl:h-[220px] rounded-lg shadow-2xl object-cover"
+-                  />
+-                )}
+-                {!artistCoverUrl && !isLoadingImage && (
+-                  <div className="w-[180px] h-[180px] 2xl:w-[220px] 2xl:h-[220px] rounded-lg shadow-2xl bg-muted flex items-center justify-center">
+-                    <Music className="h-16 w-16 text-muted-foreground" />
+-                  </div>
+-                )}
+-              </>
+-            )}
+-          </ImageLoader>
++        <div className="flex-shrink-0 flex items-center">
++          <div className="relative">
++            <ImageLoader id={artist.coverArt} type="artist" size="300">
++              {(artistCoverUrl, isLoadingImage) => (
++                <>
++                  {artistCoverUrl && (
++                    <img
++                      src={artistCoverUrl}
++                      alt={artist.name}
++                      className="w-[120px] h-[120px] sm:w-[160px] sm:h-[160px] 2xl:w-[220px] 2xl:h-[220px] rounded-lg shadow-2xl object-cover"
++                    />
++                  )}
++                  {!artistCoverUrl && !isLoadingImage && (
++                    <div className="w-[120px] h-[120px] sm:w-[160px] sm:h-[160px] 2xl:w-[220px] 2xl:h-[220px] rounded-lg shadow-2xl bg-muted flex items-center justify-center">
++                      <Music className="h-16 w-16 text-muted-foreground" />
++                    </div>
++                  )}
++                </>
++              )}
++            </ImageLoader>
+ 
+-          {/* Refresh Button - On Image */}
+-          <Button
+-            variant="secondary"
+-            size="icon"
+-            onClick={generate}
+-            disabled={isGenerating}
+-            className="absolute -top-2 -right-2 h-8 w-8 rounded-full shadow-lg"
+-          >
+-            <RefreshCw className={`h-4 w-4 ${isGenerating ? 'animate-spin' : ''}`} />
+-          </Button>
++            {/* Refresh Button - On Image */}
++            <Button
++              variant="secondary"
++              size="icon"
++              onClick={generate}
++              disabled={isGenerating}
++              className="absolute -top-2 -right-2 h-8 w-8 rounded-full shadow-lg"
++            >
++              <RefreshCw className={`h-4 w-4 ${isGenerating ? 'animate-spin' : ''}`} />
++            </Button>
++          </div>
+         </div>
+       </div>
+     </div>
+diff --git a/src/app/components/player/controls.tsx b/src/app/components/player/controls.tsx
+index 57c9faa..16cd9be 100644
+--- a/src/app/components/player/controls.tsx
++++ b/src/app/components/player/controls.tsx
+@@ -159,6 +159,7 @@ export function PlayerControls({
+         onClick={togglePlayPause}
+         data-testid={`player-button-${isPlaying ? 'pause' : 'play'}`}
+         tooltip={playTooltip}
++        className="shadow-[0_0_12px_3px_rgba(134,239,172,0.45)]"
+       >
+         {isPlaying ? (
+           <Pause className="fill-primary-foreground" />
+diff --git a/src/app/components/player/player.tsx b/src/app/components/player/player.tsx
+index 28573b9..6d236dc 100644
+--- a/src/app/components/player/player.tsx
++++ b/src/app/components/player/player.tsx
+@@ -7,6 +7,7 @@ import { TrackInfo } from '@/app/components/player/track-info'
+ import { podcasts } from '@/service/podcasts'
+ import {
+   getVolume,
++  useCrossfadeSettings,
+   usePlayerActions,
+   usePlayerIsPlaying,
+   usePlayerLoop,
+@@ -53,6 +54,8 @@ export function Player() {
+   const audioRef = useRef<HTMLAudioElement>(null)
+   const radioRef = useRef<HTMLAudioElement>(null)
+   const podcastRef = useRef<HTMLAudioElement>(null)
++  const fadeIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
++  const fadeOutStartedRef = useRef(false)
+   const {
+     setAudioPlayerRef,
+     setCurrentDuration,
+@@ -71,6 +74,33 @@ export function Player() {
+   const currentPlaybackRate = usePlayerStore().playerState.currentPlaybackRate
+   const { replayGainType, replayGainPreAmp, replayGainDefaultGain } =
+     useReplayGainState()
++  const { enabled: crossfadeEnabled } = useCrossfadeSettings()
++
++  const CROSSFADE_DURATION_S = 3
++
++  const clearFade = useCallback(() => {
++    if (fadeIntervalRef.current !== null) {
++      clearInterval(fadeIntervalRef.current)
++      fadeIntervalRef.current = null
++    }
++  }, [])
++
++  const startFadeVolume = useCallback(
++    (audio: HTMLAudioElement, targetVolume: number, durationMs: number) => {
++      clearFade()
++      const startVol = audio.volume
++      const steps = Math.max(10, Math.floor(durationMs / 30))
++      const stepMs = durationMs / steps
++      const delta = (targetVolume - startVol) / steps
++      let step = 0
++      fadeIntervalRef.current = setInterval(() => {
++        step++
++        audio.volume = Math.max(0, Math.min(1, startVol + delta * step))
++        if (step >= steps) clearFade()
++      }, stepMs)
++    },
++    [clearFade],
++  )
+ 
+   const song = currentList[currentSongIndex]
+   const radio = radioList[currentSongIndex]
+@@ -163,14 +193,34 @@ export function Player() {
+ 
+     const currentProgress = Math.floor(audio.currentTime)
+     setProgress(currentProgress)
+-  }, [getAudioRef, setProgress])
++
++    if (
++      crossfadeEnabled &&
++      isSong &&
++      !fadeOutStartedRef.current &&
++      isFinite(audio.duration) &&
++      audio.duration > CROSSFADE_DURATION_S * 2
++    ) {
++      const timeLeft = audio.duration - audio.currentTime
++      if (timeLeft > 0 && timeLeft <= CROSSFADE_DURATION_S) {
++        fadeOutStartedRef.current = true
++        startFadeVolume(audio, 0, timeLeft * 1000)
++      }
++    }
++  }, [getAudioRef, setProgress, crossfadeEnabled, isSong, startFadeVolume])
+ 
+   const setupInitialVolume = useCallback(() => {
+     const audio = getAudioRef().current
+     if (!audio) return
+ 
+-    audio.volume = getVolume() / 100
+-  }, [getAudioRef])
++    const targetVolume = getVolume() / 100
++    if (crossfadeEnabled && isSong) {
++      audio.volume = 0
++      startFadeVolume(audio, targetVolume, CROSSFADE_DURATION_S * 1000)
++    } else {
++      audio.volume = targetVolume
++    }
++  }, [getAudioRef, crossfadeEnabled, isSong, startFadeVolume])
+ 
+   const sendFinishProgress = useCallback(() => {
+     if (!isPodcast || !podcast) return
+@@ -185,6 +235,17 @@ export function Player() {
+       })
+   }, [isPodcast, podcast])
+ 
++  // Reset crossfade state when a new song starts
++  useEffect(() => {
++    fadeOutStartedRef.current = false
++    clearFade()
++  }, [song?.id, clearFade])
++
++  // Cleanup interval on unmount
++  useEffect(() => {
++    return () => clearFade()
++  }, [clearFade])
++
+   function getTrackReplayGain(): ReplayGainParams {
+     const preAmp = replayGainPreAmp
+     const defaultGain = replayGainDefaultGain
+diff --git a/src/app/components/queue/song-list.tsx b/src/app/components/queue/song-list.tsx
+index 10bcce9..517d256 100644
+--- a/src/app/components/queue/song-list.tsx
++++ b/src/app/components/queue/song-list.tsx
+@@ -2,25 +2,22 @@ import { ListXIcon } from 'lucide-react'
+ import { useMemo } from 'react'
+ import { useTranslation } from 'react-i18next'
+ import { Button } from '@/app/components/ui/button'
+-import { DataTableList } from '@/app/components/ui/data-table-list'
+ import { DialogTitle } from '@/app/components/ui/dialog'
+ import { Separator } from '@/app/components/ui/separator'
+-import { queueColumns } from '@/app/tables/queue-columns'
+ import {
+   usePlayerActions,
+   usePlayerCurrentList,
+   usePlayerCurrentSongIndex,
+ } from '@/store/player.store'
+-import { ColumnFilter } from '@/types/columnFilter'
+ import { convertSecondsToHumanRead } from '@/utils/convertSecondsToTime'
++import { SortableQueueList } from './sortable-queue-list'
+ 
+ export function QueueSongList() {
+   const { t } = useTranslation()
+   const currentList = usePlayerCurrentList()
+   const currentSongIndex = usePlayerCurrentSongIndex()
+-  const { clearPlayerState, setSongList } = usePlayerActions()
++  const { clearPlayerState } = usePlayerActions()
+ 
+-  const columns = useMemo(() => queueColumns(), [])
+   const trackListCount = useMemo(() => currentList.length, [currentList])
+ 
+   const trackListDuration = useMemo(() => {
+@@ -30,15 +27,6 @@ export function QueueSongList() {
+     return convertSecondsToHumanRead(minutes)
+   }, [currentList])
+ 
+-  const columnsToShow: ColumnFilter[] = [
+-    'index',
+-    'title',
+-    // 'artist',
+-    'album',
+-    'duration',
+-    'remove',
+-  ]
+-
+   return (
+     <div className="flex flex-1 flex-col h-full min-w-[300px]">
+       <DialogTitle className="sr-only">{t('queue.title')}</DialogTitle>
+@@ -69,17 +57,10 @@ export function QueueSongList() {
+       <Separator className="bg-muted-foreground/20" />
+ 
+       <div className="w-full h-full overflow-auto">
+-        <DataTableList
+-          data={currentList}
+-          columns={columns}
+-          columnFilter={columnsToShow}
+-          showHeader={false}
+-          handlePlaySong={(row) => setSongList(currentList, row.index)}
+-          scrollToIndex={true}
++        <SortableQueueList
++          songs={currentList}
+           currentSongIndex={currentSongIndex}
+-          allowRowSelection={false}
+-          showContextMenu={false}
+-          pageType="queue"
++          scrollToIndex={true}
+         />
+       </div>
+     </div>
+diff --git a/src/app/components/settings/dialog.tsx b/src/app/components/settings/dialog.tsx
+index 860a8db..b57925c 100644
+--- a/src/app/components/settings/dialog.tsx
++++ b/src/app/components/settings/dialog.tsx
+@@ -10,11 +10,11 @@ import { ServicesPage } from './pages/services'
+ import { AboutPage } from './pages/about'
+ 
+ const tabs = [
+-  { value: 'appearance', label: 'Appearance', icon: Paintbrush, component: AppearancePage },
+-  { value: 'player', label: 'Player', icon: Music, component: PlayerPage },
+-  { value: 'content', label: 'Content', icon: FileText, component: ContentPage },
+-  { value: 'services', label: 'Services', icon: Globe, component: ServicesPage },
+-  { value: 'about', label: 'About', icon: Info, component: AboutPage },
++  { value: 'appearance', icon: Paintbrush, component: AppearancePage },
++  { value: 'player', icon: Music, component: PlayerPage },
++  { value: 'content', icon: FileText, component: ContentPage },
++  { value: 'services', icon: Globe, component: ServicesPage },
++  { value: 'about', icon: Info, component: AboutPage },
+ ] as const
+ 
+ export function SettingsDialog() {
+@@ -44,7 +44,7 @@ export function SettingsDialog() {
+             </div>
+ 
+             <TabsList className="flex w-full bg-transparent rounded-none h-auto p-0 px-2 gap-0 justify-start">
+-              {tabs.map(({ value, label, icon: Icon }) => (
++              {tabs.map(({ value, icon: Icon }) => (
+                 <TabsTrigger
+                   key={value}
+                   value={value}
+@@ -62,7 +62,7 @@ export function SettingsDialog() {
+                   "
+                 >
+                   <Icon className="h-4 w-4 shrink-0" />
+-                  <span>{label}</span>
++                  <span>{t(`settings.tabs.${value}`)}</span>
+                 </TabsTrigger>
+               ))}
+             </TabsList>
+diff --git a/src/app/components/settings/pages/appearance.tsx b/src/app/components/settings/pages/appearance.tsx
+index 73500a1..9a5a6f9 100644
+--- a/src/app/components/settings/pages/appearance.tsx
++++ b/src/app/components/settings/pages/appearance.tsx
+@@ -36,12 +36,6 @@ export function AppearancePage() {
+   return (
+     <div className="space-y-6">
+       <Root>
+-        <Header>
+-          <HeaderTitle>{t('settings.appearance.general.group', 'General')}</HeaderTitle>
+-          <HeaderDescription>
+-            {t('settings.appearance.general.description', 'Customize the appearance of the app')}
+-          </HeaderDescription>
+-        </Header>
+         <Content>
+           <ContentItem>
+             <ContentItemTitle info={t('settings.appearance.general.fullscreen.info')}>
+diff --git a/src/app/components/settings/pages/content.tsx b/src/app/components/settings/pages/content.tsx
+index 238e395..ade90d4 100644
+--- a/src/app/components/settings/pages/content.tsx
++++ b/src/app/components/settings/pages/content.tsx
+@@ -109,12 +109,6 @@ export function ContentPage() {
+     <div className="space-y-6">
+       {/* Lyrics */}
+       <Root>
+-        <Header>
+-          <HeaderTitle>{t('settings.audio.lyrics.group', 'Lyrics')}</HeaderTitle>
+-          <HeaderDescription>
+-            {t('settings.audio.lyrics.description', 'Configure lyrics display preferences')}
+-          </HeaderDescription>
+-        </Header>
+         <Content>
+           <ContentItem>
+             <ContentItemTitle info={t('settings.audio.lyrics.preferSynced.info')}>
+diff --git a/src/app/components/settings/pages/player.tsx b/src/app/components/settings/pages/player.tsx
+index a26d01a..9b0faaf 100644
+--- a/src/app/components/settings/pages/player.tsx
++++ b/src/app/components/settings/pages/player.tsx
+@@ -21,7 +21,7 @@ import {
+   SelectTrigger,
+   SelectValue,
+ } from '@/app/components/ui/select'
+-import { useReplayGainActions, useReplayGainState } from '@/store/player.store'
++import { useCrossfadeSettings, useReplayGainActions, useReplayGainState } from '@/store/player.store'
+ import { useAppPages, useAppAccounts, useAppDesktopActions, useAppDesktopData, useAppImagesCacheLayer } from '@/store/app.store'
+ import { ReplayGainType } from '@/types/playerContext'
+ import { isDesktop } from '@/utils/desktop'
+@@ -49,8 +49,11 @@ export function PlayerPage() {
+     setReplayGainError,
+   } = useReplayGainActions()
+ 
+-  // Sidebar
+-  const { hideRadiosSection, setHideRadiosSection } = useAppPages()
++  // Crossfade
++  const { enabled: crossfadeEnabled, setEnabled: setCrossfadeEnabled } = useCrossfadeSettings()
++
++  // Sidebar & Playlists
++  const { hideRadiosSection, setHideRadiosSection, autoPlaylistImport, setAutoPlaylistImport } = useAppPages()
+ 
+   // Cache
+   const { imagesCacheLayerEnabled, setImagesCacheLayerEnabled } = useAppImagesCacheLayer()
+@@ -70,18 +73,16 @@ export function PlayerPage() {
+ 
+   return (
+     <div className="space-y-6">
+-      {/* Replay Gain */}
++      {/* Audio Processing */}
+       <Root>
+         <Header>
+-          <HeaderTitle>{t('settings.audio.replayGain.group', 'Replay Gain')}</HeaderTitle>
+-          <HeaderDescription>
+-            {t('settings.audio.replayGain.description', 'Normalize volume levels across tracks')}
+-          </HeaderDescription>
++          <HeaderTitle>{t('settings.player.audioProcessing.group', 'Audio Processing')}</HeaderTitle>
+         </Header>
+         <Content>
++          {/* Replay Gain toggle */}
+           <ContentItem>
+             <ContentItemTitle>
+-              {t('settings.audio.replayGain.enabled', 'Enable Replay Gain')}
++              {t('settings.audio.replayGain.group', 'Replay Gain')}
+             </ContentItemTitle>
+             <ContentItemForm>
+               <Switch
+@@ -170,6 +171,43 @@ export function PlayerPage() {
+               </ContentItem>
+             </>
+           )}
++
++          {/* Crossfade toggle */}
++          <ContentItem>
++            <ContentItemTitle info={t('settings.player.crossfade.info')}>
++              {t('settings.player.crossfade.label', 'Crossfade')}
++            </ContentItemTitle>
++            <ContentItemForm>
++              <Switch
++                checked={crossfadeEnabled}
++                onCheckedChange={setCrossfadeEnabled}
++              />
++            </ContentItemForm>
++          </ContentItem>
++        </Content>
++        <ContentSeparator />
++      </Root>
++
++      {/* Playlists */}
++      <Root>
++        <Header>
++          <HeaderTitle>{t('settings.player.playlists.group', 'Playlists')}</HeaderTitle>
++          <HeaderDescription>
++            {t('settings.player.playlists.description', 'Manage playlist import behavior')}
++          </HeaderDescription>
++        </Header>
++        <Content>
++          <ContentItem>
++            <ContentItemTitle>
++              {t('settings.player.playlists.autoImport.label', 'Automatic Playlist Import')}
++            </ContentItemTitle>
++            <ContentItemForm>
++              <Switch
++                checked={autoPlaylistImport}
++                onCheckedChange={setAutoPlaylistImport}
++              />
++            </ContentItemForm>
++          </ContentItem>
+         </Content>
+         <ContentSeparator />
+       </Root>
+diff --git a/src/app/components/sidebar/nav-playlists.tsx b/src/app/components/sidebar/nav-playlists.tsx
+index e5ffc1f..1e65d2b 100644
+--- a/src/app/components/sidebar/nav-playlists.tsx
++++ b/src/app/components/sidebar/nav-playlists.tsx
+@@ -1,25 +1,88 @@
+ import { useQuery } from '@tanstack/react-query'
++import {
++  DndContext,
++  DragEndEvent,
++  DragOverlay,
++  DragStartEvent,
++  PointerSensor,
++  closestCenter,
++  useSensor,
++  useSensors,
++} from '@dnd-kit/core'
++import {
++  SortableContext,
++  verticalListSortingStrategy,
++} from '@dnd-kit/sortable'
+ import clsx from 'clsx'
++import { ListMusic } from 'lucide-react'
++import { useMemo, useState } from 'react'
+ import { useTranslation } from 'react-i18next'
+ import { EmptyPlaylistsMessage } from '@/app/components/playlist/empty-message'
+ import { SidebarPlaylistButtons } from '@/app/components/playlist/sidebar-buttons'
+ import {
+   MainSidebarGroupLabel,
+   MainSidebarMenu,
++  MainSidebarMenuButton,
++  MainSidebarMenuItem,
+ } from '@/app/components/ui/main-sidebar'
+ import { subsonic } from '@/service/subsonic'
++import { usePlaylistOrder } from '@/store/app.store'
++import { Playlist } from '@/types/responses/playlist'
+ import { queryKeys } from '@/utils/queryKeys'
+ import { SidebarPlaylistItem } from './playlist-item'
+ 
++/** Sort playlists by the saved ID order; unordered ones go to the end. */
++function applySavedOrder(playlists: Playlist[], order: string[]): Playlist[] {
++  if (order.length === 0) return playlists
++  const indexMap = new Map(order.map((id, i) => [id, i]))
++  return [...playlists].sort((a, b) => {
++    const ia = indexMap.get(a.id) ?? Infinity
++    const ib = indexMap.get(b.id) ?? Infinity
++    return ia - ib
++  })
++}
++
+ export function NavPlaylists() {
+   const { t } = useTranslation()
++  const { playlistOrder, setPlaylistOrder } = usePlaylistOrder()
++  const [activePlaylist, setActivePlaylist] = useState<Playlist | null>(null)
+ 
+   const { data: playlists } = useQuery({
+     queryKey: [queryKeys.playlist.all],
+     queryFn: subsonic.playlists.getAll,
+   })
+ 
+-  const hasPlaylists = playlists !== undefined && playlists.length > 0
++  const sortedPlaylists = useMemo(
++    () => (playlists ? applySavedOrder(playlists, playlistOrder) : []),
++    [playlists, playlistOrder],
++  )
++
++  const hasPlaylists = sortedPlaylists.length > 0
++
++  const sensors = useSensors(
++    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
++  )
++
++  function handleDragStart(event: DragStartEvent) {
++    const found = sortedPlaylists.find((p) => p.id === event.active.id)
++    setActivePlaylist(found ?? null)
++  }
++
++  function handleDragEnd(event: DragEndEvent) {
++    const { active, over } = event
++    setActivePlaylist(null)
++    if (!over || active.id === over.id) return
++
++    const fromIndex = sortedPlaylists.findIndex((p) => p.id === active.id)
++    const toIndex = sortedPlaylists.findIndex((p) => p.id === over.id)
++    if (fromIndex === -1 || toIndex === -1) return
++
++    const reordered = [...sortedPlaylists]
++    const [moved] = reordered.splice(fromIndex, 1)
++    reordered.splice(toIndex, 0, moved)
++
++    setPlaylistOrder(reordered.map((p) => p.id))
++  }
+ 
+   return (
+     <div className="px-4 pb-4">
+@@ -34,14 +97,37 @@ export function NavPlaylists() {
+         <SidebarPlaylistButtons />
+       </div>
+ 
+-      <MainSidebarMenu>
+-        {hasPlaylists &&
+-          playlists.map((playlist) => (
+-            <SidebarPlaylistItem key={playlist.id} playlist={playlist} />
+-          ))}
++      <DndContext
++        sensors={sensors}
++        collisionDetection={closestCenter}
++        onDragStart={handleDragStart}
++        onDragEnd={handleDragEnd}
++      >
++        <SortableContext
++          items={sortedPlaylists.map((p) => p.id)}
++          strategy={verticalListSortingStrategy}
++        >
++          <MainSidebarMenu>
++            {hasPlaylists &&
++              sortedPlaylists.map((playlist) => (
++                <SidebarPlaylistItem key={playlist.id} playlist={playlist} />
++              ))}
++
++            {!hasPlaylists && <EmptyPlaylistsMessage />}
++          </MainSidebarMenu>
++        </SortableContext>
+ 
+-        {!hasPlaylists && <EmptyPlaylistsMessage />}
+-      </MainSidebarMenu>
++        <DragOverlay dropAnimation={null}>
++          {activePlaylist ? (
++            <MainSidebarMenuItem>
++              <MainSidebarMenuButton className="pl-6 bg-accent/80 shadow-lg cursor-grabbing">
++                <ListMusic className="w-4 h-4 shrink-0" />
++                <span className="truncate">{activePlaylist.name}</span>
++              </MainSidebarMenuButton>
++            </MainSidebarMenuItem>
++          ) : null}
++        </DragOverlay>
++      </DndContext>
+     </div>
+   )
+ }
+diff --git a/src/app/components/sidebar/playlist-item.tsx b/src/app/components/sidebar/playlist-item.tsx
+index 2a17f6f..d0cc4a1 100644
+--- a/src/app/components/sidebar/playlist-item.tsx
++++ b/src/app/components/sidebar/playlist-item.tsx
+@@ -1,13 +1,12 @@
++import { useSortable } from '@dnd-kit/sortable'
++import { CSS } from '@dnd-kit/utilities'
+ import clsx from 'clsx'
+-import { ListMusic } from 'lucide-react'
++import { GripVerticalIcon, ListMusic } from 'lucide-react'
+ import { memo } from 'react'
+ import { Link } from 'react-router-dom'
+ import { PlaylistOptions } from '@/app/components/playlist/options'
+ import { ContextMenuProvider } from '@/app/components/table/context-menu'
+-import {
+-  MainSidebarMenuButton,
+-  MainSidebarMenuItem,
+-} from '@/app/components/ui/main-sidebar'
++import { MainSidebarMenuButton } from '@/app/components/ui/main-sidebar'
+ import { useRouteIsActive } from '@/app/hooks/use-route-is-active'
+ import { ROUTES } from '@/routes/routesList'
+ import { Playlist } from '@/types/responses/playlist'
+@@ -18,8 +17,40 @@ const MemoPlaylistOptions = memo(PlaylistOptions)
+ export function SidebarPlaylistItem({ playlist }: { playlist: Playlist }) {
+   const { isOnPlaylist } = useRouteIsActive()
+ 
++  const {
++    attributes,
++    listeners,
++    setNodeRef,
++    transform,
++    transition,
++    isDragging,
++  } = useSortable({ id: playlist.id })
++
++  const style = {
++    transform: CSS.Transform.toString(transform),
++    transition,
++    opacity: isDragging ? 0.4 : undefined,
++  }
++
++  // Replicate MainSidebarMenuItem's element exactly, but with a real ref
+   return (
+-    <MainSidebarMenuItem>
++    <li
++      ref={setNodeRef}
++      style={style}
++      data-slot="sidebar-menu-item"
++      data-sidebar="menu-item"
++      className="group/menu-item relative"
++    >
++      {/* Drag handle – absolutely positioned, shown on hover */}
++      <div
++        {...attributes}
++        {...listeners}
++        className="absolute left-0 top-0 bottom-0 w-5 flex items-center justify-center cursor-grab active:cursor-grabbing opacity-0 group-hover/menu-item:opacity-60 hover:!opacity-100 transition-opacity z-10 text-muted-foreground"
++        onClick={(e) => e.preventDefault()}
++      >
++        <GripVerticalIcon className="w-3 h-3" />
++      </div>
++
+       <MemoContextMenuProvider
+         options={
+           <MemoPlaylistOptions
+@@ -32,6 +63,7 @@ export function SidebarPlaylistItem({ playlist }: { playlist: Playlist }) {
+         <MainSidebarMenuButton
+           asChild
+           className={clsx(
++            'pl-6',
+             isOnPlaylist(playlist.id) && 'cursor-default bg-accent',
+           )}
+         >
+@@ -48,6 +80,6 @@ export function SidebarPlaylistItem({ playlist }: { playlist: Playlist }) {
+           </Link>
+         </MainSidebarMenuButton>
+       </MemoContextMenuProvider>
+-    </MainSidebarMenuItem>
++    </li>
+   )
+ }
+diff --git a/src/app/components/song/menu-options.tsx b/src/app/components/song/menu-options.tsx
+index 1b3a08c..1c6d026 100644
+--- a/src/app/components/song/menu-options.tsx
++++ b/src/app/components/song/menu-options.tsx
+@@ -1,4 +1,4 @@
+-import { Rabbit } from 'lucide-react'
++import { Copy, Rabbit } from 'lucide-react'
+ import { useTranslation } from 'react-i18next'
+ import { OptionsButtons } from '@/app/components/options/buttons'
+ import { DownloadOptionHandler } from '@/app/components/options/download-handler'
+@@ -37,6 +37,16 @@ export function SongMenuOptions({
+   const { startRabbitHole, isLoading } = useRabbitHole()
+   const songIndexes = [index.toString()]
+ 
++  const handleCopyTitle = (e: React.MouseEvent) => {
++    e.stopPropagation()
++    navigator.clipboard.writeText(song.title)
++  }
++
++  const handleCopyArtist = (e: React.MouseEvent) => {
++    e.stopPropagation()
++    navigator.clipboard.writeText(song.artist ?? '')
++  }
++
+   const handleRabbitHole = (e: React.MouseEvent) => {
+     e.stopPropagation()
+     startRabbitHole({
+@@ -101,6 +111,21 @@ export function SongMenuOptions({
+         />
+       </DownloadOptionHandler>
+       <ContextMenuSeparator />
++      <RabbitHoleMenuItem
++        onClick={handleCopyTitle}
++        className="cursor-pointer"
++      >
++        <Copy className="mr-2 h-4 w-4" />
++        <span>Copy Track Name</span>
++      </RabbitHoleMenuItem>
++      <RabbitHoleMenuItem
++        onClick={handleCopyArtist}
++        className="cursor-pointer"
++      >
++        <Copy className="mr-2 h-4 w-4" />
++        <span>Copy Artist</span>
++      </RabbitHoleMenuItem>
++      <ContextMenuSeparator />
+       <OptionsButtons.SongInfo
+         variant={variant}
+         onClick={(e) => {
+diff --git a/src/app/components/table/song-actions.tsx b/src/app/components/table/song-actions.tsx
+index 6513007..3819072 100644
+--- a/src/app/components/table/song-actions.tsx
++++ b/src/app/components/table/song-actions.tsx
+@@ -6,9 +6,10 @@ import { ISong } from '@/types/responses/song'
+ 
+ interface SongTableActionsProps {
+   row: Row<ISong>
++  showHeart?: boolean
+ }
+ 
+-export function SongTableActions({ row }: SongTableActionsProps) {
++export function SongTableActions({ row, showHeart = true }: SongTableActionsProps) {
+   return (
+     <div className="flex gap-1 items-center">
+       <TableActionButton
+@@ -20,11 +21,13 @@ export function SongTableActions({ row }: SongTableActionsProps) {
+           />
+         }
+       />
+-      <TableLikeButton
+-        type="song"
+-        entityId={row.original.id}
+-        starred={typeof row.original.starred === 'string'}
+-      />
++      {showHeart && (
++        <TableLikeButton
++          type="song"
++          entityId={row.original.id}
++          starred={typeof row.original.starred === 'string'}
++        />
++      )}
+     </div>
+   )
+ }
+diff --git a/src/app/components/ui/data-table-list.tsx b/src/app/components/ui/data-table-list.tsx
+index fce814c..7181e0f 100644
+--- a/src/app/components/ui/data-table-list.tsx
++++ b/src/app/components/ui/data-table-list.tsx
+@@ -64,6 +64,7 @@ interface DataTableProps<TData, TValue> {
+   hasNextPage?: boolean
+   scrollToIndex?: boolean
+   currentSongIndex?: number
++  enableSorting?: boolean
+ }
+ 
+ export function DataTableList<TData, TValue>({
+@@ -81,6 +82,7 @@ export function DataTableList<TData, TValue>({
+   hasNextPage,
+   scrollToIndex = false,
+   currentSongIndex,
++  enableSorting = false,
+ }: DataTableProps<TData, TValue>) {
+   const newColumns = columns.filter((column) => {
+     return columnFilter?.includes(column.id as ColumnFilter)
+@@ -109,7 +111,7 @@ export function DataTableList<TData, TValue>({
+       onSortingChange: setSorting,
+       getSortedRowModel: getSortedRowModel(),
+       onRowSelectionChange: setRowSelection,
+-      enableSorting: false,
++      enableSorting,
+       sortingFns: {
+         customSortFn: <T extends { original: Record<string, string> }>(
+           rowA: T,
+@@ -137,6 +139,7 @@ export function DataTableList<TData, TValue>({
+       columnSearch,
+       sorting,
+       rowSelection,
++      enableSorting,
+     ],
+   )
+ 
+diff --git a/src/app/components/ui/data-table-row.tsx b/src/app/components/ui/data-table-row.tsx
+index b133430..0de74c6 100644
+--- a/src/app/components/ui/data-table-row.tsx
++++ b/src/app/components/ui/data-table-row.tsx
+@@ -1,5 +1,8 @@
+ import { Cell, flexRender, Row } from '@tanstack/react-table'
++import { useSortable } from '@dnd-kit/sortable'
++import { CSS } from '@dnd-kit/utilities'
+ import clsx from 'clsx'
++import { GripVerticalIcon } from 'lucide-react'
+ import { ComponentPropsWithoutRef, memo, ReactNode, useMemo } from 'react'
+ import { ContextMenuProvider } from '@/app/components/table/context-menu'
+ import { usePlayerCurrentSong } from '@/store/player.store'
+@@ -13,6 +16,7 @@ interface RowProps<TData> extends ComponentPropsWithoutRef<'div'> {
+   isNextRowSelected: (rowIndex: number) => boolean
+   variant?: 'classic' | 'modern'
+   dataType?: 'song' | 'artist' | 'playlist' | 'radio'
++  sortableId?: string
+ }
+ 
+ const MemoContextMenuProvider = memo(ContextMenuProvider)
+@@ -26,12 +30,23 @@ export function TableRow<TData>({
+   dataType,
+   isPrevRowSelected,
+   isNextRowSelected,
++  sortableId,
+   ...props
+ }: RowProps<TData>) {
+   const currentSong = usePlayerCurrentSong()
+ 
+   const isClassic = variant === 'classic'
+   const isModern = variant === 'modern'
++  const isSortable = !!sortableId
++
++  const {
++    attributes,
++    listeners,
++    setNodeRef,
++    transform,
++    transition,
++    isDragging,
++  } = useSortable({ id: sortableId ?? '__disabled__', disabled: !isSortable })
+ 
+   const isRowSongActive = useMemo(() => {
+     if (dataType !== 'song') return false
+@@ -40,9 +55,18 @@ export function TableRow<TData>({
+     return row.original.id === currentSong.id
+   }, [currentSong.id, dataType, row.original])
+ 
++  const sortableStyle = isSortable
++    ? {
++        transform: CSS.Transform.toString(transform),
++        transition,
++      }
++    : {}
++
+   return (
+     <MemoContextMenuProvider options={contextMenuOptions}>
+       <div
++        ref={isSortable ? setNodeRef : undefined}
++        style={sortableStyle}
+         {...props}
+         role="row"
+         data-test-id="table-row"
+@@ -61,8 +85,18 @@ export function TableRow<TData>({
+           'hover:bg-foreground/20 data-[state=selected]:bg-foreground/30',
+           isClassic && 'border-b',
+           isRowSongActive && isModern && 'row-active bg-foreground/20',
++          isSortable && isDragging && 'opacity-30',
+         )}
+       >
++        {isSortable && (
++          <div
++            {...attributes}
++            {...listeners}
++            className="w-6 shrink-0 flex items-center justify-center cursor-grab active:cursor-grabbing text-foreground/30 hover:text-foreground/70 opacity-0 group-hover/tablerow:opacity-100 transition-opacity"
++          >
++            <GripVerticalIcon className="w-4 h-4" />
++          </div>
++        )}
+         {row.getVisibleCells().map((cell) => (
+           <MemoTableCell key={cell.id} cell={cell} />
+         ))}
+diff --git a/src/app/components/ui/data-table.tsx b/src/app/components/ui/data-table.tsx
+index 0569f1d..a4ee98a 100644
+--- a/src/app/components/ui/data-table.tsx
++++ b/src/app/components/ui/data-table.tsx
+@@ -12,6 +12,20 @@ import {
+   Table,
+   useReactTable,
+ } from '@tanstack/react-table'
++import {
++  DndContext,
++  DragEndEvent,
++  DragOverlay,
++  DragStartEvent,
++  PointerSensor,
++  closestCenter,
++  useSensor,
++  useSensors,
++} from '@dnd-kit/core'
++import {
++  SortableContext,
++  verticalListSortingStrategy,
++} from '@dnd-kit/sortable'
+ import clsx from 'clsx'
+ import { Disc2Icon, XIcon } from 'lucide-react'
+ import {
+@@ -71,6 +85,8 @@ interface DataTableProps<TData, TValue> {
+   showDiscNumber?: boolean
+   variant?: 'classic' | 'modern'
+   dataType?: 'song' | 'artist' | 'playlist' | 'radio'
++  onReorder?: (fromIndex: number, toIndex: number) => void
++  enableSorting?: boolean
+ }
+ 
+ let isTap = false
+@@ -91,6 +107,8 @@ export function DataTable<TData, TValue>({
+   showDiscNumber = false,
+   variant = 'classic',
+   dataType = 'song',
++  onReorder,
++  enableSorting,
+ }: DataTableProps<TData, TValue>) {
+   const { t } = useTranslation()
+   const newColumns = columns.filter((column) => {
+@@ -101,9 +119,18 @@ export function DataTable<TData, TValue>({
+   const [sorting, setSorting] = useState<SortingState>([])
+   const [rowSelection, setRowSelection] = useState({})
+   const [lastRowSelected, setLastRowSelected] = useState<number | null>(null)
++  const [activeRowIndex, setActiveRowIndex] = useState<number | null>(null)
+ 
+   const isClassic = variant === 'classic'
+   const isModern = variant === 'modern'
++  const isSortable = !!onReorder
++  const isSortingEnabled = enableSorting ?? !isSortable
++
++  const sensors = useSensors(
++    useSensor(PointerSensor, {
++      activationConstraint: { distance: 8 },
++    }),
++  )
+ 
+   const selectedRows = useMemo(
+     () => Object.keys(rowSelection).map(Number),
+@@ -132,7 +159,7 @@ export function DataTable<TData, TValue>({
+     onSortingChange: setSorting,
+     getSortedRowModel: getSortedRowModel(),
+     onRowSelectionChange: setRowSelection,
+-    enableSorting: true,
++    enableSorting: isSortingEnabled,
+     sortingFns: {
+       customSortFn: (rowA, rowB, columnId) => {
+         return rowA.original[columnId].localeCompare(rowB.original[columnId])
+@@ -150,6 +177,12 @@ export function DataTable<TData, TValue>({
+ 
+   const { rows } = table.getRowModel()
+ 
++  // Drag reorder is only active when no column sort is applied
++  const isDragReorderActive = isSortable && sorting.length === 0
++
++  // Sortable IDs are index strings so they stay stable relative to the rendered order
++  const sortableIds = useMemo(() => rows.map((_, i) => i.toString()), [rows])
++
+   const selectAllShortcut = useCallback(
+     (state = true) => {
+       if (allowRowSelection) {
+@@ -339,7 +372,72 @@ export function DataTable<TData, TValue>({
+     isTap = false
+   }
+ 
+-  return (
++  function handleDragStart(event: DragStartEvent) {
++    setActiveRowIndex(parseInt(event.active.id as string))
++  }
++
++  function handleDragEnd(event: DragEndEvent) {
++    const { active, over } = event
++    setActiveRowIndex(null)
++    if (!over || active.id === over.id) return
++    const fromIndex = parseInt(active.id as string)
++    const toIndex = parseInt(over.id as string)
++    onReorder?.(fromIndex, toIndex)
++  }
++
++  const activeRow = activeRowIndex !== null ? rows[activeRowIndex] : null
++
++  const rowList = rows?.length ? (
++    rows.map((row, index) => (
++      <Fragment key={row.id}>
++        {showDiscNumber &&
++          !isSingleDisk &&
++          discNumberIndexes.includes(index) && (
++            <div
++              className={clsx(
++                'w-full h-14 flex flex-row items-center transition-colors text-muted-foreground',
++                isClassic && 'border-b',
++              )}
++              role="row"
++            >
++              <div className="w-12 flex items-center justify-center">
++                <Disc2Icon strokeWidth={1.75} />
++              </div>
++              <span className="font-medium ml-[7px]">
++                {t('album.table.discNumber', {
++                  number: (row.original as DiscNumber).discNumber,
++                })}
++              </span>
++            </div>
++          )}
++        <MemoTableRow
++          index={index}
++          row={row}
++          contextMenuOptions={getContextMenuOptions(row)}
++          isPrevRowSelected={isPrevRowSelected}
++          isNextRowSelected={isNextRowSelected}
++          variant={variant}
++          dataType={dataType}
++          sortableId={isDragReorderActive ? index.toString() : undefined}
++          onClick={(e) => handleClicks(e, row)}
++          onDoubleClick={(e) => handleRowDbClick(e, row)}
++          onTouchStart={handleTouchStart}
++          onTouchMove={handleTouchMove}
++          onTouchEnd={(e) => handleRowTap(e, row)}
++          onTouchCancel={handleTouchCancel}
++          onContextMenu={(e) => handleClicks(e, row)}
++        />
++      </Fragment>
++    ))
++  ) : (
++    <div role="row">
++      <div className="flex h-24 items-center justify-center p-2" role="cell">
++        {noRowsMessage}
++      </div>
++    </div>
++  )
++
++  const tableContent = (
+     <>
+       {showSearch && searchColumn && (
+         <div className="flex items-center mb-4" data-testid="table-search">
+@@ -392,6 +490,8 @@ export function DataTable<TData, TValue>({
+                   )}
+                   role="row"
+                 >
++                  {/* Spacer matching the drag handle width */}
++                  {isDragReorderActive && <div className="w-6 shrink-0" />}
+                   {headerGroup.headers.map((header) => {
+                     const columnDef = header.column
+                       .columnDef as ColumnDefType<TData>
+@@ -420,59 +520,7 @@ export function DataTable<TData, TValue>({
+             </div>
+           )}
+           <div className="[&_div:last-child]:border-0">
+-            <div className="w-full h-full overflow-hidden">
+-              {rows?.length ? (
+-                rows.map((row, index) => (
+-                  <Fragment key={row.id}>
+-                    {showDiscNumber &&
+-                      !isSingleDisk &&
+-                      discNumberIndexes.includes(index) && (
+-                        <div
+-                          className={clsx(
+-                            'w-full h-14 flex flex-row items-center transition-colors text-muted-foreground',
+-                            isClassic && 'border-b',
+-                          )}
+-                          role="row"
+-                        >
+-                          <div className="w-12 flex items-center justify-center">
+-                            <Disc2Icon strokeWidth={1.75} />
+-                          </div>
+-                          <span className="font-medium ml-[7px]">
+-                            {t('album.table.discNumber', {
+-                              number: (row.original as DiscNumber).discNumber,
+-                            })}
+-                          </span>
+-                        </div>
+-                      )}
+-                    <MemoTableRow
+-                      index={index}
+-                      row={row}
+-                      contextMenuOptions={getContextMenuOptions(row)}
+-                      isPrevRowSelected={isPrevRowSelected}
+-                      isNextRowSelected={isNextRowSelected}
+-                      variant={variant}
+-                      dataType={dataType}
+-                      onClick={(e) => handleClicks(e, row)}
+-                      onDoubleClick={(e) => handleRowDbClick(e, row)}
+-                      onTouchStart={handleTouchStart}
+-                      onTouchMove={handleTouchMove}
+-                      onTouchEnd={(e) => handleRowTap(e, row)}
+-                      onTouchCancel={handleTouchCancel}
+-                      onContextMenu={(e) => handleClicks(e, row)}
+-                    />
+-                  </Fragment>
+-                ))
+-              ) : (
+-                <div role="row">
+-                  <div
+-                    className="flex h-24 items-center justify-center p-2"
+-                    role="cell"
+-                  >
+-                    {noRowsMessage}
+-                  </div>
+-                </div>
+-              )}
+-            </div>
++            <div className="w-full h-full overflow-hidden">{rowList}</div>
+           </div>
+         </div>
+       </div>
+@@ -480,4 +528,41 @@ export function DataTable<TData, TValue>({
+       {showPagination && <DataTablePagination table={table} />}
+     </>
+   )
++
++  if (!isSortable) {
++    return tableContent
++  }
++
++  if (!isDragReorderActive) {
++    return tableContent
++  }
++
++  return (
++    <DndContext
++      sensors={sensors}
++      collisionDetection={closestCenter}
++      onDragStart={handleDragStart}
++      onDragEnd={handleDragEnd}
++    >
++      <SortableContext items={sortableIds} strategy={verticalListSortingStrategy}>
++        {tableContent}
++      </SortableContext>
++
++      <DragOverlay dropAnimation={null}>
++        {activeRow ? (
++          <MemoTableRow
++            index={activeRowIndex!}
++            row={activeRow}
++            contextMenuOptions={undefined}
++            isPrevRowSelected={() => false}
++            isNextRowSelected={() => false}
++            variant={variant}
++            dataType={dataType}
++            sortableId={undefined}
++            className="shadow-xl border border-foreground/20 bg-popover rounded-md cursor-grabbing opacity-95"
++          />
++        ) : null}
++      </DragOverlay>
++    </DndContext>
++  )
+ }
+diff --git a/src/app/hooks/use-album.tsx b/src/app/hooks/use-album.tsx
+index 00128fd..e5c9e0a 100644
+--- a/src/app/hooks/use-album.tsx
++++ b/src/app/hooks/use-album.tsx
+@@ -5,14 +5,22 @@ import { queryKeys } from '@/utils/queryKeys'
+ export const useGetAlbum = (albumId: string) => {
+   return useQuery({
+     queryKey: [queryKeys.album.single, albumId],
+-    queryFn: () => subsonic.albums.getOne(albumId),
++    queryFn: async () => {
++      const data = await subsonic.albums.getOne(albumId)
++      if (!data) throw new Error('Album not found')
++      return data
++    },
+   })
+ }
+ 
+ export const useGetAlbumInfo = (albumId: string) => {
+   return useQuery({
+     queryKey: [queryKeys.album.info, albumId],
+-    queryFn: () => subsonic.albums.getInfo(albumId),
++    queryFn: async () => {
++      const data = await subsonic.albums.getInfo(albumId)
++      if (!data) throw new Error('Album info not found')
++      return data
++    },
+     enabled: !!albumId,
+   })
+ }
+diff --git a/src/app/layout/sidebar.tsx b/src/app/layout/sidebar.tsx
+index b3c693f..9cb72e8 100644
+--- a/src/app/layout/sidebar.tsx
++++ b/src/app/layout/sidebar.tsx
+@@ -8,6 +8,7 @@ import {
+   PodcastIcon,
+   RadioIcon,
+   SparklesIcon,
++  TagsIcon,
+   TrophyIcon,
+ } from 'lucide-react'
+ import { ElementType, memo } from 'react'
+@@ -22,6 +23,7 @@ const Library = memo(LibraryIcon)
+ const Podcast = memo(PodcastIcon)
+ const Heart = memo(HeartIcon)
+ const Sparkles = memo(SparklesIcon)
++const Tags = memo(TagsIcon)
+ const Trophy = memo(TrophyIcon)
+ 
+ export interface ISidebarItem {
+@@ -36,6 +38,7 @@ export enum SidebarItems {
+   Artists = 'artists',
+   Songs = 'songs',
+   Albums = 'albums',
++  Genres = 'genres',
+   Favorites = 'favorites',
+   Playlists = 'playlists',
+   Podcasts = 'podcasts',
+@@ -86,6 +89,12 @@ export const libraryItems = [
+     route: ROUTES.LIBRARY.ALBUMS,
+     icon: Library,
+   },
++  {
++    id: SidebarItems.Genres,
++    title: 'sidebar.genres',
++    route: ROUTES.LIBRARY.GENRES,
++    icon: Tags,
++  },
+   {
+     id: SidebarItems.Favorites,
+     title: 'sidebar.favorites',
+diff --git a/src/app/pages/discover-weekly.tsx b/src/app/pages/discover-weekly.tsx
+index 89394d0..6e96343 100644
+--- a/src/app/pages/discover-weekly.tsx
++++ b/src/app/pages/discover-weekly.tsx
+@@ -1,5 +1,6 @@
+ import { RefreshCw, Sparkles, Info, Play, Shuffle, Save } from 'lucide-react'
+ import { useState } from 'react'
++import { useTranslation } from 'react-i18next'
+ import ImageHeader from '@/app/components/album/image-header'
+ import { BadgesData } from '@/app/components/header-info'
+ import ListWrapper from '@/app/components/list-wrapper'
+@@ -16,6 +17,7 @@ import { toast } from 'react-toastify'
+ 
+ export default function DiscoverWeeklyPage() {
+   const columns = songsColumns()
++  const { t } = useTranslation()
+   const {
+     playlist,
+     isGenerating,
+@@ -40,13 +42,13 @@ export default function DiscoverWeeklyPage() {
+               <Info className="h-6 w-6 mt-0.5 text-muted-foreground" />
+               <div className="flex-1">
+                 <CardTitle className="text-xl mb-3">
+-                  Setup Discover Weekly
++                  {t('discoverWeekly.setupTitle')}
+                 </CardTitle>
+                 <CardDescription className="text-base">
+-                  Get personalized song recommendations based on your Last.fm listening history.
++                  {t('discoverWeekly.setupDescription')}
+                   <br />
+                   <br />
+-                  <strong>Setup:</strong> Configure your Last.fm username and API key in the sidebar settings (⚙️) → Integrations.
++                  <strong>{t('discoverWeekly.setupPrefix')}</strong> {t('discoverWeekly.setupInstructions')}
+                 </CardDescription>
+               </div>
+             </div>
+@@ -61,7 +63,7 @@ export default function DiscoverWeeklyPage() {
+       <div className="w-full px-8 py-6">
+         <Card className="border-destructive max-w-2xl mx-auto mt-12">
+           <CardHeader>
+-            <CardTitle className="text-destructive">Error</CardTitle>
++            <CardTitle className="text-destructive">{t('generic.error')}</CardTitle>
+             <CardDescription className="text-destructive">
+               {error}
+             </CardDescription>
+@@ -76,7 +78,7 @@ export default function DiscoverWeeklyPage() {
+       <div className="w-full px-8 py-6">
+         <div className="flex items-center justify-center gap-3 mt-12">
+           <RefreshCw className="h-5 w-5 animate-spin" />
+-          <span className="text-lg">Generating your personalized playlist...</span>
++          <span className="text-lg">{t('discoverWeekly.generatingPlaylist')}</span>
+         </div>
+       </div>
+     )
+@@ -87,9 +89,9 @@ export default function DiscoverWeeklyPage() {
+       <div className="w-full px-8 py-6">
+         <div className="max-w-2xl mx-auto mt-12 text-center">
+           <Sparkles className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+-          <h2 className="text-2xl font-semibold mb-4">Discover Weekly</h2>
++          <h2 className="text-2xl font-semibold mb-4">{t('discoverWeekly.emptyTitle')}</h2>
+           <p className="text-muted-foreground mb-6">
+-            Your personalized playlist hasn't been generated yet.
++            {t('discoverWeekly.emptyDescription')}
+           </p>
+           <Button
+             size="lg"
+@@ -97,7 +99,7 @@ export default function DiscoverWeeklyPage() {
+             disabled={isGenerating}
+           >
+             <Sparkles className="h-4 w-4 mr-2" />
+-            Generate Playlist
++            {t('discoverWeekly.generatePlaylist')}
+           </Button>
+         </div>
+       </div>
+@@ -115,8 +117,10 @@ export default function DiscoverWeeklyPage() {
+   const totalDuration = playlist.reduce((acc, song) => acc + song.duration, 0)
+   const duration = convertSecondsToHumanRead(totalDuration)
+ 
+-  const songCount = `${playlist.length} ${playlist.length === 1 ? 'song' : 'songs'}`
+-  const artistsCount = artistsUsed.length > 0 ? `${artistsUsed.length} artists` : null
++  const songCount = t('playlist.songCount', { count: playlist.length })
++  const artistsCount = artistsUsed.length > 0
++    ? t('discoverWeekly.artistCount', { count: artistsUsed.length })
++    : null
+ 
+   const lastUpdated = lastGenerated
+     ? new Date(lastGenerated).toLocaleDateString()
+@@ -126,7 +130,7 @@ export default function DiscoverWeeklyPage() {
+     { content: songCount, type: 'text' },
+     { content: duration, type: 'text' },
+     { content: artistsCount, type: 'text' },
+-    { content: lastUpdated ? `Updated ${lastUpdated}` : null, type: 'text' },
++    { content: lastUpdated ? t('discoverWeekly.updated', { date: lastUpdated }) : null, type: 'text' },
+   ]
+ 
+   const handlePlayAll = () => {
+@@ -148,10 +152,10 @@ const handleSaveAsPlaylist = async () => {
+       comment: `Generated on ${lastUpdated || new Date().toLocaleDateString()} with ${artistsUsed.length} artists`,
+       isPublic: false,
+     })
+-    toast.success(`Playlist "${playlistName}" has been saved to your library!`)
++    toast.success(t('discoverWeekly.savedSuccess', { name: playlistName }))
+   } catch (error) {
+     console.error('[Discover Weekly] Save failed:', error)
+-    toast.error(`Failed to save playlist: ${error instanceof Error ? error.message : 'Unknown error'}`)
++    toast.error(t('discoverWeekly.saveError', { message: error instanceof Error ? error.message : 'Unknown error' }))
+   } finally {
+     setIsSaving(false)
+   }
+@@ -162,13 +166,13 @@ const handleSaveAsPlaylist = async () => {
+   return (
+     <div className="w-full">
+       <ImageHeader
+-        type="Personalized Playlist"
+-        title="Discover Weekly"
+-        subtitle="Your personalized mix based on Last.fm listening history"
++        type={t('discoverWeekly.headerType')}
++        title={t('discoverWeekly.emptyTitle')}
++        subtitle={t('discoverWeekly.headerSubtitle')}
+         coverArtId={coverArt}
+         coverArtType="album"
+         coverArtSize="700"
+-        coverArtAlt="Discover Weekly"
++        coverArtAlt={t('discoverWeekly.emptyTitle')}
+         badges={badges}
+         isPlaylist={true}
+       />
+@@ -181,7 +185,7 @@ const handleSaveAsPlaylist = async () => {
+             onClick={handlePlayAll}
+           >
+             <Play className="h-4 w-4 mr-2" />
+-            Play All
++            {t('generic.playAll')}
+           </Button>
+           <Button
+             variant="outline"
+@@ -189,7 +193,7 @@ const handleSaveAsPlaylist = async () => {
+             onClick={handlePlayShuffle}
+           >
+             <Shuffle className="h-4 w-4 mr-2" />
+-            Shuffle
++            {t('generic.shuffle')}
+           </Button>
+           <Button
+             variant="outline"
+@@ -197,8 +201,7 @@ const handleSaveAsPlaylist = async () => {
+             onClick={generate}
+             disabled={isGenerating}
+           >
+-            <RefreshCw className="h-4 w-4 mr-2" />
+-            Refresh
++            <RefreshCw className="h-4 w-4" />
+           </Button>
+           <Button
+             variant="outline"
+@@ -207,7 +210,7 @@ const handleSaveAsPlaylist = async () => {
+             disabled={isSaving}
+           >
+             <Save className="h-4 w-4 mr-2" />
+-            {isSaving ? 'Saving...' : 'Save as Playlist'}
++            {isSaving ? t('generic.saving') : t('generic.saveAsPlaylist')}
+           </Button>
+         </div>
+ 
+@@ -216,7 +219,7 @@ const handleSaveAsPlaylist = async () => {
+           data={playlist}
+           handlePlaySong={(row) => setSongList(playlist, row.index)}
+           columnFilter={columnsToShow}
+-          noRowsMessage="No songs in your Discover Weekly yet"
++          noRowsMessage={t('discoverWeekly.noSongs')}
+           variant="modern"
+         />
+       </ListWrapper>
+diff --git a/src/app/pages/favorites/songlist.tsx b/src/app/pages/favorites/songlist.tsx
+index 685d863..44185b8 100644
+--- a/src/app/pages/favorites/songlist.tsx
++++ b/src/app/pages/favorites/songlist.tsx
+@@ -1,3 +1,4 @@
++import { Heart } from 'lucide-react'
+ import { useTranslation } from 'react-i18next'
+ import { ShadowHeader } from '@/app/components/album/shadow-header'
+ import { InfinitySongListFallback } from '@/app/components/fallbacks/song-fallbacks'
+@@ -47,7 +48,10 @@ export default function SongList() {
+         fixed={false}
+         className="relative w-full justify-between items-center"
+       >
+-        <HeaderTitle title={title} count={songCount} loading={isLoading} />
++        <div className="flex gap-3 items-center">
++          <Heart className="w-6 h-6 text-red-500 fill-red-500" />
++          <HeaderTitle title={title} count={songCount} loading={isLoading} />
++        </div>
+       </ShadowHeader>
+ 
+       <div className="w-full h-[calc(100%-80px)] overflow-auto">
+@@ -57,6 +61,7 @@ export default function SongList() {
+           handlePlaySong={(row) => handlePlaySong(row.index)}
+           columnFilter={columnsToShow}
+           noRowsMessage={t('favorites.noSongList')}
++          enableSorting={true}
+         />
+       </div>
+     </div>
+diff --git a/src/app/pages/home.tsx b/src/app/pages/home.tsx
+index f8b547e..94fd538 100644
+--- a/src/app/pages/home.tsx
++++ b/src/app/pages/home.tsx
+@@ -1,3 +1,4 @@
++import { Clock, Disc } from 'lucide-react'
+ import { useTranslation } from 'react-i18next'
+ import {
+   HeaderFallback,
+@@ -10,8 +11,6 @@ import { DiscoverWeeklyCard } from '@/app/components/home/discover-weekly-card'
+ import { ThisIsArtist } from '@/app/components/home/this-is-artist'
+ import { useAppStore } from '@/store/app.store'
+ import {
+-  useGetMostPlayed,
+-  useGetRandomAlbums,
+   useGetRecentlyAdded,
+   useGetRecentlyPlayed,
+   useGetSimilarArtistsDiscovery,
+@@ -23,43 +22,13 @@ export default function Home() {
+   const showThisIsArtist = useAppStore((state) => state.integrations.lastfm.showThisIsArtist)
+ 
+   const similarArtists = useGetSimilarArtistsDiscovery()
+-
+   const recentlyPlayed = useGetRecentlyPlayed()
+-  const mostPlayed = useGetMostPlayed()
+   const recentlyAdded = useGetRecentlyAdded()
+-  const randomAlbums = useGetRandomAlbums()
+-
+-  const sections = [
+-    {
+-      title: t('home.recentlyPlayed'),
+-      data: recentlyPlayed.data,
+-      loader: recentlyPlayed.isLoading,
+-      route: ROUTES.ALBUMS.RECENTLY_PLAYED,
+-    },
+-    {
+-      title: t('home.mostPlayed'),
+-      data: mostPlayed.data,
+-      loader: mostPlayed.isLoading,
+-      route: ROUTES.ALBUMS.MOST_PLAYED,
+-    },
+-    {
+-      title: t('home.recentlyAdded'),
+-      data: recentlyAdded.data,
+-      loader: recentlyAdded.isLoading,
+-      route: ROUTES.ALBUMS.RECENTLY_ADDED,
+-    },
+-    {
+-      title: t('home.explore'),
+-      data: randomAlbums.data,
+-      loader: randomAlbums.isLoading,
+-      route: ROUTES.ALBUMS.RANDOM,
+-    },
+-  ]
+ 
+   return (
+-    <div className="w-full px-8 py-6">
++    <div className="w-full px-4 sm:px-8 py-6">
+       {/* Hero Carousel */}
+-      <div className="mb-4">
++      <div className="mb-6">
+         {similarArtists.isFetching || similarArtists.isLoading ? (
+           <HeaderFallback />
+         ) : (
+@@ -67,55 +36,44 @@ export default function Home() {
+         )}
+       </div>
+ 
+-      {/* Split Row: Discover Weekly + This is Artist */}
++      {/* Discover Weekly + This Is Artist */}
+       {showThisIsArtist && (
+         <div className="mb-8">
+-          <div className="grid grid-cols-2 gap-4">
+-            {/* Discover Weekly Card - Left */}
+-            <div className="h-[300px]">
++          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
++            <div className="min-h-[220px] sm:min-h-[260px]">
+               <DiscoverWeeklyCard />
+             </div>
+-            
+-            {/* This is Artist - Right */}
+-            <div className="h-[300px]">
++            <div className="min-h-[220px] sm:min-h-[260px]">
+               <ThisIsArtist />
+             </div>
+           </div>
+         </div>
+       )}
+ 
+-      {/* Genre Discovery Section */}
++      {/* Genre Discovery */}
+       <GenreDiscovery />
+ 
+-      {/* Library Sections - 2 Column Grid on Desktop */}
+-      <div className="mb-6">
+-        <h2 className="text-3xl font-bold mb-2">Your Library</h2>
+-        <p className="text-muted-foreground">Recent and popular albums</p>
+-      </div>
+-
+-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-8 gap-y-4">
+-        {sections.map((section) => {
+-          if (section.loader) {
+-            return (
+-              <div key={section.title} className="lg:col-span-1">
+-                <PreviewListFallback />
+-              </div>
+-            )
+-          }
+-
+-          if (!section.data || !section.data?.list) return null
++      {/* Recently Played */}
++      {recentlyPlayed.isLoading && <PreviewListFallback />}
++      {recentlyPlayed.data?.list && (
++        <PreviewList
++          title={t('home.recentlyPlayed')}
++          icon={<Clock className="w-6 h-6 text-muted-foreground" />}
++          moreRoute={ROUTES.ALBUMS.RECENTLY_PLAYED}
++          list={recentlyPlayed.data.list}
++        />
++      )}
+ 
+-          return (
+-            <div key={section.title} className="lg:col-span-1">
+-              <PreviewList
+-                title={section.title}
+-                moreRoute={section.route}
+-                list={section.data.list}
+-              />
+-            </div>
+-          )
+-        })}
+-      </div>
++      {/* Recently Added */}
++      {recentlyAdded.isLoading && <PreviewListFallback />}
++      {recentlyAdded.data?.list && (
++        <PreviewList
++          title={t('home.recentlyAdded')}
++          icon={<Disc className="w-6 h-6 text-muted-foreground" />}
++          moreRoute={ROUTES.ALBUMS.RECENTLY_ADDED}
++          list={recentlyAdded.data.list}
++        />
++      )}
+     </div>
+   )
+ }
+diff --git a/src/app/pages/playlists/playlist.tsx b/src/app/pages/playlists/playlist.tsx
+index b765a71..7d89ec6 100644
+--- a/src/app/pages/playlists/playlist.tsx
++++ b/src/app/pages/playlists/playlist.tsx
+@@ -1,4 +1,5 @@
+-import { useQuery } from '@tanstack/react-query'
++import { useQuery, useQueryClient } from '@tanstack/react-query'
++import { useCallback } from 'react'
+ import { useTranslation } from 'react-i18next'
+ import { useParams } from 'react-router-dom'
+ import ImageHeader from '@/app/components/album/image-header'
+@@ -13,14 +14,16 @@ import { songsColumns } from '@/app/tables/songs-columns'
+ import { subsonic } from '@/service/subsonic'
+ import { usePlayerActions } from '@/store/player.store'
+ import { ColumnFilter } from '@/types/columnFilter'
++import { PlaylistWithEntries } from '@/types/responses/playlist'
+ import { convertSecondsToHumanRead } from '@/utils/convertSecondsToTime'
+ import { queryKeys } from '@/utils/queryKeys'
+ 
+ export default function Playlist() {
+   const { playlistId } = useParams() as { playlistId: string }
+   const { t } = useTranslation()
+-  const columns = songsColumns()
++  const columns = songsColumns({ showHeartInSelect: false })
+   const { setSongList } = usePlayerActions()
++  const queryClient = useQueryClient()
+ 
+   const {
+     data: playlist,
+@@ -31,16 +34,51 @@ export default function Playlist() {
+     queryFn: () => subsonic.playlists.getOne(playlistId),
+   })
+ 
++  const handleReorder = useCallback(
++    async (fromIndex: number, toIndex: number) => {
++      if (!playlist?.entry) return
++
++      const newEntries = [...playlist.entry]
++      const [moved] = newEntries.splice(fromIndex, 1)
++      newEntries.splice(toIndex, 0, moved)
++
++      // Optimistic update
++      queryClient.setQueryData(
++        [queryKeys.playlist.single, playlistId],
++        (old: PlaylistWithEntries | undefined) => {
++          if (!old) return old
++          return { ...old, entry: newEntries }
++        },
++      )
++
++      // Persist to server
++      try {
++        await subsonic.playlists.reorderSongs(
++          playlistId,
++          newEntries.map((s) => s.id),
++        )
++      } catch {
++        // Roll back on failure
++        queryClient.invalidateQueries({
++          queryKey: [queryKeys.playlist.single, playlistId],
++        })
++      }
++    },
++    [playlist, playlistId, queryClient],
++  )
++
+   if (isFetching || isLoading) return <PlaylistFallback />
+   if (!playlist) return <ErrorPage status={404} statusText="Not Found" />
+ 
+   const columnsToShow: ColumnFilter[] = [
+     'index',
++    'starred',
+     'title',
+     // 'artist',
+     'album',
+     'duration',
+     'playCount',
++    'created',
+     'contentType',
+     'select',
+   ]
+@@ -89,6 +127,8 @@ export default function Playlist() {
+           columnFilter={columnsToShow}
+           noRowsMessage={t('playlist.noSongList')}
+           variant="modern"
++          onReorder={handleReorder}
++          enableSorting={true}
+         />
+ 
+         <RemoveSongFromPlaylistDialog />
+diff --git a/src/app/pages/top-50-year.tsx b/src/app/pages/top-50-year.tsx
+index e7d778e..134db86 100644
+--- a/src/app/pages/top-50-year.tsx
++++ b/src/app/pages/top-50-year.tsx
+@@ -1,5 +1,6 @@
+ import { RefreshCw, Trophy, Info, Play, Shuffle, Save } from 'lucide-react'
+ import { useState } from 'react'
++import { useTranslation } from 'react-i18next'
+ import ImageHeader from '@/app/components/album/image-header'
+ import { BadgesData } from '@/app/components/header-info'
+ import ListWrapper from '@/app/components/list-wrapper'
+@@ -16,6 +17,7 @@ import { toast } from 'react-toastify'
+ 
+ export default function Top50YearPage() {
+   const columns = songsColumns()
++  const { t } = useTranslation()
+   const {
+     playlist,
+     totalTracks,
+@@ -38,13 +40,13 @@ export default function Top50YearPage() {
+               <Info className="h-6 w-6 mt-0.5 text-muted-foreground" />
+               <div className="flex-1">
+                 <CardTitle className="text-xl mb-3">
+-                  Setup Your Top 50
++                  {t('top50.setupTitle')}
+                 </CardTitle>
+                 <CardDescription className="text-base">
+-                  Get your top 50 most played tracks from the last 12 months based on your Last.fm listening history.
++                  {t('top50.setupDescription')}
+                   <br />
+                   <br />
+-                  <strong>Setup:</strong> Configure your Last.fm username and API key in the sidebar settings (⚙️) → Integrations.
++                  <strong>{t('top50.setupPrefix')}</strong> {t('top50.setupInstructions')}
+                 </CardDescription>
+               </div>
+             </div>
+@@ -59,7 +61,7 @@ export default function Top50YearPage() {
+       <div className="w-full px-8 py-6">
+         <Card className="border-destructive max-w-2xl mx-auto mt-12">
+           <CardHeader>
+-            <CardTitle className="text-destructive">Error</CardTitle>
++            <CardTitle className="text-destructive">{t('generic.error')}</CardTitle>
+             <CardDescription className="text-destructive">
+               {error}
+             </CardDescription>
+@@ -74,7 +76,7 @@ export default function Top50YearPage() {
+       <div className="w-full px-8 py-6">
+         <div className="flex items-center justify-center gap-3 mt-12">
+           <RefreshCw className="h-5 w-5 animate-spin" />
+-          <span className="text-lg">Generating your Top 50 playlist...</span>
++          <span className="text-lg">{t('top50.generatingPlaylist')}</span>
+         </div>
+       </div>
+     )
+@@ -85,9 +87,9 @@ export default function Top50YearPage() {
+       <div className="w-full px-8 py-6">
+         <div className="max-w-2xl mx-auto mt-12 text-center">
+           <Trophy className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+-          <h2 className="text-2xl font-semibold mb-4">Your Top 50</h2>
++          <h2 className="text-2xl font-semibold mb-4">{t('top50.emptyTitle')}</h2>
+           <p className="text-muted-foreground mb-6">
+-            Your Top 50 playlist hasn't been generated yet.
++            {t('top50.emptyDescription')}
+           </p>
+           <Button
+             size="lg"
+@@ -95,7 +97,7 @@ export default function Top50YearPage() {
+             disabled={isGenerating}
+           >
+             <Trophy className="h-4 w-4 mr-2" />
+-            Generate Playlist
++            {t('top50.generatePlaylist')}
+           </Button>
+         </div>
+       </div>
+@@ -113,7 +115,7 @@ export default function Top50YearPage() {
+   const totalDuration = playlist.reduce((acc, song) => acc + song.duration, 0)
+   const duration = convertSecondsToHumanRead(totalDuration)
+ 
+-  const songCount = `${totalTracks} ${totalTracks === 1 ? 'song' : 'songs'}`
++  const songCount = t('playlist.songCount', { count: totalTracks })
+ 
+   const lastUpdated = lastGenerated
+     ? new Date(lastGenerated).toLocaleDateString()
+@@ -123,7 +125,7 @@ export default function Top50YearPage() {
+     { content: songCount, type: 'text' },
+     { content: duration, type: 'text' },
+     { content: `${year}`, type: 'text' },
+-    { content: lastUpdated ? `Updated ${lastUpdated}` : null, type: 'text' },
++    { content: lastUpdated ? t('top50.updated', { date: lastUpdated }) : null, type: 'text' },
+   ]
+ 
+   const handlePlayAll = () => {
+@@ -145,10 +147,10 @@ export default function Top50YearPage() {
+       comment: `Your top ${totalTracks} most played tracks from ${year}. Generated on ${lastUpdated || new Date().toLocaleDateString()}`,
+       isPublic: false,
+     })
+-    toast.success(`Playlist "${playlistName}" has been saved to your library!`)
++    toast.success(t('top50.savedSuccess', { name: playlistName }))
+   } catch (error) {
+     console.error('[Your Top 50] Save failed:', error)
+-    toast.error(`Failed to save playlist: ${error instanceof Error ? error.message : 'Unknown error'}`)
++    toast.error(t('top50.saveError', { message: error instanceof Error ? error.message : 'Unknown error' }))
+   } finally {
+     setIsSaving(false)
+   }
+@@ -160,13 +162,13 @@ export default function Top50YearPage() {
+   return (
+     <div className="w-full">
+       <ImageHeader
+-        type="Personalized Playlist"
+-        title="Your Top 50"
+-        subtitle="Your most played tracks from the last 12 months"
++        type={t('top50.headerType')}
++        title={t('top50.headerTitle')}
++        subtitle={t('top50.headerSubtitle')}
+         coverArtId={coverArt}
+         coverArtType="album"
+         coverArtSize="700"
+-        coverArtAlt="Your Top 50"
++        coverArtAlt={t('top50.headerTitle')}
+         badges={badges}
+         isPlaylist={true}
+       />
+@@ -179,7 +181,7 @@ export default function Top50YearPage() {
+             onClick={handlePlayAll}
+           >
+             <Play className="h-4 w-4 mr-2" />
+-            Play All
++            {t('generic.playAll')}
+           </Button>
+           <Button
+             variant="outline"
+@@ -187,7 +189,7 @@ export default function Top50YearPage() {
+             onClick={handlePlayShuffle}
+           >
+             <Shuffle className="h-4 w-4 mr-2" />
+-            Shuffle
++            {t('generic.shuffle')}
+           </Button>
+           <Button
+             variant="outline"
+@@ -195,8 +197,7 @@ export default function Top50YearPage() {
+             onClick={() => generate()}
+             disabled={isGenerating}
+           >
+-            <RefreshCw className="h-4 w-4 mr-2" />
+-            Refresh
++            <RefreshCw className="h-4 w-4" />
+           </Button>
+           <Button
+             variant="outline"
+@@ -205,7 +206,7 @@ export default function Top50YearPage() {
+             disabled={isSaving}
+           >
+             <Save className="h-4 w-4 mr-2" />
+-            {isSaving ? 'Saving...' : 'Save as Playlist'}
++            {isSaving ? t('generic.saving') : t('generic.saveAsPlaylist')}
+           </Button>
+         </div>
+ 
+@@ -214,7 +215,7 @@ export default function Top50YearPage() {
+           data={playlist}
+           handlePlaySong={(row) => setSongList(playlist, row.index)}
+           columnFilter={columnsToShow}
+-          noRowsMessage="No songs in your Top 50 yet"
++          noRowsMessage={t('top50.noSongs')}
+           variant="modern"
+         />
+       </ListWrapper>
+diff --git a/src/app/tables/songs-columns.tsx b/src/app/tables/songs-columns.tsx
+index d339512..b1e368e 100644
+--- a/src/app/tables/songs-columns.tsx
++++ b/src/app/tables/songs-columns.tsx
+@@ -7,6 +7,7 @@ import { SongQualityBadge } from '@/app/components/song/quality-badge'
+ import PlaySongButton from '@/app/components/table/play-button'
+ import { SongTableActions } from '@/app/components/table/song-actions'
+ import { TableSongTitle } from '@/app/components/table/song-title'
++import { TableLikeButton } from '@/app/components/table/like-button'
+ import { DataTableColumnHeader } from '@/app/components/ui/data-table-column-header'
+ import { SimpleTooltip } from '@/app/components/ui/simple-tooltip'
+ import i18n from '@/i18n'
+@@ -27,7 +28,11 @@ const MemoDataTableColumnHeader = memo(
+   DataTableColumnHeader,
+ ) as typeof DataTableColumnHeader
+ 
+-export function songsColumns(): ColumnDefType<ISong>[] {
++interface SongsColumnsConfig {
++  showHeartInSelect?: boolean
++}
++
++export function songsColumns({ showHeartInSelect = true }: SongsColumnsConfig = {}): ColumnDefType<ISong>[] {
+   return [
+     {
+       id: 'index',
+@@ -75,6 +80,26 @@ export function songsColumns(): ColumnDefType<ISong>[] {
+         )
+       },
+     },
++    {
++      id: 'starred',
++      accessorKey: 'starred',
++      style: {
++        width: 40,
++        maxWidth: 40,
++      },
++      header: () => (
++        <MemoSimpleTooltip text={i18n.t('table.columns.favorite')}>
++          <HeartIcon className="w-4 h-4" />
++        </MemoSimpleTooltip>
++      ),
++      cell: ({ row }) => (
++        <TableLikeButton
++          type="song"
++          entityId={row.original.id}
++          starred={typeof row.original.starred === 'string'}
++        />
++      ),
++    },
+     {
+       id: 'title',
+       accessorKey: 'title',
+@@ -255,6 +280,31 @@ export function songsColumns(): ColumnDefType<ISong>[] {
+         return <MemoSongQualityBadge song={row.original} />
+       },
+     },
++    {
++      id: 'created',
++      accessorKey: 'created',
++      enableSorting: true,
++      sortingFn: 'alphanumeric',
++      style: {
++        width: 150,
++        maxWidth: 150,
++      },
++      className: 'hidden lg:flex',
++      header: ({ column, table }) => (
++        <MemoDataTableColumnHeader column={column} table={table}>
++          {i18n.t('table.columns.dateAdded')}
++        </MemoDataTableColumnHeader>
++      ),
++      cell: ({ row }) => {
++        const { created } = row.original
++        if (!created) return ''
++        return (
++          <span className="text-muted-foreground">
++            {dateTime(created).format('ll')}
++          </span>
++        )
++      },
++    },
+     {
+       id: 'select',
+       style: {
+@@ -262,12 +312,14 @@ export function songsColumns(): ColumnDefType<ISong>[] {
+         maxWidth: 120,
+         justifyContent: 'end',
+       },
+-      header: () => (
+-        <MemoSimpleTooltip text={i18n.t('table.columns.favorite')}>
+-          <HeartIcon className="w-4 h-4 mr-2" />
+-        </MemoSimpleTooltip>
+-      ),
+-      cell: ({ row }) => <MemoSongTableActions row={row} />,
++      header: showHeartInSelect
++        ? () => (
++            <MemoSimpleTooltip text={i18n.t('table.columns.favorite')}>
++              <HeartIcon className="w-4 h-4 mr-2" />
++            </MemoSimpleTooltip>
++          )
++        : '',
++      cell: ({ row }) => <MemoSongTableActions row={row} showHeart={showHeartInSelect} />,
+     },
+   ]
+ }
+diff --git a/src/i18n/locales/de.json b/src/i18n/locales/de.json
+index ed2f5bc..060a4e2 100644
+--- a/src/i18n/locales/de.json
++++ b/src/i18n/locales/de.json
+@@ -11,7 +11,8 @@
+     "favorites": "Favoriten",
+     "playlists": "Wiedergabelisten",
+     "emptyPlaylist": "Noch keine Wiedergabelisten erstellt",
+-    "podcasts": "Podcasts"
++    "podcasts": "Podcasts",
++    "genres": "Genres"
+   },
+   "theme": {
+     "nuclear-dark": "Nuclear Dark",
+@@ -182,7 +183,8 @@
+       "contributors": "Mitwirkende",
+       "albumArtist": "Albumkünstler",
+       "channelCount": "Kanalanzahl",
+-      "samplingRate": "Abtastrate"
++      "samplingRate": "Abtastrate",
++      "dateAdded": "Hinzugefügt am"
+     },
+     "buttons": {
+       "play": "{{title}} von {{artist}} abspielen",
+@@ -299,6 +301,41 @@
+     "error": "Fehler beim Generieren der Warteschlange",
+     "apiKeyMissing": "Last.fm API-Schlüssel nicht in den Einstellungen konfiguriert"
+   },
++  "discoverWeekly": {
++    "setupTitle": "Discover Weekly einrichten",
++    "setupDescription": "Erhalte personalisierte Songempfehlungen basierend auf deiner Last.fm-Hörhistorie.",
++    "setupPrefix": "Setup:",
++    "setupInstructions": "Konfiguriere deinen Last.fm-Benutzernamen und API-Schlüssel in den Seitenleisten-Einstellungen (⚙️) → Integrationen.",
++    "generatingPlaylist": "Deine personalisierte Playlist wird erstellt...",
++    "emptyTitle": "Discover Weekly",
++    "emptyDescription": "Deine personalisierte Playlist wurde noch nicht erstellt.",
++    "generatePlaylist": "Playlist erstellen",
++    "headerType": "Personalisierte Playlist",
++    "headerSubtitle": "Dein personalisierter Mix basierend auf deiner Last.fm-Hörhistorie",
++    "updated": "Aktualisiert am {{date}}",
++    "artistCount_one": "{{count}} Künstler",
++    "artistCount_other": "{{count}} Künstler",
++    "noSongs": "Noch keine Songs in deiner Discover Weekly",
++    "savedSuccess": "Playlist \"{{name}}\" wurde in deiner Bibliothek gespeichert!",
++    "saveError": "Playlist konnte nicht gespeichert werden: {{message}}"
++  },
++  "top50": {
++    "setupTitle": "Deine Top 50 einrichten",
++    "setupDescription": "Erhalte deine 50 meistgespielten Tracks der letzten 12 Monate basierend auf deiner Last.fm-Hörhistorie.",
++    "setupPrefix": "Setup:",
++    "setupInstructions": "Konfiguriere deinen Last.fm-Benutzernamen und API-Schlüssel in den Seitenleisten-Einstellungen (⚙️) → Integrationen.",
++    "generatingPlaylist": "Deine Top-50-Playlist wird erstellt...",
++    "emptyTitle": "Deine Top 50",
++    "emptyDescription": "Deine Top-50-Playlist wurde noch nicht erstellt.",
++    "generatePlaylist": "Playlist erstellen",
++    "headerType": "Personalisierte Playlist",
++    "headerTitle": "Deine Top 50",
++    "headerSubtitle": "Deine meistgespielten Tracks der letzten 12 Monate",
++    "updated": "Aktualisiert am {{date}}",
++    "noSongs": "Noch keine Songs in deiner Top 50",
++    "savedSuccess": "Playlist \"{{name}}\" wurde in deiner Bibliothek gespeichert!",
++    "saveError": "Playlist konnte nicht gespeichert werden: {{message}}"
++  },
+   "dayjs": {
+     "relativeTime": {
+       "dd": "%d Tagen",
+@@ -321,7 +358,20 @@
+     "recentlyAdded": "Kürzlich hinzugefügt",
+     "recentlyPlayed": "Zuletzt gespielt",
+     "mostPlayed": "Am häufigsten gespielt",
+-    "explore": "Entdecken"
++    "explore": "Entdecken",
++    "discoverWeekly": "Discover Weekly",
++    "weeklyMix": "Dein wöchentlicher Mix",
++    "weeklyMixSoon": "Deine wöchentliche Playlist wird bald erstellt",
++    "recommendedAlbum": "Empfohlenes Album",
++    "browse": "Durchsuchen →",
++    "generating": "Wird generiert...",
++    "generatePlaylist": "Generiere deine tägliche Playlist",
++    "generate": "Generieren",
++    "configureLastfm": "Last.fm in Einstellungen → Integrationen konfigurieren",
++    "mostPlayedTrack": "Dein meistgespielter Track diese Woche",
++    "playsThisWeek_one": "{{count}} Mal diese Woche gehört",
++    "playsThisWeek_other": "{{count}} Mal diese Woche gehört",
++    "playNow": "Jetzt abspielen"
+   },
+   "menu": {
+     "language": "Sprache",
+@@ -342,7 +392,12 @@
+         "list": "Liste"
+       }
+     },
+-    "beta": "Beta"
++    "beta": "Beta",
++    "error": "Fehler",
++    "shuffle": "Zufällig",
++    "playAll": "Alle abspielen",
++    "saveAsPlaylist": "Als Playlist speichern",
++    "saving": "Wird gespeichert..."
+   },
+   "songs": {
+     "list": {
+@@ -358,6 +413,16 @@
+   "favorites": {
+     "noSongList": "Du hast noch keine Lieder zu den Favoriten hinzugefügt!"
+   },
++  "genres": {
++    "count_one": "{{count}} Genre",
++    "count_other": "{{count}} Genres",
++    "albumCount_one": "{{count}} Album",
++    "albumCount_other": "{{count}} Alben",
++    "buttons": {
++      "play": "{{genre}} abspielen",
++      "shuffle": "{{genre}} zufällig abspielen"
++    }
++  },
+   "artist": {
+     "headline": "Künstler",
+     "buttons": {
+@@ -523,6 +588,10 @@
+     "songError": "Unfähig, das Lied abzuspielen, überprüfe den Server!"
+   },
+   "update": {
++    "label": "Updates",
++    "description": "Nach neuen App-Versionen suchen",
++    "checkForUpdates": "Nach Updates suchen",
++    "checking": "Wird geprüft…",
+     "dialog": {
+       "title": "Neue Version verfügbar!",
+       "remindLater": "Später erinnern",
+@@ -536,7 +605,9 @@
+   },
+   "about": {
+     "client": "Client",
++    "clientDescription": "Musik-Streaming-Client",
+     "server": "Server",
++    "serverDescription": "Verbundener Subsonic-kompatibler Server",
+     "version": "Version",
+     "type": "Typ",
+     "apiVersion": "API-Version",
+@@ -572,6 +643,13 @@
+       }
+     },
+     "label": "Einstellungen",
++    "tabs": {
++      "appearance": "Erscheinungsbild",
++      "player": "Player",
++      "content": "Inhalte",
++      "services": "Dienste",
++      "about": "System"
++    },
+     "options": {
+       "appearance": "Erscheinungsbild",
+       "language": "Sprache & Region",
+@@ -685,6 +763,52 @@
+           "label": "API Key"
+         }
+       }
++    },
++    "io": {
++      "group": "Einstellungen sichern",
++      "description": "Einstellungen als JSON-Datei exportieren oder aus einer Sicherung wiederherstellen",
++      "export": {
++        "label": "Einstellungen exportieren",
++        "button": "Exportieren"
++      },
++      "import": {
++        "label": "Einstellungen importieren",
++        "button": "Importieren"
++      },
++      "toast": {
++        "importSuccess": "Einstellungen erfolgreich importiert",
++        "importError": "Import fehlgeschlagen: ungültige oder nicht unterstützte Datei"
++      }
++    },
++    "player": {
++      "audioProcessing": {
++        "group": "Audioverarbeitung"
++      },
++      "crossfade": {
++        "label": "Überblendung",
++        "info": "Lieder während der Wiedergabe weich ineinander überblenden"
++      },
++      "playlists": {
++        "group": "Wiedergabelisten",
++        "description": "Automatischen Import von Wiedergabelisten verwalten",
++        "autoImport": {
++          "label": "Automatischer Playlist-Import"
++        }
++      },
++      "interface": {
++        "group": "Oberfläche",
++        "description": "Player-Oberfläche anpassen"
++      },
++      "cache": {
++        "label": "Album-Cover zwischenspeichern"
++      },
++      "desktop": {
++        "group": "Desktop",
++        "description": "Desktop-spezifische Funktionen"
++      },
++      "tray": {
++        "label": "In Systemtray minimieren"
++      }
+     }
+   },
+   "podcasts": {
+diff --git a/src/i18n/locales/en.json b/src/i18n/locales/en.json
+index c18f43b..15c60b3 100644
+--- a/src/i18n/locales/en.json
++++ b/src/i18n/locales/en.json
+@@ -3,7 +3,20 @@
+     "recentlyPlayed": "Recently played",
+     "mostPlayed": "Most played",
+     "recentlyAdded": "Recently added",
+-    "explore": "Explore"
++    "explore": "Explore",
++    "discoverWeekly": "Discover Weekly",
++    "weeklyMix": "Your Weekly Mix",
++    "weeklyMixSoon": "Your weekly playlist will be generated soon",
++    "recommendedAlbum": "Recommended album",
++    "browse": "Browse →",
++    "generating": "Generating...",
++    "generatePlaylist": "Generate your daily playlist",
++    "generate": "Generate",
++    "configureLastfm": "Configure Last.fm in Settings → Integrations",
++    "mostPlayedTrack": "Your most played track this week",
++    "playsThisWeek_one": "{{count}} play this week",
++    "playsThisWeek_other": "{{count}} plays this week",
++    "playNow": "Play Now"
+   },
+   "sidebar": {
+     "home": "Home",
+@@ -19,7 +32,8 @@
+     "podcasts": "Podcasts",
+     "emptyPlaylist": "No playlists created yet",
+     "discoverWeekly": "Discover Weekly",
+-    "yourTop50": "Your Top 50"
++    "yourTop50": "Your Top 50",
++    "genres": "Genres"
+   },
+   "menu": {
+     "language": "Language",
+@@ -40,7 +54,12 @@
+         "poster": "Poster"
+       }
+     },
+-    "beta": "Beta"
++    "beta": "Beta",
++    "error": "Error",
++    "shuffle": "Shuffle",
++    "playAll": "Play All",
++    "saveAsPlaylist": "Save as Playlist",
++    "saving": "Saving..."
+   },
+   "theme": {
+     "label": "Theme",
+@@ -192,6 +211,16 @@
+   "favorites": {
+     "noSongList": "You haven't added any songs to favorites yet!"
+   },
++  "genres": {
++    "count_one": "{{count}} genre",
++    "count_other": "{{count}} genres",
++    "albumCount_one": "{{count}} album",
++    "albumCount_other": "{{count}} albums",
++    "buttons": {
++      "play": "Play {{genre}}",
++      "shuffle": "Shuffle {{genre}}"
++    }
++  },
+   "artist": {
+     "headline": "Artist",
+     "buttons": {
+@@ -322,7 +351,8 @@
+       "albumPeak": "Album peak",
+       "channelCount": "Channel count",
+       "samplingRate": "Sampling rate",
+-      "bitDepth": "Bit depth"
++      "bitDepth": "Bit depth",
++      "dateAdded": "Date added"
+     },
+     "buttons": {
+       "play": "Play {{title}} by {{artist}}",
+@@ -592,6 +622,10 @@
+     "songError": "Unable to play the song, check the Server!"
+   },
+   "update": {
++    "label": "Updates",
++    "description": "Check for new versions of the app",
++    "checkForUpdates": "Check for Updates",
++    "checking": "Checking…",
+     "dialog": {
+       "title": "New Version Available!",
+       "remindLater": "Remind Me Later",
+@@ -605,7 +639,9 @@
+   },
+   "about": {
+     "client": "Client",
++    "clientDescription": "Music streaming client",
+     "server": "Server",
++    "serverDescription": "Connected Subsonic-compatible server",
+     "version": "Version",
+     "type": "Type",
+     "apiVersion": "API Version",
+@@ -619,6 +655,13 @@
+   },
+   "settings": {
+     "label": "Settings",
++    "tabs": {
++      "appearance": "Appearance",
++      "player": "Player",
++      "content": "Content",
++      "services": "Services",
++      "about": "System"
++    },
+     "options": {
+       "appearance": "Appearance",
+       "language": "Language & Region",
+@@ -769,8 +812,89 @@
+           "label": "API Key"
+         }
+       }
++    },
++    "io": {
++      "group": "Settings Backup",
++      "description": "Export your settings as a JSON file or restore from a backup",
++      "export": {
++        "label": "Export Settings",
++        "button": "Export"
++      },
++      "import": {
++        "label": "Import Settings",
++        "button": "Import"
++      },
++      "toast": {
++        "importSuccess": "Settings imported successfully",
++        "importError": "Failed to import: invalid or unsupported file"
++      }
++    },
++    "player": {
++      "audioProcessing": {
++        "group": "Audio Processing"
++      },
++      "crossfade": {
++        "label": "Crossfade",
++        "info": "Smoothly fade between songs during playback"
++      },
++      "playlists": {
++        "group": "Playlists",
++        "description": "Manage playlist import behavior",
++        "autoImport": {
++          "label": "Automatic Playlist Import"
++        }
++      },
++      "interface": {
++        "group": "Interface",
++        "description": "Customize the player interface"
++      },
++      "cache": {
++        "label": "Cache Album Artwork"
++      },
++      "desktop": {
++        "group": "Desktop",
++        "description": "Desktop-specific features"
++      },
++      "tray": {
++        "label": "Close to System Tray"
++      }
+     }
+   },
++  "discoverWeekly": {
++    "setupTitle": "Setup Discover Weekly",
++    "setupDescription": "Get personalized song recommendations based on your Last.fm listening history.",
++    "setupPrefix": "Setup:",
++    "setupInstructions": "Configure your Last.fm username and API key in the sidebar settings (⚙️) → Integrations.",
++    "generatingPlaylist": "Generating your personalized playlist...",
++    "emptyTitle": "Discover Weekly",
++    "emptyDescription": "Your personalized playlist hasn't been generated yet.",
++    "generatePlaylist": "Generate Playlist",
++    "headerType": "Personalized Playlist",
++    "headerSubtitle": "Your personalized mix based on Last.fm listening history",
++    "updated": "Updated {{date}}",
++    "artistCount_one": "{{count}} artist",
++    "artistCount_other": "{{count}} artists",
++    "noSongs": "No songs in your Discover Weekly yet",
++    "savedSuccess": "Playlist \"{{name}}\" has been saved to your library!",
++    "saveError": "Failed to save playlist: {{message}}"
++  },
++  "top50": {
++    "setupTitle": "Setup Your Top 50",
++    "setupDescription": "Get your top 50 most played tracks from the last 12 months based on your Last.fm listening history.",
++    "setupPrefix": "Setup:",
++    "setupInstructions": "Configure your Last.fm username and API key in the sidebar settings (⚙️) → Integrations.",
++    "generatingPlaylist": "Generating your Top 50 playlist...",
++    "emptyTitle": "Your Top 50",
++    "emptyDescription": "Your Top 50 playlist hasn't been generated yet.",
++    "generatePlaylist": "Generate Playlist",
++    "headerType": "Personalized Playlist",
++    "headerTitle": "Your Top 50",
++    "headerSubtitle": "Your most played tracks from the last 12 months",
++    "updated": "Updated {{date}}",
++    "noSongs": "No songs in your Top 50 yet",
++    "savedSuccess": "Playlist \"{{name}}\" has been saved to your library!",
++    "saveError": "Failed to save playlist: {{message}}"
++  },
+   "dayjs": {
+     "relativeTime": {
+       "future": "in %s",
+diff --git a/src/routes/router.tsx b/src/routes/router.tsx
+index c882fb6..fdb06d8 100644
+--- a/src/routes/router.tsx
++++ b/src/routes/router.tsx
+@@ -45,6 +45,8 @@ const Episode = lazy(() => import('@/app/pages/podcasts/episode'))
+ const LatestEpisodes = lazy(
+   () => import('@/app/pages/podcasts/latest-episodes'),
+ )
++const GenresList = lazy(() => import('@/app/pages/genres/list'))
++const Genre = lazy(() => import('@/app/pages/genres/genre'))
+ 
+ export const router = createHashRouter([
+   {
+@@ -105,6 +107,26 @@ export const router = createHashRouter([
+           </Suspense>
+         ),
+       },
++      {
++        id: 'genres',
++        path: ROUTES.LIBRARY.GENRES,
++        errorElement: <ErrorPage />,
++        element: (
++          <Suspense fallback={<AlbumsFallback />}>
++            <GenresList />
++          </Suspense>
++        ),
++      },
++      {
++        id: 'genre',
++        path: ROUTES.GENRE.PATH,
++        errorElement: <ErrorPage />,
++        element: (
++          <Suspense fallback={<AlbumsFallback />}>
++            <Genre />
++          </Suspense>
++        ),
++      },
+       {
+         id: 'favorites',
+         path: ROUTES.LIBRARY.FAVORITES,
+diff --git a/src/routes/routesList.ts b/src/routes/routesList.ts
+index c13204e..21bfa8e 100644
+--- a/src/routes/routesList.ts
++++ b/src/routes/routesList.ts
+@@ -6,6 +6,7 @@ const LIBRARY = {
+   ARTISTS: '/library/artists',
+   SONGS: '/library/songs',
+   ALBUMS: '/library/albums',
++  GENRES: '/library/genres',
+   FAVORITES: '/library/favorites',
+   PLAYLISTS: '/library/playlists',
+   PODCASTS: '/library/podcasts',
+@@ -68,6 +69,11 @@ const EPISODES = {
+   LATEST: `${LIBRARY.EPISODES}/latest`,
+ }
+ 
++const GENRE = {
++  PAGE: (genre: string) => `/library/genres/${encodeURIComponent(genre)}`,
++  PATH: '/library/genres/:genre',
++}
++
+ const SERVER_CONFIG = '/server-config'
+ 
+ export const ROUTES = {
+@@ -80,5 +86,6 @@ export const ROUTES = {
+   PLAYLIST,
+   PODCASTS,
+   EPISODES,
++  GENRE,
+   SERVER_CONFIG,
+ }
+diff --git a/src/service/playlists.ts b/src/service/playlists.ts
+index 70af8a9..6743800 100644
+--- a/src/service/playlists.ts
++++ b/src/service/playlists.ts
+@@ -108,6 +108,18 @@ export async function createWithDetails(data: CreateParams) {
+   }
+ }
+ 
++async function reorderSongs(playlistId: string, songIds: string[]) {
++  const query = new URLSearchParams({ playlistId })
++  songIds.forEach((id) => query.append('songId', id))
++
++  await httpClient<SinglePlaylistResponse>(
++    `/createPlaylist?${query.toString()}`,
++    {
++      method: 'GET',
++    },
++  )
++}
++
+ export const playlists = {
+   getAll,
+   getOne,
+@@ -115,4 +127,5 @@ export const playlists = {
+   create,
+   createWithDetails,
+   update,
++  reorderSongs,
+ }
+diff --git a/src/store/app.store.ts b/src/store/app.store.ts
+index aeb8c0b..6ddb940 100644
+--- a/src/store/app.store.ts
++++ b/src/store/app.store.ts
+@@ -157,6 +157,18 @@ export const useAppStore = createWithEqualityFn<IAppContext>()(
+                 state.pages.imagesCacheLayerEnabled = value
+               })
+             },
++            autoPlaylistImport: false,
++            setAutoPlaylistImport: (value) => {
++              set((state) => {
++                state.pages.autoPlaylistImport = value
++              })
++            },
++            playlistOrder: [],
++            setPlaylistOrder: (order) => {
++              set((state) => {
++                state.pages.playlistOrder = order
++              })
++            },
+           },
+           desktop: {
+             data: {
+@@ -442,3 +454,9 @@ export const useAppImagesCacheLayer = () =>
+     imagesCacheLayerEnabled: state.pages.imagesCacheLayerEnabled,
+     setImagesCacheLayerEnabled: state.pages.setImagesCacheLayerEnabled,
+   }))
++
++export const usePlaylistOrder = () =>
++  useAppStore((state) => ({
++    playlistOrder: state.pages.playlistOrder,
++    setPlaylistOrder: state.pages.setPlaylistOrder,
++  }))
+diff --git a/src/store/player.store.ts b/src/store/player.store.ts
+index 253ca0a..87863f8 100644
+--- a/src/store/player.store.ts
++++ b/src/store/player.store.ts
+@@ -141,6 +141,14 @@ export const usePlayerStore = createWithEqualityFn<IPlayerContext>()(
+                 },
+               },
+             },
++            crossfade: {
++              enabled: false,
++              setEnabled: (value) => {
++                set((state) => {
++                  state.settings.crossfade.enabled = value
++                })
++              },
++            },
+             colors: {
+               currentSongColor: null,
+               currentSongColorPalette: null,
+@@ -723,6 +731,34 @@ export const usePlayerStore = createWithEqualityFn<IPlayerContext>()(
+                 state.songlist.originalSongIndex = updatedOriginalIndex
+               })
+             },
++            reorderQueue: (fromIndex, toIndex) => {
++              const { currentList, currentSongIndex } = get().songlist
++
++              const newList = [...currentList]
++              const [moved] = newList.splice(fromIndex, 1)
++              newList.splice(toIndex, 0, moved)
++
++              // Adjust currentSongIndex so the playing song stays correct
++              let newSongIndex = currentSongIndex
++              if (fromIndex === currentSongIndex) {
++                newSongIndex = toIndex
++              } else if (
++                fromIndex < currentSongIndex &&
++                toIndex >= currentSongIndex
++              ) {
++                newSongIndex = currentSongIndex - 1
++              } else if (
++                fromIndex > currentSongIndex &&
++                toIndex <= currentSongIndex
++              ) {
++                newSongIndex = currentSongIndex + 1
++              }
++
++              set((state) => {
++                state.songlist.currentList = newList
++                state.songlist.currentSongIndex = newSongIndex
++              })
++            },
+             setMainDrawerState: (status) => {
+               set((state) => {
+                 state.playerState.mainDrawerState = status
+@@ -1076,6 +1112,9 @@ export const useReplayGainState = () => {
+ export const useReplayGainActions = () =>
+   usePlayerStore((state) => state.settings.replayGain.actions)
+ 
++export const useCrossfadeSettings = () =>
++  usePlayerStore((state) => state.settings.crossfade)
++
+ export const useFullscreenPlayerSettings = () =>
+   usePlayerStore((state) => state.settings.fullscreen)
+ 
+diff --git a/src/types/columnFilter.ts b/src/types/columnFilter.ts
+index 81c937a..a6fc575 100644
+--- a/src/types/columnFilter.ts
++++ b/src/types/columnFilter.ts
+@@ -14,3 +14,4 @@ export type ColumnFilter =
+   | 'starred'
+   | 'select'
+   | 'remove'
++  | 'created'
+diff --git a/src/types/playerContext.ts b/src/types/playerContext.ts
+index f595bdc..0e43587 100644
+--- a/src/types/playerContext.ts
++++ b/src/types/playerContext.ts
+@@ -71,6 +71,11 @@ interface IReplayGain {
+   actions: IReplayGainActions
+ }
+ 
++interface ICrossfade {
++  enabled: boolean
++  setEnabled: (value: boolean) => void
++}
++
+ interface IFullscreen {
+   autoFullscreenEnabled: boolean
+   setAutoFullscreenEnabled: (value: boolean) => void
+@@ -132,6 +137,7 @@ export interface IPlayerSettings {
+   fullscreen: IFullscreen
+   lyrics: ILyrics
+   replayGain: IReplayGain
++  crossfade: ICrossfade
+   privacy: IPrivacySettings
+   colors: IColorsSettings
+ }
+@@ -164,6 +170,7 @@ export interface IPlayerActions {
+   setNextOnQueue: (songlist: ISong[]) => void
+   setLastOnQueue: (songlist: ISong[]) => void
+   removeSongFromQueue: (id: string) => void
++  reorderQueue: (fromIndex: number, toIndex: number) => void
+   setMainDrawerState: (state: boolean) => void
+   setQueueState: (state: boolean) => void
+   toggleQueueAction: () => void
+diff --git a/src/types/serverConfig.ts b/src/types/serverConfig.ts
+index 23092f3..6bd24cf 100644
+--- a/src/types/serverConfig.ts
++++ b/src/types/serverConfig.ts
+@@ -25,6 +25,10 @@ interface IAppPages {
+   setArtistsPageViewType: (type: PageViewType) => void
+   imagesCacheLayerEnabled: boolean
+   setImagesCacheLayerEnabled: (value: boolean) => void
++  autoPlaylistImport: boolean
++  setAutoPlaylistImport: (value: boolean) => void
++  playlistOrder: string[]
++  setPlaylistOrder: (order: string[]) => void
+ }
+ 
+ export interface IAppData extends IServerConfig {
+diff --git a/src/utils/gridTools.ts b/src/utils/gridTools.ts
+index ef63c5c..a3e6e56 100644
+--- a/src/utils/gridTools.ts
++++ b/src/utils/gridTools.ts
+@@ -1,4 +1,4 @@
+-export type GridViewWrapperType = 'artists' | 'albums'
++export type GridViewWrapperType = 'artists' | 'albums' | 'genres'
+ 
+ type SavedGridItem = Record<string, number>
+ 

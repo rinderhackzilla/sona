@@ -10,11 +10,11 @@ import { ServicesPage } from './pages/services'
 import { AboutPage } from './pages/about'
 
 const tabs = [
-  { value: 'appearance', label: 'Appearance', icon: Paintbrush, component: AppearancePage },
-  { value: 'player', label: 'Player', icon: Music, component: PlayerPage },
-  { value: 'content', label: 'Content', icon: FileText, component: ContentPage },
-  { value: 'services', label: 'Services', icon: Globe, component: ServicesPage },
-  { value: 'about', label: 'About', icon: Info, component: AboutPage },
+  { value: 'appearance', icon: Paintbrush, component: AppearancePage },
+  { value: 'player', icon: Music, component: PlayerPage },
+  { value: 'content', icon: FileText, component: ContentPage },
+  { value: 'services', icon: Globe, component: ServicesPage },
+  { value: 'about', icon: Info, component: AboutPage },
 ] as const
 
 export function SettingsDialog() {
@@ -44,7 +44,7 @@ export function SettingsDialog() {
             </div>
 
             <TabsList className="flex w-full bg-transparent rounded-none h-auto p-0 px-2 gap-0 justify-start">
-              {tabs.map(({ value, label, icon: Icon }) => (
+              {tabs.map(({ value, icon: Icon }) => (
                 <TabsTrigger
                   key={value}
                   value={value}
@@ -62,7 +62,7 @@ export function SettingsDialog() {
                   "
                 >
                   <Icon className="h-4 w-4 shrink-0" />
-                  <span>{label}</span>
+                  <span>{t(`settings.tabs.${value}`)}</span>
                 </TabsTrigger>
               ))}
             </TabsList>

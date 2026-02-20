@@ -141,6 +141,14 @@ export const usePlayerStore = createWithEqualityFn<IPlayerContext>()(
                 },
               },
             },
+            crossfade: {
+              enabled: false,
+              setEnabled: (value) => {
+                set((state) => {
+                  state.settings.crossfade.enabled = value
+                })
+              },
+            },
             colors: {
               currentSongColor: null,
               currentSongColorPalette: null,
@@ -723,6 +731,34 @@ export const usePlayerStore = createWithEqualityFn<IPlayerContext>()(
                 state.songlist.originalSongIndex = updatedOriginalIndex
               })
             },
+            reorderQueue: (fromIndex, toIndex) => {
+              const { currentList, currentSongIndex } = get().songlist
+
+              const newList = [...currentList]
+              const [moved] = newList.splice(fromIndex, 1)
+              newList.splice(toIndex, 0, moved)
+
+              // Adjust currentSongIndex so the playing song stays correct
+              let newSongIndex = currentSongIndex
+              if (fromIndex === currentSongIndex) {
+                newSongIndex = toIndex
+              } else if (
+                fromIndex < currentSongIndex &&
+                toIndex >= currentSongIndex
+              ) {
+                newSongIndex = currentSongIndex - 1
+              } else if (
+                fromIndex > currentSongIndex &&
+                toIndex <= currentSongIndex
+              ) {
+                newSongIndex = currentSongIndex + 1
+              }
+
+              set((state) => {
+                state.songlist.currentList = newList
+                state.songlist.currentSongIndex = newSongIndex
+              })
+            },
             setMainDrawerState: (status) => {
               set((state) => {
                 state.playerState.mainDrawerState = status
@@ -1075,6 +1111,9 @@ export const useReplayGainState = () => {
 
 export const useReplayGainActions = () =>
   usePlayerStore((state) => state.settings.replayGain.actions)
+
+export const useCrossfadeSettings = () =>
+  usePlayerStore((state) => state.settings.crossfade)
 
 export const useFullscreenPlayerSettings = () =>
   usePlayerStore((state) => state.settings.fullscreen)

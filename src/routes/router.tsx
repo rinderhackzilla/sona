@@ -45,6 +45,8 @@ const Episode = lazy(() => import('@/app/pages/podcasts/episode'))
 const LatestEpisodes = lazy(
   () => import('@/app/pages/podcasts/latest-episodes'),
 )
+const GenresList = lazy(() => import('@/app/pages/genres/list'))
+const Genre = lazy(() => import('@/app/pages/genres/genre'))
 
 export const router = createHashRouter([
   {
@@ -102,6 +104,26 @@ export const router = createHashRouter([
         element: (
           <Suspense fallback={<AlbumsFallback />}>
             <AlbumsList />
+          </Suspense>
+        ),
+      },
+      {
+        id: 'genres',
+        path: ROUTES.LIBRARY.GENRES,
+        errorElement: <ErrorPage />,
+        element: (
+          <Suspense fallback={<AlbumsFallback />}>
+            <GenresList />
+          </Suspense>
+        ),
+      },
+      {
+        id: 'genre',
+        path: ROUTES.GENRE.PATH,
+        errorElement: <ErrorPage />,
+        element: (
+          <Suspense fallback={<AlbumsFallback />}>
+            <Genre />
           </Suspense>
         ),
       },

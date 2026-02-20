@@ -1,5 +1,6 @@
 import { RefreshCw, Trophy, Info, Play, Shuffle, Save } from 'lucide-react'
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import ImageHeader from '@/app/components/album/image-header'
 import { BadgesData } from '@/app/components/header-info'
 import ListWrapper from '@/app/components/list-wrapper'
@@ -16,6 +17,7 @@ import { toast } from 'react-toastify'
 
 export default function Top50YearPage() {
   const columns = songsColumns()
+  const { t } = useTranslation()
   const {
     playlist,
     totalTracks,
@@ -38,13 +40,13 @@ export default function Top50YearPage() {
               <Info className="h-6 w-6 mt-0.5 text-muted-foreground" />
               <div className="flex-1">
                 <CardTitle className="text-xl mb-3">
-                  Setup Your Top 50
+                  {t('top50.setupTitle')}
                 </CardTitle>
                 <CardDescription className="text-base">
-                  Get your top 50 most played tracks from the last 12 months based on your Last.fm listening history.
+                  {t('top50.setupDescription')}
                   <br />
                   <br />
-                  <strong>Setup:</strong> Configure your Last.fm username and API key in the sidebar settings (⚙️) → Integrations.
+                  <strong>{t('top50.setupPrefix')}</strong> {t('top50.setupInstructions')}
                 </CardDescription>
               </div>
             </div>
@@ -59,7 +61,7 @@ export default function Top50YearPage() {
       <div className="w-full px-8 py-6">
         <Card className="border-destructive max-w-2xl mx-auto mt-12">
           <CardHeader>
-            <CardTitle className="text-destructive">Error</CardTitle>
+            <CardTitle className="text-destructive">{t('generic.error')}</CardTitle>
             <CardDescription className="text-destructive">
               {error}
             </CardDescription>
@@ -74,7 +76,7 @@ export default function Top50YearPage() {
       <div className="w-full px-8 py-6">
         <div className="flex items-center justify-center gap-3 mt-12">
           <RefreshCw className="h-5 w-5 animate-spin" />
-          <span className="text-lg">Generating your Top 50 playlist...</span>
+          <span className="text-lg">{t('top50.generatingPlaylist')}</span>
         </div>
       </div>
     )
@@ -85,9 +87,9 @@ export default function Top50YearPage() {
       <div className="w-full px-8 py-6">
         <div className="max-w-2xl mx-auto mt-12 text-center">
           <Trophy className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-          <h2 className="text-2xl font-semibold mb-4">Your Top 50</h2>
+          <h2 className="text-2xl font-semibold mb-4">{t('top50.emptyTitle')}</h2>
           <p className="text-muted-foreground mb-6">
-            Your Top 50 playlist hasn't been generated yet.
+            {t('top50.emptyDescription')}
           </p>
           <Button
             size="lg"
@@ -95,7 +97,7 @@ export default function Top50YearPage() {
             disabled={isGenerating}
           >
             <Trophy className="h-4 w-4 mr-2" />
-            Generate Playlist
+            {t('top50.generatePlaylist')}
           </Button>
         </div>
       </div>
@@ -113,7 +115,7 @@ export default function Top50YearPage() {
   const totalDuration = playlist.reduce((acc, song) => acc + song.duration, 0)
   const duration = convertSecondsToHumanRead(totalDuration)
 
-  const songCount = `${totalTracks} ${totalTracks === 1 ? 'song' : 'songs'}`
+  const songCount = t('playlist.songCount', { count: totalTracks })
 
   const lastUpdated = lastGenerated
     ? new Date(lastGenerated).toLocaleDateString()
@@ -123,7 +125,7 @@ export default function Top50YearPage() {
     { content: songCount, type: 'text' },
     { content: duration, type: 'text' },
     { content: `${year}`, type: 'text' },
-    { content: lastUpdated ? `Updated ${lastUpdated}` : null, type: 'text' },
+    { content: lastUpdated ? t('top50.updated', { date: lastUpdated }) : null, type: 'text' },
   ]
 
   const handlePlayAll = () => {
@@ -145,10 +147,10 @@ export default function Top50YearPage() {
       comment: `Your top ${totalTracks} most played tracks from ${year}. Generated on ${lastUpdated || new Date().toLocaleDateString()}`,
       isPublic: false,
     })
-    toast.success(`Playlist "${playlistName}" has been saved to your library!`)
+    toast.success(t('top50.savedSuccess', { name: playlistName }))
   } catch (error) {
     console.error('[Your Top 50] Save failed:', error)
-    toast.error(`Failed to save playlist: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    toast.error(t('top50.saveError', { message: error instanceof Error ? error.message : 'Unknown error' }))
   } finally {
     setIsSaving(false)
   }
@@ -160,13 +162,13 @@ export default function Top50YearPage() {
   return (
     <div className="w-full">
       <ImageHeader
-        type="Personalized Playlist"
-        title="Your Top 50"
-        subtitle="Your most played tracks from the last 12 months"
+        type={t('top50.headerType')}
+        title={t('top50.headerTitle')}
+        subtitle={t('top50.headerSubtitle')}
         coverArtId={coverArt}
         coverArtType="album"
         coverArtSize="700"
-        coverArtAlt="Your Top 50"
+        coverArtAlt={t('top50.headerTitle')}
         badges={badges}
         isPlaylist={true}
       />
@@ -179,7 +181,7 @@ export default function Top50YearPage() {
             onClick={handlePlayAll}
           >
             <Play className="h-4 w-4 mr-2" />
-            Play All
+            {t('generic.playAll')}
           </Button>
           <Button
             variant="outline"
@@ -187,7 +189,7 @@ export default function Top50YearPage() {
             onClick={handlePlayShuffle}
           >
             <Shuffle className="h-4 w-4 mr-2" />
-            Shuffle
+            {t('generic.shuffle')}
           </Button>
           <Button
             variant="outline"
@@ -195,8 +197,7 @@ export default function Top50YearPage() {
             onClick={() => generate()}
             disabled={isGenerating}
           >
-            <RefreshCw className="h-4 w-4 mr-2" />
-            Refresh
+            <RefreshCw className="h-4 w-4" />
           </Button>
           <Button
             variant="outline"
@@ -205,7 +206,7 @@ export default function Top50YearPage() {
             disabled={isSaving}
           >
             <Save className="h-4 w-4 mr-2" />
-            {isSaving ? 'Saving...' : 'Save as Playlist'}
+            {isSaving ? t('generic.saving') : t('generic.saveAsPlaylist')}
           </Button>
         </div>
 
@@ -214,7 +215,7 @@ export default function Top50YearPage() {
           data={playlist}
           handlePlaySong={(row) => setSongList(playlist, row.index)}
           columnFilter={columnsToShow}
-          noRowsMessage="No songs in your Top 50 yet"
+          noRowsMessage={t('top50.noSongs')}
           variant="modern"
         />
       </ListWrapper>

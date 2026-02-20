@@ -25,6 +25,10 @@ interface IAppPages {
   setArtistsPageViewType: (type: PageViewType) => void
   imagesCacheLayerEnabled: boolean
   setImagesCacheLayerEnabled: (value: boolean) => void
+  autoPlaylistImport: boolean
+  setAutoPlaylistImport: (value: boolean) => void
+  playlistOrder: string[]
+  setPlaylistOrder: (order: string[]) => void
 }
 
 export interface IAppData extends IServerConfig {

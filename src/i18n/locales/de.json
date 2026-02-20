@@ -11,7 +11,8 @@
     "favorites": "Favoriten",
     "playlists": "Wiedergabelisten",
     "emptyPlaylist": "Noch keine Wiedergabelisten erstellt",
-    "podcasts": "Podcasts"
+    "podcasts": "Podcasts",
+    "genres": "Genres"
   },
   "theme": {
     "nuclear-dark": "Nuclear Dark",
@@ -182,7 +183,8 @@
       "contributors": "Mitwirkende",
       "albumArtist": "Albumkünstler",
       "channelCount": "Kanalanzahl",
-      "samplingRate": "Abtastrate"
+      "samplingRate": "Abtastrate",
+      "dateAdded": "Hinzugefügt am"
     },
     "buttons": {
       "play": "{{title}} von {{artist}} abspielen",
@@ -299,6 +301,41 @@
     "error": "Fehler beim Generieren der Warteschlange",
     "apiKeyMissing": "Last.fm API-Schlüssel nicht in den Einstellungen konfiguriert"
   },
+  "discoverWeekly": {
+    "setupTitle": "Discover Weekly einrichten",
+    "setupDescription": "Erhalte personalisierte Songempfehlungen basierend auf deiner Last.fm-Hörhistorie.",
+    "setupPrefix": "Setup:",
+    "setupInstructions": "Konfiguriere deinen Last.fm-Benutzernamen und API-Schlüssel in den Seitenleisten-Einstellungen (⚙️) → Integrationen.",
+    "generatingPlaylist": "Deine personalisierte Playlist wird erstellt...",
+    "emptyTitle": "Discover Weekly",
+    "emptyDescription": "Deine personalisierte Playlist wurde noch nicht erstellt.",
+    "generatePlaylist": "Playlist erstellen",
+    "headerType": "Personalisierte Playlist",
+    "headerSubtitle": "Dein personalisierter Mix basierend auf deiner Last.fm-Hörhistorie",
+    "updated": "Aktualisiert am {{date}}",
+    "artistCount_one": "{{count}} Künstler",
+    "artistCount_other": "{{count}} Künstler",
+    "noSongs": "Noch keine Songs in deiner Discover Weekly",
+    "savedSuccess": "Playlist \"{{name}}\" wurde in deiner Bibliothek gespeichert!",
+    "saveError": "Playlist konnte nicht gespeichert werden: {{message}}"
+  },
+  "top50": {
+    "setupTitle": "Deine Top 50 einrichten",
+    "setupDescription": "Erhalte deine 50 meistgespielten Tracks der letzten 12 Monate basierend auf deiner Last.fm-Hörhistorie.",
+    "setupPrefix": "Setup:",
+    "setupInstructions": "Konfiguriere deinen Last.fm-Benutzernamen und API-Schlüssel in den Seitenleisten-Einstellungen (⚙️) → Integrationen.",
+    "generatingPlaylist": "Deine Top-50-Playlist wird erstellt...",
+    "emptyTitle": "Deine Top 50",
+    "emptyDescription": "Deine Top-50-Playlist wurde noch nicht erstellt.",
+    "generatePlaylist": "Playlist erstellen",
+    "headerType": "Personalisierte Playlist",
+    "headerTitle": "Deine Top 50",
+    "headerSubtitle": "Deine meistgespielten Tracks der letzten 12 Monate",
+    "updated": "Aktualisiert am {{date}}",
+    "noSongs": "Noch keine Songs in deiner Top 50",
+    "savedSuccess": "Playlist \"{{name}}\" wurde in deiner Bibliothek gespeichert!",
+    "saveError": "Playlist konnte nicht gespeichert werden: {{message}}"
+  },
   "dayjs": {
     "relativeTime": {
       "dd": "%d Tagen",
@@ -321,7 +358,20 @@
     "recentlyAdded": "Kürzlich hinzugefügt",
     "recentlyPlayed": "Zuletzt gespielt",
     "mostPlayed": "Am häufigsten gespielt",
-    "explore": "Entdecken"
+    "explore": "Entdecken",
+    "discoverWeekly": "Discover Weekly",
+    "weeklyMix": "Dein wöchentlicher Mix",
+    "weeklyMixSoon": "Deine wöchentliche Playlist wird bald erstellt",
+    "recommendedAlbum": "Empfohlenes Album",
+    "browse": "Durchsuchen →",
+    "generating": "Wird generiert...",
+    "generatePlaylist": "Generiere deine tägliche Playlist",
+    "generate": "Generieren",
+    "configureLastfm": "Last.fm in Einstellungen → Integrationen konfigurieren",
+    "mostPlayedTrack": "Dein meistgespielter Track diese Woche",
+    "playsThisWeek_one": "{{count}} Mal diese Woche gehört",
+    "playsThisWeek_other": "{{count}} Mal diese Woche gehört",
+    "playNow": "Jetzt abspielen"
   },
   "menu": {
     "language": "Sprache",
@@ -342,7 +392,12 @@
         "list": "Liste"
       }
     },
-    "beta": "Beta"
+    "beta": "Beta",
+    "error": "Fehler",
+    "shuffle": "Zufällig",
+    "playAll": "Alle abspielen",
+    "saveAsPlaylist": "Als Playlist speichern",
+    "saving": "Wird gespeichert..."
   },
   "songs": {
     "list": {
@@ -357,6 +412,16 @@
   },
   "favorites": {
     "noSongList": "Du hast noch keine Lieder zu den Favoriten hinzugefügt!"
+  },
+  "genres": {
+    "count_one": "{{count}} Genre",
+    "count_other": "{{count}} Genres",
+    "albumCount_one": "{{count}} Album",
+    "albumCount_other": "{{count}} Alben",
+    "buttons": {
+      "play": "{{genre}} abspielen",
+      "shuffle": "{{genre}} zufällig abspielen"
+    }
   },
   "artist": {
     "headline": "Künstler",
@@ -523,6 +588,10 @@
     "songError": "Unfähig, das Lied abzuspielen, überprüfe den Server!"
   },
   "update": {
+    "label": "Updates",
+    "description": "Nach neuen App-Versionen suchen",
+    "checkForUpdates": "Nach Updates suchen",
+    "checking": "Wird geprüft…",
     "dialog": {
       "title": "Neue Version verfügbar!",
       "remindLater": "Später erinnern",
@@ -536,7 +605,9 @@
   },
   "about": {
     "client": "Client",
+    "clientDescription": "Musik-Streaming-Client",
     "server": "Server",
+    "serverDescription": "Verbundener Subsonic-kompatibler Server",
     "version": "Version",
     "type": "Typ",
     "apiVersion": "API-Version",
@@ -572,6 +643,13 @@
       }
     },
     "label": "Einstellungen",
+    "tabs": {
+      "appearance": "Erscheinungsbild",
+      "player": "Player",
+      "content": "Inhalte",
+      "services": "Dienste",
+      "about": "System"
+    },
     "options": {
       "appearance": "Erscheinungsbild",
       "language": "Sprache & Region",
@@ -684,6 +762,52 @@
         "apiKey": {
           "label": "API Key"
         }
+      }
+    },
+    "io": {
+      "group": "Einstellungen sichern",
+      "description": "Einstellungen als JSON-Datei exportieren oder aus einer Sicherung wiederherstellen",
+      "export": {
+        "label": "Einstellungen exportieren",
+        "button": "Exportieren"
+      },
+      "import": {
+        "label": "Einstellungen importieren",
+        "button": "Importieren"
+      },
+      "toast": {
+        "importSuccess": "Einstellungen erfolgreich importiert",
+        "importError": "Import fehlgeschlagen: ungültige oder nicht unterstützte Datei"
+      }
+    },
+    "player": {
+      "audioProcessing": {
+        "group": "Audioverarbeitung"
+      },
+      "crossfade": {
+        "label": "Überblendung",
+        "info": "Lieder während der Wiedergabe weich ineinander überblenden"
+      },
+      "playlists": {
+        "group": "Wiedergabelisten",
+        "description": "Automatischen Import von Wiedergabelisten verwalten",
+        "autoImport": {
+          "label": "Automatischer Playlist-Import"
+        }
+      },
+      "interface": {
+        "group": "Oberfläche",
+        "description": "Player-Oberfläche anpassen"
+      },
+      "cache": {
+        "label": "Album-Cover zwischenspeichern"
+      },
+      "desktop": {
+        "group": "Desktop",
+        "description": "Desktop-spezifische Funktionen"
+      },
+      "tray": {
+        "label": "In Systemtray minimieren"
       }
     }
   },

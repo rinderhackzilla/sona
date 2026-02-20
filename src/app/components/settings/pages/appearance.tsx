@@ -36,12 +36,6 @@ export function AppearancePage() {
   return (
     <div className="space-y-6">
       <Root>
-        <Header>
-          <HeaderTitle>{t('settings.appearance.general.group', 'General')}</HeaderTitle>
-          <HeaderDescription>
-            {t('settings.appearance.general.description', 'Customize the appearance of the app')}
-          </HeaderDescription>
-        </Header>
         <Content>
           <ContentItem>
             <ContentItemTitle info={t('settings.appearance.general.fullscreen.info')}>

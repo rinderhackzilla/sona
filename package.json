@@ -1,7 +1,7 @@
 {
   "name": "Sona",
   "private": true,
-  "version": "0.13.2",
+  "version": "0.14.0",
   "description": "A modern desktop client for Navidrome/Subsonic servers.",
   "author": {
     "name": "rinderhack"
@@ -37,6 +37,9 @@
   },
   "dependencies": {
     "@chriscodesthings/random-css-hex-color": "^1.1.0",
+    "@dnd-kit/core": "^6.3.1",
+    "@dnd-kit/sortable": "^10.0.0",
+    "@dnd-kit/utilities": "^3.2.2",
     "@electron-toolkit/preload": "^3.0.1",
     "@electron-toolkit/utils": "^4.0.0",
     "@hookform/resolvers": "^3.10.0",
@@ -140,7 +143,11 @@
     "vite": "^7.3.1"
   },
   "pnpm": {
-    "onlyBuiltDependencies": ["cypress", "electron", "esbuild"],
+    "onlyBuiltDependencies": [
+      "cypress",
+      "electron",
+      "esbuild"
+    ],
     "overrides": {
       "brace-expansion": "^2.0.2",
       "glob": "^11.0.0",
@@ -149,7 +156,7 @@
   },
   "electron": {
     "window": {
-      "defaultWidth": 960,
+      "defaultWidth": 1100,
       "defaultHeight": 600,
       "defaultBgColor": "#060e23"
     }

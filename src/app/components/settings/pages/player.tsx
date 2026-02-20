@@ -21,7 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/app/components/ui/select'
-import { useReplayGainActions, useReplayGainState } from '@/store/player.store'
+import { useCrossfadeSettings, useReplayGainActions, useReplayGainState } from '@/store/player.store'
 import { useAppPages, useAppAccounts, useAppDesktopActions, useAppDesktopData, useAppImagesCacheLayer } from '@/store/app.store'
 import { ReplayGainType } from '@/types/playerContext'
 import { isDesktop } from '@/utils/desktop'
@@ -49,8 +49,11 @@ export function PlayerPage() {
     setReplayGainError,
   } = useReplayGainActions()
 
-  // Sidebar
-  const { hideRadiosSection, setHideRadiosSection } = useAppPages()
+  // Crossfade
+  const { enabled: crossfadeEnabled, setEnabled: setCrossfadeEnabled } = useCrossfadeSettings()
+
+  // Sidebar & Playlists
+  const { hideRadiosSection, setHideRadiosSection, autoPlaylistImport, setAutoPlaylistImport } = useAppPages()
 
   // Cache
   const { imagesCacheLayerEnabled, setImagesCacheLayerEnabled } = useAppImagesCacheLayer()
@@ -70,18 +73,16 @@ export function PlayerPage() {
 
   return (
     <div className="space-y-6">
-      {/* Replay Gain */}
+      {/* Audio Processing */}
       <Root>
         <Header>
-          <HeaderTitle>{t('settings.audio.replayGain.group', 'Replay Gain')}</HeaderTitle>
-          <HeaderDescription>
-            {t('settings.audio.replayGain.description', 'Normalize volume levels across tracks')}
-          </HeaderDescription>
+          <HeaderTitle>{t('settings.player.audioProcessing.group', 'Audio Processing')}</HeaderTitle>
         </Header>
         <Content>
+          {/* Replay Gain toggle */}
           <ContentItem>
             <ContentItemTitle>
-              {t('settings.audio.replayGain.enabled', 'Enable Replay Gain')}
+              {t('settings.audio.replayGain.group', 'Replay Gain')}
             </ContentItemTitle>
             <ContentItemForm>
               <Switch
@@ -170,6 +171,43 @@ export function PlayerPage() {
               </ContentItem>
             </>
           )}
+
+          {/* Crossfade toggle */}
+          <ContentItem>
+            <ContentItemTitle info={t('settings.player.crossfade.info')}>
+              {t('settings.player.crossfade.label', 'Crossfade')}
+            </ContentItemTitle>
+            <ContentItemForm>
+              <Switch
+                checked={crossfadeEnabled}
+                onCheckedChange={setCrossfadeEnabled}
+              />
+            </ContentItemForm>
+          </ContentItem>
+        </Content>
+        <ContentSeparator />
+      </Root>
+
+      {/* Playlists */}
+      <Root>
+        <Header>
+          <HeaderTitle>{t('settings.player.playlists.group', 'Playlists')}</HeaderTitle>
+          <HeaderDescription>
+            {t('settings.player.playlists.description', 'Manage playlist import behavior')}
+          </HeaderDescription>
+        </Header>
+        <Content>
+          <ContentItem>
+            <ContentItemTitle>
+              {t('settings.player.playlists.autoImport.label', 'Automatic Playlist Import')}
+            </ContentItemTitle>
+            <ContentItemForm>
+              <Switch
+                checked={autoPlaylistImport}
+                onCheckedChange={setAutoPlaylistImport}
+              />
+            </ContentItemForm>
+          </ContentItem>
         </Content>
         <ContentSeparator />
       </Root>

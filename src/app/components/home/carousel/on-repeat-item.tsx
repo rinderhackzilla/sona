@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Play, Repeat } from 'lucide-react'
 import { ImageLoader } from '@/app/components/image-loader'
 import { Button } from '@/app/components/ui/button'
@@ -14,6 +15,7 @@ interface OnRepeatItemProps {
 }
 
 export function OnRepeatItem({ song, playcount }: OnRepeatItemProps) {
+  const { t } = useTranslation()
   const { setSongList } = usePlayerActions()
   const [imageLoaded, setImageLoaded] = useState(false)
 
@@ -71,7 +73,7 @@ export function OnRepeatItem({ song, playcount }: OnRepeatItemProps) {
             <div className="flex items-center gap-2 mb-2">
               <Repeat className="w-4 h-4 text-primary" />
               <p className="text-sm text-primary font-medium">
-                Your most played track this week
+                {t('home.mostPlayedTrack')}
               </p>
             </div>
             <Link
@@ -92,7 +94,7 @@ export function OnRepeatItem({ song, playcount }: OnRepeatItemProps) {
 
           <div className="flex items-center gap-3">
             <span className="px-3 py-1 text-xs rounded-full bg-primary/10 text-primary font-medium">
-              {playcount} {playcount === 1 ? 'play' : 'plays'} this week
+              {t('home.playsThisWeek', { count: playcount })}
             </span>
             {song.genre && (
               <span className="px-3 py-1 text-xs rounded-full bg-muted">
@@ -112,7 +114,7 @@ export function OnRepeatItem({ song, playcount }: OnRepeatItemProps) {
             size="lg"
           >
             <Play className="w-5 h-5" fill="currentColor" />
-            Play Now
+            {t('home.playNow')}
           </Button>
         </div>
       </div>

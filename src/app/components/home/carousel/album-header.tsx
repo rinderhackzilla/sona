@@ -2,6 +2,7 @@ import Autoplay from 'embla-carousel-autoplay'
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { Play } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { ImageLoader } from '@/app/components/image-loader'
 import { OnRepeatItem } from '@/app/components/home/carousel/on-repeat-item'
 import {
@@ -27,6 +28,7 @@ interface AlbumHeaderProps {
 }
 
 function AlbumHeaderItem({ album }: { album: Albums }) {
+  const { t } = useTranslation()
   const { setSongList } = usePlayerActions()
   const [imageLoaded, setImageLoaded] = useState(false)
 
@@ -38,7 +40,7 @@ function AlbumHeaderItem({ album }: { album: Albums }) {
   }
 
   return (
-    <div className="relative w-full h-[250px] 2xl:h-[300px] overflow-hidden">
+    <div className="relative w-full h-[200px] sm:h-[250px] 2xl:h-[300px] overflow-hidden">
       {/* Background Image with Blur */}
       <ImageLoader id={album.coverArt} type="album">
         {(src) => (
@@ -53,7 +55,7 @@ function AlbumHeaderItem({ album }: { album: Albums }) {
       </ImageLoader>
 
       {/* Content */}
-      <div className="relative h-full flex items-center gap-6 px-8 z-10">
+      <div className="relative h-full flex items-center gap-4 sm:gap-6 px-4 sm:px-8 z-10">
         {/* Album Cover */}
         <Link
           to={ROUTES.ALBUM.PAGE(album.id)}
@@ -65,7 +67,7 @@ function AlbumHeaderItem({ album }: { album: Albums }) {
                 src={src}
                 alt={album.name}
                 className={cn(
-                  'w-[180px] h-[180px] 2xl:w-[220px] 2xl:h-[220px] rounded-lg shadow-2xl object-cover transition-all duration-300 group-hover:scale-105',
+                  'w-[120px] h-[120px] sm:w-[160px] sm:h-[160px] 2xl:w-[220px] 2xl:h-[220px] rounded-lg shadow-2xl object-cover transition-all duration-300 group-hover:scale-105',
                   imageLoaded ? 'opacity-100' : 'opacity-0'
                 )}
                 onLoad={() => setImageLoaded(true)}
@@ -75,28 +77,28 @@ function AlbumHeaderItem({ album }: { album: Albums }) {
         </Link>
 
         {/* Album Info */}
-        <div className="flex-1 flex flex-col gap-3 min-w-0">
+        <div className="flex-1 flex flex-col gap-2 sm:gap-3 min-w-0">
           <div>
-            <p className="text-sm text-muted-foreground mb-2">
-              Recommended album
+            <p className="text-xs sm:text-sm text-muted-foreground mb-1 sm:mb-2">
+              {t('home.recommendedAlbum')}
             </p>
             <Link
               to={ROUTES.ALBUM.PAGE(album.id)}
               className="hover:underline"
             >
-              <h2 className="text-4xl 2xl:text-5xl font-bold truncate">
+              <h2 className="text-2xl sm:text-3xl lg:text-4xl 2xl:text-5xl font-bold truncate">
                 {album.name}
               </h2>
             </Link>
             <Link
               to={ROUTES.ARTIST.PAGE(album.artistId || '')}
-              className="text-xl text-muted-foreground hover:text-primary hover:underline inline-block mt-1"
+              className="text-base sm:text-xl text-muted-foreground hover:text-primary hover:underline inline-block mt-1"
             >
               {album.artist}
             </Link>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="hidden sm:flex items-center gap-3">
             {album.genre && (
               <span className="px-3 py-1 text-xs rounded-full bg-primary/10 text-primary">
                 {album.genre}
@@ -109,7 +111,7 @@ function AlbumHeaderItem({ album }: { album: Albums }) {
             )}
             {album.songCount && (
               <span className="text-sm text-muted-foreground">
-                {album.songCount} {album.songCount === 1 ? 'song' : 'songs'}
+                {t('playlist.songCount', { count: album.songCount })}
               </span>
             )}
           </div>
@@ -117,10 +119,10 @@ function AlbumHeaderItem({ album }: { album: Albums }) {
           <Button
             onClick={handlePlayAlbum}
             className="w-fit gap-2"
-            size="lg"
+            size="sm"
           >
-            <Play className="w-5 h-5" fill="currentColor" />
-            Play Album
+            <Play className="w-4 h-4" fill="currentColor" />
+            {t('options.play')}
           </Button>
         </div>
       </div>
@@ -136,23 +138,11 @@ export default function AlbumHeader({
   const [_api, setApi] = useState<CarouselApi>()
   const { data: onRepeat, isLoading: onRepeatLoading, error: onRepeatError } = useOnRepeat()
 
-  // Debug logging
-  useEffect(() => {
-    console.log('[AlbumHeader] On Repeat Status:', {
-      isLoading: onRepeatLoading,
-      hasData: !!onRepeat,
-      hasSong: !!onRepeat?.song,
-      error: onRepeatError,
-      data: onRepeat,
-    })
-  }, [onRepeat, onRepeatLoading, onRepeatError])
-
   // Combine On Repeat with albums
   const carouselItems = []
   
   // Add On Repeat as first item if available
   if (onRepeat?.song) {
-    console.log('[AlbumHeader] Adding On Repeat to carousel:', onRepeat)
     carouselItems.push({
       type: 'onRepeat' as const,
       data: onRepeat,
@@ -166,8 +156,6 @@ export default function AlbumHeader({
       data: album,
     })
   })
-
-  console.log('[AlbumHeader] Total carousel items:', carouselItems.length, carouselItems)
 
   if (carouselItems.length === 0 && !onRepeatLoading) return null
 

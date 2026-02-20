@@ -1,4 +1,5 @@
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useParams } from 'react-router-dom'
 import ImageHeader from '@/app/components/album/image-header'
@@ -13,14 +14,16 @@ import { songsColumns } from '@/app/tables/songs-columns'
 import { subsonic } from '@/service/subsonic'
 import { usePlayerActions } from '@/store/player.store'
 import { ColumnFilter } from '@/types/columnFilter'
+import { PlaylistWithEntries } from '@/types/responses/playlist'
 import { convertSecondsToHumanRead } from '@/utils/convertSecondsToTime'
 import { queryKeys } from '@/utils/queryKeys'
 
 export default function Playlist() {
   const { playlistId } = useParams() as { playlistId: string }
   const { t } = useTranslation()
-  const columns = songsColumns()
+  const columns = songsColumns({ showHeartInSelect: false })
   const { setSongList } = usePlayerActions()
+  const queryClient = useQueryClient()
 
   const {
     data: playlist,
@@ -31,16 +34,51 @@ export default function Playlist() {
     queryFn: () => subsonic.playlists.getOne(playlistId),
   })
 
+  const handleReorder = useCallback(
+    async (fromIndex: number, toIndex: number) => {
+      if (!playlist?.entry) return
+
+      const newEntries = [...playlist.entry]
+      const [moved] = newEntries.splice(fromIndex, 1)
+      newEntries.splice(toIndex, 0, moved)
+
+      // Optimistic update
+      queryClient.setQueryData(
+        [queryKeys.playlist.single, playlistId],
+        (old: PlaylistWithEntries | undefined) => {
+          if (!old) return old
+          return { ...old, entry: newEntries }
+        },
+      )
+
+      // Persist to server
+      try {
+        await subsonic.playlists.reorderSongs(
+          playlistId,
+          newEntries.map((s) => s.id),
+        )
+      } catch {
+        // Roll back on failure
+        queryClient.invalidateQueries({
+          queryKey: [queryKeys.playlist.single, playlistId],
+        })
+      }
+    },
+    [playlist, playlistId, queryClient],
+  )
+
   if (isFetching || isLoading) return <PlaylistFallback />
   if (!playlist) return <ErrorPage status={404} statusText="Not Found" />
 
   const columnsToShow: ColumnFilter[] = [
     'index',
+    'starred',
     'title',
     // 'artist',
     'album',
     'duration',
     'playCount',
+    'created',
     'contentType',
     'select',
   ]
@@ -89,6 +127,8 @@ export default function Playlist() {
           columnFilter={columnsToShow}
           noRowsMessage={t('playlist.noSongList')}
           variant="modern"
+          onReorder={handleReorder}
+          enableSorting={true}
         />
 
         <RemoveSongFromPlaylistDialog />

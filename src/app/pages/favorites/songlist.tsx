@@ -1,3 +1,4 @@
+import { Heart } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { ShadowHeader } from '@/app/components/album/shadow-header'
 import { InfinitySongListFallback } from '@/app/components/fallbacks/song-fallbacks'
@@ -47,7 +48,10 @@ export default function SongList() {
         fixed={false}
         className="relative w-full justify-between items-center"
       >
-        <HeaderTitle title={title} count={songCount} loading={isLoading} />
+        <div className="flex gap-3 items-center">
+          <Heart className="w-6 h-6 text-red-500 fill-red-500" />
+          <HeaderTitle title={title} count={songCount} loading={isLoading} />
+        </div>
       </ShadowHeader>
 
       <div className="w-full h-[calc(100%-80px)] overflow-auto">
@@ -57,6 +61,7 @@ export default function SongList() {
           handlePlaySong={(row) => handlePlaySong(row.index)}
           columnFilter={columnsToShow}
           noRowsMessage={t('favorites.noSongList')}
+          enableSorting={true}
         />
       </div>
     </div>
