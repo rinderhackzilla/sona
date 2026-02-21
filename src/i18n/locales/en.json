@@ -202,7 +202,8 @@
       },
       "search": {
         "placeholder": "Search albums…"
-      }
+      },
+      "shuffleAll": "Shuffle All"
     },
     "table": {
       "discNumber": "Disc {{number}}"

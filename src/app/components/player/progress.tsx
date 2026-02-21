@@ -72,10 +72,14 @@ export function PlayerProgress({ audioRef }: PlayerProgressProps) {
     }
   }, [localProgress, progress, setProgress, updateAudioCurrentTime])
 
+  const [showRemaining, setShowRemaining] = useState(false)
+
   const songDuration = useMemo(
     () => convertSecondsToTime(currentDuration ?? 0),
     [currentDuration],
   )
+
+  const remainingTime = `-${convertSecondsToTime((currentDuration ?? 0) - (isSeeking ? localProgress : progress))}`
 
   const sendScrobble = useCallback(async (songId: string) => {
     await subsonic.scrobble.send(songId)
@@ -202,12 +206,13 @@ export function PlayerProgress({ audioRef }: PlayerProgressProps) {
       )}
       <small
         className={clsx(
-          'text-xs text-muted-foreground text-left',
+          'text-xs text-muted-foreground text-left cursor-pointer select-none',
           isDurationLarge ? 'min-w-14' : 'min-w-10',
         )}
         data-testid="player-duration-time"
+        onClick={() => setShowRemaining((v) => !v)}
       >
-        {songDuration}
+        {showRemaining ? remainingTime : songDuration}
       </small>
     </div>
   )

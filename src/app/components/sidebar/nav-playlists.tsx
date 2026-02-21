@@ -120,7 +120,7 @@ export function NavPlaylists() {
         <DragOverlay dropAnimation={null}>
           {activePlaylist ? (
             <MainSidebarMenuItem>
-              <MainSidebarMenuButton className="pl-6 bg-accent/80 shadow-lg cursor-grabbing">
+              <MainSidebarMenuButton className="pl-3 bg-accent/80 shadow-lg cursor-grabbing">
                 <ListMusic className="w-4 h-4 shrink-0" />
                 <span className="truncate">{activePlaylist.name}</span>
               </MainSidebarMenuButton>

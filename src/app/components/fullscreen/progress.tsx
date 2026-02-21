@@ -48,7 +48,10 @@ export function FullscreenProgress() {
     }
   }, [localProgress, progress, setProgress, updateAudioCurrentTime])
 
+  const [showRemaining, setShowRemaining] = useState(false)
+
   const currentTime = convertSecondsToTime(isSeeking ? localProgress : progress)
+  const remainingTime = `-${convertSecondsToTime((currentDuration ?? 0) - (isSeeking ? localProgress : progress))}`
 
   return (
     <div className="flex items-center gap-3">
@@ -70,8 +73,11 @@ export function FullscreenProgress() {
         onMouseUp={handleSeekedFallback}
       />
 
-      <div className="min-w-[50px] max-w-[60px] text-left drop-shadow-lg">
-        {convertSecondsToTime(currentDuration ?? 0)}
+      <div
+        className="min-w-[50px] max-w-[60px] text-left drop-shadow-lg cursor-pointer select-none"
+        onClick={() => setShowRemaining((v) => !v)}
+      >
+        {showRemaining ? remainingTime : convertSecondsToTime(currentDuration ?? 0)}
       </div>
     </div>
   )

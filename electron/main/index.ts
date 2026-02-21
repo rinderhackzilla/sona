@@ -1,5 +1,5 @@
 import { electronApp, optimizer, platform } from '@electron-toolkit/utils'
-import { app, globalShortcut } from 'electron'
+import { app, globalShortcut, session } from 'electron'
 import { createAppMenu } from './core/menu'
 import { createWindow, mainWindow } from './window'
 import { startDiscoverWeeklyScheduler } from '../discover-weekly-scheduler'
@@ -31,6 +31,19 @@ if (!instanceLock) {
 
   app.whenReady().then(() => {
     electronApp.setAppUserModelId('com.victoralvesf.aonsoku')
+
+    // Inject CORS headers so the Web Audio API can connect to the audio stream.
+    // Subsonic servers typically don't send CORS headers, which blocks
+    // createMediaElementSource() even with crossOrigin="anonymous" on the element.
+    session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
+      callback({
+        responseHeaders: {
+          ...details.responseHeaders,
+          'Access-Control-Allow-Origin': ['*'],
+          'Access-Control-Allow-Methods': ['GET, HEAD, OPTIONS'],
+        },
+      })
+    })
 
     createWindow()
     

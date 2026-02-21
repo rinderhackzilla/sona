@@ -1,164 +1,170 @@
 import { useEffect, useRef } from 'react'
-import { useAudioAnalyser } from '@/app/hooks/use-audio-analyser'
+import { getGlobalAnalyser } from '@/app/hooks/use-audio-context'
 import { useSongColor } from '@/store/player.store'
 
-export function AudioLandscape() {
-  const canvasRef = useRef<HTMLCanvasElement>(null)
-  const { frequencyData } = useAudioAnalyser()
-  const { currentSongColorPalette } = useSongColor()
-  const offsetRef = useRef(0)
-  const historyRef = useRef<number[][]>([])
-
-  useEffect(() => {
-    const canvas = canvasRef.current
-    if (!canvas) return
-
-    const ctx = canvas.getContext('2d')
-    if (!ctx) return
-
-    const updateSize = () => {
-      const dpr = window.devicePixelRatio || 1
-      canvas.width = canvas.offsetWidth * dpr
-      canvas.height = canvas.offsetHeight * dpr
-      ctx.scale(dpr, dpr)
-    }
-    updateSize()
-    window.addEventListener('resize', updateSize)
-
-    let animationId: number
-
-    const draw = () => {
-      if (!ctx || !canvas) return
-
-      const width = canvas.offsetWidth
-      const height = canvas.offsetHeight
-
-      ctx.clearRect(0, 0, width, height)
-
-      // Get colors from palette or fallback
-      const color1 = currentSongColorPalette
-        ? currentSongColorPalette.vibrant
-        : null
-      const color2 = currentSongColorPalette
-        ? currentSongColorPalette.accent
-        : null
-      const color3 = currentSongColorPalette
-        ? currentSongColorPalette.muted
-        : null
-
-      const getFallbackColor = () => {
-        const accentHSL = getComputedStyle(document.documentElement)
-          .getPropertyValue('--accent')
-          .trim()
-        return accentHSL
-      }
-
-      // Add current frequency snapshot to history
-      const snapshot = Array.from(frequencyData.slice(0, 64))
-      historyRef.current.unshift(snapshot)
-
-      // Keep only last 60 frames
-      if (historyRef.current.length > 60) {
-        historyRef.current = historyRef.current.slice(0, 60)
-      }
-
-      // Scroll offset
-      offsetRef.current += 2
-      if (offsetRef.current > height / 60) {
-        offsetRef.current = 0
-      }
-
-      // Draw landscape from back to front for 3D effect
-      for (let row = historyRef.current.length - 1; row >= 0; row--) {
-        const rowData = historyRef.current[row]
-        if (!rowData) continue
-
-        const progress = row / historyRef.current.length
-        const y = height * 0.8 - progress * height * 0.5 + offsetRef.current
-        const scale = 0.5 + progress * 0.5 // Perspective scaling
-
-        ctx.beginPath()
-        const barCount = rowData.length
-        const barWidth = (width * scale) / barCount
-        const startX = (width - width * scale) / 2
-
-        for (let i = 0; i < barCount; i++) {
-          const freqValue = rowData[i] || 0
-          const normalizedValue = freqValue / 255
-          const barHeight = normalizedValue * 150 * scale
-
-          const x = startX + i * barWidth
-          const barY = y - barHeight
-
-          if (i === 0) {
-            ctx.moveTo(x, y)
-            ctx.lineTo(x, barY)
-          } else {
-            ctx.lineTo(x, barY)
-          }
-        }
-
-        // Complete the shape
-        ctx.lineTo(startX + barCount * barWidth, y)
-        ctx.lineTo(startX, y)
-        ctx.closePath()
-
-        // Vertical gradient on each landscape shape (top to bottom)
-        const shapeTopY = y - 150 * scale
-        const shapeBottomY = y
-        const gradient = ctx.createLinearGradient(0, shapeTopY, 0, shapeBottomY)
-
-        if (color1 && color2 && color3) {
-          // Gradient from top (vibrant) to middle (accent) to bottom (muted)
-          gradient.addColorStop(0, hexToRgba(color1, 0.7 * progress))
-          gradient.addColorStop(0.5, hexToRgba(color2, 0.5 * progress))
-          gradient.addColorStop(1, hexToRgba(color3, 0.3 * progress))
-          ctx.strokeStyle = hexToRgba(color2, 0.6 + progress * 0.4)
-          ctx.shadowColor = hexToRgba(color2, progress * 0.5)
-        } else {
-          const [h] = getFallbackColor().split(' ')
-          gradient.addColorStop(0, `hsla(${h}, 100%, 60%, ${0.7 * progress})`)
-          gradient.addColorStop(0.5, `hsla(${h}, 100%, 50%, ${0.5 * progress})`)
-          gradient.addColorStop(1, `hsla(${h}, 100%, 30%, ${0.3 * progress})`)
-          ctx.strokeStyle = `hsla(${h}, 100%, ${60 + progress * 20}%, ${0.6 + progress * 0.4})`
-          ctx.shadowColor = `hsla(${h}, 100%, 60%, ${progress * 0.5})`
-        }
-
-        ctx.fillStyle = gradient
-        ctx.fill()
-
-        // Wireframe on top
-        ctx.lineWidth = 1 + progress * 1.5
-        ctx.shadowBlur = 8 * progress
-        ctx.stroke()
-      }
-
-      ctx.shadowBlur = 0
-
-      animationId = requestAnimationFrame(draw)
-    }
-
-    draw()
-
-    return () => {
-      cancelAnimationFrame(animationId)
-      window.removeEventListener('resize', updateSize)
-    }
-  }, [frequencyData, currentSongColorPalette])
-
-  return (
-    <canvas
-      ref={canvasRef}
-      className="absolute inset-0 w-full h-full"
-      style={{ imageRendering: 'auto' }}
-    />
-  )
-}
-
-// Helper function
 function hexToRgba(hex: string, alpha: number): string {
   const r = parseInt(hex.slice(1, 3), 16)
   const g = parseInt(hex.slice(3, 5), 16)
   const b = parseInt(hex.slice(5, 7), 16)
   return `rgba(${r}, ${g}, ${b}, ${alpha})`
+}
+
+function accentHSL() {
+  const v = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim()
+  const [h, s, l] = v.split(' ')
+  return { h: h ?? '220', s: s ?? '80%', l: l ?? '60%' }
+}
+
+const GAIN = 14       // extreme tanh saturation — waveform violently fills the canvas
+const DRAW_PTS = 60
+const TRACES = 36
+
+export function AudioLandscape() {
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+  const { currentSongColorPalette } = useSongColor()
+  const paletteRef = useRef(currentSongColorPalette)
+
+  useEffect(() => {
+    paletteRef.current = currentSongColorPalette
+  }, [currentSongColorPalette])
+
+  useEffect(() => {
+    const canvas = canvasRef.current
+    if (!canvas) return
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
+
+    const dpr = window.devicePixelRatio || 1
+    const resize = () => {
+      canvas.width = canvas.offsetWidth * dpr
+      canvas.height = canvas.offsetHeight * dpr
+      ctx.scale(dpr, dpr)
+    }
+    resize()
+    window.addEventListener('resize', resize)
+
+    const BUF = 256
+    const timeBuf = new Uint8Array(BUF)
+    const freqBuf = new Uint8Array(BUF)
+    const smoothedTime = new Float32Array(BUF).fill(128)
+    const smoothedFreq = new Float32Array(BUF)
+
+    const history: Float32Array[] = []
+    let frameCount = 0
+    let animId: number
+
+    const buildPath = (arr: Float32Array, getY: (v: number) => number, w: number) => {
+      const step = arr.length / DRAW_PTS
+      const xs: number[] = []
+      const ys: number[] = []
+      for (let i = 0; i < DRAW_PTS; i++) {
+        let sum = 0
+        const s0 = Math.floor(i * step)
+        const s1 = Math.floor((i + 1) * step)
+        for (let j = s0; j < s1; j++) sum += arr[j]
+        xs.push((i / (DRAW_PTS - 1)) * w)
+        ys.push(getY(sum / (s1 - s0)))
+      }
+      ctx.beginPath()
+      ctx.moveTo(xs[0], ys[0])
+      for (let i = 0; i < DRAW_PTS - 1; i++) {
+        const mx = (xs[i] + xs[i + 1]) / 2
+        const my = (ys[i] + ys[i + 1]) / 2
+        ctx.quadraticCurveTo(xs[i], ys[i], mx, my)
+      }
+      ctx.lineTo(xs[DRAW_PTS - 1], ys[DRAW_PTS - 1])
+    }
+
+    const draw = () => {
+      const analyser = getGlobalAnalyser()
+      if (analyser) {
+        analyser.getByteTimeDomainData(timeBuf)
+        analyser.getByteFrequencyData(freqBuf)
+        for (let i = 0; i < BUF; i++) {
+          smoothedTime[i] = smoothedTime[i] * 0.55 + timeBuf[i] * 0.45
+          smoothedFreq[i] = smoothedFreq[i] * 0.72 + freqBuf[i] * 0.28
+        }
+      }
+
+      // Capture every 3 frames for dense, visibly distinct trace stack
+      frameCount++
+      if (frameCount % 3 === 0) {
+        history.push(new Float32Array(smoothedTime))
+        if (history.length > TRACES) history.shift()
+      }
+
+      const w = canvas.offsetWidth
+      const h = canvas.offsetHeight
+      const cy = h / 2
+      const maxAmp = h * 0.50  // use every pixel of vertical space
+      const palette = paletteRef.current
+      const c1 = palette?.vibrant ?? null
+      const { h: ah, s: as_, l: al } = accentHSL()
+
+      let bassSum = 0
+      for (let i = 0; i < 8; i++) bassSum += smoothedFreq[i]
+      const bassAvg = bassSum / 8 / 255
+
+      ctx.clearRect(0, 0, w, h)
+      ctx.lineCap = 'round'
+      ctx.lineJoin = 'round'
+
+      const toY = (sample: number) =>
+        cy + Math.tanh(((sample - 128) / 128) * GAIN) * maxAmp
+
+      const total = history.length
+      if (total >= 2) {
+        for (let t = 0; t < total; t++) {
+          const age = t / (total - 1)
+          const alpha = Math.pow(age, 1.0) * 0.92
+          const lineW = 0.6 + age * 2.5
+
+          buildPath(history[t], toY, w)
+
+          ctx.shadowBlur = age > 0.50 ? (age - 0.50) / 0.50 * 12 : 0
+          ctx.shadowColor = c1 ? hexToRgba(c1, 0.6) : `hsla(${ah}, ${as_}, ${al}, 0.55)`
+          ctx.strokeStyle = c1
+            ? hexToRgba(c1, alpha)
+            : `hsla(${ah}, ${as_}, ${al}, ${alpha})`
+          ctx.lineWidth = lineW
+          ctx.stroke()
+        }
+      }
+
+      ctx.shadowBlur = 0
+
+      // Live: massive outer glow
+      buildPath(smoothedTime, toY, w)
+      ctx.shadowBlur = 38 + bassAvg * 30
+      ctx.shadowColor = c1 ? hexToRgba(c1, 0.8) : `hsla(${ah}, ${as_}, ${al}, 0.75)`
+      ctx.strokeStyle = c1 ? hexToRgba(c1, 0.60) : `hsla(${ah}, ${as_}, ${al}, 0.60)`
+      ctx.lineWidth = 10 + bassAvg * 8
+      ctx.stroke()
+
+      // Live: focused glow
+      buildPath(smoothedTime, toY, w)
+      ctx.shadowBlur = 14
+      ctx.shadowColor = c1 ? hexToRgba(c1, 1.0) : `hsla(${ah}, ${as_}, ${al}, 1.0)`
+      ctx.strokeStyle = c1 ? hexToRgba(c1, 1.0) : `hsla(${ah}, ${as_}, ${al}, 1.0)`
+      ctx.lineWidth = 3.5
+      ctx.stroke()
+
+      // Live: razor core
+      buildPath(smoothedTime, toY, w)
+      ctx.shadowBlur = 0
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.96)'
+      ctx.lineWidth = 1.1
+      ctx.stroke()
+
+      animId = requestAnimationFrame(draw)
+    }
+
+    draw()
+    return () => {
+      cancelAnimationFrame(animId)
+      window.removeEventListener('resize', resize)
+    }
+  }, [])
+
+  return <canvas ref={canvasRef} className="absolute inset-0 w-full h-full" />
 }

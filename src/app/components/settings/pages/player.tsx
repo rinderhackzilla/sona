@@ -283,6 +283,7 @@ export function PlayerPage() {
                 />
               </ContentItemForm>
             </ContentItem>
+
           </Content>
           <ContentSeparator />
         </Root>

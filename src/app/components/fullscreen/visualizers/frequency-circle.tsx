@@ -1,95 +1,111 @@
 import { useEffect, useRef } from 'react'
-import { useAudioAnalyser } from '@/app/hooks/use-audio-analyser'
+import { getGlobalAnalyser } from '@/app/hooks/use-audio-context'
 import { useSongColor } from '@/store/player.store'
+
+function hexToRgba(hex: string, alpha: number): string {
+  const r = parseInt(hex.slice(1, 3), 16)
+  const g = parseInt(hex.slice(3, 5), 16)
+  const b = parseInt(hex.slice(5, 7), 16)
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`
+}
+
+function accentHSL() {
+  const v = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim()
+  const [h, s, l] = v.split(' ')
+  return { h: h ?? '220', s: s ?? '80%', l: l ?? '60%' }
+}
 
 export function FrequencyCircle() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
-  const { frequencyData } = useAudioAnalyser()
   const { currentSongColorPalette } = useSongColor()
+  const paletteRef = useRef(currentSongColorPalette)
+
+  useEffect(() => {
+    paletteRef.current = currentSongColorPalette
+  }, [currentSongColorPalette])
 
   useEffect(() => {
     const canvas = canvasRef.current
     if (!canvas) return
-
     const ctx = canvas.getContext('2d')
     if (!ctx) return
 
-    const updateSize = () => {
-      const dpr = window.devicePixelRatio || 1
+    const dpr = window.devicePixelRatio || 1
+    const resize = () => {
       canvas.width = canvas.offsetWidth * dpr
       canvas.height = canvas.offsetHeight * dpr
       ctx.scale(dpr, dpr)
     }
-    updateSize()
-    window.addEventListener('resize', updateSize)
+    resize()
+    window.addEventListener('resize', resize)
 
-    let animationId: number
+    const BUF = 256
+    const freqBuf = new Uint8Array(BUF)
+    const smoothed = new Float32Array(BUF)
+    let animId: number
 
     const draw = () => {
-      if (!ctx || !canvas) return
-
-      const width = canvas.offsetWidth
-      const height = canvas.offsetHeight
-      const centerX = width / 2
-      const centerY = height / 2
-      const radius = Math.min(width, height) * 0.25 // Increased from 0.14 to 0.25
-
-      ctx.clearRect(0, 0, width, height)
-
-      // Get 2 colors for gradient
-      const color1 = currentSongColorPalette
-        ? currentSongColorPalette.vibrant
-        : null
-      const color2 = currentSongColorPalette
-        ? currentSongColorPalette.accent
-        : null
-
-      const getFallbackColor = () => {
-        const accentHSL = getComputedStyle(document.documentElement)
-          .getPropertyValue('--accent')
-          .trim()
-        return accentHSL
+      const analyser = getGlobalAnalyser()
+      if (analyser) {
+        analyser.getByteFrequencyData(freqBuf)
+        for (let i = 0; i < BUF; i++) {
+          smoothed[i] = smoothed[i] * 0.68 + freqBuf[i] * 0.32
+        }
       }
 
-      const barCount = Math.min(frequencyData.length, 64)
-      const angleStep = (Math.PI * 2) / barCount
+      const w = canvas.offsetWidth
+      const h = canvas.offsetHeight
+      const cx = w / 2
+      const cy = h / 2
+      const size = Math.min(w, h)
+      const innerR = size * 0.22
+      const maxBarH = size * 0.34
+      const palette = paletteRef.current
+      const c1 = palette?.vibrant ?? null
+      const c2 = palette?.accent ?? null
+      const cdom = palette?.dominant ?? null
+      const { h: ah, s: as_, l: al } = accentHSL()
 
-      // Draw bars with uniform gradient (all bars same color gradient)
-      for (let i = 0; i < barCount; i++) {
-        const angle = i * angleStep - Math.PI / 2
+      ctx.clearRect(0, 0, w, h)
 
-        const frequencyValue = frequencyData[i] || 0
-        let normalizedValue = frequencyValue / 255
+      const BAR_COUNT = 128
+      const TWO_PI = Math.PI * 2
+      const barW = ((TWO_PI * innerR) / BAR_COUNT) * 0.75
 
-        // 10% bass boost
-        if (i < 16) {
-          normalizedValue = Math.min(1, normalizedValue * 1.1)
-        }
+      // Bass average for center pulse
+      let bassSum = 0
+      for (let i = 0; i < 8; i++) bassSum += smoothed[i]
+      const bassAvg = bassSum / 8 / 255
 
-        const barHeight = normalizedValue * radius * 1.0 // Adjusted to 1.0 with larger base radius
+      // Draw bars
+      for (let i = 0; i < BAR_COUNT; i++) {
+        const angle = (i / BAR_COUNT) * TWO_PI - Math.PI / 2
+        const freqIdx = Math.floor((i / BAR_COUNT) * (BUF / 2))
+        const norm = smoothed[freqIdx] / 255
+        // Power curve: low-level signals stay small, only loud frequencies make tall bars
+        const barH = Math.pow(norm, 1.8) * maxBarH
+        if (barH < 0.5) continue
 
-        const x1 = centerX + Math.cos(angle) * radius
-        const y1 = centerY + Math.sin(angle) * radius
-        const x2 = centerX + Math.cos(angle) * (radius + barHeight)
-        const y2 = centerY + Math.sin(angle) * (radius + barHeight)
+        const cos = Math.cos(angle)
+        const sin = Math.sin(angle)
+        const x1 = cx + cos * innerR
+        const y1 = cy + sin * innerR
+        const x2 = cx + cos * (innerR + barH)
+        const y2 = cy + sin * (innerR + barH)
 
-        const gradient = ctx.createLinearGradient(x1, y1, x2, y2)
-
-        if (color1 && color2) {
-          // Gradient from color1 to color2
-          gradient.addColorStop(0, hexToRgba(color1, 0.5))
-          gradient.addColorStop(1, hexToRgba(color2, normalizedValue))
-          ctx.shadowColor = hexToRgba(color1, normalizedValue * 0.8)
+        const grad = ctx.createLinearGradient(x1, y1, x2, y2)
+        if (c1 && c2) {
+          grad.addColorStop(0, hexToRgba(c1, 0.55 + norm * 0.2))
+          grad.addColorStop(1, hexToRgba(c2, Math.min(1, norm * 1.3)))
         } else {
-          const [h] = getFallbackColor().split(' ')
-          gradient.addColorStop(0, `hsla(${h}, 100%, 50%, 0.5)`)
-          gradient.addColorStop(1, `hsla(${h}, 100%, 70%, ${normalizedValue})`)
-          ctx.shadowColor = `hsla(${h}, 100%, 60%, ${normalizedValue * 0.8})`
+          grad.addColorStop(0, `hsla(${ah}, ${as_}, ${al}, ${0.55 + norm * 0.2})`)
+          grad.addColorStop(1, `hsla(${ah}, 100%, 72%, ${Math.min(1, norm * 1.3)})`)
         }
 
-        ctx.shadowBlur = 12 * normalizedValue
-        ctx.strokeStyle = gradient
-        ctx.lineWidth = (width / barCount) * 0.8
+        ctx.shadowBlur = 6 + barH * 0.22
+        ctx.shadowColor = c1 ? hexToRgba(c1, norm * 0.65) : `hsla(${ah}, 100%, 65%, ${norm * 0.65})`
+        ctx.strokeStyle = grad
+        ctx.lineWidth = Math.max(1.5, barW)
         ctx.lineCap = 'round'
         ctx.beginPath()
         ctx.moveTo(x1, y1)
@@ -99,42 +115,39 @@ export function FrequencyCircle() {
 
       ctx.shadowBlur = 0
 
-      // Circle outline with first color
-      if (color1) {
-        ctx.strokeStyle = hexToRgba(color1, 0.7)
+      // Central radial fill (pulses with bass)
+      const pulseR = innerR * (1 + bassAvg * 0.02)
+      const centerGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, pulseR)
+      const dc = cdom ?? c1
+      if (dc) {
+        centerGrad.addColorStop(0, hexToRgba(dc, 0.38 + bassAvg * 0.3))
+        centerGrad.addColorStop(0.55, hexToRgba(dc, 0.14))
+        centerGrad.addColorStop(1, hexToRgba(dc, 0))
       } else {
-        const [h] = getFallbackColor().split(' ')
-        ctx.strokeStyle = `hsla(${h}, 100%, 60%, 0.7)`
+        centerGrad.addColorStop(0, `hsla(${ah}, 60%, 55%, ${0.32 + bassAvg * 0.3})`)
+        centerGrad.addColorStop(1, `hsla(${ah}, 60%, 55%, 0)`)
       }
-      ctx.lineWidth = 2
       ctx.beginPath()
-      ctx.arc(centerX, centerY, radius, 0, Math.PI * 2)
+      ctx.arc(cx, cy, pulseR, 0, TWO_PI)
+      ctx.fillStyle = centerGrad
+      ctx.fill()
+
+      // Inner ring stroke
+      ctx.beginPath()
+      ctx.arc(cx, cy, innerR, 0, TWO_PI)
+      ctx.strokeStyle = c1 ? hexToRgba(c1, 0.35 + bassAvg * 0.08) : `rgba(255,255,255,0.25)`
+      ctx.lineWidth = 1.5
       ctx.stroke()
 
-      animationId = requestAnimationFrame(draw)
+      animId = requestAnimationFrame(draw)
     }
 
     draw()
-
     return () => {
-      cancelAnimationFrame(animationId)
-      window.removeEventListener('resize', updateSize)
+      cancelAnimationFrame(animId)
+      window.removeEventListener('resize', resize)
     }
-  }, [frequencyData, currentSongColorPalette])
+  }, [])
 
-  return (
-    <canvas
-      ref={canvasRef}
-      className="absolute inset-0 w-full h-full"
-      style={{ imageRendering: 'auto' }}
-    />
-  )
-}
-
-// Helper function
-function hexToRgba(hex: string, alpha: number): string {
-  const r = parseInt(hex.slice(1, 3), 16)
-  const g = parseInt(hex.slice(3, 5), 16)
-  const b = parseInt(hex.slice(5, 7), 16)
-  return `rgba(${r}, ${g}, ${b}, ${alpha})`
+  return <canvas ref={canvasRef} className="absolute inset-0 w-full h-full" />
 }

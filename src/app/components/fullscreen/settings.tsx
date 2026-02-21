@@ -51,7 +51,7 @@ export function useVisualizerSettings() {
 }
 
 export function VisualizerProvider({ children }: { children: React.ReactNode }) {
-  const [preset, setPreset] = useState<VisualizerPreset>('frequency-circle')
+  const [preset, setPreset] = useState<VisualizerPreset>('geometric-mandala')
   return (
     <VisualizerContext.Provider value={{ preset, setPreset }}>
       {children}
@@ -77,7 +77,7 @@ export function FullscreenSettings() {
           <SlidersHorizontal className={buttonsStyle.secondaryIcon} />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-104 p-0" align="start" side="top">
+      <PopoverContent className="w-80 p-0" align="start" side="top">
         <div className="flex flex-col">
           <DynamicColorOption showSeparator={false} />
           {useSongColorOnBigPlayer && <ColorIntensityOption />}
@@ -189,10 +189,9 @@ function ImageBlurSizeOption(props: OptionProps) {
   )
 }
 
-function VisualizerPresetOption(props: OptionProps) {
+function VisualizerPresetOption({ showSeparator = true }: OptionProps) {
   const context = useContext(VisualizerContext)
-  
-  // Graceful fallback if no context
+
   if (!context) {
     return null
   }
@@ -200,31 +199,37 @@ function VisualizerPresetOption(props: OptionProps) {
   const { preset, setPreset } = context
 
   return (
-    <SettingWrapper text="Visualizer" {...props}>
-      <Select value={preset} onValueChange={(value) => setPreset(value as VisualizerPreset)}>
-        <SelectTrigger className="w-full">
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          {(Object.keys(VISUALIZER_NAMES) as VisualizerPreset[]).map((key) => (
-            <SelectItem key={key} value={key}>
-              {VISUALIZER_NAMES[key]}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-    </SettingWrapper>
+    <>
+      {showSeparator && <Separator />}
+      <div className="flex items-center gap-3 p-3">
+        <span className="text-sm shrink-0">Visualizer</span>
+        <Select value={preset} onValueChange={(value) => setPreset(value as VisualizerPreset)}>
+          <SelectTrigger className="flex-1 min-w-0">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {(Object.keys(VISUALIZER_NAMES) as VisualizerPreset[]).map((key) => (
+              <SelectItem key={key} value={key}>
+                {VISUALIZER_NAMES[key]}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+    </>
   )
 }
 
 type SettingWrapperProps = ComponentPropsWithoutRef<'div'> & {
   text: string
   showSeparator?: boolean
+  contentClassName?: string
 }
 
 function SettingWrapper({
   text,
   className,
+  contentClassName,
   children,
   showSeparator = true,
   ...props
@@ -237,7 +242,7 @@ function SettingWrapper({
         {...props}
       >
         <span className="text-sm flex-1 text-balance">{text}</span>
-        <div className="w-2/5 flex items-center justify-end">{children}</div>
+        <div className={cn('w-2/5 flex items-center justify-end', contentClassName)}>{children}</div>
       </div>
     </>
   )

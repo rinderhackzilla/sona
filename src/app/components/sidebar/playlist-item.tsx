@@ -45,7 +45,7 @@ export function SidebarPlaylistItem({ playlist }: { playlist: Playlist }) {
       <div
         {...attributes}
         {...listeners}
-        className="absolute left-0 top-0 bottom-0 w-5 flex items-center justify-center cursor-grab active:cursor-grabbing opacity-0 group-hover/menu-item:opacity-60 hover:!opacity-100 transition-opacity z-10 text-muted-foreground"
+        className="absolute -left-3 top-0 bottom-0 w-5 flex items-center justify-center cursor-grab active:cursor-grabbing opacity-0 group-hover/menu-item:opacity-60 hover:!opacity-100 transition-opacity z-10 text-muted-foreground"
         onClick={(e) => e.preventDefault()}
       >
         <GripVerticalIcon className="w-3 h-3" />
@@ -63,7 +63,7 @@ export function SidebarPlaylistItem({ playlist }: { playlist: Playlist }) {
         <MainSidebarMenuButton
           asChild
           className={clsx(
-            'pl-6',
+            'pl-3',
             isOnPlaylist(playlist.id) && 'cursor-default bg-accent',
           )}
         >
