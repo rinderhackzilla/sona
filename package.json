@@ -1,7 +1,7 @@
 {
   "name": "Sona",
   "private": true,
-  "version": "0.15.0",
+  "version": "0.15.1",
   "description": "A modern desktop client for Navidrome/Subsonic servers.",
   "author": {
     "name": "rinderhack"
@@ -23,13 +23,14 @@
     "electron:dev": "electron-vite dev",
     "electron:build": "electron-vite build",
     "postinstall": "electron-builder install-app-deps",
-    "build:unpack": "npm run electron:build && electron-builder --dir",
-    "build:win": "npm run electron:build && electron-builder --win",
-    "build:mac": "npm run electron:build && electron-builder --mac",
-    "build:linux": "npm run electron:build && electron-builder --linux",
-    "ci:build:win": "electron-builder --win --publish always",
-    "ci:build:mac": "electron-builder --mac --publish always",
-    "ci:build:linux": "electron-builder --linux --publish always",
+    "verify:app-id": "node scripts/verify-app-id.mjs",
+    "build:unpack": "npm run verify:app-id && npm run electron:build && electron-builder --dir",
+    "build:win": "npm run verify:app-id && npm run electron:build && electron-builder --win",
+    "build:mac": "npm run verify:app-id && npm run electron:build && electron-builder --mac",
+    "build:linux": "npm run verify:app-id && npm run electron:build && electron-builder --linux",
+    "ci:build:win": "npm run verify:app-id && electron-builder --win --publish always",
+    "ci:build:mac": "npm run verify:app-id && electron-builder --mac --publish always",
+    "ci:build:linux": "npm run verify:app-id && electron-builder --linux --publish always",
     "prepare": "husky"
   },
   "repository": {

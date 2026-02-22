@@ -1,5 +1,6 @@
 import { electronApp, optimizer, platform } from '@electron-toolkit/utils'
 import { app, globalShortcut, session } from 'electron'
+import { APP_ID } from './core/app-id'
 import { createAppMenu } from './core/menu'
 import { createWindow, mainWindow } from './window'
 import { startDiscoverWeeklyScheduler } from '../discover-weekly-scheduler'
@@ -30,7 +31,7 @@ if (!instanceLock) {
   })
 
   app.whenReady().then(() => {
-    electronApp.setAppUserModelId('com.victoralvesf.aonsoku')
+    electronApp.setAppUserModelId(APP_ID)
 
     // Recover from broken Chromium disk cache states that can cause
     // random missing images on startup.

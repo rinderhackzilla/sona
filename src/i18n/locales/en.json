@@ -566,7 +566,7 @@
         "url": "Please provide a valid URL.",
         "homepageUrlLength": "Homepage URL must be at least 10 characters",
         "streamUrlLength": "Stream URL must be at least 10 characters"
-          }
+      }
     }
   },
   "rabbitHole": {
@@ -661,7 +661,10 @@
       "started": "The update process has started.",
       "success": "The update has been installed! The app will now restart.",
       "error": "Failed to install the update. Please try downloading it directly from GitHub."
-    }
+    },
+    "upToDateVersion": "You're up to date (v{{version}})",
+    "lastChecked": "Last checked: {{date}}",
+    "checkFailed": "Failed to check for updates."
   },
   "about": {
     "client": "Client",
@@ -796,6 +799,13 @@
           "info": "When enabled, images will be cached locally to improve performance.",
           "label": "Enable Image Cache"
         }
+      },
+      "homepage": {
+        "group": "Homepage Features",
+        "thisIsArtist": {
+          "label": "Show \"This is [Artist]\" Playlist"
+        },
+        "requiresLastfm": "Configure Last.fm in Services to enable this feature"
       }
     },
     "accounts": {

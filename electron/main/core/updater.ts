@@ -1,9 +1,100 @@
 import { is } from '@electron-toolkit/utils'
-import { BrowserWindow, ipcMain } from 'electron'
+import { app, BrowserWindow, ipcMain } from 'electron'
 import electronUpdater from 'electron-updater'
 import { IpcChannels } from '../../preload/types'
 
 const { autoUpdater } = electronUpdater
+
+function normalizeVersion(version: string): string {
+  return version.trim().replace(/^v/i, '').split('+')[0]
+}
+
+function parseNumericCore(version: string): number[] {
+  const [core] = normalizeVersion(version).split('-')
+  return core
+    .split('.')
+    .map((part) => Number.parseInt(part, 10))
+    .map((part) => (Number.isFinite(part) ? part : 0))
+}
+
+function comparePrereleaseIdentifiers(a: string, b: string): number {
+  const aNum = /^\d+$/.test(a)
+  const bNum = /^\d+$/.test(b)
+
+  if (aNum && bNum) {
+    return Number(a) - Number(b)
+  }
+
+  if (aNum) return -1
+  if (bNum) return 1
+
+  return a.localeCompare(b)
+}
+
+function compareVersions(a: string, b: string): number {
+  const aNormalized = normalizeVersion(a)
+  const bNormalized = normalizeVersion(b)
+
+  const aCore = parseNumericCore(aNormalized)
+  const bCore = parseNumericCore(bNormalized)
+  const maxCoreLength = Math.max(aCore.length, bCore.length)
+
+  for (let i = 0; i < maxCoreLength; i += 1) {
+    const aPart = aCore[i] ?? 0
+    const bPart = bCore[i] ?? 0
+
+    if (aPart !== bPart) {
+      return aPart - bPart
+    }
+  }
+
+  const aPrerelease = aNormalized.split('-').slice(1).join('-')
+  const bPrerelease = bNormalized.split('-').slice(1).join('-')
+
+  if (!aPrerelease && !bPrerelease) return 0
+  if (!aPrerelease) return 1
+  if (!bPrerelease) return -1
+
+  const aIdentifiers = aPrerelease.split('.')
+  const bIdentifiers = bPrerelease.split('.')
+  const maxIdentifiers = Math.max(aIdentifiers.length, bIdentifiers.length)
+
+  for (let i = 0; i < maxIdentifiers; i += 1) {
+    const aId = aIdentifiers[i]
+    const bId = bIdentifiers[i]
+
+    if (aId === undefined) return -1
+    if (bId === undefined) return 1
+
+    const cmp = comparePrereleaseIdentifiers(aId, bId)
+    if (cmp !== 0) return cmp
+  }
+
+  return 0
+}
+
+function normalizeReleaseNotes(releaseNotes: unknown): string | null {
+  if (typeof releaseNotes === 'string') {
+    return releaseNotes
+  }
+
+  if (Array.isArray(releaseNotes)) {
+    const notes = releaseNotes
+      .map((entry) => {
+        if (entry && typeof entry === 'object' && 'note' in entry) {
+          const value = (entry as { note?: unknown }).note
+          return typeof value === 'string' ? value : ''
+        }
+
+        return ''
+      })
+      .filter(Boolean)
+
+    return notes.length ? notes.join('\n\n') : null
+  }
+
+  return null
+}
 
 export function setupUpdater(window: BrowserWindow | null) {
   if (!window) return
@@ -35,9 +126,21 @@ export function setupUpdater(window: BrowserWindow | null) {
 
     try {
       const result = await autoUpdater.checkForUpdates()
-      // Normalize payload shape for renderer:
-      // renderer expects UpdateInfo-like object with top-level `files`.
-      return result?.updateInfo ?? null
+      const info = result?.updateInfo
+      if (!info) return null
+
+      const currentVersion = app.getVersion()
+      const latestVersion = info.version
+
+      // Return update info only for strictly newer versions.
+      if (compareVersions(latestVersion, currentVersion) <= 0) {
+        return null
+      }
+
+      return {
+        ...info,
+        releaseNotes: normalizeReleaseNotes(info.releaseNotes),
+      }
     } catch (e) {
       console.error('Failed to check for updates:', e)
       return null

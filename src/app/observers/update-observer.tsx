@@ -66,6 +66,8 @@ export function UpdateObserver() {
   }, [t, setRemindOnNextBoot])
 
   if (!updateInfo || !updateInfo.files?.length) return null
+  const releaseNotes = updateInfo.releaseNotes || ''
+  const releaseNotesContainsHtml = /<\/?[a-z][\s\S]*>/i.test(releaseNotes)
 
   const handleUpdate = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -100,9 +102,16 @@ export function UpdateObserver() {
           className="w-full min-h-16 max-h-80 overflow-auto text-muted-foreground bg-background-foreground p-4 border rounded-md"
         >
           <div className="space-y-2 text-sm">
-            <Markdown remarkPlugins={[remarkGfm]}>
-              {updateInfo.releaseNotes || ''}
-            </Markdown>
+            {releaseNotesContainsHtml ? (
+              <div
+                className="prose prose-sm prose-invert max-w-none"
+                dangerouslySetInnerHTML={{ __html: releaseNotes }}
+              />
+            ) : (
+              <Markdown remarkPlugins={[remarkGfm]}>
+                {releaseNotes}
+              </Markdown>
+            )}
           </div>
         </div>
 

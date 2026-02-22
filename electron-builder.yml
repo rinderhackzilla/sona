@@ -18,7 +18,7 @@ extraResources:
     to: resources
 
 win:
-  icon: build/icon.ico
+  icon: resources/icons/icon.ico
   executableName: Sona
   target:
     - target: nsis
@@ -31,15 +31,15 @@ nsis:
   createDesktopShortcut: always
   createStartMenuShortcut: true
   shortcutName: Sona
-  installerIcon: build/icon.ico
-  uninstallerIcon: build/icon.ico
+  installerIcon: resources/icons/icon.ico
+  uninstallerIcon: resources/icons/icon.ico
   license: LICENSE.txt
 
 mac:
   category: public.app-category.music
   entitlementsInherit: build/entitlements.mac.plist
   notarize: false
-  icon: build/icon.icns
+  icon: resources/icons/icon.icns
   target:
     - target: dmg
       arch:

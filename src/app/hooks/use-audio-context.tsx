@@ -28,6 +28,67 @@ const EQ_BANDS = [
 let globalEqFilters: IBiquadFilterNode<IAudioContext>[] = []
 let globalEqEnabled = false
 let globalEqGains: number[] = [0, 0, 0, 0, 0, 0, 0, 0]
+const EQ_STORAGE_KEY = 'sona.eq.state'
+
+type PersistedEqState = {
+  enabled: boolean
+  gains: number[]
+}
+
+function clampEqGain(value: number) {
+  return Math.max(-12, Math.min(12, Math.round(value)))
+}
+
+function normalizeEqGains(gains: unknown): number[] {
+  if (!Array.isArray(gains)) return [0, 0, 0, 0, 0, 0, 0, 0]
+
+  const normalized = gains
+    .map((value) => (typeof value === 'number' ? clampEqGain(value) : 0))
+    .slice(0, EQ_BANDS.length)
+
+  while (normalized.length < EQ_BANDS.length) {
+    normalized.push(0)
+  }
+
+  return normalized
+}
+
+function loadPersistedEqState(): PersistedEqState | null {
+  if (typeof window === 'undefined') return null
+
+  try {
+    const raw = window.localStorage.getItem(EQ_STORAGE_KEY)
+    if (!raw) return null
+    const parsed = JSON.parse(raw) as Partial<PersistedEqState>
+    return {
+      enabled: Boolean(parsed.enabled),
+      gains: normalizeEqGains(parsed.gains),
+    }
+  } catch {
+    return null
+  }
+}
+
+function persistEqState() {
+  if (typeof window === 'undefined') return
+
+  const payload: PersistedEqState = {
+    enabled: globalEqEnabled,
+    gains: normalizeEqGains(globalEqGains),
+  }
+
+  try {
+    window.localStorage.setItem(EQ_STORAGE_KEY, JSON.stringify(payload))
+  } catch {
+    // Ignore storage failures to keep audio pipeline resilient.
+  }
+}
+
+const persistedEqState = loadPersistedEqState()
+if (persistedEqState) {
+  globalEqEnabled = persistedEqState.enabled
+  globalEqGains = persistedEqState.gains
+}
 
 // Global analyser for visualizer
 let globalAnalyser: AnalyserNode | null = null
@@ -107,6 +168,11 @@ export function useAudioContext(audio: HTMLAudioElement | null) {
       })
       eqFiltersRef.current = filters
       globalEqFilters = filters
+      const initialGains = normalizeEqGains(globalEqGains)
+      globalEqGains = initialGains
+      filters.forEach((filter, index) => {
+        filter.gain.value = globalEqEnabled ? initialGains[index] : 0
+      })
       logger.info('Created EQ filters', { count: filters.length })
     }
 
@@ -236,21 +302,24 @@ export function setEqEnabled(enabled: boolean) {
     })
   } else {
     // Restore saved gains
+    globalEqGains = normalizeEqGains(globalEqGains)
     globalEqFilters.forEach((filter, index) => {
       filter.gain.value = globalEqGains[index]
     })
   }
+  persistEqState()
 }
 
 export function setEqGains(gains: number[]) {
-  globalEqGains = gains
+  globalEqGains = normalizeEqGains(gains)
   
   if (globalEqEnabled && globalEqFilters.length) {
     globalEqFilters.forEach((filter, index) => {
-      filter.gain.value = gains[index]
-      logger.info(`EQ Filter ${index}: ${gains[index]} dB`)
+      filter.gain.value = globalEqGains[index]
+      logger.info(`EQ Filter ${index}: ${globalEqGains[index]} dB`)
     })
   }
+  persistEqState()
 }
 
 export function getEqState() {

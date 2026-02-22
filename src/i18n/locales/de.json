@@ -336,7 +336,6 @@
   "dayjs": {
     "relativeTime": {
       "dd": "%d Tagen",
-
       "M": "1 Monat",
       "future": "in %s",
       "past": "vor %s",
@@ -359,7 +358,7 @@
     "discoverWeekly": "Discover Weekly",
     "topGenre": "Top-Genre",
     "thisIsArtist": "This is Artist",
-    "thisIsPrefix": "Das ist...",
+    "thisIsPrefix": "This is...",
     "weeklyMix": "Dein wöchentlicher Mix",
     "weeklyMixSoon": "Deine wöchentliche Playlist wird bald erstellt",
     "recommendedAlbum": "Empfohlenes Album",
@@ -627,7 +626,10 @@
       "started": "Der Aktualisierungsprozess wurde gestartet.",
       "success": "Das Update wurde installiert! Die App wird jetzt neu gestartet.",
       "error": "Das Update konnte nicht installiert werden. Bitte versuchen Sie, es direkt von GitHub herunterzuladen."
-    }
+    },
+    "upToDateVersion": "Auf dem neuesten Stand (v{{version}})",
+    "lastChecked": "Zuletzt geprüft: {{date}}",
+    "checkFailed": "Prüfung auf Updates fehlgeschlagen."
   },
   "about": {
     "client": "Client",
@@ -748,6 +750,13 @@
         "service": {
           "url": "URL des Podcast-Dienstes"
         }
+      },
+      "homepage": {
+        "group": "Homepage Features",
+        "thisIsArtist": {
+          "label": "Show \"This is [Artist]\" Playlist"
+        },
+        "requiresLastfm": "Configure Last.fm in Services to enable this feature"
       }
     },
     "accounts": {
