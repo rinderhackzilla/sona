@@ -24,7 +24,7 @@ export function SettingsDialog() {
   return (
     <Dialog open={openDialog} onOpenChange={setOpenDialog}>
       <DialogContent
-        className="overflow-hidden p-0 max-w-2xl flex flex-col"
+        className="flex max-w-2xl flex-col overflow-hidden p-0"
         style={{ height: '580px', maxHeight: '85vh' }}
         aria-describedby={undefined}
       >
@@ -36,28 +36,28 @@ export function SettingsDialog() {
           className="flex flex-col h-full"
         >
           {/* Header: title row + tab bar, with right padding to clear the X button */}
-          <div className="flex-shrink-0 border-b bg-muted/20">
-            <div className="px-6 pt-4 pb-1 pr-12">
+          <div className="flex-shrink-0 border-b bg-card/35 backdrop-blur-sm">
+            <div className="px-6 pb-1 pr-12 pt-4">
               <span className="text-base font-semibold text-foreground tracking-tight">
                 {t('settings.label')}
               </span>
             </div>
 
-            <TabsList className="flex w-full bg-transparent rounded-none h-auto p-0 px-2 gap-0 justify-start">
+            <TabsList className="h-auto w-full justify-start gap-1 rounded-none bg-transparent px-2 pb-2 pt-1">
               {tabs.map(({ value, icon: Icon }) => (
                 <TabsTrigger
                   key={value}
                   value={value}
                   className="
-                    flex items-center gap-2 px-4 py-2.5
-                    rounded-none bg-transparent shadow-none
-                    border-b-2 border-transparent
+                    flex items-center gap-1.5 px-3 py-2
+                    rounded-md bg-transparent shadow-none
+                    border border-transparent
                     text-muted-foreground text-sm font-medium
                     transition-colors
-                    hover:text-foreground hover:bg-muted/40
-                    data-[state=active]:border-primary
+                    hover:text-foreground hover:bg-muted/45
+                    data-[state=active]:border-border/70
                     data-[state=active]:text-foreground
-                    data-[state=active]:bg-transparent
+                    data-[state=active]:bg-background/70
                     data-[state=active]:shadow-none
                   "
                 >
@@ -70,7 +70,7 @@ export function SettingsDialog() {
 
           {/* Scrollable content area */}
           <div className="flex-1 overflow-y-auto">
-            <div className="p-6">
+            <div className="p-5 sm:p-6">
               {tabs.map(({ value, component: Component }) => (
                 <TabsContent key={value} value={value} className="mt-0">
                   <Component />

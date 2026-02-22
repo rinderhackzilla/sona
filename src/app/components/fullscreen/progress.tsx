@@ -1,8 +1,9 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { ProgressSlider } from '@/app/components/ui/slider'
 import {
   usePlayerActions,
   usePlayerDuration,
+  usePlayerIsPlaying,
   usePlayerProgress,
   usePlayerRef,
 } from '@/store/player.store'
@@ -13,8 +14,10 @@ let isSeeking = false
 export function FullscreenProgress() {
   const progress = usePlayerProgress()
   const [localProgress, setLocalProgress] = useState(progress)
+  const [visualProgress, setVisualProgress] = useState(progress)
   const audioPlayerRef = usePlayerRef()
   const currentDuration = usePlayerDuration()
+  const isPlaying = usePlayerIsPlaying()
   const { setProgress } = usePlayerActions()
 
   const updateAudioCurrentTime = useCallback(
@@ -30,6 +33,7 @@ export function FullscreenProgress() {
   const handleSeeking = useCallback((amount: number) => {
     isSeeking = true
     setLocalProgress(amount)
+    setVisualProgress(amount)
   }, [])
 
   const handleSeeked = useCallback(
@@ -37,6 +41,7 @@ export function FullscreenProgress() {
       updateAudioCurrentTime(amount)
       setProgress(amount)
       setLocalProgress(amount)
+      setVisualProgress(amount)
     },
     [setProgress, updateAudioCurrentTime],
   )
@@ -46,12 +51,32 @@ export function FullscreenProgress() {
       updateAudioCurrentTime(localProgress)
       setProgress(localProgress)
     }
+    setVisualProgress(localProgress)
   }, [localProgress, progress, setProgress, updateAudioCurrentTime])
+
+  useEffect(() => {
+    if (isSeeking) return
+    if (!isPlaying) {
+      setVisualProgress(progress)
+      return
+    }
+
+    let frameId: number
+    const tick = () => {
+      const next = audioPlayerRef?.currentTime ?? progress
+      setVisualProgress((prev) => (Math.abs(prev - next) > 0.015 ? next : prev))
+      frameId = requestAnimationFrame(tick)
+    }
+
+    frameId = requestAnimationFrame(tick)
+    return () => cancelAnimationFrame(frameId)
+  }, [audioPlayerRef, isPlaying, isSeeking, progress])
 
   const [showRemaining, setShowRemaining] = useState(false)
 
-  const currentTime = convertSecondsToTime(isSeeking ? localProgress : progress)
-  const remainingTime = `-${convertSecondsToTime((currentDuration ?? 0) - (isSeeking ? localProgress : progress))}`
+  const activeProgress = isSeeking ? localProgress : visualProgress
+  const currentTime = convertSecondsToTime(activeProgress)
+  const remainingTime = `-${convertSecondsToTime((currentDuration ?? 0) - activeProgress)}`
 
   return (
     <div className="flex items-center gap-3">
@@ -62,7 +87,7 @@ export function FullscreenProgress() {
       <ProgressSlider
         variant="secondary"
         defaultValue={[0]}
-        value={isSeeking ? [localProgress] : [progress]}
+        value={[activeProgress]}
         tooltipTransformer={convertSecondsToTime}
         max={currentDuration}
         step={1}

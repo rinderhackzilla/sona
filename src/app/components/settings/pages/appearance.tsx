@@ -4,9 +4,7 @@ import {
   ContentItem,
   ContentItemForm,
   ContentItemTitle,
-  ContentSeparator,
   Header,
-  HeaderDescription,
   HeaderTitle,
   Root,
 } from '@/app/components/settings/section'
@@ -21,12 +19,12 @@ import {
 } from '@/app/components/ui/select'
 import { useFullscreenPlayerSettings } from '@/store/player.store'
 import { useLang } from '@/store/lang.store'
+import { languages } from '@/i18n/languages'
 import { ThemeSettingsPicker } from './appearance/theme'
 
-const languages = [
-  { code: 'de', name: 'Deutsch', flag: 'DE' },
-  { code: 'en', name: 'English', flag: 'US' },
-]
+const appearanceLanguages = languages.filter((language) =>
+  ['de', 'en-US'].includes(language.langCode),
+)
 
 export function AppearancePage() {
   const { t } = useTranslation()
@@ -34,7 +32,7 @@ export function AppearancePage() {
   const { langCode, setLang } = useLang()
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <Root>
         <Content>
           <ContentItem>
@@ -60,9 +58,9 @@ export function AppearancePage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectGroup>
-                    {languages.map((lang) => (
-                      <SelectItem key={lang.code} value={lang.code}>
-                        {lang.name}
+                    {appearanceLanguages.map((lang) => (
+                      <SelectItem key={lang.langCode} value={lang.langCode}>
+                        {lang.nativeName}
                       </SelectItem>
                     ))}
                   </SelectGroup>
@@ -71,15 +69,11 @@ export function AppearancePage() {
             </ContentItemForm>
           </ContentItem>
         </Content>
-        <ContentSeparator />
       </Root>
 
       <Root>
         <Header>
           <HeaderTitle>{t('theme.label', 'Theme')}</HeaderTitle>
-          <HeaderDescription>
-            {t('theme.description', 'Choose your color theme')}
-          </HeaderDescription>
         </Header>
         <ThemeSettingsPicker />
       </Root>

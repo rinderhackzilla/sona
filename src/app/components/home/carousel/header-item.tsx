@@ -4,7 +4,6 @@ import { isFirefox } from 'react-device-detect'
 import { LazyLoadImage } from 'react-lazy-load-image-component'
 import { Link } from 'react-router-dom'
 import { ImageLoader } from '@/app/components/image-loader'
-import { Badge } from '@/app/components/ui/badge'
 import { Button } from '@/app/components/ui/button'
 import { ROUTES } from '@/routes/routesList'
 import { subsonic } from '@/service/subsonic'
@@ -103,37 +102,34 @@ export function HeaderItem({ song }: { song: ISong }) {
                       </h4>
                     </Link>
                   )}
-                  <div className="flex gap-2 mt-1 2xl:mt-2">
+                  <div className="mt-1 2xl:mt-2">
+                    <div className="inline-flex items-center gap-2 rounded-md border border-foreground/15 bg-foreground/5 px-3 py-1.5 text-sm text-foreground/80 backdrop-blur-sm">
                     {song.genre !== undefined && (
                       <Link
                         to={ROUTES.ALBUMS.GENRE(song.genre)}
                         className="flex"
+                        data-testid="header-genre"
                       >
-                        <Badge
-                          variant="neutral"
-                          className="border"
-                          data-testid="header-genre"
-                        >
+                        <span className="hover:text-foreground transition-colors">
                           {song.genre}
-                        </Badge>
+                        </span>
                       </Link>
                     )}
-                    {song.year && (
-                      <Badge
-                        variant="neutral"
-                        className="border"
-                        data-testid="header-year"
-                      >
-                        {song.year}
-                      </Badge>
+                    {song.genre !== undefined && (song.year || song.duration) && (
+                      <span className="text-foreground/40">•</span>
                     )}
-                    <Badge
-                      variant="neutral"
-                      className="border"
-                      data-testid="header-duration"
-                    >
+                    {song.year && (
+                      <span data-testid="header-year">
+                        {song.year}
+                      </span>
+                    )}
+                    {song.year && (
+                      <span className="text-foreground/40">•</span>
+                    )}
+                    <span data-testid="header-duration">
                       {convertSecondsToTime(song.duration)}
-                    </Badge>
+                    </span>
+                    </div>
                   </div>
                 </div>
               </div>

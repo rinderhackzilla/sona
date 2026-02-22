@@ -13,7 +13,7 @@ type RootProps = ComponentPropsWithoutRef<'div'>
 
 function Root({ className, children, ...props }: RootProps) {
   return (
-    <div className={cn('cursor-pointer', className)} {...props}>
+    <div className={cn('group/card cursor-pointer rounded-lg transition-all duration-200', className)} {...props}>
       {children}
     </div>
   )
@@ -25,7 +25,7 @@ interface ImageWrapperProps extends Children {
 
 function ImageWrapper({ children, link }: ImageWrapperProps) {
   return (
-    <div className="group flex-1 aspect-square rounded bg-border relative overflow-hidden">
+    <div className="group relative aspect-square flex-1 overflow-hidden rounded-lg border border-border/55 bg-border/40 shadow-sm transition-all duration-200 group-hover/card:border-primary/35">
       <Link
         to={link}
         data-testid="card-image-link"
@@ -62,9 +62,9 @@ interface PlayButtonProps {
 
 function PlayButton({ onClick }: PlayButtonProps) {
   return (
-    <div className="w-full h-full flex items-center justify-center rounded bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all duration-300 absolute inset-0 z-10">
+    <div className="absolute inset-0 z-10 flex h-full w-full items-center justify-center rounded bg-black/0 transition-all duration-300 group-hover:bg-black/45">
       <Button
-        className="opacity-0 group-hover:opacity-100 transition-all duration-300 rounded-full w-12 h-12 z-20"
+        className="z-20 h-12 w-12 rounded-full border border-white/25 bg-background/85 opacity-0 transition-all duration-300 group-hover:opacity-100"
         variant="outline"
         onClick={(e) => {
           e.stopPropagation()
@@ -73,7 +73,7 @@ function PlayButton({ onClick }: PlayButtonProps) {
         }}
         data-testid="card-play-button"
       >
-        <Play className="fill-foreground" />
+        <Play className="h-7 w-7 fill-foreground stroke-none" />
       </Button>
     </div>
   )
@@ -82,7 +82,7 @@ function PlayButton({ onClick }: PlayButtonProps) {
 interface InfoWrapperProps extends Children {}
 
 function InfoWrapper({ children }: InfoWrapperProps) {
-  return <div className="flex flex-col cursor-default">{children}</div>
+  return <div className="mt-1.5 flex cursor-default flex-col px-0.5">{children}</div>
 }
 
 interface TitleProps {
@@ -95,7 +95,7 @@ function Title({ link, children }: TitleProps) {
     <div className="w-full truncate" data-testid="card-title">
       <Link
         to={link}
-        className="max-w-full truncate hover:underline leading-7 text-sm font-semibold"
+        className="max-w-full truncate text-[13px] font-medium leading-6 hover:underline"
         data-testid="card-title-link"
       >
         {children}
@@ -122,7 +122,7 @@ function Subtitle({
       <div className="w-full">
         <p
           className={cn(
-            'leading-5 truncate text-xs text-muted-foreground -mt-1',
+            '-mt-1 truncate text-xs leading-5 text-muted-foreground',
             className,
           )}
           data-testid="card-subtitle"
@@ -134,7 +134,7 @@ function Subtitle({
   }
 
   return (
-    <div className="flex w-full truncate -mt-1" data-testid="card-subtitle">
+    <div className="-mt-1 flex w-full truncate" data-testid="card-subtitle">
       <Link
         to={link}
         data-testid="card-subtitle-link"

@@ -82,6 +82,12 @@ const api: IAonsokuAPI = {
   onUpdateDownloaded: (callback) => {
     ipcRenderer.on(IpcChannels.UpdateDownloaded, (_, info) => callback(info))
   },
+  setMiniPlayerMode: (enabled) => {
+    ipcRenderer.send(IpcChannels.SetMiniPlayerMode, enabled)
+  },
+  setMiniPlayerPinned: (pinned) => {
+    ipcRenderer.send(IpcChannels.SetMiniPlayerPinned, pinned)
+  },
 }
 
 // Use `contextBridge` APIs to expose Electron APIs to

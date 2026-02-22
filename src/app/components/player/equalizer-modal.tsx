@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   Dialog,
@@ -14,6 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/app/components/ui/select'
+import { Switch } from '@/app/components/ui/switch'
 import { cn } from '@/lib/utils'
 import { setEqEnabled, setEqGains, getEqState } from '@/app/hooks/use-audio-context'
 
@@ -35,15 +36,15 @@ const FREQUENCY_BANDS = [
 
 const EQ_PRESETS = {
   flat: [0, 0, 0, 0, 0, 0, 0, 0],
-  rock: [5, 4, -2, -3, -1, 2, 4, 5],
-  pop: [-1, -1, 0, 2, 4, 4, 2, 0],
-  jazz: [4, 3, 1, 2, -1, -1, 0, 2],
-  classical: [5, 4, 3, 2, -1, -2, 3, 4],
-  electronic: [5, 4, 1, 0, -2, 2, 4, 5],
-  acoustic: [5, 4, 3, 1, 2, 2, 3, 3],
-  bass_boost: [7, 6, 4, 2, 0, 0, 0, 0],
-  treble_boost: [0, 0, 0, 0, 2, 4, 6, 7],
-  vocal: [0, -2, -3, -1, 3, 4, 3, 1],
+  rock: [4, 3, 2, 0, -1, 1, 3, 4],
+  pop: [2, 1, 0, -1, -1, 1, 2, 3],
+  jazz: [3, 2, 1, 1, 0, 1, 2, 3],
+  classical: [2, 1, 0, 0, 1, 2, 3, 4],
+  electronic: [4, 3, 1, 0, -2, 1, 3, 4],
+  acoustic: [2, 1, 0, 1, 2, 1, 0, 1],
+  bass_boost: [8, 6, 4, 2, 0, -1, -2, -2],
+  treble_boost: [-2, -2, -1, 0, 2, 4, 6, 8],
+  vocal: [-2, -1, 0, 2, 4, 5, 3, 1],
 }
 
 export function EqualizerModal({ open, onOpenChange }: EqualizerModalProps) {
@@ -51,17 +52,47 @@ export function EqualizerModal({ open, onOpenChange }: EqualizerModalProps) {
   const [gains, setGains] = useState<number[]>(EQ_PRESETS.flat)
   const [selectedPreset, setSelectedPreset] = useState<string>('flat')
   const [isEnabled, setIsEnabled] = useState(false)
+  const SVG_WIDTH = 700
+  const SVG_HEIGHT = 140
+  const EQ_RANGE = 12
+
+  const clampGain = (value: number) =>
+    Math.max(-EQ_RANGE, Math.min(EQ_RANGE, Math.round(value)))
+
+  const normalizeGains = (values: number[]) => values.map((value) => clampGain(value))
+
+  const buildSmoothPath = (points: { x: number; y: number }[]) => {
+    if (points.length === 0) return ''
+    if (points.length === 1) return `M ${points[0].x},${points[0].y}`
+
+    let path = `M ${points[0].x},${points[0].y}`
+
+    for (let i = 1; i < points.length; i++) {
+      const previous = points[i - 1]
+      const current = points[i]
+      const midX = (previous.x + current.x) / 2
+      const midY = (previous.y + current.y) / 2
+      path += ` Q ${previous.x},${previous.y} ${midX},${midY}`
+    }
+
+    const penultimate = points[points.length - 2]
+    const last = points[points.length - 1]
+    path += ` Q ${penultimate.x},${penultimate.y} ${last.x},${last.y}`
+
+    return path
+  }
 
   // Load saved state on mount
   useEffect(() => {
     const state = getEqState()
     setIsEnabled(state.enabled)
-    setGains(state.gains)
+    setGains(normalizeGains(state.gains))
   }, [])
 
   const handleGainChange = (index: number, value: number) => {
+    const safeValue = clampGain(value)
     const newGains = [...gains]
-    newGains[index] = value
+    newGains[index] = safeValue
     setGains(newGains)
     setSelectedPreset('custom')
     setEqGains(newGains)
@@ -70,7 +101,7 @@ export function EqualizerModal({ open, onOpenChange }: EqualizerModalProps) {
   const handlePresetChange = (preset: string) => {
     setSelectedPreset(preset)
     if (preset !== 'custom') {
-      const presetGains = EQ_PRESETS[preset as keyof typeof EQ_PRESETS]
+      const presetGains = normalizeGains(EQ_PRESETS[preset as keyof typeof EQ_PRESETS])
       setGains(presetGains)
       setEqGains(presetGains)
     }
@@ -82,58 +113,58 @@ export function EqualizerModal({ open, onOpenChange }: EqualizerModalProps) {
     setEqGains(EQ_PRESETS.flat)
   }
 
-  const handleToggle = () => {
-    const newState = !isEnabled
-    setIsEnabled(newState)
-    setEqEnabled(newState)
+  const handleToggle = (enabled: boolean) => {
+    setIsEnabled(enabled)
+    setEqEnabled(enabled)
   }
 
-  // Calculate curve points for visualization
-  const getCurvePoints = () => {
-    const points: { x: number; y: number }[] = []
-    const width = 700 // Fixed width in pixels
-    const height = 140 // Fixed height in pixels
-    const step = width / (gains.length - 1)
-    const centerY = height / 2
+  const bandStep = SVG_WIDTH / (gains.length - 1)
+  const centerY = SVG_HEIGHT / 2
 
-    gains.forEach((gain, index) => {
-      const x = index * step
-      const y = centerY - (gain / 12) * (height / 2.5) // Scale factor to keep curve visible
-      points.push({ x, y })
-    })
+  const gainToY = (gain: number) => centerY - (gain / EQ_RANGE) * (SVG_HEIGHT / 2.5)
 
-    return points
-  }
-
-  const curvePoints = getCurvePoints()
-  const pathData = curvePoints.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x},${p.y}`).join(' ')
+  const curvePoints = useMemo(
+    () =>
+      gains.map((gain, index) => ({
+        x: index * bandStep,
+        y: gainToY(gain),
+      })),
+    [gains, bandStep],
+  )
+  const pathData = useMemo(() => buildSmoothPath(curvePoints), [curvePoints])
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl">
+      <DialogContent className="max-w-4xl border-border/70 bg-gradient-to-b from-background to-background/95 shadow-[0_24px_70px_hsl(var(--accent)/0.22)]">
         <DialogHeader>
-          <DialogTitle>{t('player.equalizer.title', 'Equalizer')}</DialogTitle>
+          <DialogTitle className="text-base font-semibold tracking-wide">
+            {t('player.equalizer.title', 'Equalizer')}
+          </DialogTitle>
         </DialogHeader>
 
         <div className="space-y-6 py-4">
           {/* Controls Row */}
-          <div className="flex items-center gap-4">
-            <Button
-              variant={isEnabled ? 'default' : 'outline'}
-              size="sm"
-              onClick={handleToggle}
-            >
-              {isEnabled
-                ? t('player.equalizer.enabled', 'Enabled')
-                : t('player.equalizer.disabled', 'Disabled')}
-            </Button>
-            
-            <div className="flex items-center gap-4 flex-1">
-              <label className="text-sm font-medium min-w-[60px]">
-                {t('player.equalizer.preset', 'Preset')}:
+          <div className="grid gap-3 rounded-xl border border-border/60 bg-accent/20 p-3 md:grid-cols-[220px_minmax(0,1fr)_auto] md:items-center">
+            <div className="flex items-center justify-between rounded-lg border border-border/55 bg-background/70 px-3 py-2">
+              <div className="flex flex-col">
+                <span className="text-sm font-semibold">
+                  {t('player.equalizer.title', 'Equalizer')}
+                </span>
+                <span className="text-xs text-muted-foreground">
+                  {isEnabled
+                    ? t('player.equalizer.enabled', 'Enabled')
+                    : t('player.equalizer.disabled', 'Disabled')}
+                </span>
+              </div>
+              <Switch checked={isEnabled} onCheckedChange={handleToggle} />
+            </div>
+
+            <div className="flex items-center gap-3">
+              <label className="text-sm font-medium whitespace-nowrap">
+                {t('player.equalizer.preset', 'Preset')}
               </label>
               <Select value={selectedPreset} onValueChange={handlePresetChange}>
-                <SelectTrigger className="w-[200px]">
+                <SelectTrigger className="w-full min-w-[220px]">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -174,101 +205,123 @@ export function EqualizerModal({ open, onOpenChange }: EqualizerModalProps) {
                   )}
                 </SelectContent>
               </Select>
-              <Button variant="outline" size="sm" onClick={handleReset}>
-                {t('player.equalizer.reset', 'Reset')}
-              </Button>
             </div>
+
+            <Button variant="outline" size="sm" onClick={handleReset}>
+              {t('player.equalizer.reset', 'Reset')}
+            </Button>
           </div>
 
-          {/* EQ Curve Visualization */}
-          <div className="bg-muted/30 rounded-lg p-6 border">
-            <svg
-              width="700"
-              height="140"
-              viewBox="0 0 700 140"
-              className="w-full"
-              style={{ height: 'auto' }}
+          <div className="relative">
+            <div
+              className={cn(
+                'space-y-5 rounded-xl border border-border/70 bg-gradient-to-b from-accent/25 via-background/80 to-background p-5 transition-all duration-300',
+                !isEnabled && 'opacity-55 saturate-50',
+              )}
             >
-              {/* Grid lines */}
-              <line x1="0" y1="35" x2="700" y2="35" stroke="currentColor" strokeWidth="0.5" opacity="0.2" />
-              <line x1="0" y1="70" x2="700" y2="70" stroke="currentColor" strokeWidth="1" opacity="0.3" />
-              <line x1="0" y1="105" x2="700" y2="105" stroke="currentColor" strokeWidth="0.5" opacity="0.2" />
-              
-              {/* EQ Curve */}
-              <path
-                d={pathData}
-                fill="none"
-                stroke="hsl(var(--primary))"
-                strokeWidth="2"
-                strokeLinejoin="round"
-                strokeLinecap="round"
-              />
-              
-              {/* Points - perfectly round */}
-              {curvePoints.map((point, index) => (
-                <circle
-                  key={index}
-                  cx={point.x}
-                  cy={point.y}
-                  r="4"
-                  fill="hsl(var(--primary))"
-                />
-              ))}
-            </svg>
-          </div>
-
-          {/* EQ Sliders */}
-          <div className="grid grid-cols-8 gap-6 px-2">
-            {FREQUENCY_BANDS.map((band, index) => (
-              <div key={band.hz} className="flex flex-col items-center gap-3">
-                <div className="text-xs font-medium text-muted-foreground text-center whitespace-nowrap">
-                  {band.freq}
-                </div>
-                
-                <div className="relative h-48 w-12 flex items-center justify-center">
-                  <input
-                    type="range"
-                    min="-12"
-                    max="12"
-                    step="1"
-                    value={gains[index]}
-                    onChange={(e) => handleGainChange(index, Number(e.target.value))}
-                    disabled={!isEnabled}
-                    className={cn(
-                      'eq-slider',
-                      !isEnabled && 'opacity-30 cursor-not-allowed',
-                    )}
-                    style={{
-                      writingMode: 'bt-lr',
-                      WebkitAppearance: 'slider-vertical',
-                      width: '48px',
-                      height: '192px',
-                    }}
-                  />
-                </div>
-                
-                <div
-                  className={cn(
-                    'text-xs font-mono text-center min-w-[50px] font-semibold',
-                    gains[index] > 0 && 'text-green-500',
-                    gains[index] < 0 && 'text-red-500',
-                    gains[index] === 0 && 'text-muted-foreground',
-                  )}
+              {/* EQ Curve Visualization */}
+              <div className="rounded-lg border border-border/55 bg-background/65 p-4">
+                <svg
+                  width={SVG_WIDTH}
+                  height={SVG_HEIGHT}
+                  viewBox={`0 0 ${SVG_WIDTH} ${SVG_HEIGHT}`}
+                  className="w-full"
+                  style={{ height: 'auto' }}
                 >
-                  {gains[index] > 0 ? '+' : ''}
-                  {gains[index]} dB
-                </div>
-              </div>
-            ))}
-          </div>
+                  {/* Grid lines */}
+                  <line
+                    x1="0"
+                    y1="35"
+                    x2={SVG_WIDTH}
+                    y2="35"
+                    stroke="hsl(var(--muted-foreground) / 0.3)"
+                    strokeWidth="0.75"
+                  />
+                  <line
+                    x1="0"
+                    y1="70"
+                    x2={SVG_WIDTH}
+                    y2="70"
+                    stroke="hsl(var(--primary) / 0.9)"
+                    strokeWidth="1"
+                  />
+                  <line
+                    x1="0"
+                    y1="105"
+                    x2={SVG_WIDTH}
+                    y2="105"
+                    stroke="hsl(var(--muted-foreground) / 0.3)"
+                    strokeWidth="0.75"
+                  />
 
-          {/* Info Text */}
-          <div className="text-xs text-muted-foreground text-center pt-2 border-t">
-            {t(
-              'player.equalizer.info',
-              'Adjust frequency bands to customize your sound. Changes are applied in real-time.',
+                  {/* EQ Curve */}
+                  <path
+                    d={pathData}
+                    fill="none"
+                    stroke="hsl(var(--primary) / 0.45)"
+                    strokeWidth="6"
+                    strokeLinejoin="round"
+                    strokeLinecap="round"
+                    className="blur-[1.5px]"
+                  />
+                  <path
+                    d={pathData}
+                    fill="none"
+                    stroke="hsl(var(--primary) / 0.95)"
+                    strokeWidth="2.8"
+                    strokeLinejoin="round"
+                    strokeLinecap="round"
+                  />
+                </svg>
+              </div>
+
+              {/* EQ Sliders */}
+              <div className="grid grid-cols-8 gap-6 px-2">
+                {FREQUENCY_BANDS.map((band, index) => (
+                  <div key={band.hz} className="flex flex-col items-center gap-3">
+                    <div className="text-xs font-medium text-muted-foreground text-center whitespace-nowrap">
+                      {band.freq}
+                    </div>
+
+                    <div className="relative h-48 w-12 flex items-center justify-center">
+                      <input
+                        type="range"
+                        min="-12"
+                        max="12"
+                        step="1"
+                        value={gains[index]}
+                        onChange={(event) =>
+                          handleGainChange(index, Number(event.target.value))
+                        }
+                        disabled={!isEnabled}
+                        className={cn(
+                          'eq-slider',
+                          !isEnabled && 'opacity-35 cursor-not-allowed',
+                        )}
+                        style={{
+                          writingMode: 'bt-lr',
+                          WebkitAppearance: 'slider-vertical',
+                          accentColor: 'hsl(var(--primary))',
+                          width: '48px',
+                          height: '192px',
+                        }}
+                      />
+                    </div>
+
+                    <div className="text-xs font-mono text-center min-w-[50px] font-semibold text-[hsl(var(--primary)/0.92)]">
+                      {gains[index] > 0 ? '+' : ''}
+                      {gains[index]} dB
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {!isEnabled && (
+              <div className="pointer-events-none absolute inset-0 rounded-xl bg-gradient-to-b from-background/20 via-background/10 to-background/40" />
             )}
           </div>
+
         </div>
       </DialogContent>
     </Dialog>

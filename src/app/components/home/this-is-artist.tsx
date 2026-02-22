@@ -12,7 +12,6 @@ export function ThisIsArtist() {
     artist,
     isGenerating,
     error,
-    lastGenerated,
     generate,
     isConfigured,
   } = useThisIsArtist()
@@ -20,11 +19,11 @@ export function ThisIsArtist() {
 
   if (!isConfigured) {
     return (
-      <div className="relative w-full h-full overflow-hidden border rounded-lg bg-muted/20 border-dashed">
-        <div className="relative h-full flex items-center justify-center p-8 z-10">
-          <div className="text-center max-w-sm">
-            <Info className="h-6 w-6 mx-auto mb-2 text-muted-foreground" />
-            <h3 className="font-semibold mb-1 text-sm">This is Artist</h3>
+      <div className="relative h-full w-full overflow-hidden rounded-xl border border-dashed border-border/70 bg-card/30">
+        <div className="relative z-10 flex h-full items-center justify-center p-8">
+          <div className="max-w-sm text-center">
+            <Info className="mx-auto mb-2 h-6 w-6 text-muted-foreground" />
+            <h3 className="mb-1 text-sm font-semibold">{t('home.thisIsArtist')}</h3>
             <p className="text-xs text-muted-foreground">
               {t('home.configureLastfm')}
             </p>
@@ -36,9 +35,9 @@ export function ThisIsArtist() {
 
   if (error) {
     return (
-      <div className="relative w-full h-full overflow-hidden border rounded-lg bg-destructive/5 border-destructive">
-        <div className="relative h-full flex items-center justify-center p-8 z-10">
-          <div className="text-center max-w-sm">
+      <div className="relative h-full w-full overflow-hidden rounded-xl border border-destructive/60 bg-destructive/5">
+        <div className="relative z-10 flex h-full items-center justify-center p-8">
+          <div className="max-w-sm text-center">
             <p className="text-xs text-destructive">
               Error: {error}
             </p>
@@ -50,9 +49,9 @@ export function ThisIsArtist() {
 
   if (isGenerating) {
     return (
-      <div className="relative w-full h-full overflow-hidden border rounded-lg">
-        <div className="absolute inset-0 bg-gradient-to-l from-primary/5 to-primary/10" />
-        <div className="relative h-full flex items-center justify-center z-10">
+      <div className="relative h-full w-full overflow-hidden rounded-xl border border-border/60 bg-card/25">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/12 via-primary/6 to-transparent" />
+        <div className="relative z-10 flex h-full items-center justify-center">
           <div className="flex flex-col items-center gap-2">
             <RefreshCw className="h-6 w-6 animate-spin text-muted-foreground" />
             <span className="text-xs text-muted-foreground">{t('home.generating')}</span>
@@ -64,12 +63,12 @@ export function ThisIsArtist() {
 
   if (playlist.length === 0 || !artist) {
     return (
-      <div className="relative w-full h-full overflow-hidden border rounded-lg">
-        <div className="absolute inset-0 bg-gradient-to-l from-primary/5 to-primary/10" />
-        <div className="relative h-full flex items-center justify-center p-8 z-10">
+      <div className="relative h-full w-full overflow-hidden rounded-xl border border-border/60 bg-card/25">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/12 via-primary/6 to-transparent" />
+        <div className="relative z-10 flex h-full items-center justify-center p-8">
           <div className="text-center">
             <Music className="h-8 w-8 mx-auto mb-3 text-muted-foreground" />
-            <h3 className="font-semibold mb-2 text-sm">This is Artist</h3>
+            <h3 className="font-semibold mb-2 text-sm">{t('home.thisIsArtist')}</h3>
             <p className="text-xs text-muted-foreground mb-3">
               {t('home.generatePlaylist')}
             </p>
@@ -78,6 +77,7 @@ export function ThisIsArtist() {
               size="sm"
               onClick={generate}
               disabled={isGenerating}
+              className="h-8 border border-primary/35 bg-primary/90 px-3 hover:bg-primary"
             >
               <RefreshCw className="h-3 w-3 mr-1.5" />
               {t('home.generate')}
@@ -93,7 +93,7 @@ export function ThisIsArtist() {
   }
 
   return (
-    <div className="relative w-full h-full overflow-hidden border rounded-lg">
+    <div className="relative h-full w-full overflow-hidden rounded-xl border border-border/60 bg-card/20">
       {/* Background Image with Blur */}
       <ImageLoader id={artist.coverArt} type="artist" size="300">
         {(artistCoverUrl) => (
@@ -104,7 +104,7 @@ export function ThisIsArtist() {
                   className="absolute inset-0 bg-cover bg-center blur-2xl scale-110 opacity-40"
                   style={{ backgroundImage: `url(${artistCoverUrl})` }}
                 />
-                <div className="absolute inset-0 bg-gradient-to-l from-background/80 via-background/60 to-background/80" />
+                <div className="absolute inset-0 bg-gradient-to-r from-background/84 via-background/66 to-background/84" />
               </>
             )}
           </>
@@ -112,38 +112,46 @@ export function ThisIsArtist() {
       </ImageLoader>
 
       {/* Content */}
-      <div className="relative h-full flex items-stretch gap-4 sm:gap-6 px-4 sm:px-8 z-10">
-        {/* Info - Left Side */}
-        <div className="flex-1 flex flex-col justify-between min-w-0 py-6 sm:py-8" style={{ containerType: 'inline-size' }}>
-          <div>
-            <p className="text-xs sm:text-sm text-muted-foreground mb-1 sm:mb-2">
-              This is...
+      <div className="relative z-10 grid h-full grid-cols-1 items-stretch gap-3 p-4 sm:grid-cols-[minmax(0,1fr),minmax(210px,46%)] sm:gap-4 sm:p-5">
+        {/* Info - Left */}
+        <div className="flex min-w-0 flex-col justify-between">
+          <div className="space-y-1.5">
+            <p className="text-[11px] uppercase tracking-[0.08em] text-muted-foreground/85 sm:text-xs">
+              {t('home.thisIsPrefix')}
             </p>
-            <h2 className="font-bold leading-tight" style={{ fontSize: 'clamp(1.25rem, 8cqi, 3rem)' }}>
+            <h2 className="truncate text-[1.25rem] font-semibold leading-tight sm:text-[1.55rem]">
               {artist.name}
             </h2>
+            <p className="text-xs text-muted-foreground/90">
+              {t('playlist.songCount', { count: playlist.length })}
+            </p>
           </div>
 
-          <div className="flex flex-col gap-2">
-            <div className="flex flex-col gap-0.5">
-              <span className="text-sm text-muted-foreground">
-                {t('playlist.songCount', { count: playlist.length })}
-              </span>
-            </div>
+          <div className="flex items-center gap-2 pt-1.5">
             <Button
               onClick={handlePlay}
-              className="w-fit gap-2"
+              className="h-8 gap-2 border border-primary/35 bg-primary/90 px-3 hover:bg-primary"
               size="sm"
             >
-              <Play className="w-4 h-4" fill="currentColor" />
+              <Play className="h-4 w-4" fill="currentColor" />
               {t('options.play')}
+            </Button>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={generate}
+              disabled={isGenerating}
+              className="h-8 gap-1.5 px-3 text-xs"
+            >
+              <RefreshCw className={`h-3.5 w-3.5 ${isGenerating ? 'animate-spin' : ''}`} />
+              {t('home.generate')}
             </Button>
           </div>
         </div>
 
         {/* Artist Image - Right Side */}
-        <div className="flex-shrink-0 flex items-center">
-          <div className="relative">
+        <div className="flex items-center justify-end">
+          <div className="group relative w-full max-w-[210px] rounded-lg border border-border/60 shadow-xl transition-all duration-300 hover:scale-[1.025]">
             <ImageLoader id={artist.coverArt} type="artist" size="300">
               {(artistCoverUrl, isLoadingImage) => (
                 <>
@@ -151,28 +159,17 @@ export function ThisIsArtist() {
                     <img
                       src={artistCoverUrl}
                       alt={artist.name}
-                      className="w-[120px] h-[120px] sm:w-[160px] sm:h-[160px] 2xl:w-[220px] 2xl:h-[220px] rounded-lg shadow-2xl object-cover"
+                      className="aspect-square h-full w-full rounded-lg object-cover"
                     />
                   )}
                   {!artistCoverUrl && !isLoadingImage && (
-                    <div className="w-[120px] h-[120px] sm:w-[160px] sm:h-[160px] 2xl:w-[220px] 2xl:h-[220px] rounded-lg shadow-2xl bg-muted flex items-center justify-center">
-                      <Music className="h-16 w-16 text-muted-foreground" />
+                    <div className="flex aspect-square h-full w-full items-center justify-center bg-muted shadow-xl">
+                      <Music className="h-10 w-10 text-muted-foreground" />
                     </div>
                   )}
                 </>
               )}
             </ImageLoader>
-
-            {/* Refresh Button - On Image */}
-            <Button
-              variant="secondary"
-              size="icon"
-              onClick={generate}
-              disabled={isGenerating}
-              className="absolute -top-2 -right-2 h-8 w-8 rounded-full shadow-lg"
-            >
-              <RefreshCw className={`h-4 w-4 ${isGenerating ? 'animate-spin' : ''}`} />
-            </Button>
           </div>
         </div>
       </div>

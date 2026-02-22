@@ -38,6 +38,7 @@ export function AudioPlayer({
   const { setReplayGainEnabled, setReplayGainError } = useReplayGainActions()
   const { volume } = usePlayerVolume()
   const isPlaying = usePlayerIsPlaying()
+  const [audioElement, setAudioElement] = useState<HTMLAudioElement | null>(null)
 
   const gainValue = useMemo(() => {
     const audioVolume = volume / 100
@@ -50,7 +51,14 @@ export function AudioPlayer({
     return audioVolume * gain
   }, [replayGain, replayGainEnabled, volume])
 
-  const { resumeContext, setupGain } = useAudioContext(audioRef.current)
+  const { resumeContext, setupGain } = useAudioContext(audioElement)
+  const handleAudioRef = useCallback(
+    (node: HTMLAudioElement | null) => {
+      audioRef.current = node
+      setAudioElement(node)
+    },
+    [audioRef],
+  )
 
   const ignoreGain = !isSong || replayGainError
 
@@ -142,7 +150,7 @@ export function AudioPlayer({
 
   return (
     <audio
-      ref={audioRef}
+      ref={handleAudioRef}
       {...props}
       crossOrigin="anonymous"
       onError={handleError}

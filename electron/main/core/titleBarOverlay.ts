@@ -6,3 +6,9 @@ export const titleBarOverlay: Electron.TitleBarOverlay = {
   symbolColor: '#ffffff',
   height: DEFAULT_TITLE_BAR_HEIGHT,
 }
+
+export const hiddenTitleBarOverlay: Electron.TitleBarOverlay = {
+  color: '#00000000',
+  symbolColor: '#00000000',
+  height: 0,
+}

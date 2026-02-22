@@ -67,21 +67,21 @@ export default function PreviewList({
   }, [api])
 
   return (
-    <div className="w-full flex flex-col mt-4">
-      <div className="my-4 flex justify-between items-center">
+    <div className="mt-3 flex w-full flex-col sm:mt-4">
+      <div className="mb-2.5 flex items-center justify-between sm:mb-3">
         <div className="flex items-center gap-2">
           {icon}
           <h3
-            className="scroll-m-20 text-2xl font-semibold tracking-tight"
+            className="scroll-m-20 text-[1.1rem] font-semibold tracking-tight sm:text-xl"
             data-testid="preview-list-title"
           >
             {title}
           </h3>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2.5 sm:gap-3">
           {showMore && moreRoute && (
             <Link to={moreRoute} data-testid="preview-list-show-more">
-              <p className="leading-7 text-sm truncate hover:underline text-muted-foreground hover:text-primary">
+              <p className="truncate text-xs text-muted-foreground hover:text-primary hover:underline sm:text-sm">
                 {moreTitle}
               </p>
             </Link>
@@ -116,7 +116,7 @@ export default function PreviewList({
             {list.map((album, index) => (
               <CarouselItem
                 key={album.id}
-                className="basis-1/2 sm:basis-1/3 md:basis-1/4 lg:basis-1/5 2xl:basis-1/6"
+                className="basis-[56%] sm:basis-[38%] md:basis-[30%] lg:basis-[24%] xl:basis-[20%] 2xl:basis-[17.5%]"
                 data-testid={`preview-list-carousel-item-${index}`}
               >
                 <PreviewCard.Root>

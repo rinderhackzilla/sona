@@ -9,9 +9,7 @@ import {
   ContentItem,
   ContentItemForm,
   ContentItemTitle,
-  ContentSeparator,
   Header,
-  HeaderDescription,
   HeaderTitle,
   Root,
 } from '@/app/components/settings/section'
@@ -106,7 +104,7 @@ export function ContentPage() {
   const isLastfmConfigured = Boolean(lastfm.username && lastfm.apiKey)
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Lyrics */}
       <Root>
         <Content>
@@ -122,16 +120,12 @@ export function ContentPage() {
             </ContentItemForm>
           </ContentItem>
         </Content>
-        <ContentSeparator />
       </Root>
 
       {/* Podcasts */}
       <Root>
         <Header>
           <HeaderTitle>{t('settings.content.podcast.group', 'Podcasts')}</HeaderTitle>
-          <HeaderDescription>
-            {t('settings.content.podcast.description', 'Enable podcast playback support')}
-          </HeaderDescription>
         </Header>
         <Content>
           <ContentItem>
@@ -234,16 +228,12 @@ export function ContentPage() {
             </>
           )}
         </Content>
-        <ContentSeparator />
       </Root>
 
       {/* Homepage Playlists */}
       <Root>
         <Header>
           <HeaderTitle>{t('settings.content.homepage.group', 'Homepage Features')}</HeaderTitle>
-          <HeaderDescription>
-            {t('settings.content.homepage.description', 'Toggle personalized playlists on the homepage')}
-          </HeaderDescription>
         </Header>
         <Content>
           <ContentItem>
@@ -264,7 +254,6 @@ export function ContentPage() {
             </p>
           )}
         </Content>
-        <ContentSeparator />
       </Root>
     </div>
   )

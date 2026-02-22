@@ -25,7 +25,8 @@ import { sortRecentAlbums } from '@/utils/album'
 import { convertSecondsToHumanRead } from '@/utils/convertSecondsToTime'
 
 export default function Album() {
-  const { albumId } = useParams() as { albumId: string }
+  const { albumId: albumIdParam } = useParams() as { albumId: string }
+  const albumId = decodeURIComponent(albumIdParam ?? '')
   const { setSongList } = usePlayerActions()
   const { t } = useTranslation()
 
@@ -113,6 +114,10 @@ export default function Album() {
       : null
 
   const albumComment = album.song.length > 0 ? album.song[0].comment : null
+  const albumSongs = album.song.map((song) => ({
+    ...song,
+    coverArt: song.coverArt || album.coverArt,
+  }))
 
   return (
     <div className="w-full">
@@ -134,8 +139,8 @@ export default function Album() {
 
         <DataTable
           columns={columns}
-          data={album.song}
-          handlePlaySong={(row) => setSongList(album.song, row.index)}
+          data={albumSongs}
+          handlePlaySong={(row) => setSongList(albumSongs, row.index)}
           columnFilter={columnsToShow}
           showDiscNumber={true}
           variant="modern"

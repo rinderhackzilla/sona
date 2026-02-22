@@ -32,13 +32,30 @@ if (!instanceLock) {
   app.whenReady().then(() => {
     electronApp.setAppUserModelId('com.victoralvesf.aonsoku')
 
-    // Inject CORS headers so the Web Audio API can connect to the audio stream.
-    // Subsonic servers typically don't send CORS headers, which blocks
-    // createMediaElementSource() even with crossOrigin="anonymous" on the element.
+    // Recover from broken Chromium disk cache states that can cause
+    // random missing images on startup.
+    session.defaultSession.clearCache().catch(() => {})
+
+    // Inject CORS headers only for media streams so Web Audio can attach
+    // createMediaElementSource() without polluting non-media API responses.
     session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
+      if (details.resourceType !== 'media') {
+        callback({ responseHeaders: details.responseHeaders ?? {} })
+        return
+      }
+
+      const responseHeaders = details.responseHeaders ?? {}
+      const nextHeaders: Record<string, string[]> = {}
+      for (const [key, value] of Object.entries(responseHeaders)) {
+        const lower = key.toLowerCase()
+        if (lower === 'access-control-allow-origin') continue
+        if (lower === 'access-control-allow-methods') continue
+        nextHeaders[key] = value
+      }
+
       callback({
         responseHeaders: {
-          ...details.responseHeaders,
+          ...nextHeaders,
           'Access-Control-Allow-Origin': ['*'],
           'Access-Control-Allow-Methods': ['GET, HEAD, OPTIONS'],
         },

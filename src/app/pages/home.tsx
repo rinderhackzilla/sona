@@ -26,54 +26,60 @@ export default function Home() {
   const recentlyAdded = useGetRecentlyAdded()
 
   return (
-    <div className="w-full px-4 sm:px-8 py-6">
-      {/* Hero Carousel */}
-      <div className="mb-6">
-        {similarArtists.isFetching || similarArtists.isLoading ? (
-          <HeaderFallback />
-        ) : (
-          <AlbumHeader albums={similarArtists.data?.list || []} />
-        )}
-      </div>
+    <div className="w-full px-4 py-4 sm:px-6 sm:py-5 lg:px-8">
+      <div className="mx-auto w-full max-w-[1520px] space-y-5 sm:space-y-6 xl:space-y-7">
+        {/* Hero Carousel */}
+        <section>
+          {similarArtists.isFetching || similarArtists.isLoading ? (
+            <HeaderFallback />
+          ) : (
+            <AlbumHeader albums={similarArtists.data?.list || []} />
+          )}
+        </section>
 
-      {/* Discover Weekly + This Is Artist */}
-      {showThisIsArtist && (
-        <div className="mb-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="min-h-[220px] sm:min-h-[260px]">
+        {/* Discover Weekly + This Is Artist */}
+        {showThisIsArtist && (
+          <section className="grid grid-cols-1 gap-3.5 md:grid-cols-12 md:gap-4">
+            <div className="md:col-span-7 min-h-[220px] sm:min-h-[246px]">
               <DiscoverWeeklyCard />
             </div>
-            <div className="min-h-[220px] sm:min-h-[260px]">
+            <div className="md:col-span-5 min-h-[220px] sm:min-h-[246px]">
               <ThisIsArtist />
             </div>
-          </div>
-        </div>
-      )}
+          </section>
+        )}
 
-      {/* Genre Discovery */}
-      <GenreDiscovery />
+        {/* Genre Discovery */}
+        <section>
+          <GenreDiscovery />
+        </section>
 
-      {/* Recently Played */}
-      {recentlyPlayed.isLoading && <PreviewListFallback />}
-      {recentlyPlayed.data?.list && (
-        <PreviewList
-          title={t('home.recentlyPlayed')}
-          icon={<Clock className="w-6 h-6 text-muted-foreground" />}
-          moreRoute={ROUTES.ALBUMS.RECENTLY_PLAYED}
-          list={recentlyPlayed.data.list}
-        />
-      )}
+        {/* Recently Played */}
+        <section>
+          {recentlyPlayed.isLoading && <PreviewListFallback />}
+          {recentlyPlayed.data?.list && (
+            <PreviewList
+              title={t('home.recentlyPlayed')}
+              icon={<Clock className="h-5 w-5 text-muted-foreground" />}
+              moreRoute={ROUTES.ALBUMS.RECENTLY_PLAYED}
+              list={recentlyPlayed.data.list}
+            />
+          )}
+        </section>
 
-      {/* Recently Added */}
-      {recentlyAdded.isLoading && <PreviewListFallback />}
-      {recentlyAdded.data?.list && (
-        <PreviewList
-          title={t('home.recentlyAdded')}
-          icon={<Disc className="w-6 h-6 text-muted-foreground" />}
-          moreRoute={ROUTES.ALBUMS.RECENTLY_ADDED}
-          list={recentlyAdded.data.list}
-        />
-      )}
+        {/* Recently Added */}
+        <section>
+          {recentlyAdded.isLoading && <PreviewListFallback />}
+          {recentlyAdded.data?.list && (
+            <PreviewList
+              title={t('home.recentlyAdded')}
+              icon={<Disc className="h-5 w-5 text-muted-foreground" />}
+              moreRoute={ROUTES.ALBUMS.RECENTLY_ADDED}
+              list={recentlyAdded.data.list}
+            />
+          )}
+        </section>
+      </div>
     </div>
   )
 }

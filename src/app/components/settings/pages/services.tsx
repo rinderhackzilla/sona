@@ -9,9 +9,7 @@ import {
   ContentItem,
   ContentItemForm,
   ContentItemTitle,
-  ContentSeparator,
   Header,
-  HeaderDescription,
   HeaderTitle,
   Root,
 } from '@/app/components/settings/section'
@@ -69,14 +67,11 @@ export function ServicesPage() {
   const isLrclibEnabled = DISABLE_LRCLIB ? false : enabled
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Last.fm */}
       <Root>
         <Header>
           <HeaderTitle>{t('settings.integrations.lastfm.group', 'Last.fm')}</HeaderTitle>
-          <HeaderDescription>
-            {t('settings.integrations.lastfm.description', 'Enable personalized music recommendations and playlists')}
-          </HeaderDescription>
         </Header>
         <Content>
           <ContentItem>
@@ -119,16 +114,12 @@ export function ServicesPage() {
             </a>
           </p>
         </Content>
-        <ContentSeparator />
       </Root>
 
       {/* Lidarr */}
       <Root>
         <Header>
           <HeaderTitle>{t('settings.integrations.lidarr.group', 'Lidarr')}</HeaderTitle>
-          <HeaderDescription>
-            {t('settings.integrations.lidarr.description', 'Automatically download missing albums and artists')}
-          </HeaderDescription>
         </Header>
         <Content>
           <ContentItem>
@@ -160,16 +151,12 @@ export function ServicesPage() {
             </ContentItemForm>
           </ContentItem>
         </Content>
-        <ContentSeparator />
       </Root>
 
       {/* LRCLIB */}
       <Root>
         <Header>
           <HeaderTitle>{t('settings.privacy.services.lrclib.label', 'LRCLIB')}</HeaderTitle>
-          <HeaderDescription>
-            {t('settings.privacy.services.lrclib.info', 'External lyrics provider for synced lyrics')}
-          </HeaderDescription>
         </Header>
         <Content>
           <ContentItem>
@@ -223,7 +210,6 @@ export function ServicesPage() {
             </>
           )}
         </Content>
-        <ContentSeparator />
       </Root>
     </div>
   )

@@ -1,5 +1,5 @@
 import { ReactNode, useEffect, useRef, useState } from 'react'
-import { getCoverArtUrl } from '@/api/httpClient'
+import { getCoverArtUrl, getSimpleCoverArtUrl } from '@/api/httpClient'
 import { CoverArt } from '@/types/coverArtType'
 
 interface ImageLoaderProps {
@@ -28,6 +28,8 @@ export function ImageLoader({
     setSrc('')
 
     if (!id) {
+      const fallbackUrl = getSimpleCoverArtUrl(undefined, type, size.toString())
+      setSrc(fallbackUrl)
       setIsLoading(false)
       return
     }
@@ -36,16 +38,19 @@ export function ImageLoader({
     abortControllerRef.current = abortController
 
     const fetchImage = async () => {
+      const fallbackUrl = getSimpleCoverArtUrl(undefined, type, size.toString())
       try {
         const url = await getCoverArtUrl(id, type, size.toString())
+        const finalUrl = url || fallbackUrl
 
         if (!abortController.signal.aborted) {
-          setSrc(url)
+          setSrc(finalUrl)
           setIsLoading(false)
         }
       } catch (error) {
         if (!abortController.signal.aborted) {
           console.error('Error fetching image:', error)
+          setSrc(fallbackUrl)
           setIsLoading(false)
         }
       }

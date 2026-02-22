@@ -1,12 +1,15 @@
 import clsx from 'clsx'
 import { useState } from 'react'
 import { ImageLoader } from '@/app/components/image-loader'
-import { AspectRatio } from '@/app/components/ui/aspect-ratio'
 import { VISUALIZERS } from '@/app/components/fullscreen/visualizers'
 import { useVisualizerContext } from '@/app/components/fullscreen/settings'
 import { usePlayerStore } from '@/store/player.store'
 
-export function FullscreenSongImage() {
+interface FullscreenSongImageProps {
+  isChromeVisible: boolean
+}
+
+export function FullscreenSongImage({ isChromeVisible }: FullscreenSongImageProps) {
   const { coverArt, artist, title } = usePlayerStore(({ songlist }) => {
     return songlist.currentSong
   })
@@ -18,16 +21,26 @@ export function FullscreenSongImage() {
     setShowVisualizer(!showVisualizer)
   }
 
-  // Get the current visualizer component
   const VisualizerComponent = VISUALIZERS[preset]
 
   return (
-    <div className="2xl:w-[33%] h-full max-w-[450px] max-h-[450px] 2xl:max-w-[550px] 2xl:max-h-[550px] items-end flex aspect-square">
-      <AspectRatio
-        ratio={1 / 1}
+    // Height-driven square: height is constrained by the available row height,
+    // width follows via aspect-square. Never overflows its container.
+    <div
+      className={clsx(
+        'h-full aspect-square flex-shrink-0 min-h-0 flex items-center justify-center',
+        !showVisualizer && 'transition-all duration-500 ease-in-out',
+        showVisualizer
+          ? 'max-h-[520px] 2xl:max-h-[640px]'
+          : isChromeVisible
+            ? 'max-h-[520px] 2xl:max-h-[640px]'
+            : 'max-h-[580px] 2xl:max-h-[700px]',
+      )}
+    >
+      <div
         className={clsx(
-          'rounded-lg 2xl:rounded-2xl overflow-hidden cursor-pointer relative',
-          !showVisualizer && 'bg-accent/60'
+          'relative w-full h-full rounded-lg 2xl:rounded-2xl overflow-hidden cursor-pointer',
+          !showVisualizer && 'bg-accent/60',
         )}
         onClick={handleClick}
       >
@@ -38,21 +51,16 @@ export function FullscreenSongImage() {
                 src={src}
                 alt={`${artist} - ${title}`}
                 className={clsx(
-                  'aspect-square object-cover shadow-custom-5 transition-opacity duration-300 opacity-0',
-                  'relative after:absolute after:block after:inset-0 after:bg-accent after:text-transparent',
+                  'absolute inset-0 w-full h-full object-cover shadow-custom-5 transition-opacity duration-300 opacity-0',
                   !isLoading && 'opacity-100',
                 )}
-                width="100%"
-                height="100%"
               />
             )}
           </ImageLoader>
         ) : (
-          <div className="w-full h-full relative">
-            <VisualizerComponent />
-          </div>
+          <VisualizerComponent />
         )}
-      </AspectRatio>
+      </div>
     </div>
   )
 }

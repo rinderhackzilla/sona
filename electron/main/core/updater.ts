@@ -34,7 +34,10 @@ export function setupUpdater(window: BrowserWindow | null) {
     }
 
     try {
-      return await autoUpdater.checkForUpdates()
+      const result = await autoUpdater.checkForUpdates()
+      // Normalize payload shape for renderer:
+      // renderer expects UpdateInfo-like object with top-level `files`.
+      return result?.updateInfo ?? null
     } catch (e) {
       console.error('Failed to check for updates:', e)
       return null

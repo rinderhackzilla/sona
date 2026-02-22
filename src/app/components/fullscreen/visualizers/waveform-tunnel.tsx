@@ -32,13 +32,36 @@ export function WaveformTunnel() {
     if (!ctx) return
 
     const dpr = window.devicePixelRatio || 1
-    const resize = () => {
-      canvas.width = canvas.offsetWidth * dpr
-      canvas.height = canvas.offsetHeight * dpr
-      ctx.scale(dpr, dpr)
+    let pendingWidth = 0
+    let pendingHeight = 0
+    let stableFrames = 0
+
+    const commitResize = (width: number, height: number) => {
+      if (canvas.width === width && canvas.height === height) return
+      canvas.width = width
+      canvas.height = height
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
     }
-    resize()
-    window.addEventListener('resize', resize)
+
+    const scheduleStableResize = () => {
+      const width = Math.floor(canvas.clientWidth * dpr)
+      const height = Math.floor(canvas.clientHeight * dpr)
+      if (width <= 0 || height <= 0) return
+
+      if (width !== pendingWidth || height !== pendingHeight) {
+        pendingWidth = width
+        pendingHeight = height
+        stableFrames = 0
+        return
+      }
+
+      if (stableFrames < 2) {
+        stableFrames += 1
+        return
+      }
+
+      commitResize(pendingWidth, pendingHeight)
+    }
 
     const BUF = 256
     const freqBuf = new Uint8Array(BUF)
@@ -53,6 +76,8 @@ export function WaveformTunnel() {
           smoothed[i] = smoothed[i] * 0.80 + freqBuf[i] * 0.20
         }
       }
+
+      scheduleStableResize()
 
       const w = canvas.offsetWidth
       const h = canvas.offsetHeight
@@ -152,9 +177,10 @@ export function WaveformTunnel() {
     draw()
     return () => {
       cancelAnimationFrame(animId)
-      window.removeEventListener('resize', resize)
     }
   }, [])
 
   return <canvas ref={canvasRef} className="absolute inset-0 w-full h-full" />
 }
+
+

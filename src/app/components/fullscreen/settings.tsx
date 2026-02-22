@@ -28,6 +28,8 @@ import { buttonsStyle } from './controls'
 type VisualizerContextType = {
   preset: VisualizerPreset
   setPreset: (preset: VisualizerPreset) => void
+  hypnoticBackdropEnabled: boolean
+  setHypnoticBackdropEnabled: (enabled: boolean) => void
 }
 
 const VisualizerContext = createContext<VisualizerContextType | null>(null)
@@ -52,8 +54,28 @@ export function useVisualizerSettings() {
 
 export function VisualizerProvider({ children }: { children: React.ReactNode }) {
   const [preset, setPreset] = useState<VisualizerPreset>('geometric-mandala')
+  const [hypnoticBackdropEnabled, setHypnoticBackdropEnabled] = useState(() => {
+    if (typeof window === 'undefined') return true
+    const value = window.localStorage.getItem('sona.fullscreen.hypnoticBackdrop')
+    return value === null ? true : value === 'true'
+  })
+
+  const setHypnoticBackdropEnabledWithPersistence = (enabled: boolean) => {
+    setHypnoticBackdropEnabled(enabled)
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem('sona.fullscreen.hypnoticBackdrop', String(enabled))
+    }
+  }
+
   return (
-    <VisualizerContext.Provider value={{ preset, setPreset }}>
+    <VisualizerContext.Provider
+      value={{
+        preset,
+        setPreset,
+        hypnoticBackdropEnabled,
+        setHypnoticBackdropEnabled: setHypnoticBackdropEnabledWithPersistence,
+      }}
+    >
       {children}
     </VisualizerContext.Provider>
   )
@@ -80,6 +102,7 @@ export function FullscreenSettings() {
       <PopoverContent className="w-80 p-0" align="start" side="top">
         <div className="flex flex-col">
           <DynamicColorOption showSeparator={false} />
+          <HypnoticBackdropOption />
           {useSongColorOnBigPlayer && <ColorIntensityOption />}
           {!useSongColorOnBigPlayer && <ImageBlurSizeOption />}
           <VisualizerPresetOption />
@@ -163,6 +186,20 @@ function ColorIntensityOption(props: OptionProps) {
         step={0.05}
         tooltipValue={intensityTooltip}
         onValueChange={([value]) => setCurrentSongIntensity(value)}
+      />
+    </SettingWrapper>
+  )
+}
+
+function HypnoticBackdropOption(props: OptionProps) {
+  const { t } = useTranslation()
+  const { hypnoticBackdropEnabled, setHypnoticBackdropEnabled } = useVisualizerContext()
+
+  return (
+    <SettingWrapper text={t('fullscreen.hypnoticBackdrop')} {...props}>
+      <Switch
+        checked={hypnoticBackdropEnabled}
+        onCheckedChange={setHypnoticBackdropEnabled}
       />
     </SettingWrapper>
   )

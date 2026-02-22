@@ -1,4 +1,6 @@
 import { useInfiniteQuery } from '@tanstack/react-query'
+import { Shuffle } from 'lucide-react'
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSearchParams } from 'react-router-dom'
 import { ShadowHeader } from '@/app/components/album/shadow-header'
@@ -6,6 +8,7 @@ import { InfinitySongListFallback } from '@/app/components/fallbacks/song-fallba
 import { HeaderTitle } from '@/app/components/header-title'
 import { ClearFilterButton } from '@/app/components/search/clear-filter-button'
 import { ExpandableSearchInput } from '@/app/components/search/expandable-input'
+import { Button } from '@/app/components/ui/button'
 import { DataTableList } from '@/app/components/ui/data-table-list'
 import { useTotalSongs } from '@/app/hooks/use-total-songs'
 import { songsColumns } from '@/app/tables/songs-columns'
@@ -20,7 +23,8 @@ const DEFAULT_OFFSET = 100
 
 export default function SongList() {
   const { t } = useTranslation()
-  const { setSongList } = usePlayerActions()
+  const { setSongList, startRuntimeShuffleAll } = usePlayerActions()
+  const [isShuffling, setIsShuffling] = useState(false)
   const [searchParams] = useSearchParams()
   const { getSearchParam } = new SearchParamsHandler(searchParams)
   const columns = songsColumns()
@@ -68,6 +72,16 @@ export default function SongList() {
     if (songlist) setSongList(songlist, index)
   }
 
+  async function handleShuffleAll() {
+    if (isShuffling) return
+    setIsShuffling(true)
+    try {
+      await startRuntimeShuffleAll()
+    } finally {
+      setIsShuffling(false)
+    }
+  }
+
   const columnsToShow: ColumnFilter[] = [
     'index',
     'title',
@@ -98,6 +112,17 @@ export default function SongList() {
         />
 
         <div className="flex gap-2 flex-1 justify-end">
+          <Button
+            variant="outline"
+            size="sm"
+            className="text-green-500 hover:text-green-400 border-green-500/30 hover:border-green-500/60"
+            onClick={handleShuffleAll}
+            disabled={isShuffling}
+          >
+            <Shuffle className="w-4 h-4 mr-2" />
+            {t('songs.list.shuffleAll')}
+          </Button>
+
           {filterByArtist && <ClearFilterButton />}
           <ExpandableSearchInput
             placeholder={t('songs.list.search.placeholder')}

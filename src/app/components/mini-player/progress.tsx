@@ -1,7 +1,8 @@
 import { useCallback, useState } from 'react'
-import { Slider } from '@/app/components/ui/slider'
+import { ProgressSlider } from '@/app/components/ui/slider'
 import {
   usePlayerActions,
+  usePlayerCurrentSong,
   usePlayerDuration,
   usePlayerProgress,
   usePlayerRef,
@@ -15,7 +16,12 @@ export function MiniPlayerProgress() {
   const [localProgress, setLocalProgress] = useState(progress)
   const audioPlayerRef = usePlayerRef()
   const currentDuration = usePlayerDuration()
+  const currentSong = usePlayerCurrentSong()
   const { setProgress } = usePlayerActions()
+  const effectiveDuration = Math.max(
+    1,
+    Number(currentDuration ?? currentSong?.duration ?? 0),
+  )
 
   const updateAudioCurrentTime = useCallback(
     (value: number) => {
@@ -58,21 +64,23 @@ export function MiniPlayerProgress() {
         </div>
 
         <div className="min-w-[40px] text-right text-[11px] font-light drop-shadow-md">
-          {convertSecondsToTime(currentDuration ?? 0)}
+          {convertSecondsToTime(effectiveDuration)}
         </div>
       </div>
 
-      <Slider
+      <ProgressSlider
         variant="secondary"
         defaultValue={[0]}
         value={isSeeking ? [localProgress] : [progress]}
-        max={currentDuration}
+        tooltipTransformer={convertSecondsToTime}
+        max={effectiveDuration}
         step={1}
-        className="w-full h-4"
+        className="w-full h-4 cursor-pointer"
         onValueChange={([value]) => handleSeeking(value)}
         onValueCommit={([value]) => handleSeeked(value)}
         onPointerUp={handleSeekedFallback}
         onMouseUp={handleSeekedFallback}
+        data-testid="mini-player-progress-slider"
       />
     </div>
   )

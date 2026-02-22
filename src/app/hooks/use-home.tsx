@@ -115,8 +115,22 @@ export const useGetGenreDiscovery = () => {
       .map((g) => g.value)
   }, [topGenres, genres])
 
+  const selectedGenreItems = useMemo(() => {
+    if (!selectedGenres.length) return []
+
+    const genresMap = new Map((genres || []).map((genre) => [genre.value, genre]))
+
+    return selectedGenres.map((genreValue) => {
+      const genreData = genresMap.get(genreValue)
+      return {
+        value: genreValue,
+        albumCount: genreData?.albumCount ?? 0,
+      }
+    })
+  }, [selectedGenres, genres])
+
   return {
-    genres: selectedGenres,
+    genres: selectedGenreItems,
     isLoading: genresLoading,
   }
 }

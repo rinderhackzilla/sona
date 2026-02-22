@@ -29,6 +29,8 @@ export enum IpcChannels {
   UpdateError = 'update-error',
   DownloadProgress = 'download-progress',
   UpdateDownloaded = 'update-downloaded',
+  SetMiniPlayerMode = 'set-mini-player-mode',
+  SetMiniPlayerPinned = 'set-mini-player-pinned',
 }
 
 export type OverlayColors = {
@@ -101,4 +103,6 @@ export interface IAonsokuAPI {
   onUpdateError: (callback: (error: string) => void) => void
   onDownloadProgress: (callback: (progress: ProgressInfo) => void) => void
   onUpdateDownloaded: (callback: (info: UpdateInfo) => void) => void
+  setMiniPlayerMode: (enabled: boolean) => void
+  setMiniPlayerPinned: (pinned: boolean) => void
 }

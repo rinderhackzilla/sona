@@ -1,16 +1,13 @@
 export enum Theme {
-  Light = 'light',
   Dark = 'dark',
   Black = 'black',
   OneDark = 'one-dark',
-  NightOwlLight = 'night-owl-light',
+  EmberDusk = 'ember-dusk',
+  VerdantPulse = 'verdant-pulse',
   MarmaladeBeaver = 'marmalade-beaver',
   NoctisLilac = 'noctis-lilac',
-  MaterialTheme = 'material-theme',
   MonokaiPro = 'monokai-pro',
   GithubDark = 'github-dark',
-  ShadesOfPurple = 'shades-of-purple',
-  BeardedSolarized = 'bearded-solarized',
   CatppuccinMocha = 'catppuccin-mocha',
   NuclearDark = 'nuclear-dark',
   Achiever = 'achiever',
@@ -18,7 +15,6 @@ export enum Theme {
   Discord = 'discord',
   TinaciousDesign = 'tinacious-design',
   VueDark = 'vue-dark',
-  VimDarkSoft = 'vim-dark-soft',
 }
 
 export interface IThemeContext {

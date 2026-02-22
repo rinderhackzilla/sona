@@ -159,7 +159,7 @@ export function PlayerControls({
         onClick={togglePlayPause}
         data-testid={`player-button-${isPlaying ? 'pause' : 'play'}`}
         tooltip={playTooltip}
-        className="shadow-[0_0_12px_3px_rgba(134,239,172,0.45)]"
+        className="play-button-accent-glow"
       >
         {isPlaying ? (
           <Pause className="fill-primary-foreground" />

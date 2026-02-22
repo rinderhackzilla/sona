@@ -1,4 +1,5 @@
-import { memo } from 'react'
+import { clsx } from 'clsx'
+import { memo, useCallback, useEffect, useRef, useState } from 'react'
 import {
   Drawer,
   DrawerContent,
@@ -21,9 +22,40 @@ type FullscreenModeProps = {
 
 export function FullscreenMode({ children }: FullscreenModeProps) {
   const { handleFullscreen } = useAppWindow()
+  const [isChromeVisible, setIsChromeVisible] = useState(true)
+  const hideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const isChromeVisibleRef = useRef(true)
   
   // Extract album colors automatically
   useAlbumColorExtractor()
+
+  const clearHideTimer = useCallback(() => {
+    if (hideTimerRef.current) {
+      clearTimeout(hideTimerRef.current)
+      hideTimerRef.current = null
+    }
+  }, [])
+
+  const scheduleHideChrome = useCallback(() => {
+    clearHideTimer()
+    hideTimerRef.current = setTimeout(() => {
+      isChromeVisibleRef.current = false
+      setIsChromeVisible(false)
+    }, 3000)
+  }, [clearHideTimer])
+
+  const revealChrome = useCallback(() => {
+    if (!isChromeVisibleRef.current) {
+      isChromeVisibleRef.current = true
+      setIsChromeVisible(true)
+    }
+    scheduleHideChrome()
+  }, [scheduleHideChrome])
+
+  useEffect(() => {
+    scheduleHideChrome()
+    return () => clearHideTimer()
+  }, [clearHideTimer, scheduleHideChrome])
 
   return (
     <VisualizerProvider>
@@ -44,18 +76,45 @@ export function FullscreenMode({ children }: FullscreenModeProps) {
         >
           <MemoFullscreenBackdrop />
           <FullscreenDragHandler />
-          <div className="absolute inset-0 flex flex-col p-0 2xl:p-8 pt-10 2xl:pt-12 w-full h-full gap-4 bg-black/0 z-10">
+          <div
+            className={clsx(
+              'absolute inset-0 flex flex-col p-0 2xl:p-8 w-full h-full bg-black/0 z-10 transition-all duration-500 ease-in-out',
+              isChromeVisible
+                ? 'pt-6 2xl:pt-8 gap-4'
+                : 'pt-8 2xl:pt-10 gap-1',
+            )}
+            onMouseMove={revealChrome}
+            onMouseEnter={revealChrome}
+            onMouseLeave={scheduleHideChrome}
+          >
             {/* First Row */}
-            <div className="w-full max-h-[calc(100%-180px)] min-h-[calc(100%-180px)] px-8 2xl:px-16 pt-4 2xl:pt-8">
+            <div
+              className={clsx(
+                'w-full flex-1 min-h-0 px-8 2xl:px-16 transition-all duration-500 ease-in-out',
+                isChromeVisible ? 'pt-1 2xl:pt-2' : 'pt-0',
+              )}
+            >
               <div className="min-h-[300px] h-full max-h-full">
-                <FullscreenTabs />
+                <FullscreenTabs isChromeVisible={isChromeVisible} />
               </div>
             </div>
 
             {/* Second Row */}
-            <div className="h-[150px] min-h-[150px] px-8 2xl:px-16 py-2">
-              <div className="flex items-center">
-                <FullscreenPlayer />
+            <div
+              className={clsx(
+                'px-8 2xl:px-16 transition-all duration-500 ease-in-out',
+                isChromeVisible
+                  ? 'h-[150px] min-h-[150px] py-2'
+                  : 'h-[112px] min-h-[112px] pt-0 pb-0',
+              )}
+            >
+              <div
+                className={clsx(
+                  'flex h-full transition-all duration-500 ease-in-out',
+                  isChromeVisible ? 'items-center' : 'items-end',
+                )}
+              >
+                <FullscreenPlayer isChromeVisible={isChromeVisible} />
               </div>
             </div>
           </div>

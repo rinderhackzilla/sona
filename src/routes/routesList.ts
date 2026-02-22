@@ -22,7 +22,7 @@ const ARTIST = {
 }
 
 const ALBUM = {
-  PAGE: (albumId: string) => `${LIBRARY.ALBUMS}/${albumId}`,
+  PAGE: (albumId: string) => `${LIBRARY.ALBUMS}/${encodeURIComponent(albumId)}`,
   PATH: `${LIBRARY.ALBUMS}/:albumId`,
 }
 

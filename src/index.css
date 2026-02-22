@@ -127,6 +127,44 @@ img {
   @apply after:content-['•'] after:block after:absolute after:-bottom-1 after:text-primary;
 }
 
+.play-button-accent-glow {
+  box-shadow:
+    0 0 2px hsl(var(--primary) / 0.38),
+    0 0 16px hsl(var(--primary) / 0.28);
+  transition:
+    box-shadow 220ms ease,
+    transform 220ms ease;
+}
+
+.play-button-accent-glow:hover {
+  box-shadow:
+    0 0 3px hsl(var(--primary) / 0.45),
+    0 0 20px hsl(var(--primary) / 0.35);
+}
+
+.dj-card-active-pulse {
+  animation: dj-accent-pulse 360ms ease-out;
+}
+
+@keyframes dj-accent-pulse {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 hsl(var(--primary) / 0);
+  }
+  40% {
+    transform: scale(1.012);
+    box-shadow:
+      0 0 0 2px hsl(var(--primary) / 0.38),
+      0 0 24px hsl(var(--primary) / 0.34);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow:
+      0 0 0 1px hsl(var(--primary) / 0.2),
+      0 0 18px hsl(var(--primary) / 0.3);
+  }
+}
+
 .mini-player-button-active {
   @apply after:content-['•'] after:block after:absolute after:-bottom-1.5 after:text-secondary-foreground !text-secondary-foreground;
 }
@@ -317,6 +355,100 @@ svg#bars .eq-bar--4 {
 
 .default-gradient {
   @apply bg-gradient-to-b from-background/10 to-background/40;
+}
+
+.fullscreen-bg-kenburns {
+  transform-origin: center center;
+  animation: fullscreen-kenburns 22s ease-in-out infinite alternate;
+  will-change: transform;
+}
+
+@keyframes fullscreen-kenburns {
+  0% {
+    transform: scale(1.03) translate3d(-0.8%, -0.6%, 0);
+  }
+  50% {
+    transform: scale(1.08) translate3d(0.7%, 0.5%, 0);
+  }
+  100% {
+    transform: scale(1.11) translate3d(-0.4%, 0.8%, 0);
+  }
+}
+
+.hypnotic-layer-a,
+.hypnotic-layer-b,
+.hypnotic-layer-c {
+  position: absolute;
+  inset: -20%;
+  pointer-events: none;
+}
+
+.hypnotic-layer-a {
+  opacity: 0.22;
+  background:
+    radial-gradient(circle at 26% 34%, hsl(var(--accent) / 0.42), transparent 58%),
+    radial-gradient(circle at 74% 70%, hsl(var(--primary) / 0.34), transparent 62%);
+  filter: blur(10px) saturate(1.08);
+  animation: hypnotic-float-a 34s ease-in-out infinite alternate;
+}
+
+.hypnotic-layer-b {
+  opacity: 0.18;
+  background:
+    radial-gradient(circle at 68% 26%, hsl(var(--primary) / 0.3), transparent 56%),
+    radial-gradient(circle at 34% 74%, hsl(var(--accent) / 0.26), transparent 60%);
+  filter: blur(34px) saturate(1.1);
+  animation: hypnotic-float-b 42s ease-in-out infinite alternate;
+}
+
+.hypnotic-layer-c {
+  inset: -8%;
+  opacity: 0.14;
+  background:
+    radial-gradient(circle at 50% 52%, hsl(var(--background) / 0.02), transparent 38%),
+    radial-gradient(circle at 50% 52%, hsl(var(--accent) / 0.16), transparent 66%),
+    radial-gradient(circle at 50% 52%, hsl(var(--background) / 0.26), transparent 100%);
+  filter: blur(18px);
+  animation: hypnotic-pulse 14s ease-in-out infinite;
+}
+
+@keyframes hypnotic-float-a {
+  0% {
+    transform: translate3d(-2%, -1.5%, 0) scale(1) rotate(0deg);
+  }
+  50% {
+    transform: translate3d(2.2%, 1.6%, 0) scale(1.08) rotate(6deg);
+  }
+  100% {
+    transform: translate3d(-1.4%, 2.1%, 0) scale(1.03) rotate(-4deg);
+  }
+}
+
+@keyframes hypnotic-float-b {
+  0% {
+    transform: translate3d(1.8%, 1.2%, 0) scale(1.02) rotate(0deg);
+  }
+  50% {
+    transform: translate3d(-2.4%, -1.9%, 0) scale(1.1) rotate(-7deg);
+  }
+  100% {
+    transform: translate3d(1.6%, -1.2%, 0) scale(1.01) rotate(5deg);
+  }
+}
+
+@keyframes hypnotic-pulse {
+  0% {
+    transform: scale(0.98);
+    opacity: 0.1;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 0.18;
+  }
+  100% {
+    transform: scale(0.99);
+    opacity: 0.1;
+  }
 }
 
 .secondary-thumb-bar {

@@ -5,15 +5,24 @@ import {
   MainSidebarMenu,
   MainSidebarMenuItem,
 } from '@/app/components/ui/main-sidebar'
-import { Separator } from '@/app/components/ui/separator'
 import { libraryItems, SidebarItems } from '@/app/layout/sidebar'
 import { useAppStore } from '@/store/app.store'
 import { SidebarMainItem } from './main-item'
 import { SidebarPodcastItem } from './podcast-item'
 
-// First 2 items are curated (Discover Weekly, Your Top 50); rest is the standard library
-const discoverItems = libraryItems.slice(0, 2)
-const browseItems = libraryItems.slice(2)
+const discoverItems = libraryItems.filter(
+  (item) =>
+    item.id === SidebarItems.DiscoverWeekly ||
+    item.id === SidebarItems.Top50Year ||
+    item.id === SidebarItems.Favorites,
+)
+
+const browseItems = libraryItems.filter(
+  (item) =>
+    item.id !== SidebarItems.DiscoverWeekly &&
+    item.id !== SidebarItems.Top50Year &&
+    item.id !== SidebarItems.Favorites,
+)
 
 export function NavLibrary() {
   const { t } = useTranslation()
@@ -22,8 +31,14 @@ export function NavLibrary() {
 
   return (
     <>
-      {/* Curated section — no label */}
-      <MainSidebarGroup className="px-4 pt-1 pb-0">
+      {/* Curated section */}
+      <MainSidebarGroup className="px-4 pt-2 pb-0">
+        <div className="mb-1.5 flex items-center gap-2 px-1">
+          <MainSidebarGroupLabel className="h-6 px-0 text-[10px] uppercase tracking-[0.14em] text-foreground/55">
+            {t('home.explore')}
+          </MainSidebarGroupLabel>
+          <div className="h-px flex-1 bg-border/55" />
+        </div>
         <MainSidebarMenu>
           {discoverItems.map((item) => (
             <MainSidebarMenuItem key={item.id}>
@@ -33,14 +48,14 @@ export function NavLibrary() {
         </MainSidebarMenu>
       </MainSidebarGroup>
 
-      {/* Separator — fades out in icon mode */}
-      <div className="px-6 py-1 transition-opacity group-data-[collapsible=icon]:opacity-0 group-data-[collapsible=icon]:pointer-events-none">
-        <Separator />
-      </div>
-
       {/* Standard library section */}
-      <MainSidebarGroup className="px-4 py-0">
-        <MainSidebarGroupLabel>{t('sidebar.library')}</MainSidebarGroupLabel>
+      <MainSidebarGroup className="px-4 pt-2 pb-0">
+        <div className="mb-1.5 flex items-center gap-2 px-1">
+          <MainSidebarGroupLabel className="h-6 px-0 text-[10px] uppercase tracking-[0.14em] text-foreground/55">
+            {t('sidebar.library')}
+          </MainSidebarGroupLabel>
+          <div className="h-px flex-1 bg-border/55" />
+        </div>
         <MainSidebarMenu>
           {browseItems.map((item) => {
             if (hideRadiosSection && item.id === SidebarItems.Radios) return null

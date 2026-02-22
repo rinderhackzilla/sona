@@ -5,6 +5,9 @@
     "recentlyAdded": "Recently added",
     "explore": "Explore",
     "discoverWeekly": "Discover Weekly",
+    "topGenre": "Top Genre",
+    "thisIsArtist": "This is Artist",
+    "thisIsPrefix": "This is...",
     "weeklyMix": "Your Weekly Mix",
     "weeklyMixSoon": "Your weekly playlist will be generated soon",
     "recommendedAlbum": "Recommended album",
@@ -63,27 +66,23 @@
   },
   "theme": {
     "label": "Theme",
-    "light": "Light",
     "dark": "Dark",
+    "ember-dusk": "Ember Dusk",
+    "verdant-pulse": "Verdant Pulse",
     "system": "System",
     "black": "Black and White",
     "one-dark": "One Dark",
-    "night-owl-light": "Night Owl Light",
     "marmalade-beaver": "Marmalade Beaver",
     "noctis-lilac": "Noctis Lilac",
-    "material-theme": "Material Theme",
     "monokai-pro": "Monokai Pro",
     "github-dark": "Github Dark",
-    "shades-of-purple": "Shades Of Purple",
-    "bearded-solarized": "Bearded Solarized",
     "catppuccin-mocha": "Catppuccin Mocha",
     "nuclear-dark": "Nuclear Dark",
     "achiever": "Achiever",
     "dracula": "Dracula",
     "discord": "Discord",
     "tinacious-design": "Tinacious Design",
-    "vue-dark": "Vue Dark",
-    "vim-dark-soft": "Vim Dark Soft"
+    "vue-dark": "Vue Dark"
   },
   "playlist": {
     "headline": "Playlist",
@@ -150,6 +149,7 @@
       "search": {
         "placeholder": "Search songs…"
       },
+      "shuffleAll": "Shuffle All",
       "byArtist": "Songs by {{artist}}",
       "filter": {
         "clear": "Clear filter"
@@ -386,7 +386,27 @@
     "queue": "Queue",
     "playing": "Playing now",
     "lyrics": "Lyrics",
-    "switchButton": "Switch to Big Player"
+    "hypnoticBackdrop": "Animated Background",
+    "switchButton": "Switch to Big Player",
+    "sonaDj": {
+      "title": "Sona DJ",
+      "subtitle": "Choose how Sona picks the next tracks.",
+      "disable": "Disable Sona DJ",
+      "modes": {
+        "adventure": {
+          "name": "DJ Wildcard",
+          "description": "Adds a short sonic adventure between every track in the queue."
+        },
+        "drift": {
+          "name": "DJ Drift",
+          "description": "Keeps the drift going with more songs from the same genre."
+        },
+        "era": {
+          "name": "DJ Timekeeper",
+          "description": "Keeps the vibe going with more songs from the same era."
+        }
+      }
+    }
   },
   "logout": {
     "dialog": {
@@ -443,6 +463,7 @@
   "player": {
     "noSongPlaying": "No song playing",
     "noRadioPlaying": "No radio playing",
+    "noPlayback": "No playback active.",
     "tooltips": {
       "shuffle": {
         "enable": "Enable shuffle",
@@ -463,7 +484,11 @@
       "dislike": "Remove like from {{song}} by {{artist}}",
       "miniPlayer": {
         "open": "Open Miniplayer",
-        "close": "Close Miniplayer"
+        "close": "Close Miniplayer",
+        "expand": "Expand Player",
+        "pin": "Pin Miniplayer",
+        "unpin": "Unpin Miniplayer",
+        "closeWindow": "Close App"
       },
       "volume": {
         "mute": "Mute",

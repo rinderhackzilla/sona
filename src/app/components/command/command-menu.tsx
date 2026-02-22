@@ -34,7 +34,11 @@ export type CommandItemProps = {
   runCommand: (command: () => unknown) => void
 }
 
-export default function CommandMenu() {
+type CommandMenuProps = {
+  compact?: boolean
+}
+
+export default function CommandMenu({ compact = false }: CommandMenuProps) {
   const { t } = useTranslation()
   const { state: sidebarState } = useMainSidebar()
   const { open, setOpen } = useAppStore((state) => state.command)
@@ -131,17 +135,24 @@ export default function CommandMenu() {
       {sidebarOpen && (
         <Button
           variant="outline"
-          className="flex justify-start w-full px-2 gap-2 relative min-w-max active:scale-[98%] transition hover:bg-background-foreground/80"
+          className={
+            compact
+              ? 'h-10 w-10 p-0 flex items-center justify-center rounded-lg active:scale-[98%] transition hover:bg-background-foreground/80'
+              : 'flex justify-start w-full px-2 gap-2 relative min-w-max active:scale-[98%] transition hover:bg-background-foreground/80'
+          }
           onClick={() => setOpen(true)}
         >
-          <SearchIcon className="h-4 w-4 text-muted-foreground" />
-          <span className="inline-flex text-muted-foreground text-sm">
-            {t('sidebar.search')}
-          </span>
-
-          <div className="absolute right-2">
-            <Keyboard text="/" />
-          </div>
+          <SearchIcon className={compact ? 'h-5 w-5 text-muted-foreground' : 'h-4 w-4 text-muted-foreground'} />
+          {!compact && (
+            <>
+              <span className="inline-flex text-muted-foreground text-sm">
+                {t('sidebar.search')}
+              </span>
+              <div className="absolute right-2">
+                <Keyboard text="/" />
+              </div>
+            </>
+          )}
         </Button>
       )}
       <CommandDialog

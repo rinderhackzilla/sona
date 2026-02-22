@@ -5,7 +5,6 @@ import { MarqueeTitle } from '@/app/components/fullscreen/marquee-title'
 import { SongMenuOptions } from '@/app/components/song/menu-options'
 import { SongQualityBadge } from '@/app/components/song/quality-badge'
 import { ContextMenuProvider } from '@/app/components/table/context-menu'
-import { Badge } from '@/app/components/ui/badge'
 import { DrawerClose } from '@/app/components/ui/drawer'
 import { cn } from '@/lib/utils'
 import { ROUTES } from '@/routes/routesList'
@@ -16,7 +15,11 @@ import { FullscreenSongImage } from './song-image'
 
 const MemoFullscreenSongImage = memo(FullscreenSongImage)
 
-export function SongInfo() {
+interface SongInfoProps {
+  isChromeVisible: boolean
+}
+
+export function SongInfo({ isChromeVisible }: SongInfoProps) {
   const currentSong = usePlayerStore((state) => state.songlist.currentSong)
   const navigate = useNavigate()
   const closeButtonRef = useRef<HTMLButtonElement>(null)
@@ -57,9 +60,14 @@ export function SongInfo() {
         {/* Hidden close button for programmatic closing */}
         <DrawerClose ref={closeButtonRef} className="hidden" />
         
-        <MemoFullscreenSongImage />
+        <MemoFullscreenSongImage isChromeVisible={isChromeVisible} />
 
-        <div className="flex flex-col w-[66%] max-w-full h-full max-h-[450px] 2xl:max-h-[550px] justify-end text-left overflow-hidden">
+        <div
+          className={cn(
+            'flex flex-col flex-1 min-w-0 h-full min-h-0 justify-end text-left overflow-hidden transition-all duration-500 ease-in-out',
+            isChromeVisible ? 'max-h-[520px] 2xl:max-h-[640px]' : 'max-h-[580px] 2xl:max-h-[700px]',
+          )}
+        >
           <MarqueeTitle gap="mr-6">
             <h2 
               className="scroll-m-20 text-4xl 2xl:text-5xl font-bold tracking-tight py-2 2xl:py-3 text-shadow-md hover:underline cursor-pointer"
@@ -78,14 +86,18 @@ export function SongInfo() {
             <Dot className="text-foreground/70" />
             <ArtistNames song={currentSong} onArtistClick={handleArtistClick} />
           </div>
-          <div className="flex gap-2 mt-2 2xl:mt-3 mb-[1px]">
-            {currentSong.genre && (
-              <Badge variant="neutral">{currentSong.genre}</Badge>
-            )}
-            {currentSong.year && (
-              <Badge variant="neutral">{currentSong.year}</Badge>
-            )}
-            <SongQualityBadge song={currentSong} variant="neutral" />
+          <div className="mt-2 2xl:mt-3 mb-[1px]">
+            <div className="inline-flex items-center gap-2 rounded-md border border-foreground/15 bg-foreground/5 px-3 py-1.5 text-sm text-foreground/80 backdrop-blur-sm">
+              {currentSong.genre && <span className="truncate max-w-[220px]">{currentSong.genre}</span>}
+              {currentSong.genre && currentSong.year && <span className="text-foreground/40">•</span>}
+              {currentSong.year && <span>{currentSong.year}</span>}
+              {(currentSong.genre || currentSong.year) && <span className="text-foreground/40">•</span>}
+              <SongQualityBadge
+                song={currentSong}
+                display="text"
+                className="leading-none"
+              />
+            </div>
           </div>
         </div>
       </div>

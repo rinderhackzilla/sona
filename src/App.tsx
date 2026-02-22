@@ -11,9 +11,12 @@ import { UpdateObserver } from '@/app/observers/update-observer'
 import { PlaylistDialogProvider } from '@/app/context/playlist-dialog-context'
 import { Mobile } from '@/app/pages/mobile'
 import { router } from '@/routes/router'
+import { useMiniPlayerState } from '@/store/ui.store'
 import { isDesktop as isElectron, isLinux } from '@/utils/desktop'
 
 function App() {
+  const { open: miniPlayerOpen } = useMiniPlayerState()
+
   if (!isDesktop && window.innerHeight > window.innerWidth) return <Mobile /> // Support tablets but not phones
 
   return (
@@ -26,7 +29,7 @@ function App() {
       <SettingsDialog />
       <RouterProvider router={router} />
       <ToastContainer />
-      {isLinux && <Linux />}
+      {isLinux && !miniPlayerOpen && <Linux />}
     </PlaylistDialogProvider>
   )
 }

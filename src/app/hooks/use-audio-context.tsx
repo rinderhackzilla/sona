@@ -31,10 +31,12 @@ let globalEqGains: number[] = [0, 0, 0, 0, 0, 0, 0, 0]
 
 // Global analyser for visualizer
 let globalAnalyser: AnalyserNode | null = null
+let globalAudioContext: IAudioContext | null = null
+const globalMediaSourceNodes = new WeakMap<HTMLAudioElement, IAudioSource>()
 
 export function useAudioContext(audio: HTMLAudioElement | null) {
   const { isSong } = usePlayerMediaType()
-  const { replayGainError, replayGainEnabled } = useReplayGainState()
+  const { replayGainEnabled } = useReplayGainState()
 
   const audioContextRef = useRef<IAudioContext | null>(null)
   const sourceNodeRef = useRef<IAudioSource | null>(null)
@@ -42,18 +44,29 @@ export function useAudioContext(audio: HTMLAudioElement | null) {
   const visualizerGainRef = useRef<GainNode | null>(null)
   const eqFiltersRef = useRef<IBiquadFilterNode<IAudioContext>[]>([])
   const analyserRef = useRef<AnalyserNode | null>(null)
+  const chainConnectedRef = useRef(false)
 
   const setupAudioContext = useCallback(() => {
-    if (!audio || !isSong || replayGainError) return
+    if (!audio || !isSong) return
 
+    if (!globalAudioContext) {
+      globalAudioContext = new AudioContext()
+    }
     if (!audioContextRef.current) {
-      audioContextRef.current = new AudioContext()
+      audioContextRef.current = globalAudioContext
     }
 
     const audioContext = audioContextRef.current
 
     if (!sourceNodeRef.current) {
-      sourceNodeRef.current = audioContext.createMediaElementSource(audio)
+      const existingSource = globalMediaSourceNodes.get(audio)
+      if (existingSource) {
+        sourceNodeRef.current = existingSource
+      } else {
+        const nextSource = audioContext.createMediaElementSource(audio)
+        globalMediaSourceNodes.set(audio, nextSource)
+        sourceNodeRef.current = nextSource
+      }
     }
 
     if (!gainNodeRef.current) {
@@ -68,14 +81,18 @@ export function useAudioContext(audio: HTMLAudioElement | null) {
       logger.info('[AudioContext] Created visualizer gain node at 25%')
     }
 
-    // Create analyser for visualizer
-    if (!analyserRef.current && !globalAnalyser) {
-      const analyser = audioContext.createAnalyser() as AnalyserNode
-      analyser.fftSize = 512
-      analyser.smoothingTimeConstant = 0.75
-      analyserRef.current = analyser
-      globalAnalyser = analyser
-      logger.info('[AudioContext] Created analyser for visualizer')
+    // Reuse existing global analyser when available to keep visualizer chain alive
+    if (!analyserRef.current) {
+      if (globalAnalyser) {
+        analyserRef.current = globalAnalyser
+      } else {
+        const analyser = audioContext.createAnalyser() as AnalyserNode
+        analyser.fftSize = 512
+        analyser.smoothingTimeConstant = 0.75
+        analyserRef.current = analyser
+        globalAnalyser = analyser
+        logger.info('[AudioContext] Created analyser for visualizer')
+      }
     }
 
     // Create EQ filters if not already created
@@ -93,32 +110,37 @@ export function useAudioContext(audio: HTMLAudioElement | null) {
       logger.info('Created EQ filters', { count: filters.length })
     }
 
-    // Connect main audio chain: source -> EQ filters -> gainNode -> destination
-    let prevNode: AudioNode = sourceNodeRef.current
-    
-    // Connect all EQ filters in series
-    eqFiltersRef.current.forEach((filter) => {
-      prevNode.connect(filter)
-      prevNode = filter
-    })
-    
-    // Connect to main gain node (for master volume)
-    prevNode.connect(gainNodeRef.current)
-    
-    // Connect gain node to destination
-    gainNodeRef.current.connect(audioContext.destination)
+    if (!chainConnectedRef.current) {
+      // Connect main audio chain: source -> EQ filters -> gainNode -> destination
+      let prevNode: AudioNode = sourceNodeRef.current
 
-    // Separate visualizer chain: last EQ filter -> visualizer gain -> analyser
-    // This splits off BEFORE the master gain node
-    const lastEqFilter = eqFiltersRef.current[eqFiltersRef.current.length - 1]
-    if (lastEqFilter && visualizerGainRef.current && analyserRef.current) {
-      lastEqFilter.connect(visualizerGainRef.current)
-      visualizerGainRef.current.connect(analyserRef.current)
-      logger.info('Visualizer chain connected: EQ -> visualizer gain (25%) -> analyser')
+      // Connect all EQ filters in series
+      eqFiltersRef.current.forEach((filter) => {
+        prevNode.connect(filter)
+        prevNode = filter
+      })
+
+      // Connect to main gain node (for master volume)
+      prevNode.connect(gainNodeRef.current)
+
+      // Connect gain node to destination
+      gainNodeRef.current.connect(audioContext.destination)
+
+      // Separate visualizer chain: last EQ filter -> visualizer gain -> analyser
+      // This splits off BEFORE the master gain node
+      const lastEqFilter = eqFiltersRef.current[eqFiltersRef.current.length - 1]
+      if (lastEqFilter && visualizerGainRef.current && analyserRef.current) {
+        lastEqFilter.connect(visualizerGainRef.current)
+        visualizerGainRef.current.connect(analyserRef.current)
+        logger.info('Visualizer chain connected: EQ -> visualizer gain (25%) -> analyser')
+      }
+
+      chainConnectedRef.current = true
+      logger.info(
+        'Audio chain connected: source -> EQ -> gain -> destination (+ visualizer branch)',
+      )
     }
-
-    logger.info('Audio chain connected: source -> EQ -> gain -> destination (+ visualizer branch)')
-  }, [audio, isSong, replayGainError])
+  }, [audio, isSong])
 
   const resumeContext = useCallback(async () => {
     const audioContext = audioContextRef.current
@@ -153,10 +175,7 @@ export function useAudioContext(audio: HTMLAudioElement | null) {
   )
 
   const resetRefs = useCallback(() => {
-    if (sourceNodeRef.current) {
-      sourceNodeRef.current.disconnect()
-      sourceNodeRef.current = null
-    }
+    sourceNodeRef.current = null
     if (visualizerGainRef.current) {
       visualizerGainRef.current.disconnect()
       visualizerGainRef.current = null
@@ -174,15 +193,9 @@ export function useAudioContext(audio: HTMLAudioElement | null) {
       gainNodeRef.current.disconnect()
       gainNodeRef.current = null
     }
-    if (audioContextRef.current) {
-      audioContextRef.current.close()
-      audioContextRef.current = null
-    }
+    audioContextRef.current = globalAudioContext
+    chainConnectedRef.current = false
   }, [])
-
-  useEffect(() => {
-    if (replayGainError) resetRefs()
-  }, [replayGainError, resetRefs])
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: clear state after unmount
   useEffect(() => {

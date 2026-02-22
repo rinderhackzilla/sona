@@ -5,29 +5,6 @@
     --radius: 0.5rem;
   }
 
-  .light {
-    --background: 0 0% 100%;
-    --background-foreground: 210 20% 98%;
-    --foreground: 224 10% 15%;
-    --card: 0 0% 100%;
-    --card-foreground: 224 10% 15%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 224 10% 15%;
-    --primary: 161 94% 30%;
-    --primary-foreground: 210 20% 98%;
-    --secondary: 220 14.3% 95.9%;
-    --secondary-foreground: 220.9 39.3% 11%;
-    --muted: 220 14.3% 95.9%;
-    --muted-foreground: 220 8.9% 46.1%;
-    --accent: 220 14.3% 92.9%;
-    --accent-foreground: 220.9 39.3% 11%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 20% 98%;
-    --border: 220 13% 91%;
-    --input: 220 13% 91%;
-    --ring: 161 94% 30%;
-  }
-
   .dark {
     --background: 224 71.4% 8.1%;
     --background-foreground: 222 47% 11%;
@@ -49,6 +26,52 @@
     --border: 215 27.9% 19.9%;
     --input: 215 27.9% 19.9%;
     --ring: 160 84% 39%;
+  }
+
+  .ember-dusk {
+    --background: 8 26% 10%;
+    --background-foreground: 8 24% 12%;
+    --foreground: 18 34% 92%;
+    --card: 8 26% 11%;
+    --card-foreground: 18 34% 92%;
+    --popover: 8 26% 10%;
+    --popover-foreground: 18 34% 92%;
+    --primary: 8 84% 58%;
+    --primary-foreground: 10 35% 96%;
+    --secondary: 18 28% 22%;
+    --secondary-foreground: 18 30% 90%;
+    --muted: 10 20% 18%;
+    --muted-foreground: 15 16% 70%;
+    --accent: 12 34% 20%;
+    --accent-foreground: 18 30% 92%;
+    --destructive: 0 74% 44%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 12 24% 24%;
+    --input: 12 24% 24%;
+    --ring: 8 84% 58%;
+  }
+
+  .verdant-pulse {
+    --background: 145 28% 8%;
+    --background-foreground: 145 24% 10%;
+    --foreground: 142 22% 92%;
+    --card: 145 28% 9%;
+    --card-foreground: 142 22% 92%;
+    --popover: 145 28% 8%;
+    --popover-foreground: 142 22% 92%;
+    --primary: 142 68% 44%;
+    --primary-foreground: 145 35% 9%;
+    --secondary: 150 20% 18%;
+    --secondary-foreground: 142 20% 90%;
+    --muted: 150 16% 14%;
+    --muted-foreground: 148 10% 68%;
+    --accent: 150 20% 19%;
+    --accent-foreground: 142 22% 92%;
+    --destructive: 0 68% 42%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 150 18% 20%;
+    --input: 150 18% 20%;
+    --ring: 142 68% 44%;
   }
 
   .black {
@@ -97,29 +120,6 @@
     --ring: 220 13% 86%;
   }
 
-  .night-owl-light {
-    --background: 0 0% 98%;
-    --background-foreground: 0 0% 96%;
-    --foreground: 243 14% 29%;
-    --muted: 0 12% 90%;
-    --muted-foreground: 0 12% 30%;
-    --popover: 0 0% 95%;
-    --popover-foreground: 243 14% 19%;
-    --card: 0 0% 96%;
-    --card-foreground: 243 14% 24%;
-    --border: 0 0% 93%;
-    --input: 0 0% 90%;
-    --primary: 243 14% 29%;
-    --primary-foreground: 243 14% 89%;
-    --secondary: 243 4% 75%;
-    --secondary-foreground: 243 4% 15%;
-    --accent: 0 0% 83%;
-    --accent-foreground: 0 0% 23%;
-    --destructive: 8 94% 20%;
-    --destructive-foreground: 8 94% 80%;
-    --ring: 243 14% 29%;
-  }
-
   .marmalade-beaver {
     --background: 233 18% 17%;
     --background-foreground: 233 18% 19%;
@@ -166,29 +166,6 @@
     --ring: 247 78% 65%;
   }
 
-  .material-theme {
-    --background: 200 19% 16%;
-    --background-foreground: 200 19% 18%;
-    --foreground: 180 100% 97%;
-    --muted: 200 12% 22%;
-    --muted-foreground: 200 12% 72%;
-    --popover: 200 19% 15%;
-    --popover-foreground: 0 0% 100%;
-    --card: 200 19% 16%;
-    --card-foreground: 0 0% 100%;
-    --border: 200 9% 23%;
-    --input: 200 9% 26%;
-    --primary: 180 100% 97%;
-    --primary-foreground: 180 100% 17%;
-    --secondary: 180 30% 25%;
-    --secondary-foreground: 180 30% 85%;
-    --accent: 200 19% 33%;
-    --accent-foreground: 200 19% 93%;
-    --destructive: 8 94% 48%;
-    --destructive-foreground: 0 0% 100%;
-    --ring: 180 100% 97%;
-  }
-
   .monokai-pro {
     --background: 285 5% 15%;
     --background-foreground: 285 5% 17%;
@@ -233,52 +210,6 @@
     --destructive: 1 86% 57%;
     --destructive-foreground: 0 0% 100%;
     --ring: 210 17% 82%;
-  }
-
-  .shades-of-purple {
-    --background: 243 33% 23%;
-    --background-foreground: 243 33% 25%;
-    --foreground: 0 0% 100%;
-    --muted: 243 12% 29%;
-    --muted-foreground: 243 12% 79%;
-    --popover: 243 33% 22%;
-    --popover-foreground: 0 0% 100%;
-    --card: 243 33% 23%;
-    --card-foreground: 0 0% 100%;
-    --border: 243 23% 30%;
-    --input: 243 23% 33%;
-    --primary: 50 100% 49%;
-    --primary-foreground: 50 100% 9%;
-    --secondary: 50 30% 25%;
-    --secondary-foreground: 50 30% 85%;
-    --accent: 243 33% 40%;
-    --accent-foreground: 0 0% 100%;
-    --destructive: 3 82% 47%;
-    --destructive-foreground: 0 0% 100%;
-    --ring: 50 100% 49%;
-  }
-
-  .bearded-solarized {
-    --background: 195 46% 12%;
-    --background-foreground: 195 46% 14%;
-    --foreground: 194 37% 84%;
-    --muted: 195 12% 18%;
-    --muted-foreground: 195 12% 68%;
-    --popover: 195 46% 11%;
-    --popover-foreground: 194 37% 94%;
-    --card: 195 46% 12%;
-    --card-foreground: 194 37% 89%;
-    --border: 195 36% 19%;
-    --input: 195 36% 22%;
-    --primary: 175 59% 55%;
-    --primary-foreground: 175 59% 15%;
-    --secondary: 175 30% 25%;
-    --secondary-foreground: 175 30% 85%;
-    --accent: 195 46% 29%;
-    --accent-foreground: 195 46% 89%;
-    --destructive: 2 91% 53%;
-    --destructive-foreground: 0 0% 100%;
-    --ring: 175 59% 55%;
   }
 
   .catppuccin-mocha {
@@ -442,26 +373,4 @@
     --ring: 171 82% 43%;
   }
 
-  .vim-dark-soft {
-    --background: 20 3% 17%;
-    --background-foreground: 20 3% 19%;
-    --foreground: 43 59% 81%;
-    --muted: 20 12% 23%;
-    --muted-foreground: 20 12% 73%;
-    --popover: 20 3% 17%;
-    --popover-foreground: 43 59% 91%;
-    --card: 20 3% 17%;
-    --card-foreground: 43 59% 86%;
-    --border: 0 0% 24%;
-    --input: 0 0% 27%;
-    --primary: 43 59% 81%;
-    --primary-foreground: 43 59% 21%;
-    --secondary: 43 30% 25%;
-    --secondary-foreground: 43 30% 85%;
-    --accent: 20 3% 34%;
-    --accent-foreground: 20 3% 94%;
-    --destructive: 6 85% 47%;
-    --destructive-foreground: 0 0% 100%;
-    --ring: 43 59% 81%;
-  }
 }

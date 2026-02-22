@@ -6,6 +6,16 @@ interface ISongInfo {
   reset: () => void
 }
 
+interface IMiniPlayerUi {
+  open: boolean
+  pinned: boolean
+  setOpen: (open: boolean) => void
+  toggleOpen: () => void
+  setPinned: (pinned: boolean) => void
+  togglePinned: () => void
+}
+
 export interface IUiContext {
   songInfo: ISongInfo
+  miniPlayer: IMiniPlayerUi
 }

@@ -8,6 +8,7 @@ import { setupEvents, setupIpcEvents } from './core/events'
 import { appIcon } from './core/icon'
 import { titleBarOverlay } from './core/titleBarOverlay'
 import { setupUpdater } from './core/updater'
+import { getStoredMainBounds, getStoredMainIsMaximized } from './core/windowModeState'
 import { StatefulBrowserWindow } from './core/windowPosition'
 import { createTray } from './tray'
 
@@ -39,6 +40,14 @@ export function createWindow(): void {
       sandbox: false,
     },
   })
+
+  const storedMainBounds = getStoredMainBounds()
+  if (storedMainBounds) {
+    mainWindow.setBounds(storedMainBounds)
+  }
+  if (getStoredMainIsMaximized()) {
+    mainWindow.maximize()
+  }
 
   createTray()
   setupEvents(mainWindow)

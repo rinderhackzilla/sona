@@ -1,5 +1,6 @@
 import { is, platform } from '@electron-toolkit/utils'
 import { BrowserWindow, ipcMain, nativeTheme, shell } from 'electron'
+import { electron } from '../../../package.json'
 import {
   IpcChannels,
   OverlayColors,
@@ -15,7 +16,19 @@ import {
 import { playerState } from './playerState'
 import { getAppSetting, ISettingPayload, saveAppSettings } from './settings'
 import { setTaskbarButtons } from './taskbar'
-import { DEFAULT_TITLE_BAR_HEIGHT } from './titleBarOverlay'
+import {
+  DEFAULT_TITLE_BAR_HEIGHT,
+  hiddenTitleBarOverlay,
+  titleBarOverlay,
+} from './titleBarOverlay'
+import {
+  getStoredMainBounds,
+  getStoredMainIsMaximized,
+  getStoredMiniBounds,
+  setStoredMainBounds,
+  setStoredMainIsMaximized,
+  setStoredMiniBounds,
+} from './windowModeState'
 
 export function setupEvents(window: BrowserWindow | null) {
   if (!window) return
@@ -79,6 +92,34 @@ export function setupIpcEvents(window: BrowserWindow | null) {
   if (!window) return
 
   ipcMain.removeAllListeners()
+  const { defaultWidth, defaultHeight } = electron.window
+  const miniWidth = 384
+  const miniHeight = 192
+
+  let miniPlayerPrevBounds = window.getBounds()
+  let miniPlayerPrevMaximized = window.isMaximized()
+  let miniPlayerPrevMinimizable = window.isMinimizable()
+  let miniPlayerPrevMaximizable = window.isMaximizable()
+  let miniPlayerPrevResizable = window.isResizable()
+  let miniPlayerPrevClosable = window.isClosable()
+  let miniPlayerPrevFullScreenable = window.isFullScreenable()
+  let miniPlayerLastBounds: Electron.Rectangle | null = null
+  let restoreTitleBarOverlayTimer: ReturnType<typeof setTimeout> | null = null
+  let restoreMouseEventsTimer: ReturnType<typeof setTimeout> | null = null
+  let isMiniPlayerMode = false
+
+  window.on('close', () => {
+    if (isMiniPlayerMode) {
+      setStoredMiniBounds(window.getBounds())
+      return
+    }
+
+    const mainBounds = window.isMaximized()
+      ? window.getNormalBounds()
+      : window.getBounds()
+    setStoredMainBounds(mainBounds)
+    setStoredMainIsMaximized(window.isMaximized())
+  })
 
   ipcMain.on(IpcChannels.ToggleFullscreen, (_, isFullscreen: boolean) => {
     window.setFullScreen(isFullscreen)
@@ -152,5 +193,114 @@ export function setupIpcEvents(window: BrowserWindow | null) {
 
   ipcMain.on(IpcChannels.SaveAppSettings, (_, payload: ISettingPayload) => {
     saveAppSettings(payload)
+  })
+
+  ipcMain.on(IpcChannels.SetMiniPlayerMode, (_, enabled: boolean) => {
+    if (enabled) {
+      isMiniPlayerMode = true
+      if (restoreTitleBarOverlayTimer) {
+        clearTimeout(restoreTitleBarOverlayTimer)
+        restoreTitleBarOverlayTimer = null
+      }
+      if (restoreMouseEventsTimer) {
+        clearTimeout(restoreMouseEventsTimer)
+        restoreMouseEventsTimer = null
+      }
+      window.setIgnoreMouseEvents(false)
+      miniPlayerPrevBounds = window.getBounds()
+      miniPlayerPrevMaximized = window.isMaximized()
+      miniPlayerPrevMinimizable = window.isMinimizable()
+      miniPlayerPrevMaximizable = window.isMaximizable()
+      miniPlayerPrevResizable = window.isResizable()
+      miniPlayerPrevClosable = window.isClosable()
+      miniPlayerPrevFullScreenable = window.isFullScreenable()
+
+      const mainBounds = miniPlayerPrevMaximized
+        ? window.getNormalBounds()
+        : miniPlayerPrevBounds
+      setStoredMainBounds(mainBounds)
+      setStoredMainIsMaximized(miniPlayerPrevMaximized)
+
+      if (window.isFullScreen()) {
+        window.setFullScreen(false)
+      }
+      if (window.isMaximized()) {
+        window.unmaximize()
+      }
+
+      window.setMinimumSize(miniWidth, miniHeight)
+      window.setMinimizable(false)
+      window.setMaximizable(false)
+      window.setResizable(false)
+      window.setClosable(false)
+      window.setFullScreenable(false)
+      if (platform.isWindows) {
+        window.setTitleBarOverlay(hiddenTitleBarOverlay)
+      }
+      const persistedMiniBounds = getStoredMiniBounds()
+      const targetMiniBounds = persistedMiniBounds ?? miniPlayerLastBounds
+      if (targetMiniBounds) {
+        window.setBounds(
+          {
+            x: targetMiniBounds.x,
+            y: targetMiniBounds.y,
+            width: miniWidth,
+            height: miniHeight,
+          },
+          true,
+        )
+      } else {
+        window.setSize(miniWidth, miniHeight, true)
+        window.center()
+      }
+      return
+    }
+
+    isMiniPlayerMode = false
+    miniPlayerLastBounds = window.getBounds()
+    setStoredMiniBounds(miniPlayerLastBounds)
+    window.setAlwaysOnTop(false)
+    window.setMinimumSize(defaultWidth, defaultHeight)
+    window.setMinimizable(miniPlayerPrevMinimizable)
+    window.setMaximizable(miniPlayerPrevMaximizable)
+    window.setResizable(miniPlayerPrevResizable)
+    window.setClosable(miniPlayerPrevClosable)
+    window.setFullScreenable(miniPlayerPrevFullScreenable)
+    if (platform.isWindows) {
+      window.setTitleBarOverlay(hiddenTitleBarOverlay)
+    }
+
+    const persistedMainBounds = getStoredMainBounds()
+    const persistedMainIsMaximized = getStoredMainIsMaximized()
+    const shouldMaximize = miniPlayerPrevMaximized || persistedMainIsMaximized
+    if (shouldMaximize) {
+      window.maximize()
+      return
+    }
+
+    if (miniPlayerPrevBounds.width > 0 && miniPlayerPrevBounds.height > 0) {
+      window.setBounds(miniPlayerPrevBounds, true)
+    } else if (persistedMainBounds) {
+      window.setBounds(persistedMainBounds, true)
+    } else {
+      window.setSize(defaultWidth, defaultHeight, true)
+      window.center()
+    }
+
+    // Prevent click-through from the expand button into native title controls.
+    window.setIgnoreMouseEvents(true)
+    restoreMouseEventsTimer = setTimeout(() => {
+      window.setIgnoreMouseEvents(false)
+    }, 260)
+
+    if (platform.isWindows) {
+      restoreTitleBarOverlayTimer = setTimeout(() => {
+        window.setTitleBarOverlay(titleBarOverlay)
+      }, 520)
+    }
+  })
+
+  ipcMain.on(IpcChannels.SetMiniPlayerPinned, (_, pinned: boolean) => {
+    window.setAlwaysOnTop(pinned)
   })
 }

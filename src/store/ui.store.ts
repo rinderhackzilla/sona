@@ -6,8 +6,8 @@ import { IUiContext } from '@/types/uiContext'
 export const useUiStore = createWithEqualityFn<IUiContext>()(
   subscribeWithSelector(
     devtools(
-      immer((set) => ({
-        songInfo: {
+        immer((set) => ({
+          songInfo: {
           songId: '',
           setSongId: (id) => {
             set((state) => {
@@ -25,9 +25,33 @@ export const useUiStore = createWithEqualityFn<IUiContext>()(
               state.songInfo.songId = ''
               state.songInfo.modalOpen = false
             })
+            },
           },
-        },
-      })),
+          miniPlayer: {
+            open: false,
+            pinned: false,
+            setOpen: (open) => {
+              set((state) => {
+                state.miniPlayer.open = open
+              })
+            },
+            toggleOpen: () => {
+              set((state) => {
+                state.miniPlayer.open = !state.miniPlayer.open
+              })
+            },
+            setPinned: (pinned) => {
+              set((state) => {
+                state.miniPlayer.pinned = pinned
+              })
+            },
+            togglePinned: () => {
+              set((state) => {
+                state.miniPlayer.pinned = !state.miniPlayer.pinned
+              })
+            },
+          },
+        })),
       {
         name: 'ui_store',
       },
@@ -36,3 +60,4 @@ export const useUiStore = createWithEqualityFn<IUiContext>()(
 )
 
 export const useSongInfo = () => useUiStore((state) => state.songInfo)
+export const useMiniPlayerState = () => useUiStore((state) => state.miniPlayer)

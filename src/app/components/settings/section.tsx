@@ -8,7 +8,13 @@ type SectionComponent = ComponentPropsWithoutRef<'div'>
 
 export function Root({ children, className, ...props }: SectionComponent) {
   return (
-    <div className={cn('w-full', className)} {...props}>
+    <div
+      className={cn(
+        'w-full rounded-xl border border-border/60 bg-card/25 p-4 shadow-sm',
+        className,
+      )}
+      {...props}
+    >
       {children}
     </div>
   )
@@ -16,7 +22,7 @@ export function Root({ children, className, ...props }: SectionComponent) {
 
 export function Header({ children, className, ...props }: SectionComponent) {
   return (
-    <div className={cn('w-full mb-4 space-y-2', className)} {...props}>
+    <div className={cn('mb-3 w-full space-y-1.5', className)} {...props}>
       {children}
     </div>
   )
@@ -34,7 +40,7 @@ export function HeaderDescription({ children }: { children: ReactNode }) {
 
 export function Content({ children, className, ...props }: SectionComponent) {
   return (
-    <div className={cn('space-y-2', className)} {...props}>
+    <div className={cn('space-y-2.5', className)} {...props}>
       {children}
     </div>
   )
@@ -47,7 +53,7 @@ export function ContentItem({
 }: SectionComponent) {
   return (
     <div
-      className={cn('flex items-center space-between min-h-8', className)}
+      className={cn('flex min-h-9 items-center space-between', className)}
       {...props}
     >
       {children}
@@ -87,7 +93,7 @@ export function ContentItemForm({
 }: SectionComponent) {
   return (
     <div
-      className={cn('w-2/5 max-w-52 flex items-center justify-end', className)}
+      className={cn('flex w-[44%] max-w-56 items-center justify-end', className)}
       {...props}
     >
       {children}

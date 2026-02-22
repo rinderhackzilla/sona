@@ -1,6 +1,7 @@
 import { NavigationButtons } from '@/app/components/header/navigation-buttons'
 import { UserDropdown } from '@/app/components/header/user-dropdown'
 import { HeaderSongInfo } from '@/app/components/header-song'
+import { MiniPlayerModeButton } from '@/app/components/mini-player/mode-button'
 import { SettingsButton } from '@/app/components/settings/header-button'
 import { MainSidebarTrigger } from '@/app/components/ui/main-sidebar'
 import { useAppWindow } from '@/app/hooks/use-app-window'
@@ -18,6 +19,7 @@ export function Header() {
       </div>
       <HeaderSongInfo />
       <div className="flex justify-end items-center gap-2">
+        <MiniPlayerModeButton />
         <SettingsButton />
         <UserDropdown />
         {isWindows && !isFullscreen && <div className="w-[122px]" />}

@@ -19,24 +19,20 @@
     "achiever": "Achiever",
     "dracula": "Dracula",
     "label": "Theme",
-    "light": "Light",
     "dark": "Dark",
+    "ember-dusk": "Abendglut",
+    "verdant-pulse": "Smaragdfluss",
     "system": "System",
     "black": "Black and White",
     "one-dark": "One Dark",
     "marmalade-beaver": "Marmalade Beaver",
     "noctis-lilac": "Noctis Lilac",
-    "material-theme": "Material Theme",
-    "night-owl-light": "Night Owl Light",
     "monokai-pro": "Monokai Pro",
     "github-dark": "Github Dark",
-    "shades-of-purple": "Shades Of Purple",
-    "bearded-solarized": "Bearded Solarized",
     "catppuccin-mocha": "Catppuccin Mocha",
     "discord": "Discord",
     "tinacious-design": "Tinacious Design",
-    "vue-dark": "Vue Dark",
-    "vim-dark-soft": "Vim Dark Soft"
+    "vue-dark": "Vue Dark"
   },
   "playlist": {
     "form": {
@@ -361,6 +357,9 @@
     "mostPlayed": "Am häufigsten gespielt",
     "explore": "Entdecken",
     "discoverWeekly": "Discover Weekly",
+    "topGenre": "Top-Genre",
+    "thisIsArtist": "This is Artist",
+    "thisIsPrefix": "Das ist...",
     "weeklyMix": "Dein wöchentlicher Mix",
     "weeklyMixSoon": "Deine wöchentliche Playlist wird bald erstellt",
     "recommendedAlbum": "Empfohlenes Album",
@@ -405,6 +404,7 @@
       "search": {
         "placeholder": "Lieder suchen …"
       },
+      "shuffleAll": "Alle mischen",
       "byArtist": "Lieder von {{artist}}",
       "filter": {
         "clear": "Filter löschen"
@@ -445,7 +445,27 @@
     "queue": "Warteschlange",
     "playing": "Jetzt läuft",
     "lyrics": "Songtexte",
-    "switchButton": "Zum großen Player wechseln"
+    "hypnoticBackdrop": "Animierter Hintergrund",
+    "switchButton": "Zum großen Player wechseln",
+    "sonaDj": {
+      "title": "Sona DJ",
+      "subtitle": "Wähle aus, wie Sona die nächsten Songs auswählt.",
+      "disable": "Sona DJ deaktivieren",
+      "modes": {
+        "adventure": {
+          "name": "DJ Wildcard",
+          "description": "Fügt ein kurzes Klangabenteuer zwischen allen Titel der Warteschlange ein."
+        },
+        "drift": {
+          "name": "DJ Drift",
+          "description": "Erhält die Stimmung mit weiteren Songs aus dem gleichen Genre aufrecht."
+        },
+        "era": {
+          "name": "DJ Timekeeper",
+          "description": "Hält die Stimmung mit weiteren Songs aus der gleichen Ära aufrecht."
+        }
+      }
+    }
   },
   "toast": {
     "server": {
@@ -473,6 +493,7 @@
   "player": {
     "noSongPlaying": "Kein Lied wird abgespielt",
     "noRadioPlaying": "Kein Radio wird abgespielt",
+    "noPlayback": "Keine Wiedergabe aktiv.",
     "tooltips": {
       "shuffle": {
         "enable": "Zufallswiedergabe aktivieren",
@@ -496,7 +517,11 @@
       },
       "miniPlayer": {
         "open": "Miniplayer öffnen",
-        "close": "Miniplayer schließen"
+        "close": "Miniplayer schließen",
+        "expand": "Player vergrößern",
+        "pin": "Miniplayer anheften",
+        "unpin": "Miniplayer lösen",
+        "closeWindow": "App schließen"
       },
       "rewind": "Spule {{amount}} Sekunden zurück"
     }

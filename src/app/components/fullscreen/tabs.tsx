@@ -1,3 +1,4 @@
+import { clsx } from 'clsx'
 import { memo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
@@ -47,11 +48,17 @@ const getTransform = (currentTab: TabValue, tabValue: TabValue) => {
 
 const tabStyles =
   'absolute inset-0 mt-0 h-[calc(100%-64px)] overflow-y-auto transition-transform duration-300'
+const playingTabStyles =
+  'absolute inset-0 mt-0 h-[calc(100%-64px)] overflow-hidden transition-transform duration-300'
 
 const triggerStyles =
-  'w-full data-[state=active]:bg-foreground data-[state=active]:text-secondary text-foreground drop-shadow-sm'
+  'w-full rounded-full text-foreground/80 data-[state=active]:text-secondary data-[state=active]:bg-foreground data-[state=active]:shadow-[0_6px_18px_hsl(var(--accent)/0.28)] hover:text-foreground transition-all duration-300'
 
-export function FullscreenTabs() {
+interface FullscreenTabsProps {
+  isChromeVisible: boolean
+}
+
+export function FullscreenTabs({ isChromeVisible }: FullscreenTabsProps) {
   const [tab, setTab] = useState<TabValue>(TabsEnum.Playing)
   const { t } = useTranslation()
 
@@ -61,7 +68,12 @@ export function FullscreenTabs() {
       onValueChange={(value) => setTab(value as TabValue)}
       className="w-full h-full min-h-full"
     >
-      <TabsList className="w-full bg-foreground/20 mb-4">
+      <TabsList
+        className={clsx(
+          'w-full mb-4 p-1 rounded-full border border-foreground/20 bg-foreground/12 backdrop-blur-md shadow-[0_8px_24px_rgba(0,0,0,0.28)] transition-all duration-300',
+          !isChromeVisible && 'opacity-0 -translate-y-2 pointer-events-none',
+        )}
+      >
         <TabsTrigger value={TabsEnum.Queue} className={triggerStyles}>
           {t('fullscreen.queue')}
         </TabsTrigger>
@@ -86,14 +98,14 @@ export function FullscreenTabs() {
         </TabsContent>
         <TabsContent
           value={TabsEnum.Playing}
-          className={tabStyles}
+          className={playingTabStyles}
           style={{
             backfaceVisibility: 'hidden',
             transform: getTransform(tab, TabsEnum.Playing),
           }}
           forceMount={true}
         >
-          <MemoSongInfo />
+          <MemoSongInfo isChromeVisible={isChromeVisible} />
         </TabsContent>
         <TabsContent
           value={TabsEnum.Lyrics}

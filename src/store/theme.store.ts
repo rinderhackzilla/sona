@@ -6,13 +6,17 @@ import { IThemeContext, Theme } from '@/types/themeContext'
 import { getValidThemeFromEnv } from '@/utils/theme'
 
 const appThemeFromEnv = getValidThemeFromEnv()
+const VALID_THEMES = new Set(Object.values(Theme))
+
+const sanitizeTheme = (value: unknown): Theme =>
+  VALID_THEMES.has(value as Theme) ? (value as Theme) : Theme.Dark
 
 export const useThemeStore = createWithEqualityFn<IThemeContext>()(
   subscribeWithSelector(
     persist(
       devtools(
         immer((set) => ({
-          theme: appThemeFromEnv || Theme.Dark,
+          theme: sanitizeTheme(appThemeFromEnv || Theme.Dark),
           setTheme: (theme: Theme) => {
             set((state) => {
               state.theme = theme
@@ -31,12 +35,17 @@ export const useThemeStore = createWithEqualityFn<IThemeContext>()(
             if (persistedState && typeof persistedState === 'object') {
               persistedState = {
                 ...persistedState,
-                theme: appThemeFromEnv,
+                theme: sanitizeTheme(appThemeFromEnv),
               }
             }
           }
 
-          return merge(currentState, persistedState)
+          const merged = merge(currentState, persistedState)
+
+          return {
+            ...merged,
+            theme: sanitizeTheme((merged as IThemeContext).theme),
+          }
         },
       },
     ),

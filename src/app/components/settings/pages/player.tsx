@@ -4,9 +4,7 @@ import {
   ContentItem,
   ContentItemForm,
   ContentItemTitle,
-  ContentSeparator,
   Header,
-  HeaderDescription,
   HeaderTitle,
   Root,
 } from '@/app/components/settings/section'
@@ -72,7 +70,7 @@ export function PlayerPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Audio Processing */}
       <Root>
         <Header>
@@ -185,16 +183,12 @@ export function PlayerPage() {
             </ContentItemForm>
           </ContentItem>
         </Content>
-        <ContentSeparator />
       </Root>
 
       {/* Playlists */}
       <Root>
         <Header>
           <HeaderTitle>{t('settings.player.playlists.group', 'Playlists')}</HeaderTitle>
-          <HeaderDescription>
-            {t('settings.player.playlists.description', 'Manage playlist import behavior')}
-          </HeaderDescription>
         </Header>
         <Content>
           <ContentItem>
@@ -209,16 +203,12 @@ export function PlayerPage() {
             </ContentItemForm>
           </ContentItem>
         </Content>
-        <ContentSeparator />
       </Root>
 
       {/* Interface */}
       <Root>
         <Header>
           <HeaderTitle>{t('settings.player.interface.group', 'Interface')}</HeaderTitle>
-          <HeaderDescription>
-            {t('settings.player.interface.description', 'Customize the player interface')}
-          </HeaderDescription>
         </Header>
         <Content>
           <ContentItem>
@@ -247,7 +237,6 @@ export function PlayerPage() {
             </ContentItemForm>
           </ContentItem>
         </Content>
-        <ContentSeparator />
       </Root>
 
       {/* Desktop Features */}
@@ -255,9 +244,6 @@ export function PlayerPage() {
         <Root>
           <Header>
             <HeaderTitle>{t('settings.player.desktop.group', 'Desktop')}</HeaderTitle>
-            <HeaderDescription>
-              {t('settings.player.desktop.description', 'Desktop-specific features')}
-            </HeaderDescription>
           </Header>
           <Content>
             <ContentItem>
@@ -285,7 +271,6 @@ export function PlayerPage() {
             </ContentItem>
 
           </Content>
-          <ContentSeparator />
         </Root>
       )}
     </div>

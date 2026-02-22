@@ -14,12 +14,16 @@ import { formatBytes } from '@/utils/formatBytes'
 
 interface SongQualityBadgeProps {
   variant?: 'neutral' | 'secondary'
+  display?: 'badge' | 'text'
+  className?: string
   song: ISong
 }
 
 export function SongQualityBadge({
   song,
   variant = 'secondary',
+  display = 'badge',
+  className,
 }: SongQualityBadgeProps) {
   const { t } = useTranslation()
 
@@ -38,8 +42,12 @@ export function SongQualityBadge({
   return (
     <TooltipProvider>
       <Tooltip delayDuration={100}>
-        <TooltipTrigger className="cursor-default flex">
-          <Badge variant={variant}>{quality}</Badge>
+        <TooltipTrigger className={`cursor-default flex ${className ?? ''}`}>
+          {display === 'text' ? (
+            <span className="text-foreground/85 tracking-wide">{quality}</span>
+          ) : (
+            <Badge variant={variant}>{quality}</Badge>
+          )}
         </TooltipTrigger>
         <TooltipPortal>
           <TooltipContent className="flex flex-col items-center p-0 divide-y">

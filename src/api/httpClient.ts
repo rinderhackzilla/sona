@@ -114,7 +114,8 @@ export function getSimpleCoverArtUrl(
   if (!id) {
     // everything except artists uses the same default cover art
     const resolvedType = type === 'artist' ? 'artist' : 'album'
-    return `/default_${resolvedType}_art.png`
+    const baseUrl = import.meta.env.BASE_URL || '/'
+    return `${baseUrl}default_${resolvedType}_art.png`
   }
 
   return getUrl('getCoverArt', { id, size })

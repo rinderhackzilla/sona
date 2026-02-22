@@ -106,7 +106,7 @@ export function startDiscoverWeeklyScheduler() {
   }
 
   isRunning = true
-  console.log('[Electron Scheduler] ⏰ Started Discover Weekly scheduler')
+  console.log('[Electron Scheduler] Started Discover Weekly scheduler')
   
   // Initial check on startup (after 5 seconds delay)
   setTimeout(() => {

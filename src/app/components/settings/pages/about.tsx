@@ -71,56 +71,55 @@ export function AboutPage() {
   }
 
   return (
-    <div>
-
-      {/* App header row */}
-      <div className="flex items-center justify-between py-4">
-        <div className="flex items-center gap-4">
-          <AppIcon size={44} className="shrink-0" />
-          <div className="flex flex-col gap-0.5">
-            <span className="font-semibold text-base leading-tight">{name}</span>
-            <span className="text-sm text-muted-foreground font-mono">v{version}</span>
+    <div className="space-y-4">
+      <div className="rounded-xl border border-border/60 bg-card/25 p-4 shadow-sm">
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3.5">
+            <AppIcon size={42} className="shrink-0" />
+            <div className="flex flex-col gap-0.5">
+              <span className="text-base font-semibold leading-tight">{name}</span>
+              <span className="font-mono text-sm text-muted-foreground">v{version}</span>
+            </div>
           </div>
+
+          {isDesktop() && (
+            <div className="flex items-center gap-3">
+              {upToDate && (
+                <span className="flex items-center gap-1.5 text-sm text-green-500">
+                  <CheckCircle className="h-4 w-4" />
+                  Up to date
+                </span>
+              )}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleCheckForUpdates}
+                disabled={isChecking}
+              >
+                {isChecking
+                  ? <RefreshCw className="mr-2 h-3.5 w-3.5 animate-spin" />
+                  : <RefreshCw className="mr-2 h-3.5 w-3.5" />
+                }
+                Check for Updates
+              </Button>
+            </div>
+          )}
         </div>
-
-        {isDesktop() && (
-          <div className="flex items-center gap-3">
-            {upToDate && (
-              <span className="text-sm text-green-500 flex items-center gap-1.5">
-                <CheckCircle className="h-4 w-4" />
-                Up to date
-              </span>
-            )}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleCheckForUpdates}
-              disabled={isChecking}
-            >
-              {isChecking
-                ? <RefreshCw className="h-3.5 w-3.5 animate-spin mr-2" />
-                : <RefreshCw className="h-3.5 w-3.5 mr-2" />
-              }
-              Check for Updates
-            </Button>
-          </div>
-        )}
       </div>
 
-      <hr className="border-border" />
-
-      {/* Settings import/export */}
-      <div className="py-6">
-        <p className="text-sm font-medium text-foreground mb-4">Settings</p>
-        <div className="flex gap-3">
-          <Button variant="outline" size="sm" onClick={() => importRef.current?.click()}>
-            <FileUp className="h-3.5 w-3.5 mr-2" />
-            Import
-          </Button>
-          <Button variant="outline" size="sm" onClick={handleExportSettings}>
-            <FileDown className="h-3.5 w-3.5 mr-2" />
-            Export
-          </Button>
+      <div className="rounded-xl border border-border/60 bg-card/25 p-4 shadow-sm">
+        <div className="flex items-center justify-between gap-3">
+          <p className="text-sm font-medium text-foreground">Settings</p>
+          <div className="flex gap-2.5">
+            <Button variant="outline" size="sm" onClick={() => importRef.current?.click()}>
+              <FileUp className="mr-2 h-3.5 w-3.5" />
+              Import
+            </Button>
+            <Button variant="outline" size="sm" onClick={handleExportSettings}>
+              <FileDown className="mr-2 h-3.5 w-3.5" />
+              Export
+            </Button>
+          </div>
         </div>
         <input
           ref={importRef}
@@ -131,21 +130,25 @@ export function AboutPage() {
         />
       </div>
 
-      <hr className="border-border" />
-
-      {/* GitHub */}
-      <div className="flex items-center justify-between py-6">
-        <span className="text-sm font-medium">GitHub</span>
-        <a
-          href={url}
-          target="_blank"
-          rel="nofollow noreferrer"
-          className="text-sm text-muted-foreground hover:text-foreground hover:underline transition-colors"
-        >
-          {url.replace(/^https?:\/\//, '')}
-        </a>
+      <div className="rounded-xl border border-border/60 bg-card/25 p-4 shadow-sm">
+        <div className="flex items-center justify-between gap-3">
+          <span className="text-sm font-medium">GitHub</span>
+          <a
+            href={url}
+            target="_blank"
+            rel="nofollow noreferrer"
+            className="text-sm text-muted-foreground transition-colors hover:text-foreground hover:underline"
+          >
+            {url.replace(/^https?:\/\//, '')}
+          </a>
+        </div>
       </div>
 
+      <div className="pt-0.5">
+        <p className="text-xs text-muted-foreground">
+          DJ Sona icons by flaticon Freepik, justicon
+        </p>
+      </div>
     </div>
   )
 }

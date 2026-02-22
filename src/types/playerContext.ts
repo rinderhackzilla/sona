@@ -179,7 +179,7 @@ export interface IPlayerActions {
   toggleQueueAndLyrics: () => void
   closeDrawer: () => void
   playFirstSongInQueue: () => void
-  handleSongEnded: () => void
+  handleSongEnded: () => Promise<void>
   getCurrentProgress: () => number
   resetConfig: () => void
   setPlayPodcast: (
@@ -199,6 +199,9 @@ export interface IPlayerActions {
   setUseSongColorOnQueue: (value: boolean) => void
   setUseSongColorOnBigPlayer: (value: boolean) => void
   setBigPlayerBlurValue: (value: number) => void
+  seedSonaDjTrack: (mode?: 'off' | 'adventure' | 'drift' | 'era') => Promise<void>
+  setRuntimeSonaDjMode: (mode: 'off' | 'adventure' | 'drift' | 'era') => void
+  startRuntimeShuffleAll: () => Promise<void>
 }
 
 export interface IPlayerContext {

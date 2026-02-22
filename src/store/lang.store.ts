@@ -17,9 +17,11 @@ export const useLangStore = createWithEqualityFn<ILangContext>()(
           setLang: (lang: string) => {
             if (!lang) return
 
-            const langObject = languages.filter(
+            const langObject = languages.find(
               (language) => language.langCode === lang,
-            )[0]
+            )
+
+            if (!langObject) return
 
             set((state) => {
               state.langCode = lang
