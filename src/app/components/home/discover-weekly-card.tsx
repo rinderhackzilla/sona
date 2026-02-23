@@ -99,31 +99,31 @@ export function DiscoverWeeklyCard() {
       )}
 
       {/* Content */}
-      <div className="relative z-10 grid h-full grid-cols-1 items-stretch gap-3 p-4 sm:grid-cols-[minmax(0,1fr),minmax(210px,46%)] sm:gap-4 sm:p-5">
+      <div className="relative z-10 grid h-full grid-cols-[minmax(0,1fr),auto] items-center gap-3 p-3.5 min-[1600px]:gap-2.5 min-[1600px]:p-3 min-[2300px]:gap-4 min-[2300px]:p-4">
         {/* Info - Left */}
         <div className="flex min-w-0 flex-col justify-between">
           <div className="space-y-1.5">
-            <p className="text-[11px] uppercase tracking-[0.08em] text-muted-foreground/85 sm:text-xs">
+            <p className="text-[11px] uppercase tracking-[0.08em] text-muted-foreground/85 min-[2300px]:text-xs">
               {t('home.weeklyMix')}
             </p>
-            <h2 className="text-[1.25rem] font-semibold leading-tight sm:text-[1.55rem]">
+            <h2 className="truncate text-[1.2rem] font-semibold leading-tight min-[1600px]:text-[1.02rem] min-[2300px]:text-[1.45rem]">
               {t('home.discoverWeekly')}
             </h2>
-            <p className="text-xs text-muted-foreground/90">
+            <p className="text-[11px] text-muted-foreground/90 min-[2300px]:text-xs">
               {t('playlist.songCount', { count: playlist.length })}
             </p>
           </div>
 
-          <div className="flex items-center gap-2 pt-1.5">
+          <div className="flex flex-wrap items-center gap-1.5 pt-1.5 min-[2300px]:gap-2">
             <Button
               onClick={handlePlay}
-              className="h-8 gap-2 border border-primary/35 bg-primary/90 px-3 hover:bg-primary"
+              className="h-7 gap-1.5 border border-primary/35 bg-primary/90 px-2.5 text-xs hover:bg-primary min-[2300px]:h-8 min-[2300px]:gap-2 min-[2300px]:px-3"
               size="sm"
             >
-              <Play className="h-4 w-4" fill="currentColor" />
+              <Play className="h-3.5 w-3.5 min-[2300px]:h-4 min-[2300px]:w-4" fill="currentColor" />
               {t('options.play')}
             </Button>
-            <Button asChild variant="secondary" className="h-8 px-3 text-xs">
+            <Button asChild variant="secondary" className="h-7 px-2.5 text-xs min-[2300px]:h-8 min-[2300px]:px-3">
               <Link to={ROUTES.LIBRARY.DISCOVER_WEEKLY}>
                 {t('generic.seeMore')}
               </Link>
@@ -135,7 +135,7 @@ export function DiscoverWeeklyCard() {
         <div className="flex items-center justify-end">
           <Link
             to={ROUTES.LIBRARY.DISCOVER_WEEKLY}
-            className="group relative block w-full max-w-[210px] flex-shrink-0 rounded-lg border border-border/60 shadow-xl transition-all duration-300 hover:scale-[1.025]"
+            className="group relative block h-[142px] w-[142px] shrink-0 overflow-hidden rounded-lg border border-border/60 shadow-xl transition-all duration-300 hover:scale-[1.015] min-[1600px]:h-[112px] min-[1600px]:w-[112px] min-[2300px]:h-[154px] min-[2300px]:w-[154px]"
           >
             {coverArt ? (
               <ImageLoader id={coverArt} type="album" size="600">
@@ -145,7 +145,7 @@ export function DiscoverWeeklyCard() {
                       <img
                         src={src}
                         alt={t('home.discoverWeekly')}
-                        className="aspect-square h-full w-full rounded-lg object-cover"
+                        className="h-full w-full rounded-lg object-cover"
                       />
                     )}
                     {!src && !isLoadingImage && (

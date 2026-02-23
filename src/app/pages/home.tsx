@@ -27,25 +27,34 @@ export default function Home() {
 
   return (
     <div className="w-full px-4 py-4 sm:px-6 sm:py-5 lg:px-8">
-      <div className="mx-auto w-full max-w-[1520px] space-y-5 sm:space-y-6 xl:space-y-7">
-        {/* Hero Carousel */}
-        <section>
-          {similarArtists.isFetching || similarArtists.isLoading ? (
-            <HeaderFallback />
-          ) : (
-            <AlbumHeader albums={similarArtists.data?.list || []} />
-          )}
-        </section>
+      <div className="mx-auto w-full max-w-[3400px] space-y-5 sm:space-y-6 xl:space-y-7">
+        {showThisIsArtist ? (
+          <section className="-mt-1 grid grid-cols-12 gap-4 min-[2300px]:gap-5">
+            {/* Layout A: 1300-1599 -> Hero full width, cards 1:1 below */}
+            {/* Layout B: 1600-2299 -> Hero left (row-span 2), cards stacked right */}
+            {/* Layout C: 2300+ -> three columns in one row (6/3/3) */}
+            <div className="col-span-12 h-[268px] min-[1600px]:col-span-8 min-[1600px]:row-span-2 min-[1600px]:h-[344px] min-[2300px]:col-span-6 min-[2300px]:row-span-1 min-[2300px]:h-[278px]">
+              {similarArtists.isFetching || similarArtists.isLoading ? (
+                <HeaderFallback />
+              ) : (
+                <AlbumHeader albums={similarArtists.data?.list || []} />
+              )}
+            </div>
 
-        {/* Discover Weekly + This Is Artist */}
-        {showThisIsArtist && (
-          <section className="grid grid-cols-1 gap-3.5 md:grid-cols-12 md:gap-4">
-            <div className="md:col-span-7 min-h-[220px] sm:min-h-[246px]">
+            <div className="col-span-6 h-[214px] min-[1600px]:col-span-4 min-[1600px]:h-[164px] min-[2300px]:col-span-3 min-[2300px]:h-[278px]">
               <DiscoverWeeklyCard />
             </div>
-            <div className="md:col-span-5 min-h-[220px] sm:min-h-[246px]">
+            <div className="col-span-6 h-[214px] min-[1600px]:col-span-4 min-[1600px]:h-[164px] min-[2300px]:col-span-3 min-[2300px]:h-[278px]">
               <ThisIsArtist />
             </div>
+          </section>
+        ) : (
+          <section>
+            {similarArtists.isFetching || similarArtists.isLoading ? (
+              <HeaderFallback />
+            ) : (
+              <AlbumHeader albums={similarArtists.data?.list || []} />
+            )}
           </section>
         )}
 

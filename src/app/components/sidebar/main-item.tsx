@@ -20,7 +20,7 @@ export function SidebarMainItem({ item }: { item: ISidebarItem }) {
         className={clsx(isActive(item.route) && 'pointer-events-none')}
       >
         <item.icon />
-        {t(item.title)}
+        <span>{t(item.title)}</span>
       </Link>
     </MainSidebarMenuButton>
   )

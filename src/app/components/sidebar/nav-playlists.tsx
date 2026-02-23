@@ -24,6 +24,7 @@ import {
   MainSidebarMenu,
   MainSidebarMenuButton,
   MainSidebarMenuItem,
+  useMainSidebar,
 } from '@/app/components/ui/main-sidebar'
 import { subsonic } from '@/service/subsonic'
 import { usePlaylistOrder } from '@/store/app.store'
@@ -44,8 +45,10 @@ function applySavedOrder(playlists: Playlist[], order: string[]): Playlist[] {
 
 export function NavPlaylists() {
   const { t } = useTranslation()
+  const { state, isMobile } = useMainSidebar()
   const { playlistOrder, setPlaylistOrder } = usePlaylistOrder()
   const [activePlaylist, setActivePlaylist] = useState<Playlist | null>(null)
+  const isCollapsed = state === 'collapsed' && !isMobile
 
   const { data: playlists } = useQuery({
     queryKey: [queryKeys.playlist.all],
@@ -82,6 +85,10 @@ export function NavPlaylists() {
     reordered.splice(toIndex, 0, moved)
 
     setPlaylistOrder(reordered.map((p) => p.id))
+  }
+
+  if (isCollapsed) {
+    return null
   }
 
   return (

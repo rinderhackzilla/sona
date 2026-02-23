@@ -15,14 +15,16 @@ import { createTray } from './tray'
 export let mainWindow: BrowserWindow | null = null
 
 const { defaultWidth, defaultHeight, defaultBgColor } = electron.window
+const MAIN_MIN_WIDTH = 1300
 
 export function createWindow(): void {
   const backgroundColor = colorsState.get('bgColor') ?? defaultBgColor
+  const mainMinWidth = Math.max(defaultWidth, MAIN_MIN_WIDTH)
 
   mainWindow = new StatefulBrowserWindow({
     width: defaultWidth,
     height: defaultHeight,
-    minWidth: defaultWidth,
+    minWidth: mainMinWidth,
     minHeight: defaultHeight,
     backgroundColor,
     supportMaximize: true,
@@ -43,7 +45,10 @@ export function createWindow(): void {
 
   const storedMainBounds = getStoredMainBounds()
   if (storedMainBounds) {
-    mainWindow.setBounds(storedMainBounds)
+    mainWindow.setBounds({
+      ...storedMainBounds,
+      width: Math.max(storedMainBounds.width, mainMinWidth),
+    })
   }
   if (getStoredMainIsMaximized()) {
     mainWindow.maximize()

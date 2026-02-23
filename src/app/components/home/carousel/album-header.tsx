@@ -1,5 +1,5 @@
 import Autoplay from 'embla-carousel-autoplay'
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Play } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
@@ -38,7 +38,7 @@ function AlbumHeaderItem({ album }: { album: Albums }) {
   }
 
   return (
-    <div className="relative h-[222px] w-full overflow-hidden sm:h-[252px] 2xl:h-[278px]">
+    <div className="relative h-full w-full overflow-hidden">
       {/* Background Image with Blur */}
       <ImageLoader id={album.coverArt} type="album">
         {(src) => (
@@ -53,31 +53,31 @@ function AlbumHeaderItem({ album }: { album: Albums }) {
       </ImageLoader>
 
       {/* Content */}
-      <div className="relative z-10 grid h-full grid-cols-[minmax(0,1fr),auto] items-center gap-5 px-5 sm:gap-8 sm:px-7">
+      <div className="relative z-10 grid h-full grid-cols-[minmax(0,1fr),auto] items-center gap-5 px-5 min-[1600px]:gap-7 min-[1600px]:px-7 min-[2300px]:gap-8 min-[2300px]:px-9">
         {/* Album Info */}
-        <div className="min-w-0 space-y-3 sm:space-y-4">
-          <div className="space-y-1.5 sm:space-y-2">
-            <p className="text-xs text-muted-foreground sm:text-sm">
+        <div className="min-w-0 space-y-3 min-[1600px]:space-y-4">
+          <div className="space-y-1.5 min-[1600px]:space-y-2">
+            <p className="text-xs text-muted-foreground min-[1600px]:text-sm">
               {t('home.recommendedAlbum')}
             </p>
             <Link
               to={ROUTES.ALBUM.PAGE(album.id)}
               className="hover:underline"
             >
-              <h2 className="truncate text-[1.65rem] font-bold leading-tight sm:text-[2rem] xl:text-[2.5rem] 2xl:text-[2.95rem]">
+              <h2 className="truncate text-[1.68rem] font-bold leading-[1.03] min-[1600px]:text-[2.5rem] min-[2300px]:text-[2.28rem]">
                 {album.name}
               </h2>
             </Link>
             <Link
               to={ROUTES.ARTIST.PAGE(album.artistId || '')}
-              className="inline-block text-base text-muted-foreground hover:text-primary hover:underline sm:text-lg"
+              className="inline-block text-base text-muted-foreground hover:text-primary hover:underline min-[1600px]:text-[1.14rem] min-[2300px]:text-[1.24rem]"
             >
               {album.artist}
             </Link>
           </div>
 
-          <div className="hidden md:block">
-            <div className="inline-flex items-center gap-2 rounded-md border border-foreground/15 bg-foreground/5 px-3 py-1.5 text-sm text-foreground/80 backdrop-blur-sm">
+          <div className="hidden min-[1300px]:block">
+            <div className="inline-flex items-center gap-2 rounded-md border border-foreground/15 bg-foreground/5 px-3 py-1.5 text-sm text-foreground/80 backdrop-blur-sm min-[2300px]:text-base">
               {album.genre && (
                 <span>{album.genre}</span>
               )}
@@ -117,7 +117,7 @@ function AlbumHeaderItem({ album }: { album: Albums }) {
                 src={src}
                 alt={album.name}
                 className={cn(
-                  'h-[176px] w-[176px] rounded-xl border border-border/50 object-cover shadow-2xl transition-all duration-300 group-hover:scale-[1.025] sm:h-[202px] sm:w-[202px] 2xl:h-[228px] 2xl:w-[228px]',
+                  'h-[200px] w-[200px] rounded-xl border border-border/50 object-cover shadow-2xl transition-all duration-300 group-hover:scale-[1.02] min-[1600px]:h-[252px] min-[1600px]:w-[252px] min-[2300px]:h-[230px] min-[2300px]:w-[230px]',
                   imageLoaded ? 'opacity-100' : 'opacity-0',
                 )}
                 onLoad={() => setImageLoaded(true)}
@@ -160,7 +160,7 @@ export default function AlbumHeader({
   if (carouselItems.length === 0 && !onRepeatLoading) return null
 
   return (
-    <div>
+    <div className="h-full">
       {title && (
         <div className="mb-4">
           <h2 className="text-3xl font-bold">{title}</h2>
@@ -171,25 +171,25 @@ export default function AlbumHeader({
       )}
 
       <Carousel
-        className="w-full overflow-hidden rounded-xl border border-border/60 bg-card/20"
+        className="h-full w-full overflow-hidden rounded-xl border border-border/60 bg-card/20 min-[1600px]:rounded-2xl"
         opts={{
           loop: true,
         }}
         plugins={[
           Autoplay({
-            delay: 8000,
+            delay: 9000,
           }),
         ]}
         setApi={setApi}
       >
         <CarouselContent
-          className="ml-0 transform-gpu"
+          className="ml-0 h-full transform-gpu"
           style={{ borderRadius: 'calc(var(--radius) - 2px)' }}
         >
           {carouselItems.map((item, index) => (
             <CarouselItem
               key={item.type === 'onRepeat' ? 'on-repeat' : item.data.id}
-              className="pl-0 basis-full maskImage-carousel-item"
+              className="pl-0 basis-full maskImage-carousel-item h-full"
             >
               {item.type === 'onRepeat' ? (
                 <OnRepeatItem

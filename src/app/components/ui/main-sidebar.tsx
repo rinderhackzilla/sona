@@ -537,7 +537,7 @@ function MainSidebarMenuItem({
 }
 
 const sidebarMenuButtonVariants = cva(
-  'peer/menu-button flex w-full items-center gap-2 overflow-hidden rounded-lg px-2.5 py-2 text-left text-[13px] font-medium leading-none outline-hidden ring-ring transition-[width,height,padding,background-color,color,box-shadow] duration-200 hover:bg-accent/70 hover:text-accent-foreground focus-visible:ring-2 active:bg-accent active:text-accent-foreground disabled:pointer-events-none disabled:opacity-50 group-has-data-[sidebar=menu-action]/menu-item:pr-8 aria-disabled:pointer-events-none aria-disabled:opacity-50 data-[active=true]:bg-accent/75 data-[active=true]:font-semibold data-[active=true]:text-accent-foreground data-[active=true]:shadow-[inset_0_0_0_1px_hsl(var(--border)/0.55)] data-[state=open]:hover:bg-accent data-[state=open]:hover:text-accent-foreground group-data-[collapsible=icon]:size-8! group-data-[collapsible=icon]:p-2! [&>span:last-child]:truncate [&>svg]:size-[17px] [&>svg]:shrink-0',
+  'peer/menu-button flex w-full items-center gap-2 overflow-hidden rounded-lg px-2.5 py-2 text-left text-[13px] font-medium leading-none outline-hidden ring-ring transition-[width,height,padding,background-color,color,box-shadow] duration-200 hover:bg-accent/70 hover:text-accent-foreground focus-visible:ring-2 active:bg-accent active:text-accent-foreground disabled:pointer-events-none disabled:opacity-50 group-has-data-[sidebar=menu-action]/menu-item:pr-8 aria-disabled:pointer-events-none aria-disabled:opacity-50 data-[active=true]:bg-accent/75 data-[active=true]:font-semibold data-[active=true]:text-accent-foreground data-[active=true]:shadow-[inset_0_0_0_1px_hsl(var(--border)/0.55)] data-[state=open]:hover:bg-accent data-[state=open]:hover:text-accent-foreground group-data-[collapsible=icon]:mx-auto group-data-[collapsible=icon]:h-8! group-data-[collapsible=icon]:w-9! group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:gap-0 group-data-[collapsible=icon]:p-2! group-data-[collapsible=icon]:[&>span]:hidden group-data-[collapsible=icon]:[&>svg]:mx-0 [&>span:last-child]:truncate [&>svg]:size-[17px] [&>svg]:shrink-0',
   {
     variants: {
       variant: {
@@ -585,7 +585,7 @@ function MainSidebarMenuButton({
     />
   )
 
-  if (!tooltip) {
+  if (!tooltip || state !== 'collapsed' || isMobile) {
     return button
   }
 
@@ -601,7 +601,6 @@ function MainSidebarMenuButton({
       <TooltipContent
         side="right"
         align="center"
-        hidden={state !== 'collapsed' || isMobile}
         {...tooltip}
       />
     </Tooltip>

@@ -283,36 +283,52 @@ export function MiniPlayerModePage() {
                 isIdle && 'translate-x-[10px]',
               )}
             >
-              <div
-                className={clsx(
-                  'font-semibold text-white tracking-[0.01em] drop-shadow-[0_1px_5px_rgba(0,0,0,0.68)] transition-all duration-500 ease-out',
-                  isIdle ? 'text-[15px]' : 'text-[13px] truncate',
-                )}
-              >
-                {isIdle ? (
-                  <MarqueeTitle gap="mr-10">{title}</MarqueeTitle>
-                ) : (
-                  title
-                )}
-              </div>
-              <div
-                className={clsx(
-                  'text-white/80 drop-shadow-[0_1px_3px_rgba(0,0,0,0.52)] transition-all duration-500 ease-out',
-                  isIdle ? 'text-[13px]' : 'text-[11px] truncate',
-                )}
-              >
-                {isIdle ? (
-                  <MarqueeTitle gap="mr-8">{artist || ' '}</MarqueeTitle>
-                ) : (
-                  artist || ' '
-                )}
-              </div>
+              {hasSong ? (
+                <>
+                  <div
+                    className={clsx(
+                      'font-semibold text-white tracking-[0.01em] drop-shadow-[0_1px_5px_rgba(0,0,0,0.68)] transition-all duration-500 ease-out',
+                      isIdle ? 'text-[15px]' : 'text-[13px] truncate',
+                    )}
+                  >
+                    {isIdle ? (
+                      <MarqueeTitle gap="mr-10">{title}</MarqueeTitle>
+                    ) : (
+                      title
+                    )}
+                  </div>
+                  <div
+                    className={clsx(
+                      'text-white/80 drop-shadow-[0_1px_3px_rgba(0,0,0,0.52)] transition-all duration-500 ease-out',
+                      isIdle ? 'text-[13px]' : 'text-[11px] truncate',
+                    )}
+                  >
+                    {isIdle ? (
+                      <MarqueeTitle gap="mr-8">{artist || ' '}</MarqueeTitle>
+                    ) : (
+                      artist || ' '
+                    )}
+                  </div>
+                </>
+              ) : (
+                <div className="rounded-lg border border-white/14 bg-black/28 px-2.5 py-2">
+                  <div className="text-[13px] font-semibold text-white">
+                    {t('player.noPlayback', 'No playback active.')}
+                  </div>
+                  <div className="text-[11px] text-white/72">
+                    {t(
+                      'player.noPlaybackMiniHint',
+                      'Play a song to show controls and progress.',
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
 
             <div
               className={clsx(
                 'mt-auto mb-2.5 flex items-center gap-1.5 transition-all duration-400 ease-out',
-                isIdle && 'opacity-0 translate-y-2 pointer-events-none',
+                (isIdle || !hasSong) && 'opacity-0 translate-y-2 pointer-events-none',
               )}
             >
               <SimpleTooltip text={t('player.tooltips.previous')}>
@@ -412,9 +428,7 @@ export function MiniPlayerModePage() {
               {hasSong ? (
                 <MiniPlayerProgress />
               ) : (
-                <div className="text-xs text-white/80">
-                  {t('player.noPlayback', 'No playback active.')}
-                </div>
+                <div className="h-[10px] w-full rounded-full bg-white/12" />
               )}
             </div>
           </div>

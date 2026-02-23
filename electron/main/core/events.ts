@@ -93,6 +93,7 @@ export function setupIpcEvents(window: BrowserWindow | null) {
 
   ipcMain.removeAllListeners()
   const { defaultWidth, defaultHeight } = electron.window
+  const mainMinWidth = Math.max(defaultWidth, 1300)
   const miniWidth = 384
   const miniHeight = 192
 
@@ -260,7 +261,7 @@ export function setupIpcEvents(window: BrowserWindow | null) {
     miniPlayerLastBounds = window.getBounds()
     setStoredMiniBounds(miniPlayerLastBounds)
     window.setAlwaysOnTop(false)
-    window.setMinimumSize(defaultWidth, defaultHeight)
+    window.setMinimumSize(mainMinWidth, defaultHeight)
     window.setMinimizable(miniPlayerPrevMinimizable)
     window.setMaximizable(miniPlayerPrevMaximizable)
     window.setResizable(miniPlayerPrevResizable)
@@ -279,11 +280,23 @@ export function setupIpcEvents(window: BrowserWindow | null) {
     }
 
     if (miniPlayerPrevBounds.width > 0 && miniPlayerPrevBounds.height > 0) {
-      window.setBounds(miniPlayerPrevBounds, true)
+      window.setBounds(
+        {
+          ...miniPlayerPrevBounds,
+          width: Math.max(miniPlayerPrevBounds.width, mainMinWidth),
+        },
+        true,
+      )
     } else if (persistedMainBounds) {
-      window.setBounds(persistedMainBounds, true)
+      window.setBounds(
+        {
+          ...persistedMainBounds,
+          width: Math.max(persistedMainBounds.width, mainMinWidth),
+        },
+        true,
+      )
     } else {
-      window.setSize(defaultWidth, defaultHeight, true)
+      window.setSize(mainMinWidth, defaultHeight, true)
       window.center()
     }
 

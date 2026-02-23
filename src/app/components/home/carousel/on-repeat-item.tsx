@@ -24,7 +24,7 @@ export function OnRepeatItem({ song, playcount }: OnRepeatItemProps) {
   }
 
   return (
-    <div className="relative h-[222px] w-full overflow-hidden sm:h-[252px] 2xl:h-[278px]">
+    <div className="relative h-full w-full overflow-hidden">
       {/* Background Image with Blur */}
       <ImageLoader id={song.coverArt} type="album">
         {(src) => (
@@ -39,10 +39,10 @@ export function OnRepeatItem({ song, playcount }: OnRepeatItemProps) {
       </ImageLoader>
 
       {/* Content */}
-      <div className="relative z-10 grid h-full grid-cols-[minmax(0,1fr),auto] items-center gap-5 px-5 sm:gap-8 sm:px-7">
+      <div className="relative z-10 grid h-full grid-cols-[minmax(0,1fr),auto] items-center gap-5 px-5 min-[1600px]:gap-7 min-[1600px]:px-7 min-[2300px]:gap-8 min-[2300px]:px-9">
         {/* Song Info */}
-        <div className="min-w-0 space-y-3 sm:space-y-4">
-          <div className="space-y-1.5 sm:space-y-2">
+        <div className="min-w-0 space-y-3 min-[1600px]:space-y-4">
+          <div className="space-y-1.5 min-[1600px]:space-y-2">
             <div className="mb-1 inline-flex items-center gap-1.5 rounded-md border border-primary/30 bg-primary/15 px-2.5 py-1 text-xs font-semibold text-primary">
               <Repeat className="w-3.5 h-3.5" />
               <span>On Repeat</span>
@@ -51,20 +51,20 @@ export function OnRepeatItem({ song, playcount }: OnRepeatItemProps) {
               to={ROUTES.ALBUM.PAGE(song.albumId)}
               className="hover:underline"
             >
-              <h2 className="truncate text-[1.65rem] font-bold leading-tight sm:text-[2rem] xl:text-[2.5rem] 2xl:text-[2.95rem]">
+              <h2 className="truncate text-[1.68rem] font-bold leading-[1.03] min-[1600px]:text-[2.5rem] min-[2300px]:text-[2.28rem]">
                 {song.title}
               </h2>
             </Link>
             <Link
               to={ROUTES.ARTIST.PAGE(song.artistId)}
-              className="inline-block text-base text-muted-foreground hover:text-primary hover:underline sm:text-lg"
+              className="inline-block text-base text-muted-foreground hover:text-primary hover:underline min-[1600px]:text-[1.14rem] min-[2300px]:text-[1.24rem]"
             >
               {song.artist}
             </Link>
           </div>
 
-          <div className="hidden md:block">
-            <div className="inline-flex items-center gap-2 rounded-md border border-foreground/15 bg-foreground/5 px-3 py-1.5 text-sm text-foreground/80 backdrop-blur-sm">
+          <div className="hidden min-[1300px]:block">
+            <div className="inline-flex items-center gap-2 rounded-md border border-foreground/15 bg-foreground/5 px-3 py-1.5 text-sm text-foreground/80 backdrop-blur-sm min-[2300px]:text-base">
               <span>{t('home.playsThisWeek', { count: playcount })}</span>
               {(song.genre || song.year) && (
                 <span className="text-foreground/40">•</span>
@@ -102,7 +102,7 @@ export function OnRepeatItem({ song, playcount }: OnRepeatItemProps) {
                 src={src}
                 alt={song.title}
                 className={cn(
-                  'h-[176px] w-[176px] rounded-xl border border-border/50 object-cover shadow-2xl transition-all duration-300 group-hover:scale-[1.025] sm:h-[202px] sm:w-[202px] 2xl:h-[228px] 2xl:w-[228px]',
+                  'h-[200px] w-[200px] rounded-xl border border-border/50 object-cover shadow-2xl transition-all duration-300 group-hover:scale-[1.02] min-[1600px]:h-[252px] min-[1600px]:w-[252px] min-[2300px]:h-[230px] min-[2300px]:w-[230px]',
                   imageLoaded ? 'opacity-100' : 'opacity-0',
                 )}
                 onLoad={() => setImageLoaded(true)}

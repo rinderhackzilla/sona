@@ -54,6 +54,7 @@ export function SidebarPlaylistItem({ playlist }: { playlist: Playlist }) {
       >
         <MainSidebarMenuButton
           asChild
+          tooltip={playlist.name}
           className={clsx(
             isOnPlaylist(playlist.id) && 'cursor-default bg-accent',
           )}
