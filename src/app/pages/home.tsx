@@ -29,11 +29,8 @@ export default function Home() {
     <div className="w-full px-4 py-4 sm:px-6 sm:py-5 lg:px-8">
       <div className="mx-auto w-full max-w-[3400px] space-y-5 sm:space-y-6 xl:space-y-7">
         {showThisIsArtist ? (
-          <section className="-mt-1 grid grid-cols-12 gap-4 min-[2300px]:gap-5">
-            {/* Layout A: 1300-1599 -> Hero full width, cards 1:1 below */}
-            {/* Layout B: 1600-2299 -> Hero left (row-span 2), cards stacked right */}
-            {/* Layout C: 2300+ -> three columns in one row (6/3/3) */}
-            <div className="col-span-12 h-[268px] min-[1600px]:col-span-8 min-[1600px]:row-span-2 min-[1600px]:h-[344px] min-[2300px]:col-span-6 min-[2300px]:row-span-1 min-[2300px]:h-[278px]">
+          <section className="-mt-1 grid grid-cols-12 gap-4 min-[2100px]:gap-5">
+            <div className="col-span-8 h-[424px] min-[1700px]:h-[468px] min-[2600px]:h-[520px]">
               {similarArtists.isFetching || similarArtists.isLoading ? (
                 <HeaderFallback />
               ) : (
@@ -41,11 +38,13 @@ export default function Home() {
               )}
             </div>
 
-            <div className="col-span-6 h-[214px] min-[1600px]:col-span-4 min-[1600px]:h-[164px] min-[2300px]:col-span-3 min-[2300px]:h-[278px]">
-              <DiscoverWeeklyCard />
-            </div>
-            <div className="col-span-6 h-[214px] min-[1600px]:col-span-4 min-[1600px]:h-[164px] min-[2300px]:col-span-3 min-[2300px]:h-[278px]">
-              <ThisIsArtist />
+            <div className="col-span-4 grid h-[424px] grid-rows-2 gap-4 min-[1700px]:h-[468px] min-[2600px]:h-[520px] min-[2100px]:gap-5">
+              <div className="h-full">
+                <DiscoverWeeklyCard />
+              </div>
+              <div className="h-full">
+                <ThisIsArtist />
+              </div>
             </div>
           </section>
         ) : (

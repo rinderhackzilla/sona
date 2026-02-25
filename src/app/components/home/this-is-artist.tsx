@@ -1,8 +1,10 @@
 import { RefreshCw, Music, Play, Info } from 'lucide-react'
+import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/app/components/ui/button'
 import { ImageLoader } from '@/app/components/image-loader'
 import { useThisIsArtist } from '@/app/hooks/use-this-is-artist'
+import { ROUTES } from '@/routes/routesList'
 import { usePlayerActions } from '@/store/player.store'
 
 export function ThisIsArtist() {
@@ -136,40 +138,52 @@ export function ThisIsArtist() {
               <Play className="h-3.5 w-3.5 min-[2300px]:h-4 min-[2300px]:w-4" fill="currentColor" />
               {t('options.play')}
             </Button>
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={generate}
-              disabled={isGenerating}
-              className="h-7 gap-1.5 px-2.5 text-xs min-[2300px]:h-8 min-[2300px]:px-3"
-            >
-              <RefreshCw className={`h-3.5 w-3.5 ${isGenerating ? 'animate-spin' : ''}`} />
-              {t('home.generate')}
+            <Button asChild variant="secondary" size="sm" className="h-7 px-2.5 text-xs min-[2300px]:h-8 min-[2300px]:px-3">
+              <Link to={ROUTES.LIBRARY.THIS_IS_ARTIST}>
+                {t('generic.seeMore')}
+              </Link>
             </Button>
           </div>
         </div>
 
         {/* Artist Image - Right Side */}
         <div className="flex items-center justify-end">
-          <div className="group relative h-[142px] w-[142px] shrink-0 overflow-hidden rounded-lg border border-border/60 shadow-xl transition-all duration-300 hover:scale-[1.015] min-[1600px]:h-[112px] min-[1600px]:w-[112px] min-[2300px]:h-[154px] min-[2300px]:w-[154px]">
-            <ImageLoader id={artist.coverArt} type="artist" size="300">
-              {(artistCoverUrl, isLoadingImage) => (
-                <>
-                  {artistCoverUrl && (
-                    <img
-                      src={artistCoverUrl}
-                      alt={artist.name}
-                      className="h-full w-full rounded-lg object-cover"
-                    />
-                  )}
-                  {!artistCoverUrl && !isLoadingImage && (
-                    <div className="flex aspect-square h-full w-full items-center justify-center bg-muted shadow-xl">
-                      <Music className="h-10 w-10 text-muted-foreground" />
-                    </div>
-                  )}
-                </>
-              )}
-            </ImageLoader>
+          <div className="group relative h-[142px] w-[142px] shrink-0 min-[1600px]:h-[112px] min-[1600px]:w-[112px] min-[2300px]:h-[154px] min-[2300px]:w-[154px]">
+            <Link
+              to={ROUTES.LIBRARY.THIS_IS_ARTIST}
+              className="block h-full w-full overflow-hidden rounded-lg border border-border/60 shadow-xl transition-all duration-300 hover:scale-[1.015]"
+            >
+              <ImageLoader id={artist.coverArt} type="artist" size="300">
+                {(artistCoverUrl, isLoadingImage) => (
+                  <>
+                    {artistCoverUrl && (
+                      <img
+                        src={artistCoverUrl}
+                        alt={artist.name}
+                        className="h-full w-full rounded-lg object-cover"
+                      />
+                    )}
+                    {!artistCoverUrl && !isLoadingImage && (
+                      <div className="flex aspect-square h-full w-full items-center justify-center bg-muted shadow-xl">
+                        <Music className="h-10 w-10 text-muted-foreground" />
+                      </div>
+                    )}
+                  </>
+                )}
+              </ImageLoader>
+            </Link>
+            <Button
+              type="button"
+              variant="secondary"
+              size="icon"
+              onClick={() => {
+                generate()
+              }}
+              disabled={isGenerating}
+              className="absolute bottom-2 right-2 z-20 h-7 w-7 rounded-full border border-border/70 bg-background/85 shadow-md backdrop-blur-sm transition hover:bg-background min-[2300px]:h-8 min-[2300px]:w-8"
+            >
+              <RefreshCw className={`h-3.5 w-3.5 ${isGenerating ? 'animate-spin' : ''}`} />
+            </Button>
           </div>
         </div>
       </div>

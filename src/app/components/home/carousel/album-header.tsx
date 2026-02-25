@@ -1,16 +1,9 @@
-import Autoplay from 'embla-carousel-autoplay'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Play } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { ImageLoader } from '@/app/components/image-loader'
 import { OnRepeatItem } from '@/app/components/home/carousel/on-repeat-item'
-import {
-  Carousel,
-  CarouselApi,
-  CarouselContent,
-  CarouselItem,
-} from '@/app/components/ui/carousel'
 import { Button } from '@/app/components/ui/button'
 import { ROUTES } from '@/routes/routesList'
 import { Albums } from '@/types/responses/album'
@@ -23,6 +16,44 @@ interface AlbumHeaderProps {
   albums: Albums[]
   title?: string
   subtitle?: string
+}
+
+function HeroThumbnail({
+  isActive,
+  onClick,
+  coverArt,
+  type,
+  alt,
+}: {
+  isActive: boolean
+  onClick: () => void
+  coverArt?: string
+  type: 'album' | 'song'
+  alt: string
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        'relative aspect-square w-full max-w-[64px] shrink-0 overflow-hidden rounded-md border transition-all duration-200',
+        isActive
+          ? 'border-primary/70 ring-1 ring-primary/45'
+          : 'border-border/60 opacity-80 hover:opacity-100',
+      )}
+      aria-label={alt}
+    >
+      {coverArt ? (
+        <ImageLoader id={coverArt} type={type} size="240">
+          {(src) => (
+            <img src={src} alt={alt} className="h-full w-full object-cover" />
+          )}
+        </ImageLoader>
+      ) : (
+        <div className="h-full w-full bg-muted/60" />
+      )}
+    </button>
+  )
 }
 
 function AlbumHeaderItem({ album }: { album: Albums }) {
@@ -47,36 +78,51 @@ function AlbumHeaderItem({ album }: { album: Albums }) {
               className="absolute inset-0 bg-cover bg-center blur-2xl scale-110 opacity-45"
               style={{ backgroundImage: `url(${src})` }}
             />
-            <div className="absolute inset-0 bg-gradient-to-r from-background/88 via-background/46 to-background/20" />
+            <div className="absolute inset-0 bg-gradient-to-b from-background/72 via-background/52 to-background/86" />
           </>
         )}
       </ImageLoader>
 
       {/* Content */}
-      <div className="relative z-10 grid h-full grid-cols-[minmax(0,1fr),auto] items-center gap-5 px-5 min-[1600px]:gap-7 min-[1600px]:px-7 min-[2300px]:gap-8 min-[2300px]:px-9">
-        {/* Album Info */}
-        <div className="min-w-0 space-y-3 min-[1600px]:space-y-4">
-          <div className="space-y-1.5 min-[1600px]:space-y-2">
-            <p className="text-xs text-muted-foreground min-[1600px]:text-sm">
+      <div className="relative z-10 grid h-full grid-cols-[auto,minmax(0,1fr)] items-center gap-5 py-4 pl-7 pr-5 min-[1700px]:gap-6 min-[1700px]:py-5 min-[1700px]:pl-8 min-[1700px]:pr-6 min-[2600px]:gap-7 min-[2600px]:pl-9 min-[2600px]:pr-7">
+        <Link to={ROUTES.ALBUM.PAGE(album.id)} className="group relative block">
+          <ImageLoader id={album.coverArt} type="album">
+            {(src) => (
+              <img
+                src={src}
+                alt={album.name}
+                className={cn(
+                  'aspect-square h-[236px] w-[236px] rounded-xl border border-border/55 object-cover shadow-2xl transition-all duration-300 group-hover:scale-[1.02] min-[1700px]:h-[272px] min-[1700px]:w-[272px] min-[2600px]:h-[300px] min-[2600px]:w-[300px]',
+                  imageLoaded ? 'opacity-100' : 'opacity-0',
+                )}
+                onLoad={() => setImageLoaded(true)}
+              />
+            )}
+          </ImageLoader>
+        </Link>
+
+        <div className="min-w-0 space-y-3">
+          <div className="space-y-1.5">
+            <p className="text-sm text-muted-foreground/90 min-[1700px]:text-base">
               {t('home.recommendedAlbum')}
             </p>
             <Link
               to={ROUTES.ALBUM.PAGE(album.id)}
               className="hover:underline"
             >
-              <h2 className="truncate text-[1.68rem] font-bold leading-[1.03] min-[1600px]:text-[2.5rem] min-[2300px]:text-[2.28rem]">
+              <h2 className="truncate text-[1.9rem] font-bold leading-tight min-[1700px]:text-[2.2rem] min-[2600px]:text-[2.45rem]">
                 {album.name}
               </h2>
             </Link>
             <Link
               to={ROUTES.ARTIST.PAGE(album.artistId || '')}
-              className="inline-block text-base text-muted-foreground hover:text-primary hover:underline min-[1600px]:text-[1.14rem] min-[2300px]:text-[1.24rem]"
+              className="inline-block text-base text-muted-foreground hover:text-primary hover:underline min-[1700px]:text-[1.1rem]"
             >
               {album.artist}
             </Link>
           </div>
 
-          <div className="hidden min-[1300px]:block">
+          <div>
             <div className="inline-flex items-center gap-2 rounded-md border border-foreground/15 bg-foreground/5 px-3 py-1.5 text-sm text-foreground/80 backdrop-blur-sm min-[2300px]:text-base">
               {album.genre && (
                 <span>{album.genre}</span>
@@ -105,26 +151,6 @@ function AlbumHeaderItem({ album }: { album: Albums }) {
             {t('options.play')}
           </Button>
         </div>
-
-        {/* Album Cover */}
-        <Link
-          to={ROUTES.ALBUM.PAGE(album.id)}
-          className="group relative flex-shrink-0"
-        >
-          <ImageLoader id={album.coverArt} type="album">
-            {(src) => (
-              <img
-                src={src}
-                alt={album.name}
-                className={cn(
-                  'h-[200px] w-[200px] rounded-xl border border-border/50 object-cover shadow-2xl transition-all duration-300 group-hover:scale-[1.02] min-[1600px]:h-[252px] min-[1600px]:w-[252px] min-[2300px]:h-[230px] min-[2300px]:w-[230px]',
-                  imageLoaded ? 'opacity-100' : 'opacity-0',
-                )}
-                onLoad={() => setImageLoaded(true)}
-              />
-            )}
-          </ImageLoader>
-        </Link>
       </div>
     </div>
   )
@@ -135,7 +161,7 @@ export default function AlbumHeader({
   title,
   subtitle,
 }: AlbumHeaderProps) {
-  const [_api, setApi] = useState<CarouselApi>()
+  const [currentSlide, setCurrentSlide] = useState(0)
   const { data: onRepeat, isLoading: onRepeatLoading } = useOnRepeat()
 
   // Combine On Repeat with albums
@@ -149,8 +175,11 @@ export default function AlbumHeader({
     })
   }
 
+  const maxAlbums = onRepeat?.song ? 5 : 6
+  const limitedAlbums = albums.slice(0, maxAlbums)
+
   // Add regular albums
-  albums.forEach((album) => {
+  limitedAlbums.forEach((album) => {
     carouselItems.push({
       type: 'album' as const,
       data: album,
@@ -158,6 +187,16 @@ export default function AlbumHeader({
   })
 
   if (carouselItems.length === 0 && !onRepeatLoading) return null
+
+  useEffect(() => {
+    if (carouselItems.length <= 1) return
+    const timer = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % carouselItems.length)
+    }, 9000)
+    return () => {
+      clearInterval(timer)
+    }
+  }, [carouselItems.length])
 
   return (
     <div className="h-full">
@@ -170,39 +209,44 @@ export default function AlbumHeader({
         </div>
       )}
 
-      <Carousel
-        className="h-full w-full overflow-hidden rounded-xl border border-border/60 bg-card/20 min-[1600px]:rounded-2xl"
-        opts={{
-          loop: true,
-        }}
-        plugins={[
-          Autoplay({
-            delay: 9000,
-          }),
-        ]}
-        setApi={setApi}
-      >
-        <CarouselContent
-          className="ml-0 h-full transform-gpu"
-          style={{ borderRadius: 'calc(var(--radius) - 2px)' }}
-        >
+      <div className="flex h-full overflow-hidden rounded-xl border border-border/60 bg-card/20 min-[1600px]:rounded-2xl">
+        <div className="flex h-full w-[90px] flex-col items-center justify-between overflow-hidden border-r border-border/55 bg-foreground/[0.03] px-2.5 py-3">
           {carouselItems.map((item, index) => (
-            <CarouselItem
-              key={item.type === 'onRepeat' ? 'on-repeat' : item.data.id}
-              className="pl-0 basis-full maskImage-carousel-item h-full"
-            >
-              {item.type === 'onRepeat' ? (
-                <OnRepeatItem
-                  song={item.data.song}
-                  playcount={item.data.playcount}
-                />
-              ) : (
-                <AlbumHeaderItem album={item.data} />
-              )}
-            </CarouselItem>
+            <HeroThumbnail
+              key={`thumb-${item.type === 'onRepeat' ? 'on-repeat' : item.data.id}`}
+              isActive={currentSlide === index}
+              onClick={() => setCurrentSlide(index)}
+              coverArt={item.type === 'onRepeat' ? item.data.song.coverArt : item.data.coverArt}
+              type="album"
+              alt={item.type === 'onRepeat' ? item.data.song.title : item.data.name}
+            />
           ))}
-        </CarouselContent>
-      </Carousel>
+        </div>
+
+        <div className="relative h-full w-full overflow-hidden">
+          {carouselItems.map((item, index) => {
+            const isActive = currentSlide === index
+            return (
+              <div
+                key={item.type === 'onRepeat' ? 'on-repeat' : item.data.id}
+                className={cn(
+                  'absolute inset-0 transition-opacity duration-700 ease-in-out',
+                  isActive ? 'opacity-100' : 'pointer-events-none opacity-0',
+                )}
+              >
+                {item.type === 'onRepeat' ? (
+                  <OnRepeatItem
+                    song={item.data.song}
+                    playcount={item.data.playcount}
+                  />
+                ) : (
+                  <AlbumHeaderItem album={item.data} />
+                )}
+              </div>
+            )
+          })}
+        </div>
+      </div>
     </div>
   )
 }

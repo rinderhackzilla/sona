@@ -25,6 +25,7 @@ import { ROUTES } from '@/routes/routesList'
 // Direct imports (not lazy) to avoid suspense issues
 import BaseLayout from '@/app/layout/base'
 import DiscoverWeekly from '@/app/pages/discover-weekly'
+import ThisIsArtistPage from '@/app/pages/this-is-artist'
 import Top50Year from '@/app/pages/top-50-year'
 
 const Album = lazy(() => import('@/app/pages/albums/album'))
@@ -75,6 +76,12 @@ export const router = createHashRouter([
         path: ROUTES.LIBRARY.DISCOVER_WEEKLY,
         errorElement: <ErrorPage />,
         element: <DiscoverWeekly />,
+      },
+      {
+        id: 'this-is-artist',
+        path: ROUTES.LIBRARY.THIS_IS_ARTIST,
+        errorElement: <ErrorPage />,
+        element: <ThisIsArtistPage />,
       },
       {
         id: 'artists',
