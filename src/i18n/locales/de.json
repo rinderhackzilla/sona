@@ -20,13 +20,13 @@
     "dracula": "Dracula",
     "label": "Theme",
     "dark": "Dark",
+    "reactive": "Reactive",
     "ember-dusk": "Abendglut",
     "verdant-pulse": "Smaragdfluss",
     "system": "System",
     "black": "Black and White",
     "one-dark": "One Dark",
     "marmalade-beaver": "Marmalade Beaver",
-    "noctis-lilac": "Noctis Lilac",
     "monokai-pro": "Monokai Pro",
     "github-dark": "Github Dark",
     "catppuccin-mocha": "Catppuccin Mocha",
@@ -370,7 +370,24 @@
     "mostPlayedTrack": "Dein meistgespielter Track diese Woche",
     "playsThisWeek_one": "{{count}} Mal diese Woche gehört",
     "playsThisWeek_other": "{{count}} Mal diese Woche gehört",
-    "playNow": "Jetzt abspielen"
+    "playNow": "Jetzt abspielen",
+    "daypart": {
+      "label": "Tageszeiten-Mix",
+      "names": {
+        "morning": "Coffee Before Chaos",
+        "noon": "Lunch Break Bangers",
+        "afternoon": "Post-Lunch Liftoff",
+        "evening": "Golden Hour Groove",
+        "night": "Midnight Mood Machine"
+      },
+      "moods": {
+        "morning": "Mix für den Morgen.",
+        "noon": "Mix für die Mittagszeit.",
+        "afternoon": "Mix für den Nachmittag.",
+        "evening": "Mix für den Abend.",
+        "night": "Mix für die Nacht."
+      }
+    }
   },
   "menu": {
     "language": "Sprache",

@@ -20,8 +20,8 @@ export const QueueItem = forwardRef<HTMLDivElement, QueueItemProps>(
         ref={ref}
       className={clsx(
         'flex items-center w-[calc(100%-10px)] h-16 text-sm rounded-md cursor-pointer',
-        'bg-black/0 hover:bg-foreground/20',
-        'data-[state=active]:bg-foreground data-[state=active]:text-secondary',
+        'bg-black/0 hover:bg-primary/10',
+        'data-[state=active]:bg-primary/15 data-[state=active]:text-foreground',
         className,
       )}
       style={{
@@ -35,7 +35,7 @@ export const QueueItem = forwardRef<HTMLDivElement, QueueItemProps>(
           {isPlaying ? (
             <div className="w-6 flex items-center">
               <div className="w-6 h-6 flex items-center justify-center">
-                <EqualizerBars size={20} className="text-secondary mb-1" />
+                <EqualizerBars size={20} className="text-foreground mb-1" />
               </div>
             </div>
           ) : (
@@ -45,7 +45,7 @@ export const QueueItem = forwardRef<HTMLDivElement, QueueItemProps>(
           )}
         </div>
         <div className="flex flex-1 items-center">
-          <div className="w-10 h-10 bg-accent rounded mr-2">
+          <div className="w-10 h-10 bg-primary/10 rounded mr-2">
             <ImageLoader id={song.coverArt} type="song" size={100}>
               {(src) => (
                 <LazyLoadImage

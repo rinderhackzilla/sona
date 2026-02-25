@@ -40,7 +40,7 @@ export function FullscreenControls() {
         variant="ghost"
         data-state={isShuffleActive && 'active'}
         className={clsx(
-          buttonsStyle.secondary,
+          buttonsStyle.utility,
           isShuffleActive && buttonsStyle.activeDot,
         )}
         style={{ ...buttonsStyle.style }}
@@ -87,7 +87,7 @@ export function FullscreenControls() {
         variant="ghost"
         data-state={loopState !== LoopState.Off && 'active'}
         className={clsx(
-          buttonsStyle.secondary,
+          buttonsStyle.utility,
           loopState !== LoopState.Off && buttonsStyle.activeDot,
         )}
         onClick={() => toggleLoop()}
@@ -108,13 +108,15 @@ export function FullscreenControls() {
 }
 
 export const buttonsStyle = {
-  main: 'w-14 h-14 rounded-full shadow-lg bg-secondary-foreground hover:scale-105 transition-transform will-change-transform',
-  mainIcon: 'w-6 h-6 text-secondary fill-secondary',
+  main: 'w-14 h-14 rounded-full shadow-lg border border-primary/35 bg-primary/25 text-foreground hover:bg-primary/35 hover:scale-105 transition-transform will-change-transform',
+  mainIcon: 'w-6 h-6 text-foreground fill-foreground',
   secondary:
-    'relative w-12 h-12 rounded-full text-secondary-foreground hover:text-secondary-foreground data-[state=active]:text-primary hover:bg-transparent hover:scale-110 transition-transform will-change-transform',
+    'relative w-12 h-12 rounded-full border border-primary/20 bg-primary/10 text-foreground/88 hover:text-foreground data-[state=active]:text-foreground data-[state=active]:bg-primary/18 hover:bg-primary/14 hover:scale-110 transition-transform will-change-transform',
+  utility:
+    'relative w-12 h-12 rounded-full border border-transparent bg-transparent text-foreground/88 hover:text-foreground data-[state=active]:text-foreground hover:bg-transparent hover:scale-110 transition-transform will-change-transform',
   secondaryIcon: 'w-6 h-6 drop-shadow-lg',
   secondaryIconFilled:
-    'w-6 h-6 text-secondary-foreground fill-secondary-foreground drop-shadow-lg',
+    'w-6 h-6 text-foreground fill-foreground drop-shadow-lg',
   activeDot: 'player-button-active',
   style: {
     backfaceVisibility: 'hidden' as const,

@@ -7,11 +7,11 @@ export function VolumeContainer() {
   const { volume } = usePlayerVolume()
 
   return (
-    <div className="flex justify-center items-center gap-1 text-secondary-foreground">
-      <MuteButton className={buttonsStyle.secondary}>
+    <div className="flex justify-center items-center gap-1 text-foreground/90">
+      <MuteButton className={buttonsStyle.utility}>
         <VolumeIcon volume={volume} className={buttonsStyle.secondaryIcon} />
       </MuteButton>
-      <VolumeSlider variant="secondary" className="h-3" />
+      <VolumeSlider variant="default" className="h-3" />
     </div>
   )
 }

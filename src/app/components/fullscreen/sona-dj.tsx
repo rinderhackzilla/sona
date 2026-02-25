@@ -14,7 +14,7 @@ import { usePlayerActions } from '@/store/player.store'
 
 const triggerStyles = {
   fullscreen:
-    'relative w-12 h-12 rounded-full text-secondary-foreground hover:text-secondary-foreground data-[state=active]:text-primary hover:bg-transparent hover:scale-110 transition-transform will-change-transform',
+    'relative w-12 h-12 rounded-full border border-transparent bg-transparent text-foreground/88 hover:text-foreground data-[state=active]:text-foreground hover:bg-transparent hover:scale-110 transition-transform will-change-transform',
   player:
     'relative rounded-full w-10 h-10 p-2 text-secondary-foreground hover:text-secondary-foreground data-[state=active]:text-primary hover:bg-transparent',
   active: 'player-button-active',

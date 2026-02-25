@@ -87,7 +87,7 @@ export function SongInfo({ isChromeVisible }: SongInfoProps) {
             <ArtistNames song={currentSong} onArtistClick={handleArtistClick} />
           </div>
           <div className="mt-2 2xl:mt-3 mb-[1px]">
-            <div className="inline-flex items-center gap-2 rounded-md border border-foreground/15 bg-foreground/5 px-3 py-1.5 text-sm text-foreground/80 backdrop-blur-sm">
+            <div className="inline-flex items-center gap-2 rounded-md border border-primary/15 bg-primary/10 px-3 py-1.5 text-sm text-foreground/82 backdrop-blur-sm">
               {currentSong.genre && <span className="truncate max-w-[220px]">{currentSong.genre}</span>}
               {currentSong.genre && currentSong.year && <span className="text-foreground/40">•</span>}
               {currentSong.year && <span>{currentSong.year}</span>}

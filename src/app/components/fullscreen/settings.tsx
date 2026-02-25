@@ -91,7 +91,7 @@ export function FullscreenSettings() {
           variant="ghost"
           size="icon"
           className={clsx(
-            buttonsStyle.secondary,
+            buttonsStyle.utility,
             'data-[state=open]:scale-110',
           )}
           style={{ ...buttonsStyle.style }}

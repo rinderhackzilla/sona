@@ -25,6 +25,7 @@ import { ROUTES } from '@/routes/routesList'
 // Direct imports (not lazy) to avoid suspense issues
 import BaseLayout from '@/app/layout/base'
 import DiscoverWeekly from '@/app/pages/discover-weekly'
+import DaypartPlaylistPage from '@/app/pages/daypart-playlist'
 import ThisIsArtistPage from '@/app/pages/this-is-artist'
 import Top50Year from '@/app/pages/top-50-year'
 
@@ -82,6 +83,12 @@ export const router = createHashRouter([
         path: ROUTES.LIBRARY.THIS_IS_ARTIST,
         errorElement: <ErrorPage />,
         element: <ThisIsArtistPage />,
+      },
+      {
+        id: 'daypart-playlist',
+        path: ROUTES.LIBRARY.DAYPART_PLAYLIST,
+        errorElement: <ErrorPage />,
+        element: <DaypartPlaylistPage />,
       },
       {
         id: 'artists',

@@ -85,7 +85,7 @@ export function FullscreenProgress() {
       </div>
 
       <ProgressSlider
-        variant="secondary"
+        variant="default"
         defaultValue={[0]}
         value={[activeProgress]}
         tooltipTransformer={convertSecondsToTime}

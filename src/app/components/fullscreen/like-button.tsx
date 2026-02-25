@@ -12,7 +12,7 @@ export function LikeButton() {
     <Button
       size="icon"
       variant="ghost"
-      className={buttonsStyle.secondary}
+      className={buttonsStyle.utility}
       onClick={starCurrentSong}
       style={{ ...buttonsStyle.style }}
     >

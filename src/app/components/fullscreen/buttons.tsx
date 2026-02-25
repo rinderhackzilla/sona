@@ -9,7 +9,7 @@ export function CloseFullscreenButton() {
       <Button
         variant="ghost"
         size="icon"
-        className={buttonsStyle.secondary}
+        className={buttonsStyle.utility}
         style={{ ...buttonsStyle.style }}
       >
         <ChevronDown className="size-9 drop-shadow-lg" strokeWidth={1.5} />

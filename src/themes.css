@@ -28,6 +28,29 @@
     --ring: 160 84% 39%;
   }
 
+  .reactive {
+    --background: 222 14% 8%;
+    --background-foreground: 222 12% 11%;
+    --foreground: 210 14% 92%;
+    --card: 222 14% 9%;
+    --card-foreground: 210 14% 92%;
+    --popover: 222 14% 8%;
+    --popover-foreground: 210 14% 92%;
+    --primary: 214 14% 62%;
+    --primary-foreground: 222 47% 11%;
+    --secondary: 220 8% 18%;
+    --secondary-foreground: 210 12% 90%;
+    --muted: 220 8% 15%;
+    --muted-foreground: 220 8% 66%;
+    --accent: 220 10% 20%;
+    --accent-foreground: 210 12% 90%;
+    --destructive: 0 74% 44%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 220 8% 22%;
+    --input: 220 8% 22%;
+    --ring: 214 14% 62%;
+  }
+
   .ember-dusk {
     --background: 8 26% 10%;
     --background-foreground: 8 24% 12%;
@@ -141,29 +164,6 @@
     --destructive: 10 90% 57%;
     --destructive-foreground: 0 0% 100%;
     --ring: 44 100% 71%;
-  }
-
-  .noctis-lilac {
-    --background: 249 33% 96%;
-    --background-foreground: 250 100% 97.6%;
-    --foreground: 247 100% 21%;
-    --muted: 249 12% 90%;
-    --muted-foreground: 249 12% 30%;
-    --popover: 249 33% 93%;
-    --popover-foreground: 247 100% 11%;
-    --card: 249 33% 94%;
-    --card-foreground: 247 100% 16%;
-    --border: 249 23% 91%;
-    --input: 249 23% 88%;
-    --primary: 247 78% 65%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 247 30% 75%;
-    --secondary-foreground: 247 30% 15%;
-    --accent: 249 33% 81%;
-    --accent-foreground: 249 33% 21%;
-    --destructive: 3 93% 20%;
-    --destructive-foreground: 3 93% 80%;
-    --ring: 247 78% 65%;
   }
 
   .monokai-pro {

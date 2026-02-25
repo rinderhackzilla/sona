@@ -2,6 +2,7 @@ import { isDesktop } from 'react-device-detect'
 import { RouterProvider } from 'react-router-dom'
 import { Linux } from '@/app/components/controls/linux'
 import { SettingsDialog } from '@/app/components/settings/dialog'
+import { AlbumColorObserver } from '@/app/observers/album-color-observer'
 import { DiscoverWeeklyObserver } from '@/app/observers/discover-weekly-observer'
 import { LangObserver } from '@/app/observers/lang-observer'
 import { MediaSessionObserver } from '@/app/observers/media-session-observer'
@@ -24,6 +25,7 @@ function App() {
       {isElectron() && <UpdateObserver />}
       {isElectron() && <DiscoverWeeklyObserver />}
       <MediaSessionObserver />
+      <AlbumColorObserver />
       <LangObserver />
       <ThemeObserver />
       <SettingsDialog />

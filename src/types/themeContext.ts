@@ -1,11 +1,11 @@
 export enum Theme {
   Dark = 'dark',
+  Reactive = 'reactive',
   Black = 'black',
   OneDark = 'one-dark',
   EmberDusk = 'ember-dusk',
   VerdantPulse = 'verdant-pulse',
   MarmaladeBeaver = 'marmalade-beaver',
-  NoctisLilac = 'noctis-lilac',
   MonokaiPro = 'monokai-pro',
   GithubDark = 'github-dark',
   CatppuccinMocha = 'catppuccin-mocha',

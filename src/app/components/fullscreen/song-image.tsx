@@ -40,7 +40,7 @@ export function FullscreenSongImage({ isChromeVisible }: FullscreenSongImageProp
       <div
         className={clsx(
           'relative w-full h-full rounded-lg 2xl:rounded-2xl overflow-hidden cursor-pointer',
-          !showVisualizer && 'bg-accent/60',
+          !showVisualizer && 'bg-primary/10',
         )}
         onClick={handleClick}
       >

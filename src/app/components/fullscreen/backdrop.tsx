@@ -55,7 +55,8 @@ function OtherBackdrop() {
         }}
       />
       <div className="absolute inset-0 w-full h-full z-[1] bg-black/10" />
-      <div className="bg-background/50 absolute inset-0 w-full h-full z-[2] transition-colors duration-1000" />
+      <div className="absolute inset-0 w-full h-full z-[2] bg-primary/10 transition-colors duration-1000" />
+      <div className="bg-background/45 absolute inset-0 w-full h-full z-[3] transition-colors duration-1000" />
     </div>
   )
 }
@@ -89,8 +90,9 @@ function MacBackdrop() {
         )}
       </ImageLoader>
       <div className="absolute inset-0 z-[9] bg-black/10" />
+      <div className="absolute inset-0 z-[9] bg-primary/10 transition-colors duration-1000" />
       <div
-        className="absolute bg-background/50 inset-0 z-10 transition-all duration-1000"
+        className="absolute bg-background/45 inset-0 z-10 transition-all duration-1000"
         style={{
           WebkitBackdropFilter: `blur(${bigPlayerBlur.value}px)`,
           backdropFilter: `blur(${bigPlayerBlur.value}px)`,
@@ -137,8 +139,8 @@ function DynamicColorBackdrop() {
         <div 
           className="absolute inset-0 w-full h-full z-[1] transition-opacity duration-1000"
           style={{ 
-            backgroundColor: 'hsl(var(--accent))',
-            opacity: currentSongColorIntensity,
+            backgroundColor: 'hsl(var(--primary))',
+            opacity: Math.min(currentSongColorIntensity * 0.26, 0.2),
           }}
         />
         

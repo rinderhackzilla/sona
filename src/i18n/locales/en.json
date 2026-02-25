@@ -20,6 +20,24 @@
     "playsThisWeek_one": "{{count}} play this week",
     "playsThisWeek_other": "{{count}} plays this week",
     "playNow": "Play Now"
+    ,
+    "daypart": {
+      "label": "Daypart Mix",
+      "names": {
+        "morning": "Coffee Before Chaos",
+        "noon": "Lunch Break Bangers",
+        "afternoon": "Post-Lunch Liftoff",
+        "evening": "Golden Hour Groove",
+        "night": "Midnight Mood Machine"
+      },
+      "moods": {
+        "morning": "Warm-up vibes for your morning start.",
+        "noon": "Bright, upbeat energy for your midday reset.",
+        "afternoon": "Focused momentum with playful edge.",
+        "evening": "Smooth wind-down with color and warmth.",
+        "night": "Late-hour drift for calm, deep listening."
+      }
+    }
   },
   "sidebar": {
     "home": "Home",
@@ -67,13 +85,13 @@
   "theme": {
     "label": "Theme",
     "dark": "Dark",
+    "reactive": "Reactive",
     "ember-dusk": "Ember Dusk",
     "verdant-pulse": "Verdant Pulse",
     "system": "System",
     "black": "Black and White",
     "one-dark": "One Dark",
     "marmalade-beaver": "Marmalade Beaver",
-    "noctis-lilac": "Noctis Lilac",
     "monokai-pro": "Monokai Pro",
     "github-dark": "Github Dark",
     "catppuccin-mocha": "Catppuccin Mocha",
