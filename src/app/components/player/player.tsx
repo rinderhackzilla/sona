@@ -284,7 +284,6 @@ export function Player({ hideUi = false }: { hideUi?: boolean }) {
           src={getSongStreamUrl(song.id)}
           autoPlay={isPlaying}
           audioRef={audioRef}
-          loop={loopState === LoopState.One}
           onPlay={() => setPlayingState(true)}
           onPause={() => setPlayingState(false)}
           onLoadedMetadata={setupDuration}

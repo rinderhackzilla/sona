@@ -72,7 +72,7 @@ export function AlbumButtons({ album, showInfoButton }: AlbumButtonsProps) {
       <Actions.Button
         tooltip={buttonsTooltips.play}
         buttonStyle="primary"
-        onClick={() => setSongList(album.song, 0)}
+        onClick={() => window.setTimeout(() => setSongList(album.song, 0), 0)}
       >
         <Actions.PlayIcon />
       </Actions.Button>
@@ -80,7 +80,7 @@ export function AlbumButtons({ album, showInfoButton }: AlbumButtonsProps) {
       {album.song.length > 1 && (
         <Actions.Button
           tooltip={buttonsTooltips.shuffle}
-          onClick={() => setSongList(album.song, 0, true)}
+          onClick={() => window.setTimeout(() => setSongList(album.song, 0, true), 0)}
         >
           <Actions.ShuffleIcon />
         </Actions.Button>

@@ -7,7 +7,7 @@ import { DataTable } from '@/app/components/ui/data-table'
 import { genresColumns } from '@/app/tables/genres-columns'
 import { subsonic } from '@/service/subsonic'
 import { Genre } from '@/types/responses/genre'
-import { normalizeGenreName } from '@/utils/genreNormalization'
+import { isGenreUsable, normalizeGenreName } from '@/utils/genreNormalization'
 import { queryKeys } from '@/utils/queryKeys'
 
 const MemoDataTable = memo(DataTable) as typeof DataTable
@@ -26,6 +26,8 @@ export default function GenresList() {
     const map = new Map<string, Genre>()
 
     for (const genre of genres) {
+      if (!isGenreUsable(genre.value)) continue
+
       const canonical = normalizeGenreName(genre.value)
       const existing = map.get(canonical)
 

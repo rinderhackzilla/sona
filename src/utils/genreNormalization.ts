@@ -69,6 +69,41 @@ export const GENRE_GROUPS: Record<string, string[]> = {
   ],
 }
 
+const NON_GENRE_LABELS = new Set([
+  'best songs',
+  'my top songs',
+  'one track mind',
+  'cloud nine',
+  'love at first listen',
+  'lili own this song',
+  'dominique simone',
+  'nicki minaj',
+  'rihanna',
+  'paramore',
+  'king diamond',
+  'roxette',
+  'tyler',
+  'mtv',
+  'other',
+  'american',
+  'australian',
+  'british',
+  'canada',
+  'german',
+  'japanese',
+  'korean',
+  'uk',
+  'united states',
+  'united states of america',
+  '4 stars',
+])
+
+const NON_GENRE_PATTERNS = [/^\d+\s*stars?$/i]
+
+function normalizeKey(value: string): string {
+  return value.toLowerCase().trim()
+}
+
 // Reverse map: lowercase variant → canonical name
 const REVERSE_MAP: Record<string, string> = {}
 for (const [canonical, variants] of Object.entries(GENRE_GROUPS)) {
@@ -81,7 +116,19 @@ for (const [canonical, variants] of Object.entries(GENRE_GROUPS)) {
  * Returns the canonical name for a genre, or the original name if no mapping exists.
  */
 export function normalizeGenreName(name: string): string {
-  return REVERSE_MAP[name.toLowerCase()] ?? name
+  const trimmed = name.trim()
+  return REVERSE_MAP[trimmed.toLowerCase()] ?? trimmed
+}
+
+/**
+ * Returns whether a label is likely a real genre (and not a person, rating, country tag, or mood list name).
+ */
+export function isGenreUsable(name: string): boolean {
+  const key = normalizeKey(name)
+  if (!key) return false
+  if (NON_GENRE_LABELS.has(key)) return false
+  if (NON_GENRE_PATTERNS.some((pattern) => pattern.test(key))) return false
+  return true
 }
 
 /**

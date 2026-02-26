@@ -13,6 +13,7 @@ import { usePlayerActions } from '@/store/player.store'
 import { AlbumsFilters } from '@/utils/albumsFilter'
 import {
   getConstituentGenres,
+  isGenreUsable,
   normalizeGenreName,
 } from '@/utils/genreNormalization'
 import { queryKeys } from '@/utils/queryKeys'
@@ -34,7 +35,10 @@ export default function Genre() {
   // All genre names on the server that normalize to this canonical genre
   const constituentGenres = useMemo(() => {
     if (!allGenres) return [genre]
-    const found = getConstituentGenres(genre, allGenres.map((g) => g.value))
+    const found = getConstituentGenres(
+      genre,
+      allGenres.map((g) => g.value).filter(isGenreUsable),
+    )
     // If nothing maps to this canonical name, fall back to the raw URL param
     return found.length > 0 ? found : [genre]
   }, [allGenres, genre])

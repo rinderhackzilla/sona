@@ -76,6 +76,11 @@ interface ICrossfade {
   setEnabled: (value: boolean) => void
 }
 
+interface IListeningMemory {
+  enabled: boolean
+  setEnabled: (value: boolean) => void
+}
+
 interface IFullscreen {
   autoFullscreenEnabled: boolean
   setAutoFullscreenEnabled: (value: boolean) => void
@@ -138,6 +143,7 @@ export interface IPlayerSettings {
   lyrics: ILyrics
   replayGain: IReplayGain
   crossfade: ICrossfade
+  listeningMemory: IListeningMemory
   privacy: IPrivacySettings
   colors: IColorsSettings
 }

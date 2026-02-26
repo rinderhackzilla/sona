@@ -19,7 +19,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/app/components/ui/select'
-import { useCrossfadeSettings, useReplayGainActions, useReplayGainState } from '@/store/player.store'
+import {
+  useCrossfadeSettings,
+  useListeningMemorySettings,
+  useReplayGainActions,
+  useReplayGainState,
+} from '@/store/player.store'
 import { useAppPages, useAppAccounts, useAppDesktopActions, useAppDesktopData, useAppImagesCacheLayer } from '@/store/app.store'
 import { ReplayGainType } from '@/types/playerContext'
 import { isDesktop } from '@/utils/desktop'
@@ -49,6 +54,8 @@ export function PlayerPage() {
 
   // Crossfade
   const { enabled: crossfadeEnabled, setEnabled: setCrossfadeEnabled } = useCrossfadeSettings()
+  const { enabled: listeningMemoryEnabled, setEnabled: setListeningMemoryEnabled } =
+    useListeningMemorySettings()
 
   // Sidebar & Playlists
   const { hideRadiosSection, setHideRadiosSection, autoPlaylistImport, setAutoPlaylistImport } = useAppPages()
@@ -179,6 +186,18 @@ export function PlayerPage() {
               <Switch
                 checked={crossfadeEnabled}
                 onCheckedChange={setCrossfadeEnabled}
+              />
+            </ContentItemForm>
+          </ContentItem>
+
+          <ContentItem>
+            <ContentItemTitle info={t('settings.player.listeningMemory.info')}>
+              {t('settings.player.listeningMemory.label', 'Listening Memory')}
+            </ContentItemTitle>
+            <ContentItemForm>
+              <Switch
+                checked={listeningMemoryEnabled}
+                onCheckedChange={setListeningMemoryEnabled}
               />
             </ContentItemForm>
           </ContentItem>

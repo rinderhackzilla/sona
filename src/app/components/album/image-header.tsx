@@ -1,4 +1,3 @@
-import randomCSSHexColor from '@chriscodesthings/random-css-hex-color'
 import clsx from 'clsx'
 import { useState } from 'react'
 import { LazyLoadImage } from 'react-lazy-load-image-component'
@@ -14,7 +13,6 @@ import { CustomLightBox } from '@/app/components/lightbox'
 import { cn } from '@/lib/utils'
 import { CoverArt } from '@/types/coverArtType'
 import { IFeaturedArtist } from '@/types/responses/artist'
-import { getAverageColor } from '@/utils/getAverageColor'
 import { getTextSizeClass } from '@/utils/getTextSizeClass'
 
 interface ImageHeaderProps {
@@ -45,27 +43,9 @@ export default function ImageHeader({
   isPlaylist = false,
 }: ImageHeaderProps) {
   const [open, setOpen] = useState(false)
-  const [bgColor, setBgColor] = useState('')
 
   function getImage() {
     return document.getElementById('cover-art-image') as HTMLImageElement
-  }
-
-  async function handleLoadImage() {
-    const img = getImage()
-    if (!img) return
-
-    let color = randomCSSHexColor(true)
-
-    try {
-      color = (await getAverageColor(img)).hex
-    } catch (_) {
-      console.warn(
-        'handleLoadImage: unable to get image color. Using a random color.',
-      )
-    }
-
-    setBgColor(color)
   }
 
   function handleError() {
@@ -92,27 +72,26 @@ export default function ImageHeader({
 
           {/* Blurred background image */}
           {!isLoading && src && (
-            <div className="absolute inset-0 z-0 overflow-hidden">
+            <div className="absolute inset-0 z-0 overflow-visible">
               <img
                 src={src}
                 alt=""
                 aria-hidden="true"
-                className="w-full h-full object-cover scale-125"
-                style={{ filter: 'blur(24px)' }}
+                className="w-full h-[calc(100%+205px)] object-cover scale-125"
+                style={{
+                  filter: 'blur(24px)',
+                  WebkitMaskImage:
+                    'linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,1) calc(100% - 205px), rgba(0,0,0,0) 100%)',
+                  maskImage:
+                    'linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,1) calc(100% - 205px), rgba(0,0,0,0) 100%)',
+                }}
               />
-              {bgColor && (
-                <div
-                  className="absolute inset-0"
-                  style={{ backgroundColor: bgColor, opacity: 0.4 }}
-                />
-              )}
             </div>
           )}
 
           <div
             className={cn(
               'w-full px-8 py-6 flex gap-4 absolute inset-0 z-10',
-              'bg-gradient-to-b from-background/10 to-background/70',
             )}
           >
             <div
@@ -134,7 +113,6 @@ export default function ImageHeader({
                 className="aspect-square object-cover w-full h-full cursor-pointer"
                 width="100%"
                 height="100%"
-                onLoad={handleLoadImage}
                 onError={handleError}
                 onClick={() => setOpen(true)}
               />
@@ -193,7 +171,7 @@ export default function ImageHeader({
           {isLoading ? (
             <ImageHeaderEffect className="bg-muted-foreground" />
           ) : (
-            <ImageHeaderEffect style={{ backgroundColor: bgColor }} />
+            <ImageHeaderEffect />
           )}
 
           <CustomLightBox

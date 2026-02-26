@@ -28,14 +28,16 @@
         "noon": "Lunch Break Bangers",
         "afternoon": "Post-Lunch Liftoff",
         "evening": "Golden Hour Groove",
-        "night": "Midnight Mood Machine"
+        "night": "Night Shift Stereo",
+        "midnight": "Midnight Mood Machine"
       },
       "moods": {
-        "morning": "Warm-up vibes for your morning start.",
-        "noon": "Bright, upbeat energy for your midday reset.",
-        "afternoon": "Focused momentum with playful edge.",
-        "evening": "Smooth wind-down with color and warmth.",
-        "night": "Late-hour drift for calm, deep listening."
+        "morning": "Soft, focused energy for a calm start.",
+        "noon": "Catchy, upbeat momentum for the middle of the day.",
+        "afternoon": "Driven energy with sharper edges for late-day focus.",
+        "evening": "Warm groove and color for golden-hour listening.",
+        "night": "Cinematic late-evening flow with atmospheric textures.",
+        "midnight": "Dark, heavy energy for deep night sessions."
       }
     }
   },
@@ -831,7 +833,7 @@
         "group": "Discord Rich Presence",
         "description": "Share your currently playing song with friends on Discord.",
         "enabled": {
-          "label": "Enable Integration"
+          "label": "Discord Rich Presence"
         }
       }
     },
@@ -890,6 +892,10 @@
       "crossfade": {
         "label": "Crossfade",
         "info": "Smoothly fade between songs during playback"
+      },
+      "listeningMemory": {
+        "label": "Listening Memory",
+        "info": "Reduce repeats by deprioritizing songs, artists, and albums you heard recently."
       },
       "playlists": {
         "group": "Playlists",

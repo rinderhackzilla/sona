@@ -119,6 +119,12 @@ export default function Album() {
     coverArt: song.coverArt || album.coverArt,
   }))
 
+  const playAlbumFromIndex = (index: number) => {
+    window.setTimeout(() => {
+      setSongList(albumSongs, index)
+    }, 0)
+  }
+
   return (
     <div className="w-full">
       <ImageHeader
@@ -140,7 +146,7 @@ export default function Album() {
         <DataTable
           columns={columns}
           data={albumSongs}
-          handlePlaySong={(row) => setSongList(albumSongs, row.index)}
+          handlePlaySong={(row) => playAlbumFromIndex(row.index)}
           columnFilter={columnsToShow}
           showDiscNumber={true}
           variant="modern"

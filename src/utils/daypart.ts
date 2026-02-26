@@ -6,6 +6,7 @@ export const DAYPART_KEYS: DayPart[] = [
   'afternoon',
   'evening',
   'night',
+  'midnight',
 ]
 
 export function getDaypartNameKey(dayPart: DayPart) {
@@ -15,4 +16,3 @@ export function getDaypartNameKey(dayPart: DayPart) {
 export function getDaypartMoodKey(dayPart: DayPart) {
   return `home.daypart.moods.${dayPart}`
 }
-

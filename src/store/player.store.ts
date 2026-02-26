@@ -12,6 +12,12 @@ import { ISong } from '@/types/responses/song'
 import { areSongListsEqual } from '@/utils/compareSongLists'
 import { isDesktop } from '@/utils/desktop'
 import { discordRpc } from '@/utils/discordRpc'
+import {
+  getListeningMemoryEnabledPreference,
+  pickByListeningMemory,
+  rememberSongPlayback,
+  setListeningMemoryEnabledPreference,
+} from '@/utils/listening-memory'
 import { addNextSongList, shuffleSongList } from '@/utils/songListFunctions'
 import { idbStorage } from './idb'
 import { getSonaDjMode, SonaDjMode } from './sona-dj.store'
@@ -75,6 +81,8 @@ async function getSonaDjCandidate(
   currentSong: ISong,
   currentList: ISong[],
 ) {
+  const listeningMemoryEnabled =
+    usePlayerStore.getState().settings.listeningMemory.enabled
   const sourceGenre = normalizeGenre(currentSong.genre)
   const sourceDecade = getDecade(currentSong.year)
   const sourceArtist = (currentSong.artist ?? '').trim().toLowerCase()
@@ -100,12 +108,13 @@ async function getSonaDjCandidate(
   let songToInject: ISong | undefined
 
   if (mode === SonaDjMode.Era && sourceDecade !== null) {
-    songToInject = candidates.find((song) => {
+    const eraCandidates = candidates.filter((song) => {
       const candidateDecade = getDecade(song.year)
       return candidateDecade === sourceDecade
     })
+    songToInject = pickByListeningMemory(eraCandidates, listeningMemoryEnabled)
   } else if (mode === SonaDjMode.Adventure || mode === SonaDjMode.Drift) {
-    songToInject = candidates.find((song) => {
+    const contrastCandidates = candidates.filter((song) => {
       const candidateGenre = normalizeGenre(song.genre)
       return (
         candidateGenre.length > 0 &&
@@ -113,6 +122,7 @@ async function getSonaDjCandidate(
         candidateGenre !== sourceGenre
       )
     })
+    songToInject = pickByListeningMemory(contrastCandidates, listeningMemoryEnabled)
   }
 
   // Fallback order for stronger contrast when tags are sparse.
@@ -126,23 +136,29 @@ async function getSonaDjCandidate(
           return bDistance - aDistance
         })
 
-      songToInject = byLargestDecadeDistance[0]
+      songToInject = pickByListeningMemory(
+        byLargestDecadeDistance,
+        listeningMemoryEnabled,
+      )
     }
   }
 
   if (!songToInject && (mode === SonaDjMode.Adventure || mode === SonaDjMode.Drift)) {
-    songToInject = candidates.find((song) => {
+    const artistCandidates = candidates.filter((song) => {
       const artist = (song.artist ?? '').trim().toLowerCase()
       return artist.length > 0 && sourceArtist.length > 0 && artist !== sourceArtist
     })
+    songToInject = pickByListeningMemory(artistCandidates, listeningMemoryEnabled)
   }
 
   if (songToInject) return songToInject
-  if (candidates[0]) return candidates[0]
+  if (candidates[0]) {
+    return pickByListeningMemory(candidates, listeningMemoryEnabled) ?? candidates[0]
+  }
 
   // If the whole library is already present in queue, allow reuse (except current song)
   const reusable = candidatePool.filter((song) => song.id !== currentSong.id)
-  return reusable[0]
+  return pickByListeningMemory(reusable, listeningMemoryEnabled) ?? reusable[0]
 }
 
 function queueSonaDjTrack(mode: SonaDjMode, songToInject: ISong) {
@@ -242,18 +258,26 @@ async function ensureSonaDjNextTrack() {
 let runtimeShufflePlannerInFlight = false
 
 async function getRuntimeRandomSong(currentSong?: ISong, excludedIds?: Set<string>) {
+  const listeningMemoryEnabled =
+    usePlayerStore.getState().settings.listeningMemory.enabled
   const randomSongs = await subsonic.songs.getRandomSongs({
     size: SONA_DJ_POOL_SIZE,
   })
-  const randomSong = randomSongs?.find(
-    (song) => song.id !== currentSong?.id && !excludedIds?.has(song.id),
+  const eligibleRandomSongs =
+    randomSongs?.filter(
+      (song) => song.id !== currentSong?.id && !excludedIds?.has(song.id),
+    ) ?? []
+  const randomSong = pickByListeningMemory(
+    eligibleRandomSongs,
+    listeningMemoryEnabled,
   )
   if (randomSong) return randomSong
 
   const fallbackSongs = await subsonic.songs.getAllSongs(200)
-  return fallbackSongs.find(
+  const eligibleFallbackSongs = fallbackSongs.filter(
     (song) => song.id !== currentSong?.id && !excludedIds?.has(song.id),
   )
+  return pickByListeningMemory(eligibleFallbackSongs, listeningMemoryEnabled)
 }
 
 async function ensureRuntimeShuffleNextTrack() {
@@ -411,6 +435,15 @@ export const usePlayerStore = createWithEqualityFn<IPlayerContext>()(
               setEnabled: (value) => {
                 set((state) => {
                   state.settings.crossfade.enabled = value
+                })
+              },
+            },
+            listeningMemory: {
+              enabled: getListeningMemoryEnabledPreference(),
+              setEnabled: (value) => {
+                setListeningMemoryEnabledPreference(value)
+                set((state) => {
+                  state.settings.listeningMemory.enabled = value
                 })
               },
             },
@@ -1139,7 +1172,22 @@ export const usePlayerStore = createWithEqualityFn<IPlayerContext>()(
                 playNextSong,
                 setPlayingState,
                 clearPlayerState,
+                resetProgress,
               } = get().actions
+
+              // Handle single-track repeat explicitly instead of relying on native
+              // HTML audio looping to avoid rare silent re-loop states.
+              if (loopState === LoopState.One) {
+                const audio = get().playerState.audioPlayerRef
+                if (audio) {
+                  audio.currentTime = 0
+                  audio.volume = getVolume() / 100
+                  audio.play().catch(() => undefined)
+                }
+                resetProgress()
+                setPlayingState(true)
+                return
+              }
 
               const mode = getRuntimeSonaDjMode()
               const isSonaDjEnabled = mode !== SonaDjMode.Off
@@ -1188,7 +1236,9 @@ export const usePlayerStore = createWithEqualityFn<IPlayerContext>()(
                   error: false,
                   defaultGain: -6,
                 }
+                state.settings.listeningMemory.enabled = true
               })
+              setListeningMemoryEnabledPreference(true)
             },
             setCurrentSongColor: (value) => {
               set((state) => {
@@ -1342,6 +1392,23 @@ usePlayerStore.subscribe(
   },
 )
 
+usePlayerStore.subscribe(
+  (state) => [
+    state.songlist.currentSong?.id,
+    state.songlist.currentSong,
+    state.playerState.isPlaying,
+    state.playerState.mediaType,
+    state.settings.listeningMemory.enabled,
+  ],
+  ([songId, song, isPlaying, mediaType, listeningMemoryEnabled]) => {
+    if (!songId || mediaType !== 'song' || !isPlaying || !listeningMemoryEnabled) return
+    rememberSongPlayback(song)
+  },
+  {
+    equalityFn: shallow,
+  },
+)
+
 function desktopStateListener() {
   if (!isDesktop()) return
 
@@ -1451,6 +1518,9 @@ export const useReplayGainActions = () =>
 
 export const useCrossfadeSettings = () =>
   usePlayerStore((state) => state.settings.crossfade)
+
+export const useListeningMemorySettings = () =>
+  usePlayerStore((state) => state.settings.listeningMemory)
 
 export const useFullscreenPlayerSettings = () =>
   usePlayerStore((state) => state.settings.fullscreen)

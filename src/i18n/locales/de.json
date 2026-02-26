@@ -378,14 +378,16 @@
         "noon": "Lunch Break Bangers",
         "afternoon": "Post-Lunch Liftoff",
         "evening": "Golden Hour Groove",
-        "night": "Midnight Mood Machine"
+        "night": "Night Shift Stereo",
+        "midnight": "Midnight Mood Machine"
       },
       "moods": {
-        "morning": "Mix für den Morgen.",
-        "noon": "Mix für die Mittagszeit.",
-        "afternoon": "Mix für den Nachmittag.",
-        "evening": "Mix für den Abend.",
-        "night": "Mix für die Nacht."
+        "morning": "Sanfter Mix für den Morgen.",
+        "noon": "Energiegeladener Mix für die Mittagszeit.",
+        "afternoon": "Treibender Mix für den Nachmittag.",
+        "evening": "Warmer Mix für den Abend.",
+        "night": "Cineastischer Mix für die späten Abendstunden.",
+        "midnight": "Dunkler, harter Mix für die Tiefnacht."
       }
     }
   },
@@ -780,7 +782,7 @@
       "discord": {
         "description": "Teile das aktuell abgespielte Lied mit Freunden auf Discord.",
         "enabled": {
-          "label": "Integration aktivieren"
+          "label": "Discord Rich Presence"
         }
       }
     },
@@ -839,6 +841,10 @@
       "crossfade": {
         "label": "Überblendung",
         "info": "Lieder während der Wiedergabe weich ineinander überblenden"
+      },
+      "listeningMemory": {
+        "label": "Listening Memory",
+        "info": "Verringert Wiederholungen, indem kürzlich gehörte Songs, Artists und Alben seltener gewählt werden."
       },
       "playlists": {
         "group": "Wiedergabelisten",

@@ -125,7 +125,7 @@ function DaypartPlaylistCard({
   dayPart,
 }: {
   playlist: ISong[]
-  dayPart: 'morning' | 'noon' | 'afternoon' | 'evening' | 'night'
+  dayPart: 'morning' | 'noon' | 'afternoon' | 'evening' | 'night' | 'midnight'
 }) {
   const { t } = useTranslation()
   const { setSongList } = usePlayerActions()
