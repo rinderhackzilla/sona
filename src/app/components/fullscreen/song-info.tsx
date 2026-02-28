@@ -56,7 +56,12 @@ export function SongInfo({ isChromeVisible }: SongInfoProps) {
         />
       }
     >
-      <div className="flex items-center justify-start h-full min-h-full max-h-full gap-4 2xl:gap-6 flex-1 pt-2 overflow-hidden">
+      <div
+        className={cn(
+          'flex items-center justify-start h-full min-h-full max-h-full gap-4 2xl:gap-6 flex-1 overflow-hidden transition-all duration-500 ease-in-out',
+          isChromeVisible ? 'pt-1 translate-y-0' : 'pt-0 -translate-y-1',
+        )}
+      >
         {/* Hidden close button for programmatic closing */}
         <DrawerClose ref={closeButtonRef} className="hidden" />
         
@@ -64,8 +69,10 @@ export function SongInfo({ isChromeVisible }: SongInfoProps) {
 
         <div
           className={cn(
-            'flex flex-col flex-1 min-w-0 h-full min-h-0 justify-end text-left overflow-hidden transition-all duration-500 ease-in-out',
-            isChromeVisible ? 'max-h-[520px] 2xl:max-h-[640px]' : 'max-h-[580px] 2xl:max-h-[700px]',
+            'flex flex-col flex-1 min-w-0 h-full min-h-0 text-left overflow-hidden transition-all duration-500 ease-in-out',
+            isChromeVisible
+              ? 'max-h-[520px] 2xl:max-h-[640px] justify-end pb-2'
+              : 'max-h-[595px] 2xl:max-h-[720px] justify-center',
           )}
         >
           <MarqueeTitle gap="mr-6">

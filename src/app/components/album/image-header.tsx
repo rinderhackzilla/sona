@@ -1,5 +1,5 @@
 import clsx from 'clsx'
-import { useState } from 'react'
+import { type SyntheticEvent, useState } from 'react'
 import { LazyLoadImage } from 'react-lazy-load-image-component'
 import {
   AlbumArtistInfo,
@@ -43,6 +43,61 @@ export default function ImageHeader({
   isPlaylist = false,
 }: ImageHeaderProps) {
   const [open, setOpen] = useState(false)
+  const [overlayOpacity, setOverlayOpacity] = useState(0.42)
+
+  function calculateImageLuminance(image: HTMLImageElement) {
+    try {
+      const sampleSize = 24
+      const canvas = document.createElement('canvas')
+      const context = canvas.getContext('2d', { willReadFrequently: true })
+      if (!context) return null
+
+      canvas.width = sampleSize
+      canvas.height = sampleSize
+      context.drawImage(image, 0, 0, sampleSize, sampleSize)
+      const pixels = context.getImageData(0, 0, sampleSize, sampleSize).data
+
+      let weightedSum = 0
+      let pixelCount = 0
+      for (let i = 0; i < pixels.length; i += 4) {
+        const alpha = pixels[i + 3] / 255
+        if (alpha < 0.1) continue
+
+        const red = pixels[i] / 255
+        const green = pixels[i + 1] / 255
+        const blue = pixels[i + 2] / 255
+        const luminance = 0.2126 * red + 0.7152 * green + 0.0722 * blue
+        weightedSum += luminance * alpha
+        pixelCount += alpha
+      }
+
+      if (pixelCount === 0) return null
+      return weightedSum / pixelCount
+    } catch {
+      return null
+    }
+  }
+
+  function applyAdaptiveOverlayByLuminance(luminance: number | null) {
+    if (luminance === null) {
+      setOverlayOpacity(0.42)
+      return
+    }
+
+    if (luminance >= 0.78) {
+      setOverlayOpacity(0.68)
+      return
+    }
+    if (luminance >= 0.62) {
+      setOverlayOpacity(0.56)
+      return
+    }
+    if (luminance >= 0.48) {
+      setOverlayOpacity(0.48)
+      return
+    }
+    setOverlayOpacity(0.38)
+  }
 
   function getImage() {
     return document.getElementById('cover-art-image') as HTMLImageElement
@@ -53,6 +108,12 @@ export default function ImageHeader({
     if (!img) return
 
     img.crossOrigin = null
+    setOverlayOpacity(0.46)
+  }
+
+  function handleImageLoad(event: SyntheticEvent<HTMLImageElement>) {
+    const luminance = calculateImageLuminance(event.currentTarget)
+    applyAdaptiveOverlayByLuminance(luminance)
   }
 
   const hasMultipleArtists = artists ? artists.length > 1 : false
@@ -86,6 +147,15 @@ export default function ImageHeader({
                     'linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,1) calc(100% - 205px), rgba(0,0,0,0) 100%)',
                 }}
               />
+              <div
+                className="absolute inset-0 pointer-events-none transition-opacity duration-500"
+                style={{
+                  background:
+                    'linear-gradient(to bottom, rgba(0,0,0,0.62) 0%, rgba(0,0,0,var(--sona-header-overlay-mid)) 52%, rgba(0,0,0,0.22) 100%)',
+                  // CSS custom prop keeps style readable and allows smooth updates.
+                  ['--sona-header-overlay-mid' as string]: overlayOpacity.toFixed(2),
+                }}
+              />
             </div>
           )}
 
@@ -114,6 +184,7 @@ export default function ImageHeader({
                 width="100%"
                 height="100%"
                 onError={handleError}
+                onLoad={handleImageLoad}
                 onClick={() => setOpen(true)}
               />
             </div>

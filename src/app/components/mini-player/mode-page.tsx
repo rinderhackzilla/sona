@@ -9,7 +9,14 @@ import {
   SkipBackIcon,
   SkipForwardIcon,
 } from 'lucide-react'
-import { useEffect, useMemo, useRef, useState, type WheelEvent } from 'react'
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type SyntheticEvent,
+  type WheelEvent,
+} from 'react'
 import { LazyLoadImage } from 'react-lazy-load-image-component'
 import { useTranslation } from 'react-i18next'
 import { MarqueeTitle } from '@/app/components/fullscreen/marquee-title'
@@ -86,6 +93,7 @@ export function MiniPlayerModePage() {
   const hasSong = currentList.length > 0 && Boolean(song?.id)
   const [isIdle, setIsIdle] = useState(false)
   const [showVolumeOverlay, setShowVolumeOverlay] = useState(false)
+  const [backgroundDimOpacity, setBackgroundDimOpacity] = useState(0.42)
   const idleTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const volumeOverlayTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const coverDisplaySize = isIdle ? Math.round(coverSize * 1.34) : coverSize
@@ -122,6 +130,53 @@ export function MiniPlayerModePage() {
     }, 850)
   }
 
+  const handleBackgroundImageLoad = (
+    event: SyntheticEvent<HTMLImageElement>,
+  ) => {
+    try {
+      const image = event.currentTarget
+      const canvas = document.createElement('canvas')
+      const context = canvas.getContext('2d', { willReadFrequently: true })
+      if (!context) return
+
+      const size = 22
+      canvas.width = size
+      canvas.height = size
+      context.drawImage(image, 0, 0, size, size)
+      const data = context.getImageData(0, 0, size, size).data
+
+      let sum = 0
+      let count = 0
+      for (let i = 0; i < data.length; i += 4) {
+        const alpha = data[i + 3] / 255
+        if (alpha < 0.1) continue
+        const red = data[i] / 255
+        const green = data[i + 1] / 255
+        const blue = data[i + 2] / 255
+        sum += (0.2126 * red + 0.7152 * green + 0.0722 * blue) * alpha
+        count += alpha
+      }
+
+      if (count <= 0) return
+      const luminance = sum / count
+      if (luminance >= 0.78) {
+        setBackgroundDimOpacity(0.56)
+        return
+      }
+      if (luminance >= 0.62) {
+        setBackgroundDimOpacity(0.5)
+        return
+      }
+      if (luminance >= 0.48) {
+        setBackgroundDimOpacity(0.45)
+        return
+      }
+      setBackgroundDimOpacity(0.4)
+    } catch {
+      setBackgroundDimOpacity(0.42)
+    }
+  }
+
   useEffect(() => {
     return () => {
       clearIdleTimer()
@@ -152,6 +207,7 @@ export function MiniPlayerModePage() {
               effect="opacity"
               className="absolute inset-0 z-0 h-full w-full object-cover object-center blur-3xl scale-[1.2] opacity-55 fullscreen-bg-kenburns"
               alt=""
+              onLoad={handleBackgroundImageLoad}
             />
           )}
         </ImageLoader>
@@ -159,7 +215,10 @@ export function MiniPlayerModePage() {
         <div className="absolute inset-0 z-0 bg-gradient-to-br from-accent/35 via-background/80 to-background/95" />
       )}
 
-      <div className="absolute inset-0 z-10 bg-black/42" />
+      <div
+        className="absolute inset-0 z-10 transition-colors duration-500"
+        style={{ backgroundColor: `rgba(0,0,0,${backgroundDimOpacity})` }}
+      />
       <div className="hypnotic-layer-a z-10" />
       <div className="hypnotic-layer-b z-10" />
       <div className="hypnotic-layer-c z-10" />

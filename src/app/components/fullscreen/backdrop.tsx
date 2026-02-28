@@ -13,6 +13,78 @@ import {
 import { isChromeOrFirefox } from '@/utils/browser'
 import { hexToRgba } from '@/utils/getAverageColor'
 
+function getImageLuminanceFromElement(image: HTMLImageElement) {
+  try {
+    const canvas = document.createElement('canvas')
+    const context = canvas.getContext('2d', { willReadFrequently: true })
+    if (!context) return null
+
+    const size = 24
+    canvas.width = size
+    canvas.height = size
+    context.drawImage(image, 0, 0, size, size)
+    const data = context.getImageData(0, 0, size, size).data
+
+    let sum = 0
+    let count = 0
+    for (let i = 0; i < data.length; i += 4) {
+      const alpha = data[i + 3] / 255
+      if (alpha < 0.1) continue
+      const red = data[i] / 255
+      const green = data[i + 1] / 255
+      const blue = data[i + 2] / 255
+      sum += (0.2126 * red + 0.7152 * green + 0.0722 * blue) * alpha
+      count += alpha
+    }
+
+    if (count === 0) return null
+    return sum / count
+  } catch {
+    return null
+  }
+}
+
+function getAdaptiveDimOverlay(
+  luminance: number | null,
+  mode: 'off' | 'focus' | 'night',
+) {
+  let opacity = 0.12
+  if (luminance !== null) {
+    if (luminance >= 0.78) opacity = 0.36
+    else if (luminance >= 0.62) opacity = 0.28
+    else if (luminance >= 0.48) opacity = 0.2
+  }
+
+  if (mode === 'focus') opacity += 0.12
+  if (mode === 'night') opacity += 0.06
+  return Math.min(0.62, Math.max(0.1, opacity))
+}
+
+function useBackdropLuminance(coverUrl: string) {
+  const [luminance, setLuminance] = useState<number | null>(null)
+
+  useEffect(() => {
+    let cancelled = false
+    const image = new Image()
+    image.crossOrigin = 'anonymous'
+    image.src = coverUrl
+    image.onload = () => {
+      if (cancelled) return
+      setLuminance(getImageLuminanceFromElement(image))
+    }
+    image.onerror = () => {
+      if (cancelled) return
+      setLuminance(null)
+    }
+
+    return () => {
+      cancelled = true
+    }
+  }, [coverUrl])
+
+  return luminance
+}
+
 export function FullscreenBackdrop() {
   const { useSongColorOnBigPlayer } = useSongColor()
   const { hypnoticBackdropEnabled } = useVisualizerContext()
@@ -37,6 +109,7 @@ function OtherBackdrop() {
   const { coverArt } = usePlayerCurrentSong()
   const { mode } = useSessionModeSettings()
   const coverArtUrl = getSimpleCoverArtUrl(coverArt, 'song', '300')
+  const luminance = useBackdropLuminance(coverArtUrl)
   const [backgroundImage, setBackgroundImage] = useState(coverArtUrl)
   const { bigPlayerBlur } = useSongColor()
 
@@ -56,6 +129,7 @@ function OtherBackdrop() {
       : mode === 'night'
         ? 'saturate(1.22) brightness(0.6) contrast(1.1)'
         : 'saturate(1) brightness(1)'
+  const adaptiveDimOpacity = getAdaptiveDimOverlay(luminance, mode)
 
   return (
     <div className="relative w-full h-full transition-colors duration-1000 bg-black/0">
@@ -68,7 +142,7 @@ function OtherBackdrop() {
       />
       <div
         className="absolute inset-0 w-full h-full z-[1]"
-        style={{ backgroundColor: mode === 'focus' ? 'rgba(0,0,0,0.42)' : 'rgba(0,0,0,0.1)' }}
+        style={{ backgroundColor: `rgba(0,0,0,${adaptiveDimOpacity})` }}
       />
       <div
         className="absolute inset-0 w-full h-full z-[2] transition-colors duration-1000"
@@ -99,6 +173,8 @@ function OtherBackdrop() {
 function MacBackdrop() {
   const { coverArt, title } = usePlayerCurrentSong()
   const { mode } = useSessionModeSettings()
+  const coverArtUrl = getSimpleCoverArtUrl(coverArt, 'song', '300')
+  const luminance = useBackdropLuminance(coverArtUrl)
   const { bigPlayerBlur } = useSongColor()
   const { currentSongColor, currentSongColorIntensity } = useSongColor()
 
@@ -114,6 +190,7 @@ function MacBackdrop() {
       : mode === 'night'
         ? 'saturate(1.2) brightness(0.58) contrast(1.1)'
         : 'saturate(1) brightness(1)'
+  const adaptiveDimOpacity = getAdaptiveDimOverlay(luminance, mode)
 
   return (
     <div
@@ -135,7 +212,7 @@ function MacBackdrop() {
       </ImageLoader>
       <div
         className="absolute inset-0 z-[9]"
-        style={{ backgroundColor: mode === 'focus' ? 'rgba(0,0,0,0.4)' : 'rgba(0,0,0,0.1)' }}
+        style={{ backgroundColor: `rgba(0,0,0,${adaptiveDimOpacity})` }}
       />
       <div
         className="absolute inset-0 z-[9] transition-colors duration-1000"
@@ -169,6 +246,7 @@ function DynamicColorBackdrop() {
   const { coverArt } = usePlayerCurrentSong()
   const { mode } = useSessionModeSettings()
   const coverArtUrl = getSimpleCoverArtUrl(coverArt, 'song', '300')
+  const luminance = useBackdropLuminance(coverArtUrl)
   const [backgroundImage, setBackgroundImage] = useState(coverArtUrl)
   const { currentSongColorIntensity, bigPlayerBlur } = useSongColor()
 
@@ -188,6 +266,7 @@ function DynamicColorBackdrop() {
       : mode === 'night'
         ? 'saturate(1.24) brightness(0.6) contrast(1.1)'
         : 'saturate(1) brightness(1)'
+  const adaptiveDimOpacity = getAdaptiveDimOverlay(luminance, mode)
 
   return (
     <div className="absolute inset-0 w-full h-full z-0 overflow-hidden">
@@ -222,7 +301,7 @@ function DynamicColorBackdrop() {
         
         <div
           className="absolute inset-0 w-full h-full z-[2]"
-          style={{ backgroundColor: mode === 'focus' ? 'rgba(0,0,0,0.42)' : 'rgba(0,0,0,0.1)' }}
+          style={{ backgroundColor: `rgba(0,0,0,${adaptiveDimOpacity})` }}
         />
         
         {/* Gradient overlay */}

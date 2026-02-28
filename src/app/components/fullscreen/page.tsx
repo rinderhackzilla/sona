@@ -66,7 +66,7 @@ function FullscreenScene() {
           'absolute inset-0 flex flex-col p-0 2xl:p-8 w-full h-full bg-black/0 z-10 transition-all duration-500 ease-in-out',
           isChromeVisible
             ? 'pt-6 2xl:pt-8 gap-4'
-            : 'pt-8 2xl:pt-10 gap-1',
+            : 'pt-6 2xl:pt-7 gap-2',
         )}
         onMouseMove={revealChrome}
         onMouseEnter={revealChrome}
@@ -75,7 +75,7 @@ function FullscreenScene() {
         <div
           className={clsx(
             'w-full flex-1 min-h-0 px-8 2xl:px-16 transition-all duration-500 ease-in-out',
-            isChromeVisible ? 'pt-1 2xl:pt-2' : 'pt-0',
+            isChromeVisible ? 'pt-1 2xl:pt-2' : 'pt-1',
           )}
         >
           <div className="min-h-[300px] h-full max-h-full">
@@ -87,14 +87,14 @@ function FullscreenScene() {
           className={clsx(
             'px-8 2xl:px-16 transition-all duration-500 ease-in-out',
             isChromeVisible
-              ? 'h-[150px] min-h-[150px] py-2'
-              : 'h-[112px] min-h-[112px] pt-0 pb-0',
+              ? 'h-[154px] min-h-[154px] py-2'
+              : 'h-[102px] min-h-[102px] pt-0 pb-0',
           )}
         >
           <div
             className={clsx(
               'flex h-full transition-all duration-500 ease-in-out',
-              isChromeVisible ? 'items-center' : 'items-end',
+              isChromeVisible ? 'items-start' : 'items-end',
             )}
           >
             <FullscreenPlayer isChromeVisible={isChromeVisible} />

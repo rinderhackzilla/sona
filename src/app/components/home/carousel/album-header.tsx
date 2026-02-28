@@ -126,7 +126,7 @@ function AlbumHeaderItem({ album }: { album: Albums }) {
               to={ROUTES.ALBUM.PAGE(album.id)}
               className="hover:underline"
             >
-              <h2 className="truncate text-[1.9rem] font-bold leading-tight min-[1700px]:text-[2.2rem] min-[2600px]:text-[2.45rem]">
+              <h2 className="line-clamp-2 break-words text-[1.9rem] font-bold leading-tight min-[1700px]:text-[2.2rem] min-[2600px]:text-[2.45rem]">
                 {album.name}
               </h2>
             </Link>

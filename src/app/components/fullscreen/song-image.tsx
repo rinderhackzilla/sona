@@ -34,7 +34,7 @@ export function FullscreenSongImage({ isChromeVisible }: FullscreenSongImageProp
           ? 'max-h-[520px] 2xl:max-h-[640px]'
           : isChromeVisible
             ? 'max-h-[520px] 2xl:max-h-[640px]'
-            : 'max-h-[580px] 2xl:max-h-[700px]',
+            : 'max-h-[595px] 2xl:max-h-[720px]',
       )}
     >
       <div

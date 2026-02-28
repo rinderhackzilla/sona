@@ -36,15 +36,9 @@ export default function Artist() {
     artist?.name,
   )
 
-  if (artistIsLoading) return <AlbumFallback />
-  if (isFetched && !artist) {
-    return <ErrorPage status={404} statusText="Not Found" />
-  }
-  if (!artist) return <AlbumFallback />
-
   const dedupedAlbums = useMemo(
-    () => dedupeAlbumsByIdentity(artist.album ?? []),
-    [artist.album],
+    () => dedupeAlbumsByIdentity(artist?.album ?? []),
+    [artist?.album],
   )
 
   const recentAlbums = useMemo(() => {
@@ -80,6 +74,12 @@ export default function Artist() {
 
     return [...byDisplayIdentity.values()]
   }, [dedupedAlbums])
+
+  if (artistIsLoading) return <AlbumFallback />
+  if (isFetched && !artist) {
+    return <ErrorPage status={404} statusText="Not Found" />
+  }
+  if (!artist) return <AlbumFallback />
 
   function getSongCount() {
     if (!artist) return null

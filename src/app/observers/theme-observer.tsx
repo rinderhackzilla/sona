@@ -41,6 +41,10 @@ function toHslToken(h: number, s: number, l: number) {
   return `${h} ${s}% ${l}%`
 }
 
+function getReadableForegroundToken(lightness: number) {
+  return lightness >= 58 ? '222 47% 11%' : '210 40% 98%'
+}
+
 function applyReactiveThemeColors(
   root: HTMLElement,
   baseHex: string | null | undefined,
@@ -50,6 +54,9 @@ function applyReactiveThemeColors(
   if (!parsed) {
     root.style.removeProperty('--primary')
     root.style.removeProperty('--primary-foreground')
+    root.style.removeProperty('--accent-foreground')
+    root.style.removeProperty('--sidebar-primary-foreground')
+    root.style.removeProperty('--sidebar-accent-foreground')
     root.style.removeProperty('--accent')
     root.style.removeProperty('--secondary')
     root.style.removeProperty('--ring')
@@ -57,8 +64,12 @@ function applyReactiveThemeColors(
   }
 
   const token = toHslToken(parsed.h, parsed.s, parsed.l)
+  const foregroundToken = getReadableForegroundToken(parsed.l)
   root.style.setProperty('--primary', token)
-  root.style.setProperty('--primary-foreground', parsed.l >= 58 ? '222 47% 11%' : '210 40% 98%')
+  root.style.setProperty('--primary-foreground', foregroundToken)
+  root.style.setProperty('--accent-foreground', foregroundToken)
+  root.style.setProperty('--sidebar-primary-foreground', foregroundToken)
+  root.style.setProperty('--sidebar-accent-foreground', foregroundToken)
   root.style.setProperty('--ring', token)
 }
 

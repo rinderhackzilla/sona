@@ -121,7 +121,7 @@ export function FullscreenTabs({ isChromeVisible }: FullscreenTabsProps) {
       ) : (
         <TabsList
           className={clsx(
-            'w-full mb-4 p-1 rounded-full border border-primary/15 bg-primary/10 backdrop-blur-md shadow-[0_8px_24px_rgba(0,0,0,0.28)] transition-all duration-300',
+            'w-full mb-4 p-1 rounded-full border border-primary/15 bg-primary/10 backdrop-blur-md shadow-[0_8px_24px_rgba(0,0,0,0.28)] transition-all duration-500 ease-in-out',
             !isChromeVisible && 'opacity-0 -translate-y-2 pointer-events-none',
           )}
         >
