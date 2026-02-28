@@ -51,6 +51,14 @@ export const useUiStore = createWithEqualityFn<IUiContext>()(
               })
             },
           },
+          fullscreen: {
+            open: false,
+            setOpen: (open) => {
+              set((state) => {
+                state.fullscreen.open = open
+              })
+            },
+          },
         })),
       {
         name: 'ui_store',
@@ -61,3 +69,4 @@ export const useUiStore = createWithEqualityFn<IUiContext>()(
 
 export const useSongInfo = () => useUiStore((state) => state.songInfo)
 export const useMiniPlayerState = () => useUiStore((state) => state.miniPlayer)
+export const useFullscreenState = () => useUiStore((state) => state.fullscreen)

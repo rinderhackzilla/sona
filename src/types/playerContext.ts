@@ -81,6 +81,13 @@ interface IListeningMemory {
   setEnabled: (value: boolean) => void
 }
 
+export type SessionMode = 'off' | 'focus' | 'night'
+
+interface ISessionModeSettings {
+  mode: SessionMode
+  setMode: (value: SessionMode) => void
+}
+
 interface IFullscreen {
   autoFullscreenEnabled: boolean
   setAutoFullscreenEnabled: (value: boolean) => void
@@ -144,6 +151,7 @@ export interface IPlayerSettings {
   replayGain: IReplayGain
   crossfade: ICrossfade
   listeningMemory: IListeningMemory
+  sessionMode: ISessionModeSettings
   privacy: IPrivacySettings
   colors: IColorsSettings
 }
@@ -208,6 +216,7 @@ export interface IPlayerActions {
   seedSonaDjTrack: (mode?: 'off' | 'adventure' | 'drift' | 'era') => Promise<void>
   setRuntimeSonaDjMode: (mode: 'off' | 'adventure' | 'drift' | 'era') => void
   startRuntimeShuffleAll: () => Promise<void>
+  startSessionMode: (mode: SessionMode) => Promise<void>
 }
 
 export interface IPlayerContext {

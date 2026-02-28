@@ -1,4 +1,5 @@
 import { Clock3, Play, RefreshCw, Shuffle } from 'lucide-react'
+import { startTransition } from 'react'
 import { useTranslation } from 'react-i18next'
 import ImageHeader from '@/app/components/album/image-header'
 import ListWrapper from '@/app/components/list-wrapper'
@@ -65,23 +66,32 @@ export default function DaypartPlaylistPage() {
   const totalDuration = playlist.reduce((acc, song) => acc + song.duration, 0)
   const duration = convertSecondsToHumanRead(totalDuration)
   const title = t(getDaypartNameKey(dayPart))
+  const mood = t(getDaypartMoodKey(dayPart))
+  const genresLine =
+    genresUsed.length > 0
+      ? t('home.daypart.usedGenres', { genres: genresUsed.slice(0, 5).join(' • ') })
+      : ''
   const subtitle = generatedAt
-    ? `Updated ${new Date(generatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
-    : t(getDaypartMoodKey(dayPart))
+    ? `${mood} · ${new Date(generatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
+    : mood
 
   const badges: BadgesData = [
     { content: t('playlist.songCount', { count: playlist.length }), type: 'text' },
     { content: duration, type: 'text' },
-    { content: genresUsed.slice(0, 2).join(' • ') || dayPart, type: 'text' },
+    { content: genresUsed.slice(0, 3).join(' • ') || dayPart, type: 'text' },
   ]
 
   const handlePlayAll = () => {
-    setSongList(playlist, 0)
+    startTransition(() => {
+      setSongList(playlist, 0)
+    })
   }
 
   const handlePlayShuffle = () => {
     const shuffled = [...playlist].sort(() => Math.random() - 0.5)
-    setSongList(shuffled, 0)
+    startTransition(() => {
+      setSongList(shuffled, 0)
+    })
   }
 
   return (
@@ -116,11 +126,18 @@ export default function DaypartPlaylistPage() {
         <DataTable
           columns={columns}
           data={playlist}
-          handlePlaySong={(row) => setSongList(playlist, row.index)}
+          handlePlaySong={(row) =>
+            startTransition(() => {
+              setSongList(playlist, row.index)
+            })
+          }
           columnFilter={columnsToShow}
           noRowsMessage={t('discoverWeekly.noSongs')}
           variant="modern"
         />
+        {genresLine && (
+          <p className="mt-3 text-xs text-muted-foreground/80">{genresLine}</p>
+        )}
       </ListWrapper>
     </div>
   )

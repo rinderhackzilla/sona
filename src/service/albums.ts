@@ -2,9 +2,11 @@ import { httpClient } from '@/api/httpClient'
 import {
   AlbumInfoResponse,
   AlbumListResponse,
+  Albums,
   AlbumListType,
   GetAlbumResponse,
 } from '@/types/responses/album'
+import { dedupeAlbumsByIdentity, dedupeSingleAlbumSongs } from '@/utils/albumDedup'
 
 export interface AlbumListParams {
   type: AlbumListType
@@ -37,9 +39,11 @@ async function getAlbumList(params: Partial<AlbumListParams> = {}) {
     },
   })
 
+  const dedupedList = dedupeAlbumsByIdentity(response?.data.albumList2.album ?? [])
+
   return {
     albumsCount: response?.count,
-    list: response?.data.albumList2.album,
+    list: dedupedList as Albums[],
   }
 }
 
@@ -51,7 +55,7 @@ async function getOne(id: string) {
     },
   })
 
-  return response?.data.album
+  return dedupeSingleAlbumSongs(response?.data.album)
 }
 
 async function getInfo(id: string) {

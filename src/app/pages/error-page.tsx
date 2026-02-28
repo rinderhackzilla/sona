@@ -1,4 +1,4 @@
-import { Link, useRouteError } from 'react-router-dom'
+import { Link, isRouteErrorResponse, useRouteError } from 'react-router-dom'
 import { Button } from '@/app/components/ui/button'
 import { ROUTES } from '@/routes/routesList'
 
@@ -10,7 +10,24 @@ interface IError {
 }
 
 export default function ErrorPage({ status, statusText }: IError) {
-  const error = useRouteError() as IError
+  const routeError = useRouteError()
+
+  let resolvedStatus = status ?? 500
+  let resolvedText = statusText ?? 'Something went wrong'
+
+  if (isRouteErrorResponse(routeError)) {
+    resolvedStatus = routeError.status
+    resolvedText =
+      typeof routeError.data === 'string'
+        ? routeError.data
+        : routeError.statusText || resolvedText
+  } else if (routeError instanceof Error) {
+    resolvedText = routeError.message || resolvedText
+  } else if (routeError && typeof routeError === 'object') {
+    const maybe = routeError as IError
+    resolvedStatus = maybe.status ?? resolvedStatus
+    resolvedText = maybe.data ?? maybe.statusText ?? resolvedText
+  }
 
   return (
     <div className="w-full h-content flex flex-col justify-center items-center">
@@ -21,13 +38,13 @@ export default function ErrorPage({ status, statusText }: IError) {
       <p className="leading-7 text-left mt-6">
         Status Code:{' '}
         <strong className="font-semibold">
-          {(error?.status ?? status) || 'None'}
+          {resolvedStatus}
         </strong>
       </p>
       <p className="leading-7 mt-2 text-left">
         Description:{' '}
         <strong className="font-semibold">
-          {(error?.data ?? statusText) || 'Unhandled Error'}
+          {resolvedText}
         </strong>
       </p>
 

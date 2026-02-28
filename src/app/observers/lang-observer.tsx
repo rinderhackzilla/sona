@@ -22,7 +22,9 @@ export function LangObserver() {
 
   useEffect(() => {
     if (langCode) {
-      i18n.changeLanguage(langCode)
+      if (i18n.resolvedLanguage !== langCode) {
+        void i18n.changeLanguage(langCode)
+      }
       setLangOnHtml(langCode)
     }
   }, [i18n, langCode, setLangOnHtml])

@@ -7,11 +7,17 @@ import { immer } from 'zustand/middleware/immer'
 import { shallow } from 'zustand/shallow'
 import { createWithEqualityFn } from 'zustand/traditional'
 import { subsonic } from '@/service/subsonic'
-import { IPlayerContext, ISongList, LoopState, } from '@/types/playerContext'
+import {
+  IPlayerContext,
+  ISongList,
+  LoopState,
+  SessionMode,
+} from '@/types/playerContext'
 import { ISong } from '@/types/responses/song'
 import { areSongListsEqual } from '@/utils/compareSongLists'
 import { isDesktop } from '@/utils/desktop'
 import { discordRpc } from '@/utils/discordRpc'
+import { isGenreUsable, normalizeGenreName } from '@/utils/genreNormalization'
 import {
   getListeningMemoryEnabledPreference,
   pickByListeningMemory,
@@ -36,6 +42,34 @@ const SONA_DJ_POOL_SIZE = 30
 const SONA_DJ_INJECTED_KEY = '__sonaDjInjected'
 let runtimeSonaDjMode: SonaDjMode | null = null
 let runtimeShuffleAllEnabled = false
+const SESSION_MODE_GENRE_PROBE_COUNT = 4
+const SESSION_MODE_GENRE_PROBE_SIZE = 10
+
+const FOCUS_GENRES = new Set([
+  'classical',
+  'neo classical',
+  'film score',
+  'film scores',
+  'score',
+  'films',
+  'video game music',
+])
+
+const NIGHT_GENRES = new Set([
+  'electronic',
+  'synthwave',
+  'trip hop',
+  'metalcore',
+  'post-hardcore',
+  'industrial',
+  'industrial metal',
+  'progressive metal',
+  'progressive metalcore',
+  'gothic rock',
+  'gothic metal',
+  'doom metal',
+  'sludge metal',
+])
 
 function clearSonaDjInjectedSongIds() {}
 
@@ -71,6 +105,70 @@ function normalizeGenre(value?: string) {
   return (value ?? '').trim().toLowerCase()
 }
 
+function getSessionMode() {
+  return usePlayerStore.getState().settings.sessionMode.mode
+}
+
+function getSessionGenreSet(mode: SessionMode) {
+  if (mode === 'focus') return FOCUS_GENRES
+  if (mode === 'night') return NIGHT_GENRES
+  return null
+}
+
+function shuffleList<T>(list: T[]) {
+  const copy = [...list]
+  for (let i = copy.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    const tmp = copy[i]
+    copy[i] = copy[j]
+    copy[j] = tmp
+  }
+  return copy
+}
+
+function splitGenreCandidates(rawGenre?: string): string[] {
+  const raw = (rawGenre ?? '').trim()
+  if (!raw) return []
+
+  const parts = raw
+    .split(/[,&/]| and | und /i)
+    .map((value) => value.trim())
+    .filter(Boolean)
+
+  const mapped = new Set<string>()
+  for (const part of parts) {
+    mapped.add(part.toLowerCase())
+    const canonical = normalizeGenreName(part).trim()
+    if (!canonical) continue
+    if (!isGenreUsable(canonical)) continue
+    mapped.add(canonical.toLowerCase())
+  }
+
+  const direct = normalizeGenreName(raw).trim().toLowerCase()
+  if (direct && isGenreUsable(direct)) mapped.add(direct)
+
+  return [...mapped]
+}
+
+function matchesSessionModeGenre(song: ISong, mode: SessionMode) {
+  if (mode === 'off') return true
+
+  const allowed = getSessionGenreSet(mode)
+  if (!allowed) return true
+
+  const genres = splitGenreCandidates(song.genre)
+  if (genres.length === 0) return false
+
+  return genres.some((genre) => allowed.has(genre))
+}
+
+function applySessionModeFilter(songs: ISong[]) {
+  const mode = getSessionMode()
+  if (mode === 'off') return songs
+
+  return songs.filter((song) => matchesSessionModeGenre(song, mode))
+}
+
 function getDecade(year?: number) {
   if (!year || Number.isNaN(year)) return null
   return Math.floor(year / 10) * 10
@@ -92,11 +190,11 @@ async function getSonaDjCandidate(
     size: SONA_DJ_POOL_SIZE,
   })
 
-  let candidatePool = randomSongs ?? []
+  let candidatePool = applySessionModeFilter(randomSongs ?? [])
 
   if (candidatePool.length === 0) {
     const fallbackSongs = await subsonic.songs.getAllSongs(500)
-    candidatePool = fallbackSongs
+    candidatePool = applySessionModeFilter(fallbackSongs)
       .sort(() => Math.random() - 0.5)
       .slice(0, SONA_DJ_POOL_SIZE)
   }
@@ -256,28 +354,92 @@ async function ensureSonaDjNextTrack() {
 }
 
 let runtimeShufflePlannerInFlight = false
+const RUNTIME_SHUFFLE_LOOKAHEAD = 2
+
+async function getStrictSessionCandidates(mode: SessionMode) {
+  const allowedGenres = getSessionGenreSet(mode)
+  if (!allowedGenres || allowedGenres.size === 0) return []
+
+  const sampledGenres = shuffleList([...allowedGenres]).slice(
+    0,
+    Math.min(SESSION_MODE_GENRE_PROBE_COUNT, allowedGenres.size),
+  )
+
+  const pooled = await Promise.all(
+    sampledGenres.map((genre) =>
+      subsonic.songs
+        .getRandomSongs({
+          genre,
+          size: SESSION_MODE_GENRE_PROBE_SIZE,
+        })
+        .catch(() => []),
+    ),
+  )
+
+  const pooledSongs = pooled.flat().filter(Boolean) as ISong[]
+  if (pooledSongs.length > 0) return pooledSongs
+
+  const fallbackSongs = await subsonic.songs.getAllSongs(5000)
+  return applySessionModeFilter(fallbackSongs)
+}
 
 async function getRuntimeRandomSong(currentSong?: ISong, excludedIds?: Set<string>) {
   const listeningMemoryEnabled =
     usePlayerStore.getState().settings.listeningMemory.enabled
+  const sessionMode = getSessionMode()
+  const strictSessionFilter = sessionMode !== 'off'
+
+  if (strictSessionFilter) {
+    const strictCandidates = await getStrictSessionCandidates(sessionMode)
+    const eligibleStrictCandidates = strictCandidates.filter(
+      (song) => song.id !== currentSong?.id && !excludedIds?.has(song.id),
+    )
+    const strictSong = pickByListeningMemory(
+      eligibleStrictCandidates,
+      listeningMemoryEnabled,
+    )
+    if (strictSong) return strictSong
+    return undefined
+  }
+
   const randomSongs = await subsonic.songs.getRandomSongs({
     size: SONA_DJ_POOL_SIZE,
   })
   const eligibleRandomSongs =
-    randomSongs?.filter(
+    applySessionModeFilter(randomSongs ?? []).filter(
       (song) => song.id !== currentSong?.id && !excludedIds?.has(song.id),
-    ) ?? []
+    )
   const randomSong = pickByListeningMemory(
     eligibleRandomSongs,
     listeningMemoryEnabled,
   )
   if (randomSong) return randomSong
 
+  if (!strictSessionFilter) {
+    const unfilteredRandomSongs = (randomSongs ?? []).filter(
+      (song) => song.id !== currentSong?.id && !excludedIds?.has(song.id),
+    )
+    const unfilteredRandomSong = pickByListeningMemory(
+      unfilteredRandomSongs,
+      listeningMemoryEnabled,
+    )
+    if (unfilteredRandomSong) return unfilteredRandomSong
+  }
+
   const fallbackSongs = await subsonic.songs.getAllSongs(200)
-  const eligibleFallbackSongs = fallbackSongs.filter(
+  const eligibleFallbackSongs = applySessionModeFilter(fallbackSongs).filter(
     (song) => song.id !== currentSong?.id && !excludedIds?.has(song.id),
   )
-  return pickByListeningMemory(eligibleFallbackSongs, listeningMemoryEnabled)
+  const fallbackSong = pickByListeningMemory(
+    eligibleFallbackSongs,
+    listeningMemoryEnabled,
+  )
+  if (fallbackSong) return fallbackSong
+
+  const unfilteredFallbackSongs = fallbackSongs.filter(
+    (song) => song.id !== currentSong?.id && !excludedIds?.has(song.id),
+  )
+  return pickByListeningMemory(unfilteredFallbackSongs, listeningMemoryEnabled)
 }
 
 async function ensureRuntimeShuffleNextTrack() {
@@ -288,22 +450,56 @@ async function ensureRuntimeShuffleNextTrack() {
   if (state.playerState.mediaType !== 'song') return
 
   const { currentList, currentSongIndex, currentSong, originalList } = state.songlist
-  if (!currentSong?.id) return
+  const activeSong = currentSong ?? currentList[currentSongIndex]
+  if (!activeSong?.id) return
 
-  const hasNext = currentSongIndex + 1 < currentList.length
-  if (hasNext) return
+  const songsAhead = Math.max(0, currentList.length - currentSongIndex - 1)
+  const songsToAppend = RUNTIME_SHUFFLE_LOOKAHEAD - songsAhead
+  if (songsToAppend <= 0) return
 
   runtimeShufflePlannerInFlight = true
   try {
-    const randomSong = await getRuntimeRandomSong(currentSong)
-    if (!randomSong) return
+    const appendedSongs: ISong[] = []
+    const strictSessionFilter = getSessionMode() !== 'off'
 
-    const newCurrentList = addNextSongList(currentSongIndex, currentList, [randomSong])
-    const indexOnOriginalList = originalList.findIndex((song) => song.id === currentSong.id)
+    for (let i = 0; i < songsToAppend; i++) {
+      const excludedIds = new Set([
+        ...currentList.map((song) => song.id),
+        ...appendedSongs.map((song) => song.id),
+      ])
+
+      let randomSong = await getRuntimeRandomSong(activeSong, excludedIds)
+
+      // Keep flow alive in strict session mode by allowing controlled repeats
+      // when unique candidates are exhausted.
+      if (!randomSong && strictSessionFilter) {
+        randomSong = await getRuntimeRandomSong(activeSong)
+      }
+
+      if (!randomSong) break
+      appendedSongs.push(randomSong)
+    }
+
+    if (appendedSongs.length === 0) {
+      if (strictSessionFilter) {
+        appendedSongs.push(activeSong)
+      } else {
+        return
+      }
+    }
+
+    const newCurrentList = addNextSongList(
+      currentSongIndex,
+      currentList,
+      appendedSongs,
+    )
+    const indexOnOriginalList = originalList.findIndex(
+      (song) => song.id === currentSong.id,
+    )
     const newOriginalList =
       indexOnOriginalList >= 0
-        ? addNextSongList(indexOnOriginalList, originalList, [randomSong])
-        : [...originalList, randomSong]
+        ? addNextSongList(indexOnOriginalList, originalList, appendedSongs)
+        : [...originalList, ...appendedSongs]
 
     usePlayerStore.setState((nextState) => {
       nextState.songlist.currentList = newCurrentList
@@ -444,6 +640,14 @@ export const usePlayerStore = createWithEqualityFn<IPlayerContext>()(
                 setListeningMemoryEnabledPreference(value)
                 set((state) => {
                   state.settings.listeningMemory.enabled = value
+                })
+              },
+            },
+            sessionMode: {
+              mode: 'off',
+              setMode: (value) => {
+                set((state) => {
+                  state.settings.sessionMode.mode = value
                 })
               },
             },
@@ -595,7 +799,17 @@ export const usePlayerStore = createWithEqualityFn<IPlayerContext>()(
               setRuntimeShuffleAllEnabled(true)
               clearSonaDjInjectedSongIds()
 
-              const firstSong = await getRuntimeRandomSong()
+              const { currentSong, currentList, currentSongIndex } = get().songlist
+              const activeSong = currentSong ?? currentList[currentSongIndex]
+              const sessionMode = getSessionMode()
+
+              let firstSong = await getRuntimeRandomSong()
+              if (!firstSong && sessionMode !== 'off' && activeSong?.id) {
+                if (matchesSessionModeGenre(activeSong, sessionMode)) {
+                  firstSong = activeSong
+                }
+              }
+
               if (!firstSong) {
                 setRuntimeShuffleAllEnabled(false)
                 return
@@ -617,6 +831,18 @@ export const usePlayerStore = createWithEqualityFn<IPlayerContext>()(
                 state.songlist.radioList = []
                 state.songlist.podcastList = []
               })
+            },
+            startSessionMode: async (mode) => {
+              set((state) => {
+                state.settings.sessionMode.mode = mode
+              })
+
+              setRuntimeSonaDjMode(SonaDjMode.Off)
+              setRuntimeShuffleAllEnabled(false)
+
+              if (mode === 'off') return
+
+              await get().actions.startRuntimeShuffleAll()
             },
             setLastOnQueue: (list) => {
               const { currentList, originalList } = get().songlist
@@ -826,10 +1052,14 @@ export const usePlayerStore = createWithEqualityFn<IPlayerContext>()(
                 resetProgress()
                 set((state) => {
                   state.songlist.currentSongIndex += 1
+                  state.playerState.isPlaying = true
                 })
               } else if (loopState === LoopState.All) {
                 resetProgress()
                 playFirstSongInQueue()
+                set((state) => {
+                  state.playerState.isPlaying = true
+                })
               }
             },
             playPrevSong: () => {
@@ -837,6 +1067,7 @@ export const usePlayerStore = createWithEqualityFn<IPlayerContext>()(
                 get().actions.resetProgress()
                 set((state) => {
                   state.songlist.currentSongIndex -= 1
+                  state.playerState.isPlaying = true
                 })
               }
             },
@@ -1237,6 +1468,7 @@ export const usePlayerStore = createWithEqualityFn<IPlayerContext>()(
                   defaultGain: -6,
                 }
                 state.settings.listeningMemory.enabled = true
+                state.settings.sessionMode.mode = 'off'
               })
               setListeningMemoryEnabledPreference(true)
             },
@@ -1292,6 +1524,14 @@ export const usePlayerStore = createWithEqualityFn<IPlayerContext>()(
 
             merged = merge(merged, newState)
           })
+
+          // Session Mode should always boot in normal mode.
+          if (merged && typeof merged === 'object' && 'settings' in merged) {
+            const settings = (merged as IPlayerContext).settings
+            if (settings?.sessionMode) {
+              settings.sessionMode.mode = 'off'
+            }
+          }
 
           return merged
         },
@@ -1521,6 +1761,9 @@ export const useCrossfadeSettings = () =>
 
 export const useListeningMemorySettings = () =>
   usePlayerStore((state) => state.settings.listeningMemory)
+
+export const useSessionModeSettings = () =>
+  usePlayerStore((state) => state.settings.sessionMode)
 
 export const useFullscreenPlayerSettings = () =>
   usePlayerStore((state) => state.settings.fullscreen)

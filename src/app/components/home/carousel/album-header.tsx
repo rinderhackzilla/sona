@@ -85,23 +85,39 @@ function AlbumHeaderItem({ album }: { album: Albums }) {
 
       {/* Content */}
       <div className="relative z-10 grid h-full grid-cols-[auto,minmax(0,1fr)] items-center gap-5 py-4 pl-7 pr-5 min-[1700px]:gap-6 min-[1700px]:py-5 min-[1700px]:pl-8 min-[1700px]:pr-6 min-[2600px]:gap-7 min-[2600px]:pl-9 min-[2600px]:pr-7">
-        <Link to={ROUTES.ALBUM.PAGE(album.id)} className="group relative block">
-          <ImageLoader id={album.coverArt} type="album">
-            {(src) => (
-              <img
-                src={src}
-                alt={album.name}
-                className={cn(
-                  'aspect-square h-[236px] w-[236px] rounded-xl border border-border/55 object-cover shadow-2xl transition-all duration-300 group-hover:scale-[1.02] min-[1700px]:h-[272px] min-[1700px]:w-[272px] min-[2600px]:h-[300px] min-[2600px]:w-[300px]',
-                  imageLoaded ? 'opacity-100' : 'opacity-0',
-                )}
-                onLoad={() => setImageLoaded(true)}
-              />
-            )}
-          </ImageLoader>
-        </Link>
+        <div className="flex flex-col items-center justify-center gap-3">
+          <Link to={ROUTES.ALBUM.PAGE(album.id)} className="group relative block">
+            <ImageLoader id={album.coverArt} type="album">
+              {(src) => (
+                <img
+                  src={src}
+                  alt={album.name}
+                  className={cn(
+                    'aspect-square h-[236px] w-[236px] rounded-xl border border-border/55 object-cover shadow-2xl transition-all duration-300 group-hover:scale-[1.02] min-[1700px]:h-[272px] min-[1700px]:w-[272px] min-[2600px]:h-[300px] min-[2600px]:w-[300px]',
+                    imageLoaded ? 'opacity-100' : 'opacity-0',
+                  )}
+                  onLoad={() => setImageLoaded(true)}
+                />
+              )}
+            </ImageLoader>
+          </Link>
 
-        <div className="min-w-0 space-y-3">
+          <div className="w-[236px] min-[1700px]:w-[272px] min-[2600px]:w-[300px]">
+            <div className="inline-flex w-full items-center justify-center gap-2 rounded-md border border-border/60 bg-background/70 px-3 py-1.5 text-center text-sm text-foreground/80 min-[2300px]:text-base">
+              {album.genre && (
+                <span className="truncate">{album.genre}</span>
+              )}
+              {album.genre && album.year && (
+                <span className="text-foreground/40">•</span>
+              )}
+              {album.year && (
+                <span>{album.year}</span>
+              )}
+            </div>
+          </div>
+        </div>
+
+        <div className="min-w-0 space-y-3 text-left">
           <div className="space-y-1.5">
             <p className="text-sm text-muted-foreground/90 min-[1700px]:text-base">
               {t('home.recommendedAlbum')}
@@ -122,30 +138,10 @@ function AlbumHeaderItem({ album }: { album: Albums }) {
             </Link>
           </div>
 
-          <div>
-            <div className="inline-flex items-center gap-2 rounded-md border border-foreground/15 bg-foreground/5 px-3 py-1.5 text-sm text-foreground/80 backdrop-blur-sm min-[2300px]:text-base">
-              {album.genre && (
-                <span>{album.genre}</span>
-              )}
-              {album.genre && (album.year || album.songCount) && (
-                <span className="text-foreground/40">•</span>
-              )}
-              {album.year && (
-                <span>{album.year}</span>
-              )}
-              {album.year && album.songCount && (
-                <span className="text-foreground/40">•</span>
-              )}
-              {album.songCount && (
-                <span>{t('playlist.songCount', { count: album.songCount })}</span>
-              )}
-            </div>
-          </div>
-
           <Button
             onClick={handlePlayAlbum}
-            className="w-fit gap-2 border border-primary/30 bg-primary/90 hover:bg-primary"
-            size="sm"
+            className="mt-4 h-10 w-fit gap-2 border border-primary/30 bg-primary/90 px-4 text-sm hover:bg-primary"
+            size="default"
           >
             <Play className="w-4 h-4" fill="currentColor" />
             {t('options.play')}

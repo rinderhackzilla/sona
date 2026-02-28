@@ -1,4 +1,6 @@
-import { Link } from 'react-router-dom'
+import { startTransition } from 'react'
+import type { MouseEvent } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
 import { Clock3, Music, Play } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Skeleton } from '@/app/components/ui/skeleton'
@@ -129,13 +131,38 @@ function DaypartPlaylistCard({
 }) {
   const { t } = useTranslation()
   const { setSongList } = usePlayerActions()
+  const navigate = useNavigate()
+  const playDaypartFromStart = (event: MouseEvent<HTMLButtonElement>) => {
+    event.stopPropagation()
+    if (playlist.length === 0) return
+    startTransition(() => {
+      setSongList(playlist, 0)
+    })
+  }
 
   const title = t(getDaypartNameKey(dayPart))
   const mood = t(getDaypartMoodKey(dayPart))
   const coverArt = playlist[0]?.coverArt
 
   return (
-    <div className="group relative h-[172px] overflow-hidden rounded-xl border border-border/60 bg-gradient-to-br from-primary/13 via-primary/8 to-background/10 p-4 transition-colors hover:border-primary/35 sm:h-[186px]">
+    <div
+      className="group relative h-[172px] cursor-pointer overflow-hidden rounded-xl border border-border/60 bg-gradient-to-br from-primary/13 via-primary/8 to-background/10 p-4 transition-colors hover:border-primary/35 sm:h-[186px]"
+      onClick={() =>
+        startTransition(() => {
+          navigate(ROUTES.LIBRARY.DAYPART_PLAYLIST)
+        })
+      }
+      onKeyDown={(event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault()
+          startTransition(() => {
+            navigate(ROUTES.LIBRARY.DAYPART_PLAYLIST)
+          })
+        }
+      }}
+      role="link"
+      tabIndex={0}
+    >
       {coverArt && (
         <ImageLoader id={coverArt} type="album" size="520">
           {(src) =>
@@ -163,7 +190,7 @@ function DaypartPlaylistCard({
         </ImageLoader>
       )}
 
-      <div className="relative z-[1] flex h-full flex-col justify-between">
+      <div className="relative z-[1] flex h-full flex-col">
         <div>
           <div className="mb-2 inline-flex items-center gap-1.5 rounded-md border border-foreground/15 bg-foreground/5 px-2 py-1 text-xs text-foreground/75 backdrop-blur-sm">
             <Clock3 className="h-3.5 w-3.5 text-foreground/65" />
@@ -172,25 +199,18 @@ function DaypartPlaylistCard({
           <h3 className="truncate text-[1.05rem] font-semibold leading-snug sm:text-[1.12rem]">
             {title}
           </h3>
-          <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground/90">{mood}</p>
+          <p className="mt-0.5 line-clamp-2 max-w-[45%] text-xs text-muted-foreground/90">{mood}</p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="mt-2 flex items-center gap-2">
           <Button
             size="sm"
             className="h-7 gap-1.5 border border-primary/35 bg-primary/90 px-2.5 text-xs hover:bg-primary"
             disabled={playlist.length === 0}
-            onClick={() => {
-              if (playlist.length > 0) {
-                setSongList(playlist, 0)
-              }
-            }}
+            onClick={playDaypartFromStart}
           >
             <Play className="h-3.5 w-3.5" fill="currentColor" />
             {t('options.play')}
-          </Button>
-          <Button asChild variant="secondary" size="sm" className="h-7 px-2.5 text-xs">
-            <Link to={ROUTES.LIBRARY.DAYPART_PLAYLIST}>{t('generic.seeMore')}</Link>
           </Button>
         </div>
       </div>

@@ -236,7 +236,11 @@ export function SongInfoDialog() {
                 {formatBitrate(song.bitRate)}
               </InfoGridItem>
               <InfoGridItem title="codec">
-                <Badge variant="secondary">{song.suffix.toUpperCase()}</Badge>
+                <Badge variant="secondary">
+                  {typeof song.suffix === 'string' && song.suffix.length > 0
+                    ? song.suffix.toUpperCase()
+                    : 'UNKNOWN'}
+                </Badge>
               </InfoGridItem>
 
               <InfoGridItem title="plays">{song.playCount ?? 0}</InfoGridItem>

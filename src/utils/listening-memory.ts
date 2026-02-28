@@ -97,18 +97,24 @@ function scoreCandidate(song: MemorySong, entries: MemoryEntry[], now: number) {
 
   for (const entry of entries) {
     const ageMs = now - entry.playedAt
-    if (ageMs > 96 * 60 * 60 * 1000) continue
+    if (ageMs > 14 * 24 * 60 * 60 * 1000) continue
 
-    if (entry.songId === song.id && ageMs < 72 * 60 * 60 * 1000) {
-      score += 120
+    if (entry.songId === song.id) {
+      if (ageMs < 72 * 60 * 60 * 1000) score += 320
+      else if (ageMs < 7 * 24 * 60 * 60 * 1000) score += 180
+      else score += 80
     }
 
-    if (entry.artistKey === artistKey && ageMs < 10 * 60 * 60 * 1000) {
-      score += 35
+    if (entry.artistKey === artistKey) {
+      if (ageMs < 12 * 60 * 60 * 1000) score += 120
+      else if (ageMs < 3 * 24 * 60 * 60 * 1000) score += 70
+      else if (ageMs < 7 * 24 * 60 * 60 * 1000) score += 35
     }
 
-    if (entry.albumKey === albumKey && ageMs < 16 * 60 * 60 * 1000) {
-      score += 25
+    if (entry.albumKey === albumKey) {
+      if (ageMs < 24 * 60 * 60 * 1000) score += 90
+      else if (ageMs < 4 * 24 * 60 * 60 * 1000) score += 45
+      else if (ageMs < 10 * 24 * 60 * 60 * 1000) score += 20
     }
   }
 
@@ -139,4 +145,3 @@ export function pickByListeningMemory<T extends MemorySong>(
 ): T | undefined {
   return sortByListeningMemory(candidates, enabled)[0]
 }
-

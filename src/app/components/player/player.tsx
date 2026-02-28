@@ -1,8 +1,8 @@
 import { memo, useCallback, useEffect, useRef, useState } from 'react'
-import { getSongStreamUrl, getCoverArtUrl } from '@/api/httpClient'
+import { getCoverArtUrl, getSongStreamUrl } from '@/api/httpClient'
 import { getProxyURL } from '@/api/podcastClient'
-import { MiniPlayerButton } from '@/app/components/mini-player/button'
 import { SonaDjButton } from '@/app/components/fullscreen/sona-dj'
+import { MiniPlayerButton } from '@/app/components/mini-player/button'
 import { RadioInfo } from '@/app/components/player/radio-info'
 import { TrackInfo } from '@/app/components/player/track-info'
 import { podcasts } from '@/service/podcasts'
@@ -14,7 +14,6 @@ import {
   usePlayerLoop,
   usePlayerMediaType,
   usePlayerPrevAndNext,
-  usePlayerRef,
   usePlayerSonglist,
   usePlayerStore,
   useReplayGainState,
@@ -52,12 +51,23 @@ const MemoLyricsButton = memo(PlayerLyricsButton)
 const MemoMiniPlayerButton = memo(MiniPlayerButton)
 const MemoAudioPlayer = memo(AudioPlayer)
 
+type DeckId = 'a' | 'b'
+
 export function Player({ hideUi = false }: { hideUi?: boolean }) {
-  const audioRef = useRef<HTMLAudioElement>(null)
+  const songDeckARef = useRef<HTMLAudioElement>(null)
+  const songDeckBRef = useRef<HTMLAudioElement>(null)
   const radioRef = useRef<HTMLAudioElement>(null)
   const podcastRef = useRef<HTMLAudioElement>(null)
-  const fadeIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const crossfadeIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const fadeOutStartedRef = useRef(false)
+  const isCrossfadingRef = useRef(false)
+  const crossfadeCommitRef = useRef(false)
+  const incomingDeckRef = useRef<DeckId | null>(null)
+  const [activeDeck, setActiveDeck] = useState<DeckId>('a')
+  const [incomingDeck, setIncomingDeck] = useState<DeckId | null>(null)
+  const [deckAIndex, setDeckAIndex] = useState<number | null>(null)
+  const [deckBIndex, setDeckBIndex] = useState<number | null>(null)
+
   const {
     setAudioPlayerRef,
     setCurrentDuration,
@@ -66,6 +76,7 @@ export function Player({ hideUi = false }: { hideUi?: boolean }) {
     handleSongEnded,
     getCurrentProgress,
     getCurrentPodcastProgress,
+    playNextSong,
   } = usePlayerActions()
   const { currentList, currentSongIndex, radioList, podcastList } =
     usePlayerSonglist()
@@ -73,7 +84,6 @@ export function Player({ hideUi = false }: { hideUi?: boolean }) {
   const { isSong, isRadio, isPodcast } = usePlayerMediaType()
   const loopState = usePlayerLoop()
   const { hasNext } = usePlayerPrevAndNext()
-  const audioPlayerRef = usePlayerRef()
   const currentPlaybackRate = usePlayerStore().playerState.currentPlaybackRate
   const { replayGainType, replayGainPreAmp, replayGainDefaultGain } =
     useReplayGainState()
@@ -81,33 +91,164 @@ export function Player({ hideUi = false }: { hideUi?: boolean }) {
 
   const CROSSFADE_DURATION_S = 3
 
-  const clearFade = useCallback(() => {
-    if (fadeIntervalRef.current !== null) {
-      clearInterval(fadeIntervalRef.current)
-      fadeIntervalRef.current = null
-    }
-  }, [])
-
-  const startFadeVolume = useCallback(
-    (audio: HTMLAudioElement, targetVolume: number, durationMs: number) => {
-      clearFade()
-      const startVol = audio.volume
-      const steps = Math.max(10, Math.floor(durationMs / 30))
-      const stepMs = durationMs / steps
-      const delta = (targetVolume - startVol) / steps
-      let step = 0
-      fadeIntervalRef.current = setInterval(() => {
-        step++
-        audio.volume = Math.max(0, Math.min(1, startVol + delta * step))
-        if (step >= steps) clearFade()
-      }, stepMs)
-    },
-    [clearFade],
-  )
-
   const song = currentList[currentSongIndex]
   const radio = radioList[currentSongIndex]
   const podcast = podcastList[currentSongIndex]
+  const deckASong = deckAIndex !== null ? currentList[deckAIndex] : undefined
+  const deckBSong = deckBIndex !== null ? currentList[deckBIndex] : undefined
+
+  const getDeckRef = useCallback(
+    (deck: DeckId) => (deck === 'a' ? songDeckARef : songDeckBRef),
+    [],
+  )
+
+  const getActiveSongDeckRef = useCallback(
+    () => (activeDeck === 'a' ? songDeckARef : songDeckBRef),
+    [activeDeck],
+  )
+
+  const clearFade = useCallback(() => {
+    if (crossfadeIntervalRef.current !== null) {
+      clearInterval(crossfadeIntervalRef.current)
+      crossfadeIntervalRef.current = null
+    }
+  }, [])
+
+  const getAudioRef = useCallback(() => {
+    if (isRadio) return radioRef
+    if (isPodcast) return podcastRef
+    return getActiveSongDeckRef()
+  }, [getActiveSongDeckRef, isPodcast, isRadio])
+
+  const getNextSongIndex = useCallback(() => {
+    if (hasNext) return currentSongIndex + 1
+    if (loopState === LoopState.All && currentList.length > 0) return 0
+    return null
+  }, [currentList.length, currentSongIndex, hasNext, loopState])
+
+  // Keep deck assignment synced when user changes track manually.
+  useEffect(() => {
+    if (!isSong) {
+      setDeckAIndex(null)
+      setDeckBIndex(null)
+      isCrossfadingRef.current = false
+      incomingDeckRef.current = null
+      setIncomingDeck(null)
+      fadeOutStartedRef.current = false
+      clearFade()
+      return
+    }
+
+    if (crossfadeCommitRef.current) {
+      crossfadeCommitRef.current = false
+      return
+    }
+
+    setDeckAIndex((prev) => (activeDeck === 'a' ? currentSongIndex : prev))
+    setDeckBIndex((prev) => (activeDeck === 'b' ? currentSongIndex : prev))
+
+    if (activeDeck === 'a') setDeckBIndex(null)
+    if (activeDeck === 'b') setDeckAIndex(null)
+
+    isCrossfadingRef.current = false
+    incomingDeckRef.current = null
+    setIncomingDeck(null)
+    fadeOutStartedRef.current = false
+    clearFade()
+  }, [activeDeck, clearFade, currentSongIndex, isSong])
+
+  // Keep active song deck as the source for progress/volume/visualizer.
+  useEffect(() => {
+    if (!isSong) return
+    const activeRef = getActiveSongDeckRef().current
+    if (activeRef) {
+      setAudioPlayerRef(activeRef)
+    }
+  }, [getActiveSongDeckRef, isSong, setAudioPlayerRef, song?.id])
+
+  useEffect(() => {
+    const audio = podcastRef.current
+    if (!audio || !isPodcast) return
+    audio.playbackRate = currentPlaybackRate
+  }, [currentPlaybackRate, isPodcast])
+
+  useEffect(() => {
+    if (crossfadeEnabled || !isSong) return
+    clearFade()
+    incomingDeckRef.current = null
+    setIncomingDeck(null)
+    isCrossfadingRef.current = false
+    fadeOutStartedRef.current = false
+    if (activeDeck === 'a') setDeckBIndex(null)
+    if (activeDeck === 'b') setDeckAIndex(null)
+  }, [activeDeck, clearFade, crossfadeEnabled, isSong])
+
+  useEffect(() => {
+    if (!isSong || !isCrossfadingRef.current || !incomingDeckRef.current) return
+    if (crossfadeIntervalRef.current !== null) return
+
+    const outgoingDeck = activeDeck
+    const incomingDeck = incomingDeckRef.current
+    const outgoingAudio = getDeckRef(outgoingDeck).current
+    const incomingAudio = getDeckRef(incomingDeck).current
+
+    if (!outgoingAudio || !incomingAudio) return
+
+    const targetVolume = getVolume() / 100
+    const durationMs = CROSSFADE_DURATION_S * 1000
+    const steps = Math.max(20, Math.floor(durationMs / 30))
+    const stepMs = Math.max(16, Math.floor(durationMs / steps))
+    let step = 0
+
+    incomingAudio.volume = 0
+    if (isPlaying) {
+      incomingAudio.play().catch(() => undefined)
+    }
+
+    crossfadeIntervalRef.current = setInterval(() => {
+      step += 1
+      const progress = Math.min(1, step / steps)
+
+      outgoingAudio.volume = Math.max(0, targetVolume * (1 - progress))
+      incomingAudio.volume = Math.min(targetVolume, targetVolume * progress)
+
+      if (progress >= 1) {
+        clearFade()
+
+        outgoingAudio.pause()
+        outgoingAudio.currentTime = 0
+        outgoingAudio.volume = targetVolume
+
+        crossfadeCommitRef.current = true
+        setActiveDeck(incomingDeck)
+        if (incomingDeck === 'a') setDeckBIndex(null)
+        if (incomingDeck === 'b') setDeckAIndex(null)
+
+        incomingDeckRef.current = null
+        setIncomingDeck(null)
+        isCrossfadingRef.current = false
+        fadeOutStartedRef.current = false
+
+        playNextSong()
+        setAudioPlayerRef(incomingAudio)
+        if (Number.isFinite(incomingAudio.duration)) {
+          setCurrentDuration(Math.floor(incomingAudio.duration))
+        }
+        setProgress(Math.floor(incomingAudio.currentTime))
+      }
+    }, stepMs)
+  }, [
+    activeDeck,
+    clearFade,
+    crossfadeEnabled,
+    getDeckRef,
+    isPlaying,
+    isSong,
+    playNextSong,
+    setAudioPlayerRef,
+    setCurrentDuration,
+    setProgress,
+  ])
 
   // Get album cover URL for background
   const [backgroundImage, setBackgroundImage] = useState<string | null>(null)
@@ -130,109 +271,117 @@ export function Player({ hideUi = false }: { hideUi?: boolean }) {
     loadBackgroundImage()
   }, [isSong, song?.coverArt])
 
-  const getAudioRef = useCallback(() => {
-    if (isRadio) return radioRef
-    if (isPodcast) return podcastRef
+  const setupDuration = useCallback(
+    (deck?: DeckId) => {
+      const audio =
+        isSong && deck ? getDeckRef(deck).current : getAudioRef().current
+      if (!audio) return
 
-    return audioRef
-  }, [isPodcast, isRadio])
+      const audioDuration = Math.floor(audio.duration)
+      const infinityDuration = audioDuration === Infinity
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: audioRef needed
-  useEffect(() => {
-    if (!isSong && !song) return
+      if (!infinityDuration) {
+        if (!isSong || !deck || deck === activeDeck) {
+          setCurrentDuration(audioDuration)
+        }
+      }
 
-    if (audioRef.current && audioPlayerRef !== audioRef.current)
-      setAudioPlayerRef(audioRef.current)
-  }, [audioPlayerRef, audioRef, isSong, setAudioPlayerRef, song])
+      if (isPodcast && infinityDuration && podcast) {
+        setCurrentDuration(podcast.duration)
+      }
 
-  useEffect(() => {
-    const audio = podcastRef.current
-    if (!audio || !isPodcast) return
+      if (isPodcast) {
+        const podcastProgress = getCurrentPodcastProgress()
 
-    audio.playbackRate = currentPlaybackRate
-  }, [currentPlaybackRate, isPodcast])
+        logger.info('[Player] - Resuming episode from:', {
+          seconds: podcastProgress,
+        })
 
-  const setupDuration = useCallback(() => {
-    const audio = getAudioRef().current
-    if (!audio) return
+        setProgress(podcastProgress)
+        audio.currentTime = podcastProgress
+      } else {
+        if (isSong && deck && deck !== activeDeck) {
+          audio.currentTime = 0
+        } else {
+          const progress = getCurrentProgress()
+          audio.currentTime = progress
+        }
+      }
+    },
+    [
+      getAudioRef,
+      getCurrentPodcastProgress,
+      getCurrentProgress,
+      getDeckRef,
+      isPodcast,
+      isSong,
+      podcast,
+      setCurrentDuration,
+      setProgress,
+    ],
+  )
 
-    const audioDuration = Math.floor(audio.duration)
-    const infinityDuration = audioDuration === Infinity
+  const setupProgress = useCallback(
+    (deck?: DeckId) => {
+      const audio =
+        isSong && deck ? getDeckRef(deck).current : getAudioRef().current
+      if (!audio) return
 
-    if (!infinityDuration) {
-      setCurrentDuration(audioDuration)
-    }
+      if (isSong && deck && deck !== activeDeck) return
 
-    if (isPodcast && infinityDuration && podcast) {
-      setCurrentDuration(podcast.duration)
-    }
+      const currentProgress = Math.floor(audio.currentTime)
+      setProgress(currentProgress)
 
-    if (isPodcast) {
-      const podcastProgress = getCurrentPodcastProgress()
+      if (!crossfadeEnabled || !isSong) return
+      if (isCrossfadingRef.current || fadeOutStartedRef.current) return
+      if (!Number.isFinite(audio.duration) || audio.duration <= CROSSFADE_DURATION_S * 2) {
+        return
+      }
 
-      logger.info('[Player] - Resuming episode from:', {
-        seconds: podcastProgress,
-      })
+      const nextSongIndex = getNextSongIndex()
+      if (nextSongIndex === null) return
+      if (!currentList[nextSongIndex]) return
 
-      setProgress(podcastProgress)
-      audio.currentTime = podcastProgress
-    } else {
-      const progress = getCurrentProgress()
-      audio.currentTime = progress
-    }
-  }, [
-    getAudioRef,
-    isPodcast,
-    podcast,
-    setCurrentDuration,
-    getCurrentPodcastProgress,
-    setProgress,
-    getCurrentProgress,
-  ])
-
-  const setupProgress = useCallback(() => {
-    const audio = getAudioRef().current
-    if (!audio) return
-
-    const currentProgress = Math.floor(audio.currentTime)
-    setProgress(currentProgress)
-
-    if (
-      crossfadeEnabled &&
-      isSong &&
-      (hasNext || loopState === LoopState.All) &&
-      !fadeOutStartedRef.current &&
-      isFinite(audio.duration) &&
-      audio.duration > CROSSFADE_DURATION_S * 2
-    ) {
       const timeLeft = audio.duration - audio.currentTime
       if (timeLeft > 0 && timeLeft <= CROSSFADE_DURATION_S) {
+        const incomingDeck: DeckId = activeDeck === 'a' ? 'b' : 'a'
+
         fadeOutStartedRef.current = true
-        startFadeVolume(audio, 0, timeLeft * 1000)
+        isCrossfadingRef.current = true
+        incomingDeckRef.current = incomingDeck
+        setIncomingDeck(incomingDeck)
+
+        if (incomingDeck === 'a') setDeckAIndex(nextSongIndex)
+        if (incomingDeck === 'b') setDeckBIndex(nextSongIndex)
       }
-    }
-  }, [
-    getAudioRef,
-    setProgress,
-    crossfadeEnabled,
-    isSong,
-    hasNext,
-    loopState,
-    startFadeVolume,
-  ])
+    },
+    [
+      activeDeck,
+      crossfadeEnabled,
+      currentList,
+      getAudioRef,
+      getDeckRef,
+      getNextSongIndex,
+      isSong,
+      setProgress,
+    ],
+  )
 
-  const setupInitialVolume = useCallback(() => {
-    const audio = getAudioRef().current
-    if (!audio) return
+  const setupInitialVolume = useCallback(
+    (deck?: DeckId) => {
+      const audio =
+        isSong && deck ? getDeckRef(deck).current : getAudioRef().current
+      if (!audio) return
 
-    const targetVolume = getVolume() / 100
-    if (crossfadeEnabled && isSong) {
-      audio.volume = 0
-      startFadeVolume(audio, targetVolume, CROSSFADE_DURATION_S * 1000)
-    } else {
+      const targetVolume = getVolume() / 100
+      if (isSong && deck && deck !== activeDeck) {
+        audio.volume = 0
+        return
+      }
       audio.volume = targetVolume
-    }
-  }, [getAudioRef, crossfadeEnabled, isSong, startFadeVolume])
+    },
+    [activeDeck, getAudioRef, getDeckRef, isSong],
+  )
 
   const sendFinishProgress = useCallback(() => {
     if (!isPodcast || !podcast) return
@@ -247,50 +396,75 @@ export function Player({ hideUi = false }: { hideUi?: boolean }) {
       })
   }, [isPodcast, podcast])
 
-  // Reset crossfade state when a new song starts
-  useEffect(() => {
-    fadeOutStartedRef.current = false
-    clearFade()
-  }, [song?.id, clearFade])
-
   // Cleanup interval on unmount
   useEffect(() => {
     return () => clearFade()
   }, [clearFade])
 
-  function getTrackReplayGain(): ReplayGainParams {
+  function getTrackReplayGain(track?: typeof song): ReplayGainParams {
     const preAmp = replayGainPreAmp
     const defaultGain = replayGainDefaultGain
 
-    if (!song || !song.replayGain) {
+    if (!track || !track.replayGain) {
       return { gain: defaultGain, peak: 1, preAmp }
     }
 
     if (replayGainType === 'album') {
-      const { albumGain = defaultGain, albumPeak = 1 } = song.replayGain
+      const { albumGain = defaultGain, albumPeak = 1 } = track.replayGain
       return { gain: albumGain, peak: albumPeak, preAmp }
     }
 
-    const { trackGain = defaultGain, trackPeak = 1 } = song.replayGain
+    const { trackGain = defaultGain, trackPeak = 1 } = track.replayGain
     return { gain: trackGain, peak: trackPeak, preAmp }
   }
 
   const audioNodes = (
     <>
-      {isSong && song && (
+      {isSong && deckASong && (
         <MemoAudioPlayer
-          key={`${song.id}-${currentSongIndex}`}
-          replayGain={getTrackReplayGain()}
-          src={getSongStreamUrl(song.id)}
+          key="song-deck-a"
+          replayGain={getTrackReplayGain(deckASong)}
+          src={getSongStreamUrl(deckASong.id)}
           autoPlay={isPlaying}
-          audioRef={audioRef}
-          onPlay={() => setPlayingState(true)}
-          onPause={() => setPlayingState(false)}
-          onLoadedMetadata={setupDuration}
-          onTimeUpdate={setupProgress}
-          onEnded={handleSongEnded}
-          onLoadStart={setupInitialVolume}
-          data-testid="player-song-audio"
+          shouldPlay={isPlaying && (activeDeck === 'a' || incomingDeck === 'a')}
+          audioRef={songDeckARef}
+          onPlay={() => {
+            if (activeDeck === 'a') setPlayingState(true)
+          }}
+          onPause={() => {
+            if (activeDeck === 'a') setPlayingState(false)
+          }}
+          onLoadedMetadata={() => setupDuration('a')}
+          onTimeUpdate={() => setupProgress('a')}
+          onEnded={() => {
+            if (activeDeck === 'a') handleSongEnded()
+          }}
+          onLoadStart={() => setupInitialVolume('a')}
+          data-testid="player-song-audio-a"
+        />
+      )}
+
+      {isSong && deckBSong && (
+        <MemoAudioPlayer
+          key="song-deck-b"
+          replayGain={getTrackReplayGain(deckBSong)}
+          src={getSongStreamUrl(deckBSong.id)}
+          autoPlay={isPlaying}
+          shouldPlay={isPlaying && (activeDeck === 'b' || incomingDeck === 'b')}
+          audioRef={songDeckBRef}
+          onPlay={() => {
+            if (activeDeck === 'b') setPlayingState(true)
+          }}
+          onPause={() => {
+            if (activeDeck === 'b') setPlayingState(false)
+          }}
+          onLoadedMetadata={() => setupDuration('b')}
+          onTimeUpdate={() => setupProgress('b')}
+          onEnded={() => {
+            if (activeDeck === 'b') handleSongEnded()
+          }}
+          onLoadStart={() => setupInitialVolume('b')}
+          data-testid="player-song-audio-b"
         />
       )}
 
@@ -331,7 +505,6 @@ export function Player({ hideUi = false }: { hideUi?: boolean }) {
     <>
       {!hideUi && (
         <footer className="border-t h-[--player-height] w-full flex items-center fixed bottom-0 left-0 right-0 z-40 bg-background overflow-hidden">
-          {/* Blurred Album Cover Background */}
           {backgroundImage && (
             <div
               className="absolute inset-0 pointer-events-none"
@@ -351,13 +524,12 @@ export function Player({ hideUi = false }: { hideUi?: boolean }) {
           )}
 
           <div className="w-full h-full grid grid-cols-player gap-2 px-4 relative z-10">
-            {/* Track Info */}
             <div className="flex items-center gap-2 w-full">
               {isSong && <MemoTrackInfo song={song} />}
               {isRadio && <MemoRadioInfo radio={radio} />}
               {isPodcast && <MemoPodcastInfo podcast={podcast} />}
             </div>
-            {/* Main Controls */}
+
             <div className="col-span-2 flex flex-col justify-center items-center px-4 gap-1">
               <MemoPlayerControls
                 song={song}
@@ -370,7 +542,7 @@ export function Player({ hideUi = false }: { hideUi?: boolean }) {
                 <MemoPlayerProgress audioRef={getAudioRef()} />
               )}
             </div>
-            {/* Remain Controls and Volume */}
+
             <div className="flex items-center w-full justify-end">
               <div className="flex items-center gap-1">
                 {isSong && (

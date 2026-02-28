@@ -58,7 +58,12 @@ export function PlayerPage() {
     useListeningMemorySettings()
 
   // Sidebar & Playlists
-  const { hideRadiosSection, setHideRadiosSection, autoPlaylistImport, setAutoPlaylistImport } = useAppPages()
+  const {
+    hideRadiosSection,
+    setHideRadiosSection,
+    autoPlaylistImport,
+    setAutoPlaylistImport,
+  } = useAppPages()
 
   // Cache
   const { imagesCacheLayerEnabled, setImagesCacheLayerEnabled } = useAppImagesCacheLayer()

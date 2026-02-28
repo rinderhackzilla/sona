@@ -1,11 +1,22 @@
 import { useQuery } from '@tanstack/react-query'
 import { subsonic } from '@/service/subsonic'
+import { dedupeAlbumsByIdentity } from '@/utils/albumDedup'
 import { queryKeys } from '@/utils/queryKeys'
 
 export const useGetArtist = (artistId: string) => {
   return useQuery({
     queryKey: [queryKeys.artist.single, artistId],
-    queryFn: () => subsonic.artists.getOne(artistId),
+    queryFn: async () => {
+      const artist = await subsonic.artists.getOne(artistId)
+      if (!artist?.album) return artist
+
+      const dedupedAlbums = dedupeAlbumsByIdentity(artist.album)
+      return {
+        ...artist,
+        album: dedupedAlbums,
+        albumCount: dedupedAlbums.length,
+      }
+    },
     enabled: !!artistId,
   })
 }

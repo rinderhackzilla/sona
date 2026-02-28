@@ -7,6 +7,7 @@ import {
   getAlbumList,
   getArtistDiscography,
 } from '@/queries/albums'
+import { dedupeAlbumsForDisplay } from '@/utils/albumDedup'
 import { AlbumListType } from '@/types/responses/album'
 import {
   AlbumsFilters,
@@ -114,8 +115,39 @@ export function useAlbumsListModel() {
   function getAlbums() {
     if (!data) return { albums: [], albumsCount: 0 }
 
-    const albums = data.pages.flatMap((page) => page.albums)
-    const albumsCount = data.pages[data.pages.length - 1].albumsCount
+    const rawAlbums = data.pages.flatMap((page) => page.albums)
+    let albums = dedupeAlbumsForDisplay(rawAlbums)
+
+    // Extra-hard dedupe for artist discography pages. This removes mirrored
+    // duplicates that still leak through inconsistent server ids/metadata.
+    if (artistId !== '') {
+      const normalize = (value?: string) =>
+        (value ?? '')
+          .toLowerCase()
+          .normalize('NFKD')
+          .replace(/[\u0300-\u036f]/g, '')
+          .replace(/\s+/g, ' ')
+          .trim()
+
+      const byName = new Map<string, (typeof albums)[number]>()
+      for (const album of albums) {
+        const key = normalize(album.name)
+        const existing = byName.get(key)
+        if (!existing) {
+          byName.set(key, album)
+          continue
+        }
+
+        const existingScore = (existing.songCount ?? 0) + (existing.duration ?? 0)
+        const currentScore = (album.songCount ?? 0) + (album.duration ?? 0)
+        if (currentScore > existingScore) {
+          byName.set(key, album)
+        }
+      }
+      albums = [...byName.values()]
+    }
+
+    const albumsCount = albums.length
 
     return {
       albums,

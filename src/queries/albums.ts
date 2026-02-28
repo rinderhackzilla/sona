@@ -1,5 +1,6 @@
 import { AlbumListParams } from '@/service/albums'
 import { subsonic } from '@/service/subsonic'
+import { dedupeAlbumsByIdentity } from '@/utils/albumDedup'
 
 const emptyResponse = { albums: [], nextOffset: null, albumsCount: 0 }
 
@@ -7,11 +8,12 @@ export async function getArtistDiscography(artistId: string) {
   const response = await subsonic.artists.getOne(artistId)
 
   if (!response || !response.album) return emptyResponse
+  const albums = dedupeAlbumsByIdentity(response.album)
 
   return {
-    albums: response.album,
+    albums,
     nextOffset: null,
-    albumsCount: response.album.length,
+    albumsCount: albums.length,
   }
 }
 
@@ -32,16 +34,17 @@ export async function albumSearch({ query, count, offset }: AlbumSearch) {
 
   if (!response) return emptyResponse
   if (!response.album) return emptyResponse
+  const albums = dedupeAlbumsByIdentity(response.album)
 
   let nextOffset: number | null = null
-  if (response.album.length >= count) {
+  if (albums.length >= count) {
     nextOffset = offset + count
   }
 
   return {
-    albums: response.album,
+    albums,
     nextOffset,
-    albumsCount: offset + response.album.length,
+    albumsCount: offset + albums.length,
   }
 }
 
@@ -50,15 +53,16 @@ export async function getAlbumList(params: Required<AlbumListParams>) {
 
   if (!response) return emptyResponse
   if (!response.list) return emptyResponse
+  const albums = dedupeAlbumsByIdentity(response.list)
 
   let nextOffset: number | null = null
-  if (response.list.length >= params.size) {
+  if (albums.length >= params.size) {
     nextOffset = params.offset + params.size
   }
 
   return {
-    albums: response.list,
+    albums,
     nextOffset,
-    albumsCount: response.albumsCount || 0,
+    albumsCount: response.albumsCount || albums.length,
   }
 }

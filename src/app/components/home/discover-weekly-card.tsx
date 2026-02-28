@@ -1,5 +1,6 @@
 import { Calendar, Play, Info } from 'lucide-react'
-import { Link } from 'react-router-dom'
+import type { MouseEvent } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/app/components/ui/button'
 import { ImageLoader } from '@/app/components/image-loader'
@@ -9,6 +10,7 @@ import { ROUTES } from '@/routes/routesList'
 
 export function DiscoverWeeklyCard() {
   const { t } = useTranslation()
+  const navigate = useNavigate()
   const { playlist, isGenerating, error, isConfigured } = useDiscoverWeekly()
   const { setSongList } = usePlayerActions()
 
@@ -71,7 +73,8 @@ export function DiscoverWeeklyCard() {
     )
   }
 
-  const handlePlay = () => {
+  const handlePlay = (event: MouseEvent<HTMLButtonElement>) => {
+    event.stopPropagation()
     setSongList(playlist, 0)
   }
 
@@ -79,7 +82,18 @@ export function DiscoverWeeklyCard() {
   const coverArt = playlist[0]?.coverArt
 
   return (
-    <div className="relative h-full w-full overflow-hidden rounded-xl border border-border/60 bg-card/20">
+    <div
+      className="relative h-full w-full cursor-pointer overflow-hidden rounded-xl border border-border/60 bg-card/20"
+      onClick={() => navigate(ROUTES.LIBRARY.DISCOVER_WEEKLY)}
+      onKeyDown={(event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault()
+          navigate(ROUTES.LIBRARY.DISCOVER_WEEKLY)
+        }
+      }}
+      role="link"
+      tabIndex={0}
+    >
       {/* Background Image with Blur */}
       {coverArt && (
         <ImageLoader id={coverArt} type="album" size="300">
@@ -123,20 +137,12 @@ export function DiscoverWeeklyCard() {
               <Play className="h-3.5 w-3.5 min-[2300px]:h-4 min-[2300px]:w-4" fill="currentColor" />
               {t('options.play')}
             </Button>
-            <Button asChild variant="secondary" className="h-7 px-2.5 text-xs min-[2300px]:h-8 min-[2300px]:px-3">
-              <Link to={ROUTES.LIBRARY.DISCOVER_WEEKLY}>
-                {t('generic.seeMore')}
-              </Link>
-            </Button>
           </div>
         </div>
 
         {/* Cover */}
         <div className="flex items-center justify-end">
-          <Link
-            to={ROUTES.LIBRARY.DISCOVER_WEEKLY}
-            className="group relative block h-[142px] w-[142px] shrink-0 overflow-hidden rounded-lg border border-border/60 shadow-xl transition-all duration-300 hover:scale-[1.015] min-[1600px]:h-[112px] min-[1600px]:w-[112px] min-[2300px]:h-[154px] min-[2300px]:w-[154px]"
-          >
+          <div className="group relative block h-[142px] w-[142px] shrink-0 overflow-hidden rounded-lg border border-border/60 shadow-xl transition-all duration-300 hover:scale-[1.015] min-[1600px]:h-[112px] min-[1600px]:w-[112px] min-[2300px]:h-[154px] min-[2300px]:w-[154px]">
             {coverArt ? (
               <ImageLoader id={coverArt} type="album" size="600">
                 {(src, isLoadingImage) => (
@@ -161,7 +167,7 @@ export function DiscoverWeeklyCard() {
                 <Calendar className="h-10 w-10 text-muted-foreground" />
               </div>
             )}
-          </Link>
+          </div>
         </div>
       </div>
     </div>

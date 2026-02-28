@@ -27,10 +27,15 @@ export function SongQualityBadge({
 }: SongQualityBadgeProps) {
   const { t } = useTranslation()
 
-  const quality = song.suffix.toUpperCase()
-  const bitrate = formatBitrate(song.bitRate)
-  const samplingRate = formatSamplingRate(song.samplingRate)
-  const size = formatBytes(song.size ?? 0)
+  const suffix = typeof song?.suffix === 'string' ? song.suffix : ''
+  const quality = suffix ? suffix.toUpperCase() : 'UNKNOWN'
+  const bitrate = Number.isFinite(song?.bitRate)
+    ? formatBitrate(song.bitRate)
+    : '-'
+  const samplingRate = Number.isFinite(song?.samplingRate)
+    ? formatSamplingRate(song.samplingRate)
+    : '-'
+  const size = Number.isFinite(song?.size) ? formatBytes(song.size) : '-'
 
   const lines = [
     { label: t('table.columns.quality'), value: quality },

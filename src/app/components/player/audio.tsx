@@ -23,11 +23,13 @@ import { calculateReplayGain, ReplayGainParams } from '@/utils/replayGain'
 type AudioPlayerProps = ComponentPropsWithoutRef<'audio'> & {
   audioRef: RefObject<HTMLAudioElement>
   replayGain?: ReplayGainParams
+  shouldPlay?: boolean
 }
 
 export function AudioPlayer({
   audioRef,
   replayGain,
+  shouldPlay = true,
   ...props
 }: AudioPlayerProps) {
   const { t } = useTranslation()
@@ -98,6 +100,17 @@ export function AudioPlayer({
     t,
   ])
 
+  const isBenignPlaybackError = useCallback((error: unknown) => {
+    if (!(error instanceof Error)) return false
+    const message = error.message.toLowerCase()
+    return (
+      error.name === 'AbortError' ||
+      message.includes('interrupted') ||
+      message.includes('aborted') ||
+      message.includes('play() request was interrupted')
+    )
+  }, [])
+
   const handleRadioError = useCallback(() => {
     const audio = audioRef.current
     if (!audio) return
@@ -112,19 +125,35 @@ export function AudioPlayer({
       if (!audio) return
 
       try {
-        if (isPlaying) {
+        if (isPlaying && shouldPlay) {
           if (isSong) await resumeContext()
           await audio.play()
         } else {
           audio.pause()
         }
       } catch (error) {
+        if (isBenignPlaybackError(error)) {
+          logger.info('Ignoring benign playback interruption', {
+            name: error instanceof Error ? error.name : undefined,
+            message: error instanceof Error ? error.message : undefined,
+          })
+          return
+        }
         logger.error('Audio playback failed', error)
         handleSongError()
       }
     }
     if (isSong || isPodcast) handleSong()
-  }, [audioRef, handleSongError, isPlaying, isSong, isPodcast, resumeContext])
+  }, [
+    audioRef,
+    handleSongError,
+    isBenignPlaybackError,
+    isPlaying,
+    isSong,
+    isPodcast,
+    resumeContext,
+    shouldPlay,
+  ])
 
   useEffect(() => {
     async function handleRadio() {

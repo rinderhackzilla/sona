@@ -6,24 +6,21 @@ export function HeaderSongInfo() {
 
   const isPlaylistEmpty = currentList.length === 0
 
-  function formatSongCount() {
-    const currentPosition = currentSongIndex + 1
-    const listLength = currentList.length
-
-    return `[${currentPosition}/${listLength}]`
-  }
-
-  function getCurrentSongInfo() {
-    return `${currentSong.artist} - ${currentSong.title}`
-  }
+  const title = currentSong?.title ?? ''
+  const artist = currentSong?.artist ?? ''
 
   return (
     <div className="col-span-2 flex justify-center items-center">
       {isPlaylistEmpty && <AppTitle />}
       {!isPlaylistEmpty && (
-        <div className="flex w-full justify-center subpixel-antialiased font-medium text-sm text-muted-foreground">
-          <p className="leading-7 mr-1">{formatSongCount()}</p>
-          <p className="leading-7 truncate">{getCurrentSongInfo()}</p>
+        <div className="flex w-full justify-center items-center gap-2 truncate subpixel-antialiased">
+          <p className="max-w-[52%] truncate leading-7 text-[13px] font-semibold tracking-[0.01em] text-foreground/92">
+            {title}
+          </p>
+          <span className="text-foreground/28">-</span>
+          <p className="max-w-[42%] truncate leading-7 text-[12px] font-medium tracking-[0.01em] text-muted-foreground">
+            {artist}
+          </p>
         </div>
       )}
     </div>

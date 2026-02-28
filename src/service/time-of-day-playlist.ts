@@ -21,94 +21,200 @@ export interface TimeOfDayGenerationResult {
   metadata: TimeOfDayPlaylistMetadata
 }
 
-const DAYPART_MAX_PER_ARTIST = 2
-const DAYPART_MAX_PER_ALBUM = 2
+type DaypartBucket = {
+  label: string
+  targetShare: number
+  genres: string[]
+}
 
-const DAYPART_GENRES: Record<DayPart, string[]> = {
-  morning: [
-    'Acoustic',
-    'A Cappella',
-    'Singer-Songwriter',
-    'Folk',
-    'Folk, Singer & Songwriter',
-    'Neo Soul',
-    'New Age',
-    'Ambient Pop',
-    'Trip Hop',
-    'Adult Contemporary',
-    'Contemporary Rnb',
-    'R&B',
-  ],
-  noon: [
-    'Pop',
-    'Alt-Pop',
-    'Electropop',
-    'Dance',
-    'Electronic',
-    'Indietronica',
-    'Synthpop',
-    'K-Pop',
-    'J-Pop',
-    'Hip-Hop',
-    'Rap',
-    'West Coast Hip Hop',
-  ],
-  afternoon: [
-    'Alternative',
-    'Alternative Rock',
-    'Alt. Rock',
-    'Indie Rock',
-    'Rock',
-    'Pop Rock',
-    'Punk Rock',
-    'Emo',
-    'Post-Hardcore',
-    'Metalcore',
-    'Nu Metal',
-    'Trap',
-  ],
-  evening: [
-    'Synthwave',
-    'Art Pop',
-    'Art Rock',
-    'Shoegaze',
-    'Progressive Rock',
-    'R&B',
-    'Alternative Rnb',
-    'Neo Soul',
-    'Film Score',
-    'Soundtrack',
-    'Electro House',
-    'Dance Punk',
-  ],
-  night: [
-    'Film Score',
-    'Soundtrack',
-    'Dark Ambient',
-    'New Age',
-    'Trip Hop',
-    'Ambient Pop',
-    'Synthwave',
-    'Art Rock',
-    'Progressive Rock',
-    'Electronic',
-    'Indietronica',
-    'Experimental',
-  ],
-  midnight: [
-    'Dark Ambient',
-    'Industrial',
-    'Industrial Metal',
-    'Black Metal',
-    'Death Metal',
-    'Doom Metal',
-    'Sludge Metal',
-    'Thrash Metal',
-    'Djent',
-    'Experimental',
-    'Experimental Hip Hop',
-    'Grime',
-  ],
+type DaypartConfig = {
+  minUniqueGenres: number
+  maxPerArtist: number
+  maxPerAlbum: number
+  buckets: DaypartBucket[]
+}
+
+const DAYPART_CONFIG: Record<DayPart, DaypartConfig> = {
+  morning: {
+    minUniqueGenres: 5,
+    maxPerArtist: 2,
+    maxPerAlbum: 1,
+    buckets: [
+      {
+        label: 'soft-acoustic',
+        targetShare: 0.45,
+        genres: [
+          'Acoustic',
+          'A Cappella',
+          'Singer-Songwriter',
+          'Folk',
+          'Folk, Singer & Songwriter',
+          'Adult Contemporary',
+        ],
+      },
+      {
+        label: 'warm-rnb',
+        targetShare: 0.35,
+        genres: ['Neo Soul', 'R&B', 'Contemporary Rnb', 'Trip Hop', 'Ambient Pop'],
+      },
+      {
+        label: 'light-electronic',
+        targetShare: 0.2,
+        genres: ['New Age', 'Electronic', 'Synthpop'],
+      },
+    ],
+  },
+  noon: {
+    minUniqueGenres: 6,
+    maxPerArtist: 2,
+    maxPerAlbum: 1,
+    buckets: [
+      {
+        label: 'spoken-forward',
+        targetShare: 0.5,
+        genres: [
+          'Hip-Hop',
+          'Rap',
+          'Rap & Hip-Hop',
+          'Rap/Hip Hop',
+          'West Coast Hip Hop',
+          'Trap',
+          'Grime',
+          'Political Hip Hop',
+        ],
+      },
+      {
+        label: 'pop-melodic',
+        targetShare: 0.3,
+        genres: ['Pop', 'Alt-Pop', 'Electropop', 'K-Pop', 'J-Pop', 'R&B'],
+      },
+      {
+        label: 'dance-drive',
+        targetShare: 0.2,
+        genres: ['Dance', 'Electronic', 'Electro House', 'Synthpop', 'Indietronica'],
+      },
+    ],
+  },
+  afternoon: {
+    minUniqueGenres: 6,
+    maxPerArtist: 2,
+    maxPerAlbum: 1,
+    buckets: [
+      {
+        label: 'guitar-pop-punk',
+        targetShare: 0.45,
+        genres: [
+          'Pop Punk',
+          'Punk Rock',
+          'Alternative Rock',
+          'Alt. Rock',
+          'Rock',
+          'Pop Rock',
+          'Emo',
+        ],
+      },
+      {
+        label: 'spoken-hybrid',
+        targetShare: 0.25,
+        genres: ['Hip-Hop', 'Rap', 'Rapcore', 'Nu Metal', 'Trap'],
+      },
+      {
+        label: 'electro-alt',
+        targetShare: 0.3,
+        genres: ['Electronic', 'Dance Punk', 'Indietronica', 'Synthwave', 'Alternative'],
+      },
+    ],
+  },
+  evening: {
+    minUniqueGenres: 6,
+    maxPerArtist: 2,
+    maxPerAlbum: 1,
+    buckets: [
+      {
+        label: 'electronic-main',
+        targetShare: 0.55,
+        genres: [
+          'Electronic',
+          'Electro House',
+          'Synthwave',
+          'Synthpop',
+          'Dance',
+          'Indietronica',
+          'Trip Hop',
+        ],
+      },
+      {
+        label: 'smooth-rnb',
+        targetShare: 0.3,
+        genres: ['R&B', 'Neo Soul', 'Alternative Rnb', 'Contemporary Rnb'],
+      },
+      {
+        label: 'cinematic',
+        targetShare: 0.15,
+        genres: ['Film Score', 'Soundtrack'],
+      },
+    ],
+  },
+  night: {
+    minUniqueGenres: 5,
+    maxPerArtist: 2,
+    maxPerAlbum: 1,
+    buckets: [
+      {
+        label: 'metalcore-late',
+        targetShare: 0.45,
+        genres: [
+          'Metalcore',
+          'Post-Hardcore',
+          'Metalcore / Post-Hardcore / Deathcore',
+          'Progressive Metalcore',
+          'Nu Metal',
+        ],
+      },
+      {
+        label: 'dark-electronic',
+        targetShare: 0.35,
+        genres: ['Industrial', 'Industrial Metal', 'Dark Ambient', 'Electronic', 'Grime'],
+      },
+      {
+        label: 'spoken-night',
+        targetShare: 0.2,
+        genres: ['Hip-Hop', 'Rap', 'Trap', 'Southern Rap'],
+      },
+    ],
+  },
+  midnight: {
+    minUniqueGenres: 4,
+    maxPerArtist: 2,
+    maxPerAlbum: 1,
+    buckets: [
+      {
+        label: 'extreme-metal',
+        targetShare: 0.55,
+        genres: [
+          'Black Metal',
+          'Death Metal',
+          'Brutal Death Metal',
+          'Melodic Death Metal',
+          'Doom Metal',
+          'Thrash Metal',
+          'Sludge Metal',
+          'Djent',
+          'Deathcore',
+        ],
+      },
+      {
+        label: 'dark-atmosphere',
+        targetShare: 0.3,
+        genres: ['Dark Ambient', 'Industrial', 'Industrial Metal', 'Experimental'],
+      },
+      {
+        label: 'heavy-spoken',
+        targetShare: 0.15,
+        genres: ['Experimental Hip Hop', 'Rapcore', 'Trap', 'Grime'],
+      },
+    ],
+  },
 }
 
 const SLOT_STARTS = {
@@ -192,9 +298,7 @@ export function getMillisecondsUntilNextDayPartBoundary(date: Date = new Date())
   ]
 
   const nextToday = boundaries.find((boundary) => boundary.getTime() > date.getTime())
-  if (nextToday) {
-    return nextToday.getTime() - date.getTime()
-  }
+  if (nextToday) return nextToday.getTime() - date.getTime()
 
   const tomorrow = new Date(date)
   tomorrow.setDate(tomorrow.getDate() + 1)
@@ -267,6 +371,14 @@ function resolveMatchingGenres(preferredGenres: string[], libraryGenres: string[
     .map(([genre]) => genre)
 }
 
+function dedupeSongs(songs: Song[]) {
+  const map = new Map<string, Song>()
+  songs.forEach((song) => {
+    if (!map.has(song.id)) map.set(song.id, song)
+  })
+  return [...map.values()]
+}
+
 function getArtistKey(song: Song) {
   return song.artistId ?? song.artist?.trim().toLowerCase() ?? `artist:${song.id}`
 }
@@ -275,65 +387,112 @@ function getAlbumKey(song: Song) {
   return song.albumId ?? song.album?.trim().toLowerCase() ?? `album:${song.id}`
 }
 
-function buildBalancedPlaylist(candidates: Song[], size: number): Song[] {
-  const shuffled = [...candidates].sort(() => Math.random() - 0.5)
+function planBucketSizes(size: number, buckets: DaypartBucket[]) {
+  const planned = buckets.map((bucket) => ({
+    label: bucket.label,
+    count: Math.floor(size * bucket.targetShare),
+  }))
+
+  let assigned = planned.reduce((sum, item) => sum + item.count, 0)
+  let cursor = 0
+  while (assigned < size) {
+    planned[cursor % planned.length].count += 1
+    cursor += 1
+    assigned += 1
+  }
+
+  return planned
+}
+
+function buildWeightedGenreOrder(genres: string[], targetCountByGenre: Map<string, number>) {
+  const order: string[] = []
+  genres.forEach((genre) => {
+    const count = Math.max(1, targetCountByGenre.get(genre) ?? 1)
+    for (let i = 0; i < count; i++) {
+      order.push(genre)
+    }
+  })
+  return order.sort(() => Math.random() - 0.5)
+}
+
+function pickWithConstraints(
+  queuesByGenre: Map<string, Song[]>,
+  weightedOrder: string[],
+  size: number,
+  maxPerArtist: number,
+  maxPerAlbum: number,
+  minUniqueGenres: number,
+) {
+  const selected: Song[] = []
+  const selectedIds = new Set<string>()
   const artistCounts = new Map<string, number>()
   const albumCounts = new Map<string, number>()
-  const selected: Song[] = []
-  const usedIds = new Set<string>()
-  const uniqueArtistCount = new Set(shuffled.map(getArtistKey)).size
-  const uniqueAlbumCount = new Set(shuffled.map(getAlbumKey)).size
-  const artistCapTarget = Math.max(
-    DAYPART_MAX_PER_ARTIST,
-    Math.ceil(size / Math.max(1, uniqueArtistCount)),
-  )
-  const albumCapTarget = Math.max(
-    DAYPART_MAX_PER_ALBUM,
-    Math.ceil(size / Math.max(1, uniqueAlbumCount)),
-  )
+  const genreCounts = new Map<string, number>()
 
-  const tryTake = (song: Song, artistCap: number, albumCap: number) => {
-    if (usedIds.has(song.id)) return false
+  const uniqueGenresTarget = Math.min(minUniqueGenres, queuesByGenre.size)
+  const genreCapSoft = Math.max(1, Math.ceil(size / Math.max(1, uniqueGenresTarget)))
+
+  const takeSong = (genre: string, song: Song, allowGenreOverflow: boolean) => {
+    if (selectedIds.has(song.id)) return false
 
     const artistKey = getArtistKey(song)
     const albumKey = getAlbumKey(song)
     const artistCount = artistCounts.get(artistKey) ?? 0
     const albumCount = albumCounts.get(albumKey) ?? 0
+    const currentGenreCount = genreCounts.get(genre) ?? 0
 
-    if (artistCount >= artistCap || albumCount >= albumCap) {
-      return false
-    }
+    if (artistCount >= maxPerArtist) return false
+    if (albumCount >= maxPerAlbum) return false
+    if (!allowGenreOverflow && currentGenreCount >= genreCapSoft) return false
 
     selected.push(song)
-    usedIds.add(song.id)
+    selectedIds.add(song.id)
     artistCounts.set(artistKey, artistCount + 1)
     albumCounts.set(albumKey, albumCount + 1)
+    genreCounts.set(genre, currentGenreCount + 1)
     return true
   }
 
-  // Gradually relax caps instead of dropping them completely.
-  const artistCaps = new Set<number>([
-    DAYPART_MAX_PER_ARTIST,
-    Math.min(DAYPART_MAX_PER_ARTIST + 1, artistCapTarget),
-    artistCapTarget,
-  ])
-  const albumCaps = new Set<number>([
-    DAYPART_MAX_PER_ALBUM,
-    Math.min(DAYPART_MAX_PER_ALBUM + 1, albumCapTarget),
-    albumCapTarget,
-  ])
-  const capStages = [...artistCaps].map((artistCap) => ({
-    artistCap,
-    albumCap: [...albumCaps].find((v) => v >= artistCap) ?? albumCapTarget,
-  }))
-
-  for (const stage of capStages) {
-    for (const song of shuffled) {
+  const runPass = (allowGenreOverflow: boolean, allowAlbumRelax: boolean) => {
+    for (const genre of weightedOrder) {
       if (selected.length >= size) break
-      tryTake(song, stage.artistCap, stage.albumCap)
+      const queue = queuesByGenre.get(genre)
+      if (!queue || queue.length === 0) continue
+
+      while (queue.length > 0) {
+        const candidate = queue.shift()
+        if (!candidate) break
+        const effectiveAlbumCap = allowAlbumRelax ? maxPerAlbum + 1 : maxPerAlbum
+        const ok = takeSong(genre, candidate, allowGenreOverflow)
+        if (ok) break
+
+        if (allowAlbumRelax) {
+          const artistKey = getArtistKey(candidate)
+          const albumKey = getAlbumKey(candidate)
+          const artistCount = artistCounts.get(artistKey) ?? 0
+          const albumCount = albumCounts.get(albumKey) ?? 0
+          const currentGenreCount = genreCounts.get(genre) ?? 0
+          if (
+            !selectedIds.has(candidate.id) &&
+            artistCount < maxPerArtist &&
+            albumCount < effectiveAlbumCap &&
+            (allowGenreOverflow || currentGenreCount < genreCapSoft)
+          ) {
+            selected.push(candidate)
+            selectedIds.add(candidate.id)
+            artistCounts.set(artistKey, artistCount + 1)
+            albumCounts.set(albumKey, albumCount + 1)
+            genreCounts.set(genre, currentGenreCount + 1)
+            break
+          }
+        }
+      }
     }
-    if (selected.length >= size) break
   }
+
+  runPass(false, false)
+  if (selected.length < size) runPass(true, false)
+  if (selected.length < size) runPass(true, true)
 
   return selected.slice(0, size)
 }
@@ -342,51 +501,113 @@ export async function generateTimeOfDayPlaylist(
   size: number = 50,
 ): Promise<TimeOfDayGenerationResult> {
   const { dayPart, windowKey } = getCurrentDayPart()
-  const preferredGenres = DAYPART_GENRES[dayPart]
+  const config = DAYPART_CONFIG[dayPart]
   const availableGenres = (await subsonic.genres.get()) ?? []
   const availableGenreNames = availableGenres
     .map((genre) => genre.value)
     .filter(isGenreUsable)
-  const matchingGenres = resolveMatchingGenres(preferredGenres, availableGenreNames)
 
-  const genreQueue = matchingGenres.length > 0 ? matchingGenres : preferredGenres.slice(0, 6)
-  const songsById = new Map<string, Song>()
-  const genresUsed = new Set<string>()
-
-  // Round-robin fetch to avoid overfilling from the first one or two genres.
-  const rounds = 3
-  const batchSizePerRound = 8
-  for (let round = 0; round < rounds; round++) {
-    for (const genre of genreQueue) {
-      if (songsById.size >= size * 3) break
-
-      const randomSongs =
-        (await subsonic.songs.getRandomSongs({ size: batchSizePerRound, genre })) ??
-        []
-      randomSongs.forEach((song) => {
-        if (!songsById.has(song.id)) {
-          songsById.set(song.id, song)
-          genresUsed.add(genre)
-        }
-      })
-    }
+  const bucketGenreMatches = new Map<string, string[]>()
+  for (const bucket of config.buckets) {
+    const matches = resolveMatchingGenres(bucket.genres, availableGenreNames)
+    bucketGenreMatches.set(bucket.label, matches.slice(0, 8))
   }
 
-  if (songsById.size < size) {
-    const fallbackSongs = (await subsonic.songs.getRandomSongs({ size: Math.max(50, size * 2) })) ?? []
-    fallbackSongs.forEach((song) => {
-      if (!songsById.has(song.id)) {
-        songsById.set(song.id, song)
-      }
+  const bucketPlan = planBucketSizes(size, config.buckets)
+  const targetCountByGenre = new Map<string, number>()
+  const songsByGenre = new Map<string, Song[]>()
+
+  for (const planned of bucketPlan) {
+    const bucketMatches = bucketGenreMatches.get(planned.label) ?? []
+    const selectedGenres = bucketMatches.length > 0 ? bucketMatches : []
+    if (selectedGenres.length === 0) continue
+
+    const perGenreTarget = Math.max(1, Math.floor(planned.count / selectedGenres.length))
+    let remainder = planned.count - perGenreTarget * selectedGenres.length
+
+    selectedGenres.forEach((genre) => {
+      const target = perGenreTarget + (remainder > 0 ? 1 : 0)
+      if (remainder > 0) remainder -= 1
+      targetCountByGenre.set(genre, (targetCountByGenre.get(genre) ?? 0) + target)
     })
   }
 
+  const fetchGenres = [...targetCountByGenre.keys()]
+  for (const genre of fetchGenres) {
+    const baseTarget = targetCountByGenre.get(genre) ?? 1
+    const fetchSize = Math.max(10, Math.min(40, baseTarget * 4))
+    const fetched = (await subsonic.songs.getRandomSongs({ size: fetchSize, genre })) ?? []
+    songsByGenre.set(genre, dedupeSongs(fetched))
+  }
+
   const listeningMemoryEnabled = getListeningMemoryEnabledPreference()
-  const candidates = sortByListeningMemory(
-    Array.from(songsById.values()),
-    listeningMemoryEnabled,
+  const queuesByGenre = new Map<string, Song[]>()
+  const genresUsed = new Set<string>()
+
+  for (const [genre, songs] of songsByGenre.entries()) {
+    const sorted = sortByListeningMemory(songs, listeningMemoryEnabled)
+    if (sorted.length > 0) {
+      queuesByGenre.set(genre, sorted)
+      genresUsed.add(genre)
+    }
+  }
+
+  const weightedOrder = buildWeightedGenreOrder(
+    [...queuesByGenre.keys()],
+    targetCountByGenre,
   )
-  const playlist = buildBalancedPlaylist(candidates, size)
+  let playlist = pickWithConstraints(
+    queuesByGenre,
+    weightedOrder,
+    size,
+    config.maxPerArtist,
+    config.maxPerAlbum,
+    config.minUniqueGenres,
+  )
+
+  if (playlist.length < size) {
+    const fallbackSongs =
+      (await subsonic.songs.getRandomSongs({ size: Math.max(60, size * 3) })) ?? []
+    const fallbackSorted = sortByListeningMemory(
+      dedupeSongs(fallbackSongs),
+      listeningMemoryEnabled,
+    )
+
+    const existingIds = new Set(playlist.map((song) => song.id))
+    const artistCounts = new Map<string, number>()
+    const albumCounts = new Map<string, number>()
+    playlist.forEach((song) => {
+      const artistKey = getArtistKey(song)
+      const albumKey = getAlbumKey(song)
+      artistCounts.set(artistKey, (artistCounts.get(artistKey) ?? 0) + 1)
+      albumCounts.set(albumKey, (albumCounts.get(albumKey) ?? 0) + 1)
+    })
+
+    for (const song of fallbackSorted) {
+      if (playlist.length >= size) break
+      if (existingIds.has(song.id)) continue
+
+      const artistKey = getArtistKey(song)
+      const albumKey = getAlbumKey(song)
+      if ((artistCounts.get(artistKey) ?? 0) >= config.maxPerArtist) continue
+      if ((albumCounts.get(albumKey) ?? 0) >= config.maxPerAlbum + 1) continue
+
+      playlist.push(song)
+      existingIds.add(song.id)
+      artistCounts.set(artistKey, (artistCounts.get(artistKey) ?? 0) + 1)
+      albumCounts.set(albumKey, (albumCounts.get(albumKey) ?? 0) + 1)
+    }
+  }
+
+  const actualGenresUsed = [
+    ...new Set(
+      playlist
+        .map((song) => song.genre?.trim())
+        .filter((genre): genre is string => Boolean(genre && genre.length > 0)),
+    ),
+  ]
+  const genresUsedForMetadata =
+    actualGenresUsed.length > 0 ? actualGenresUsed : [...genresUsed]
 
   return {
     playlist,
@@ -394,7 +615,7 @@ export async function generateTimeOfDayPlaylist(
       generatedAt: new Date().toISOString(),
       dayPart,
       windowKey,
-      genresUsed: Array.from(genresUsed),
+      genresUsed: genresUsedForMetadata.slice(0, 8),
       totalSongs: playlist.length,
     },
   }

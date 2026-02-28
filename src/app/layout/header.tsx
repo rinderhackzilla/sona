@@ -1,4 +1,5 @@
 import { NavigationButtons } from '@/app/components/header/navigation-buttons'
+import { SessionModeDropdown } from '@/app/components/header/session-mode-dropdown'
 import { UserDropdown } from '@/app/components/header/user-dropdown'
 import { HeaderSongInfo } from '@/app/components/header-song'
 import { MiniPlayerModeButton } from '@/app/components/mini-player/mode-button'
@@ -19,6 +20,7 @@ export function Header() {
       </div>
       <HeaderSongInfo />
       <div className="flex justify-end items-center gap-2">
+        <SessionModeDropdown />
         <MiniPlayerModeButton />
         <SettingsButton />
         <UserDropdown />

@@ -1,5 +1,4 @@
 import { QueryClientProvider } from '@tanstack/react-query'
-import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 
 import 'react-lazy-load-image-component/src/effects/opacity.css'
@@ -18,9 +17,7 @@ import { blockFeatures } from '@/utils/browser'
 blockFeatures()
 
 createRoot(document.getElementById('root') as HTMLElement).render(
-  <StrictMode>
-    <QueryClientProvider client={queryClient}>
-      <App />
-    </QueryClientProvider>
-  </StrictMode>,
+  <QueryClientProvider client={queryClient}>
+    <App />
+  </QueryClientProvider>,
 )

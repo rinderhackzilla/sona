@@ -15,7 +15,13 @@ interface IMiniPlayerUi {
   togglePinned: () => void
 }
 
+interface IFullscreenUi {
+  open: boolean
+  setOpen: (open: boolean) => void
+}
+
 export interface IUiContext {
   songInfo: ISongInfo
   miniPlayer: IMiniPlayerUi
+  fullscreen: IFullscreenUi
 }

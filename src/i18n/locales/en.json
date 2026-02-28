@@ -23,6 +23,7 @@
     ,
     "daypart": {
       "label": "Daypart Mix",
+      "usedGenres": "Using: {{genres}}",
       "names": {
         "morning": "Coffee Before Chaos",
         "noon": "Lunch Break Bangers",
@@ -63,6 +64,29 @@
     "server": "Server",
     "about": "Update",
     "serverLogout": "Logout"
+  },
+  "sessionMode": {
+    "label": "Session Mode",
+    "description": "Switch playback mood and visuals in one click.",
+    "normal": {
+      "label": "Disable",
+      "info": "Familiar look and normal playback"
+    },
+    "focus": {
+      "label": "Focus",
+      "info": "Calm flow without distractions",
+      "exit": "Exit Focus Mode"
+    },
+    "night": {
+      "label": "Night",
+      "info": "Atmospheric late-hour rotation"
+    },
+    "toasts": {
+      "focusEnabled": "Focus Mode enabled",
+      "nightEnabled": "Night Mode enabled",
+      "focusDisabled": "Focus Mode disabled",
+      "nightDisabled": "Night Mode disabled"
+    }
   },
   "generic": {
     "seeMore": "See more",

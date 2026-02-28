@@ -81,6 +81,7 @@ export function SonaDjButton({ variant = 'fullscreen' }: SonaDjButtonProps) {
       data-state={enabled && 'active'}
       className={clsx(
         variant === 'fullscreen' ? triggerStyles.fullscreen : triggerStyles.player,
+        variant === 'fullscreen' && 'fullscreen-utility-button',
         enabled && triggerStyles.active,
       )}
       aria-label={t('fullscreen.sonaDj.title')}

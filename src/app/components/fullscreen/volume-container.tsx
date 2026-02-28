@@ -8,7 +8,7 @@ export function VolumeContainer() {
 
   return (
     <div className="flex justify-center items-center gap-1 text-foreground/90">
-      <MuteButton className={buttonsStyle.utility}>
+      <MuteButton className={`${buttonsStyle.utility} fullscreen-utility-button`}>
         <VolumeIcon volume={volume} className={buttonsStyle.secondaryIcon} />
       </MuteButton>
       <VolumeSlider variant="default" className="h-3" />

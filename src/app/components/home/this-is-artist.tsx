@@ -1,5 +1,6 @@
 import { RefreshCw, Music, Play, Info } from 'lucide-react'
-import { Link } from 'react-router-dom'
+import type { MouseEvent } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/app/components/ui/button'
 import { ImageLoader } from '@/app/components/image-loader'
@@ -9,6 +10,7 @@ import { usePlayerActions } from '@/store/player.store'
 
 export function ThisIsArtist() {
   const { t } = useTranslation()
+  const navigate = useNavigate()
   const {
     playlist,
     artist,
@@ -90,12 +92,24 @@ export function ThisIsArtist() {
     )
   }
 
-  const handlePlay = () => {
+  const handlePlay = (event: MouseEvent<HTMLButtonElement>) => {
+    event.stopPropagation()
     setSongList(playlist, 0)
   }
 
   return (
-    <div className="relative h-full w-full overflow-hidden rounded-xl border border-border/60 bg-card/20">
+    <div
+      className="relative h-full w-full cursor-pointer overflow-hidden rounded-xl border border-border/60 bg-card/20"
+      onClick={() => navigate(ROUTES.LIBRARY.THIS_IS_ARTIST)}
+      onKeyDown={(event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault()
+          navigate(ROUTES.LIBRARY.THIS_IS_ARTIST)
+        }
+      }}
+      role="link"
+      tabIndex={0}
+    >
       {/* Background Image with Blur */}
       <ImageLoader id={artist.coverArt} type="artist" size="300">
         {(artistCoverUrl) => (
@@ -121,7 +135,7 @@ export function ThisIsArtist() {
             <p className="text-[11px] uppercase tracking-[0.08em] text-muted-foreground/85 min-[2300px]:text-xs">
               {t('home.thisIsPrefix')}
             </p>
-            <h2 className="truncate text-[1.2rem] font-semibold leading-tight min-[1600px]:text-[1.02rem] min-[2300px]:text-[1.45rem]">
+            <h2 className="line-clamp-2 break-words text-[1.2rem] font-semibold leading-tight min-[1600px]:text-[1.02rem] min-[2300px]:text-[1.45rem]">
               {artist.name}
             </h2>
             <p className="text-[11px] text-muted-foreground/90 min-[2300px]:text-xs">
@@ -138,21 +152,13 @@ export function ThisIsArtist() {
               <Play className="h-3.5 w-3.5 min-[2300px]:h-4 min-[2300px]:w-4" fill="currentColor" />
               {t('options.play')}
             </Button>
-            <Button asChild variant="secondary" size="sm" className="h-7 px-2.5 text-xs min-[2300px]:h-8 min-[2300px]:px-3">
-              <Link to={ROUTES.LIBRARY.THIS_IS_ARTIST}>
-                {t('generic.seeMore')}
-              </Link>
-            </Button>
           </div>
         </div>
 
         {/* Artist Image - Right Side */}
         <div className="flex items-center justify-end">
           <div className="group relative h-[142px] w-[142px] shrink-0 min-[1600px]:h-[112px] min-[1600px]:w-[112px] min-[2300px]:h-[154px] min-[2300px]:w-[154px]">
-            <Link
-              to={ROUTES.LIBRARY.THIS_IS_ARTIST}
-              className="block h-full w-full overflow-hidden rounded-lg border border-border/60 shadow-xl transition-all duration-300 hover:scale-[1.015]"
-            >
+            <div className="block h-full w-full overflow-hidden rounded-lg border border-border/60 shadow-xl transition-all duration-300 hover:scale-[1.015]">
               <ImageLoader id={artist.coverArt} type="artist" size="300">
                 {(artistCoverUrl, isLoadingImage) => (
                   <>
@@ -171,12 +177,13 @@ export function ThisIsArtist() {
                   </>
                 )}
               </ImageLoader>
-            </Link>
+            </div>
             <Button
               type="button"
               variant="secondary"
               size="icon"
-              onClick={() => {
+              onClick={(event) => {
+                event.stopPropagation()
                 generate()
               }}
               disabled={isGenerating}

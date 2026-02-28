@@ -1,3 +1,4 @@
+import { startTransition } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useParams } from 'react-router-dom'
 import { AlbumComment } from '@/app/components/album/comment'
@@ -120,9 +121,9 @@ export default function Album() {
   }))
 
   const playAlbumFromIndex = (index: number) => {
-    window.setTimeout(() => {
+    startTransition(() => {
       setSongList(albumSongs, index)
-    }, 0)
+    })
   }
 
   return (

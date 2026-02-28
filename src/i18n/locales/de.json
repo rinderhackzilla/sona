@@ -373,6 +373,7 @@
     "playNow": "Jetzt abspielen",
     "daypart": {
       "label": "Tageszeiten-Mix",
+      "usedGenres": "Mit: {{genres}}",
       "names": {
         "morning": "Coffee Before Chaos",
         "noon": "Lunch Break Bangers",
@@ -396,6 +397,29 @@
     "about": "Update",
     "serverLogout": "Abmelden",
     "server": "Server"
+  },
+  "sessionMode": {
+    "label": "Session Mode",
+    "description": "Stimme Wiedergabe und Look mit einem Klick ab.",
+    "normal": {
+      "label": "Deaktivieren",
+      "info": "Gewohnter Look und normale Wiedergabe"
+    },
+    "focus": {
+      "label": "Focus",
+      "info": "Ruhiger Flow ohne Ablenkungen",
+      "exit": "Focus Mode beenden"
+    },
+    "night": {
+      "label": "Night",
+      "info": "Atmosphärische Rotation für späte Stunden."
+    },
+    "toasts": {
+      "focusEnabled": "Focus Mode aktiviert",
+      "nightEnabled": "Night Mode aktiviert",
+      "focusDisabled": "Focus Mode deaktiviert",
+      "nightDisabled": "Night Mode deaktiviert"
+    }
   },
   "generic": {
     "seeMore": "Mehr anzeigen",

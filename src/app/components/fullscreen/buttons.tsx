@@ -9,6 +9,7 @@ export function CloseFullscreenButton() {
       <Button
         variant="ghost"
         size="icon"
+        data-testid="fullscreen-close-button"
         className={buttonsStyle.utility}
         style={{ ...buttonsStyle.style }}
       >

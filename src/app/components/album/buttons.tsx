@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Rabbit } from 'lucide-react'
+import { startTransition } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Actions } from '@/app/components/actions'
 import { useRabbitHole } from '@/app/hooks/use-rabbit-hole'
@@ -72,7 +73,11 @@ export function AlbumButtons({ album, showInfoButton }: AlbumButtonsProps) {
       <Actions.Button
         tooltip={buttonsTooltips.play}
         buttonStyle="primary"
-        onClick={() => window.setTimeout(() => setSongList(album.song, 0), 0)}
+        onClick={() =>
+          startTransition(() => {
+            setSongList(album.song, 0)
+          })
+        }
       >
         <Actions.PlayIcon />
       </Actions.Button>
@@ -80,7 +85,11 @@ export function AlbumButtons({ album, showInfoButton }: AlbumButtonsProps) {
       {album.song.length > 1 && (
         <Actions.Button
           tooltip={buttonsTooltips.shuffle}
-          onClick={() => window.setTimeout(() => setSongList(album.song, 0, true), 0)}
+          onClick={() =>
+            startTransition(() => {
+              setSongList(album.song, 0, true)
+            })
+          }
         >
           <Actions.ShuffleIcon />
         </Actions.Button>
