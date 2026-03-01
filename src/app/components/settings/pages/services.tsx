@@ -2,7 +2,6 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import clsx from 'clsx'
 import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
-import { useDebouncedCallback } from 'use-debounce'
 import { z } from 'zod'
 import {
   Content,
@@ -17,6 +16,7 @@ import { Switch } from '@/app/components/ui/switch'
 import { Input } from '@/app/components/ui/input'
 import { useAppIntegrations } from '@/store/app.store'
 import { useLrcLibSettings } from '@/store/player.store'
+import { useDebouncedFormSync } from '@/app/hooks/use-debounced-form-sync'
 
 const { DISABLE_LRCLIB } = window
 
@@ -54,15 +54,11 @@ export function ServicesPage() {
     },
   })
 
-  const debounce = useDebouncedCallback((data: Partial<LrclibSchemaType>) => {
+  useDebouncedFormSync(watch, (data: Partial<LrclibSchemaType>) => {
     if (data.customUrl !== undefined) {
       setCustomUrl(data.customUrl)
     }
   }, 500)
-
-  watch((data) => {
-    debounce(data)
-  })
 
   const isLrclibEnabled = DISABLE_LRCLIB ? false : enabled
 

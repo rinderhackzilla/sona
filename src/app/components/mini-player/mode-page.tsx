@@ -1,3 +1,4 @@
+import { clsx } from 'clsx'
 import {
   HeartIcon,
   Maximize2Icon,
@@ -10,20 +11,21 @@ import {
   SkipForwardIcon,
 } from 'lucide-react'
 import {
+  type SyntheticEvent,
+  useCallback,
   useEffect,
   useMemo,
-  useRef,
   useState,
-  type SyntheticEvent,
   type WheelEvent,
 } from 'react'
-import { LazyLoadImage } from 'react-lazy-load-image-component'
 import { useTranslation } from 'react-i18next'
+import { LazyLoadImage } from 'react-lazy-load-image-component'
 import { MarqueeTitle } from '@/app/components/fullscreen/marquee-title'
 import { ImageLoader } from '@/app/components/image-loader'
 import { MiniPlayerProgress } from '@/app/components/mini-player/progress'
 import { Button } from '@/app/components/ui/button'
 import { SimpleTooltip } from '@/app/components/ui/simple-tooltip'
+import { useTimeoutController } from '@/app/hooks/use-timeout-controller'
 import {
   usePlayerActions,
   usePlayerCurrentList,
@@ -36,7 +38,6 @@ import {
 } from '@/store/player.store'
 import { useMiniPlayerState } from '@/store/ui.store'
 import { LoopState } from '@/types/playerContext'
-import { clsx } from 'clsx'
 
 export function MiniPlayerModePage() {
   const { t } = useTranslation()
@@ -94,38 +95,32 @@ export function MiniPlayerModePage() {
   const [isIdle, setIsIdle] = useState(false)
   const [showVolumeOverlay, setShowVolumeOverlay] = useState(false)
   const [backgroundDimOpacity, setBackgroundDimOpacity] = useState(0.42)
-  const idleTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const volumeOverlayTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const idleTimer = useTimeoutController()
+  const volumeOverlayTimer = useTimeoutController()
   const coverDisplaySize = isIdle ? Math.round(coverSize * 1.34) : coverSize
-  const viewportHeight = typeof window !== 'undefined' ? window.innerHeight : 198
+  const viewportHeight =
+    typeof window !== 'undefined' ? window.innerHeight : 198
   const coverTop = isIdle
     ? Math.max(3, Math.round((viewportHeight - coverDisplaySize) / 2))
     : 18
 
-  const clearIdleTimer = () => {
-    if (idleTimeoutRef.current) {
-      clearTimeout(idleTimeoutRef.current)
-      idleTimeoutRef.current = null
-    }
-  }
+  const clearIdleTimer = useCallback(() => {
+    idleTimer.clear()
+  }, [idleTimer])
 
-  const startIdleTimer = () => {
-    clearIdleTimer()
-    idleTimeoutRef.current = setTimeout(() => {
+  const startIdleTimer = useCallback(() => {
+    idleTimer.schedule(() => {
       setIsIdle(true)
     }, 3000)
-  }
+  }, [idleTimer])
 
   const handleMiniPlayerWheel = (event: WheelEvent<HTMLDivElement>) => {
     event.preventDefault()
     event.stopPropagation()
     handleVolumeWheel(event.deltaY > 0)
 
-    if (volumeOverlayTimeoutRef.current) {
-      clearTimeout(volumeOverlayTimeoutRef.current)
-    }
     setShowVolumeOverlay(true)
-    volumeOverlayTimeoutRef.current = setTimeout(() => {
+    volumeOverlayTimer.schedule(() => {
       setShowVolumeOverlay(false)
     }, 850)
   }
@@ -180,11 +175,9 @@ export function MiniPlayerModePage() {
   useEffect(() => {
     return () => {
       clearIdleTimer()
-      if (volumeOverlayTimeoutRef.current) {
-        clearTimeout(volumeOverlayTimeoutRef.current)
-      }
+      volumeOverlayTimer.clear()
     }
-  }, [])
+  }, [volumeOverlayTimer, clearIdleTimer])
 
   return (
     <div
@@ -250,14 +243,12 @@ export function MiniPlayerModePage() {
                 loading="eager"
                 effect="opacity"
                 className="h-full w-full object-cover object-center"
-              alt={`${song.artist} - ${song.title}`}
-            />
-          )}
-        </ImageLoader>
-      ) : (
-          <div
-            className="h-full w-full flex items-center justify-center text-white/80"
-          >
+                alt={`${song.artist} - ${song.title}`}
+              />
+            )}
+          </ImageLoader>
+        ) : (
+          <div className="h-full w-full flex items-center justify-center text-white/80">
             <Music2Icon className="h-10 w-10" />
           </div>
         )}
@@ -315,7 +306,9 @@ export function MiniPlayerModePage() {
           </Button>
         </SimpleTooltip>
 
-        <SimpleTooltip text={t('player.tooltips.miniPlayer.expand', 'Expand Player')}>
+        <SimpleTooltip
+          text={t('player.tooltips.miniPlayer.expand', 'Expand Player')}
+        >
           <Button
             variant="ghost"
             className="h-8 flex-1 rounded-none rounded-r-lg bg-primary/14 text-primary-foreground transition-colors hover:bg-primary/24"
@@ -387,7 +380,8 @@ export function MiniPlayerModePage() {
             <div
               className={clsx(
                 'mt-auto mb-2.5 flex items-center gap-1.5 transition-all duration-400 ease-out',
-                (isIdle || !hasSong) && 'opacity-0 translate-y-2 pointer-events-none',
+                (isIdle || !hasSong) &&
+                  'opacity-0 translate-y-2 pointer-events-none',
               )}
             >
               <SimpleTooltip text={t('player.tooltips.previous')}>
@@ -408,7 +402,9 @@ export function MiniPlayerModePage() {
 
               <SimpleTooltip
                 text={
-                  isPlaying ? t('player.tooltips.pause') : t('player.tooltips.play')
+                  isPlaying
+                    ? t('player.tooltips.pause')
+                    : t('player.tooltips.play')
                 }
               >
                 <Button

@@ -7,6 +7,7 @@ import { ImageLoader } from '@/app/components/image-loader'
 import { useDiscoverWeekly } from '@/app/hooks/use-discover-weekly'
 import { usePlayerActions } from '@/store/player.store'
 import { ROUTES } from '@/routes/routesList'
+import { navigateSafe } from '@/utils/navigateSafe'
 
 export function DiscoverWeeklyCard() {
   const { t } = useTranslation()
@@ -84,11 +85,11 @@ export function DiscoverWeeklyCard() {
   return (
     <div
       className="relative h-full w-full cursor-pointer overflow-hidden rounded-xl border border-border/60 bg-card/20"
-      onClick={() => navigate(ROUTES.LIBRARY.DISCOVER_WEEKLY)}
+      onClick={() => navigateSafe(navigate, ROUTES.LIBRARY.DISCOVER_WEEKLY)}
       onKeyDown={(event) => {
         if (event.key === 'Enter' || event.key === ' ') {
           event.preventDefault()
-          navigate(ROUTES.LIBRARY.DISCOVER_WEEKLY)
+          navigateSafe(navigate, ROUTES.LIBRARY.DISCOVER_WEEKLY)
         }
       }}
       role="link"

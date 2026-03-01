@@ -6,13 +6,14 @@ import {
   AlbumsSearchParams,
   PersistedAlbumListKeys,
 } from '@/utils/albumsFilter'
+import { safeStorageGet, safeStorageSet } from '@/utils/safe-storage'
 import { SearchParamsHandler } from '@/utils/searchParamsHandler'
 
 export function handleGenreFilterRedirection(searchParams: URLSearchParams) {
   const { getSearchParam } = new SearchParamsHandler(searchParams)
 
-  const savedGenre = localStorage.getItem(PersistedAlbumListKeys.GenreFilter)
-  const persistedMainFilter = localStorage.getItem(
+  const savedGenre = safeStorageGet(PersistedAlbumListKeys.GenreFilter)
+  const persistedMainFilter = safeStorageGet(
     PersistedAlbumListKeys.MainFilter,
   ) as AlbumListType | null
 
@@ -28,7 +29,7 @@ export function handleGenreFilterRedirection(searchParams: URLSearchParams) {
   if (hasGenreFilter) {
     const genre = getSearchParam<string>(AlbumsSearchParams.Genre, '')
 
-    localStorage.setItem(PersistedAlbumListKeys.GenreFilter, genre)
+    safeStorageSet(PersistedAlbumListKeys.GenreFilter, genre)
   }
 
   return null

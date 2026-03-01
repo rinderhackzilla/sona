@@ -8,16 +8,17 @@ import {
   YearFilter,
   YearSortOptions,
 } from '@/utils/albumsFilter'
+import { safeStorageGet, safeStorageSet } from '@/utils/safe-storage'
 import { SearchParamsHandler } from '@/utils/searchParamsHandler'
 
 export function handleYearFilterRedirection(searchParams: URLSearchParams) {
   const { getSearchParam } = new SearchParamsHandler(searchParams)
 
-  const persistedYear = localStorage.getItem(
+  const persistedYear = safeStorageGet(
     PersistedAlbumListKeys.YearFilter,
   ) as YearFilter | null
 
-  const persistedMainFilter = localStorage.getItem(
+  const persistedMainFilter = safeStorageGet(
     PersistedAlbumListKeys.MainFilter,
   ) as AlbumListType | null
 
@@ -34,7 +35,7 @@ export function handleYearFilterRedirection(searchParams: URLSearchParams) {
       YearSortOptions.Oldest,
     )
 
-    localStorage.setItem(PersistedAlbumListKeys.YearFilter, yearFilter)
+    safeStorageSet(PersistedAlbumListKeys.YearFilter, yearFilter)
   }
 
   return null

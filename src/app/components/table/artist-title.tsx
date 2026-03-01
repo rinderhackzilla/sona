@@ -12,7 +12,7 @@ export function ArtistTitle({ artist }: ArtistTitleProps) {
     <div className="flex gap-2 items-center min-w-[200px] 2xl:min-w-[350px]">
       <CoverImage
         coverArt={artist.coverArt}
-        coverArtType="artist"
+        coverArtType={artist.coverArtType ?? 'artist'}
         altText={artist.name}
       />
       <div className="flex flex-col justify-center items-center">

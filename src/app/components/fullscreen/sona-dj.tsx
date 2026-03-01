@@ -128,7 +128,7 @@ export function SonaDjButton({ variant = 'fullscreen' }: SonaDjButtonProps) {
                 onClick={() => {
                   setMode(dj.mode)
                   setRuntimeSonaDjMode(dj.mode)
-                  void seedSonaDjTrack(dj.mode)
+                  seedSonaDjTrack(dj.mode).catch(() => undefined)
                 }}
               >
                 <DjModeIcon fileName={dj.icon} />

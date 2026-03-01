@@ -11,7 +11,6 @@ export function Top50Year() {
     isGenerating,
     error,
     lastGenerated,
-    year,
     generate,
     isConfigured,
   } = useTop50Year()

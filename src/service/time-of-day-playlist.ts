@@ -556,7 +556,7 @@ export async function generateTimeOfDayPlaylist(
     [...queuesByGenre.keys()],
     targetCountByGenre,
   )
-  let playlist = pickWithConstraints(
+  const playlist = pickWithConstraints(
     queuesByGenre,
     weightedOrder,
     size,

@@ -41,6 +41,7 @@ export function FullscreenControls() {
         data-state={isShuffleActive && 'active'}
         className={clsx(
           buttonsStyle.utility,
+          'night-control-soft-pulse',
           isShuffleActive && buttonsStyle.activeDot,
         )}
         style={{ ...buttonsStyle.style }}
@@ -52,7 +53,7 @@ export function FullscreenControls() {
       <Button
         size="icon"
         variant="ghost"
-        className={buttonsStyle.secondary}
+        className={clsx(buttonsStyle.secondary, 'night-control-soft-pulse')}
         style={{ ...buttonsStyle.style }}
         onClick={() => playPrevSong()}
         disabled={!hasPrev}
@@ -62,7 +63,7 @@ export function FullscreenControls() {
       <Button
         size="icon"
         variant="link"
-        className={buttonsStyle.main}
+        className={clsx(buttonsStyle.main, 'night-control-main-pulse')}
         style={{ ...buttonsStyle.style }}
         onClick={() => togglePlayPause()}
       >
@@ -75,7 +76,7 @@ export function FullscreenControls() {
       <Button
         size="icon"
         variant="ghost"
-        className={buttonsStyle.secondary}
+        className={clsx(buttonsStyle.secondary, 'night-control-soft-pulse')}
         style={{ ...buttonsStyle.style }}
         onClick={() => playNextSong()}
         disabled={!hasNext && loopState !== LoopState.All}
@@ -88,6 +89,7 @@ export function FullscreenControls() {
         data-state={loopState !== LoopState.Off && 'active'}
         className={clsx(
           buttonsStyle.utility,
+          'night-control-soft-pulse',
           loopState !== LoopState.Off && buttonsStyle.activeDot,
         )}
         onClick={() => toggleLoop()}

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useNavigationType } from 'react-router-dom'
+import { navigateSafe } from '@/utils/navigateSafe'
 
 const useNavigationHistory = () => {
   const navigationType = useNavigationType()
@@ -28,11 +29,11 @@ const useNavigationHistory = () => {
   }, [navigationType])
 
   const goBack = () => {
-    if (canGoBack) navigate(-1)
+    if (canGoBack) navigateSafe(navigate, -1)
   }
 
   const goForward = () => {
-    if (canGoForward) navigate(1)
+    if (canGoForward) navigateSafe(navigate, 1)
   }
 
   return { canGoBack, canGoForward, goBack, goForward }

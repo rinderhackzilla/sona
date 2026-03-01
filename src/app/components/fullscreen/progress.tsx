@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { ProgressSlider } from '@/app/components/ui/slider'
 import {
   usePlayerActions,
@@ -9,8 +9,6 @@ import {
 } from '@/store/player.store'
 import { convertSecondsToTime } from '@/utils/convertSecondsToTime'
 
-let isSeeking = false
-
 export function FullscreenProgress() {
   const progress = usePlayerProgress()
   const [localProgress, setLocalProgress] = useState(progress)
@@ -19,19 +17,39 @@ export function FullscreenProgress() {
   const currentDuration = usePlayerDuration()
   const isPlaying = usePlayerIsPlaying()
   const { setProgress } = usePlayerActions()
+  const isSeekingRef = useRef(false)
+
+  const resolveAudioElement = useCallback(() => {
+    if (audioPlayerRef) return audioPlayerRef
+
+    const fallbackCandidates = [
+      'audio[data-testid="player-song-audio-a"]',
+      'audio[data-testid="player-song-audio-b"]',
+      'audio[data-testid="player-podcast-audio"]',
+      'audio[data-testid="player-radio-audio"]',
+    ]
+
+    const elements = fallbackCandidates
+      .map((selector) => document.querySelector(selector) as HTMLAudioElement | null)
+      .filter(Boolean) as HTMLAudioElement[]
+
+    const active = elements.find((audio) => !audio.paused && audio.readyState > 0)
+    return active ?? elements[0] ?? null
+  }, [audioPlayerRef])
 
   const updateAudioCurrentTime = useCallback(
     (value: number) => {
-      isSeeking = false
-      if (audioPlayerRef) {
-        audioPlayerRef.currentTime = value
+      isSeekingRef.current = false
+      const audio = resolveAudioElement()
+      if (audio) {
+        audio.currentTime = value
       }
     },
-    [audioPlayerRef],
+    [resolveAudioElement],
   )
 
   const handleSeeking = useCallback((amount: number) => {
-    isSeeking = true
+    isSeekingRef.current = true
     setLocalProgress(amount)
     setVisualProgress(amount)
   }, [])
@@ -47,15 +65,16 @@ export function FullscreenProgress() {
   )
 
   const handleSeekedFallback = useCallback(() => {
-    if (localProgress !== progress) {
-      updateAudioCurrentTime(localProgress)
-      setProgress(localProgress)
-    }
+    // Only fallback when Radix commit did not fire.
+    if (!isSeekingRef.current) return
+    updateAudioCurrentTime(localProgress)
+    setProgress(localProgress)
+    setLocalProgress(localProgress)
     setVisualProgress(localProgress)
-  }, [localProgress, progress, setProgress, updateAudioCurrentTime])
+  }, [localProgress, setProgress, updateAudioCurrentTime])
 
   useEffect(() => {
-    if (isSeeking) return
+    if (isSeekingRef.current) return
     if (!isPlaying) {
       setVisualProgress(progress)
       return
@@ -63,18 +82,18 @@ export function FullscreenProgress() {
 
     let frameId: number
     const tick = () => {
-      const next = audioPlayerRef?.currentTime ?? progress
+      const next = resolveAudioElement()?.currentTime ?? progress
       setVisualProgress((prev) => (Math.abs(prev - next) > 0.015 ? next : prev))
       frameId = requestAnimationFrame(tick)
     }
 
     frameId = requestAnimationFrame(tick)
     return () => cancelAnimationFrame(frameId)
-  }, [audioPlayerRef, isPlaying, isSeeking, progress])
+  }, [isPlaying, progress, resolveAudioElement])
 
   const [showRemaining, setShowRemaining] = useState(false)
 
-  const activeProgress = isSeeking ? localProgress : visualProgress
+  const activeProgress = isSeekingRef.current ? localProgress : visualProgress
   const currentTime = convertSecondsToTime(activeProgress)
   const remainingTime = `-${convertSecondsToTime((currentDuration ?? 0) - activeProgress)}`
 
@@ -91,7 +110,7 @@ export function FullscreenProgress() {
         tooltipTransformer={convertSecondsToTime}
         max={currentDuration}
         step={1}
-        className="w-full h-4"
+        className="w-full h-4 fullscreen-progress-slider"
         onValueChange={([value]) => handleSeeking(value)}
         onValueCommit={([value]) => handleSeeked(value)}
         onPointerUp={handleSeekedFallback}

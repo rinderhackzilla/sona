@@ -45,7 +45,7 @@ export function MiniPlayerControls() {
           buttonsStyle.secondary,
           buttonsStyle.removeRing,
           isShuffleActive && buttonsStyle.activeDot,
-          'mini-player:hidden',
+          '[@media(max-height:132px)]:hidden',
         )}
         style={{ ...buttonsStyle.style }}
         onClick={() => toggleShuffle()}
@@ -59,7 +59,7 @@ export function MiniPlayerControls() {
         className={clsx(
           buttonsStyle.secondary,
           buttonsStyle.removeRing,
-          'mini-player:hidden',
+          '[@media(max-height:132px)]:hidden',
         )}
         style={{ ...buttonsStyle.style }}
         onClick={() => playPrevSong()}
@@ -73,7 +73,7 @@ export function MiniPlayerControls() {
         className={cn(
           buttonsStyle.main,
           buttonsStyle.removeRing,
-          'mini-player:w-8 mini-player:h-8',
+          '[@media(max-height:132px)]:w-8 [@media(max-height:132px)]:h-8',
         )}
         style={{ ...buttonsStyle.style }}
         onClick={() => togglePlayPause()}
@@ -96,7 +96,7 @@ export function MiniPlayerControls() {
         className={clsx(
           buttonsStyle.secondary,
           buttonsStyle.removeRing,
-          'mini-player:w-8 mini-player:h-8',
+          '[@media(max-height:132px)]:w-8 [@media(max-height:132px)]:h-8',
         )}
         style={{ ...buttonsStyle.style }}
         onClick={() => playNextSong()}
@@ -112,7 +112,7 @@ export function MiniPlayerControls() {
           buttonsStyle.secondary,
           buttonsStyle.removeRing,
           loopState !== LoopState.Off && buttonsStyle.activeDot,
-          'mini-player:hidden',
+          '[@media(max-height:132px)]:hidden',
         )}
         onClick={() => toggleLoop()}
         style={{ ...buttonsStyle.style }}
@@ -136,7 +136,7 @@ export function MiniPlayerLikeButton() {
       className={clsx(
         buttonsStyle.secondary,
         buttonsStyle.removeRing,
-        'mini-player:hidden',
+        '[@media(max-height:132px)]:hidden',
       )}
       onClick={starCurrentSong}
       style={{ ...buttonsStyle.style }}

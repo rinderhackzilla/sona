@@ -5,6 +5,7 @@ import { useSongList } from '@/app/hooks/use-song-list'
 import { ROUTES } from '@/routes/routesList'
 import { usePlayerActions } from '@/store/player.store'
 import { Albums } from '@/types/responses/album'
+import { navigateSafe } from '@/utils/navigateSafe'
 import {
   CustomGroup,
   CustomGroupHeader,
@@ -39,7 +40,7 @@ export function CommandAlbumResult({
         <span>{t('sidebar.albums')}</span>
         <CustomHeaderLink
           onClick={() =>
-            runCommand(() => navigate(ROUTES.ALBUMS.SEARCH(query)))
+            runCommand(() => navigateSafe(navigate, ROUTES.ALBUMS.SEARCH(query)))
           }
         >
           {t('generic.seeMore')}
@@ -53,7 +54,7 @@ export function CommandAlbumResult({
               value={`album-${album.id}`}
               className="border mb-1"
               onSelect={() => {
-                runCommand(() => navigate(ROUTES.ALBUM.PAGE(album.id)))
+                runCommand(() => navigateSafe(navigate, ROUTES.ALBUM.PAGE(album.id)))
               }}
             >
               <ResultItem

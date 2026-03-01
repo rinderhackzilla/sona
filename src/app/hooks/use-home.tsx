@@ -1,59 +1,156 @@
-import { useQuery } from '@tanstack/react-query'
+import { useQueries, useQuery } from '@tanstack/react-query'
+import { useMemo } from 'react'
 import { subsonic } from '@/service/subsonic'
+import { AlbumsListData } from '@/types/responses/album'
+import { Genres } from '@/types/responses/genre'
 import { convertMinutesToMs } from '@/utils/convertSecondsToTime'
 import { queryKeys } from '@/utils/queryKeys'
-import { useMemo } from 'react'
+
+const HOME_QUERY_BASE = {
+  staleTime: convertMinutesToMs(10),
+  gcTime: convertMinutesToMs(30),
+  refetchOnWindowFocus: false as const,
+}
+
+function createHomeAlbumListQuery(
+  key: string,
+  type: 'newest' | 'frequent' | 'recent' | 'random',
+  size = 16,
+) {
+  return {
+    queryKey: [key],
+    queryFn: () =>
+      subsonic.albums.getAlbumList({
+        size,
+        type,
+      }),
+  }
+}
+
+export interface GenreDiscoveryItem {
+  value: string
+  albumCount: number
+}
+
+function deriveGenreDiscoveryItems(
+  genres?: Genres,
+  mostPlayed?: AlbumsListData,
+): GenreDiscoveryItem[] {
+  const topGenres = (() => {
+    if (!mostPlayed?.list) return []
+    const genreCounts = new Map<string, number>()
+    mostPlayed.list.forEach((album) => {
+      if (!album.genre) return
+      genreCounts.set(album.genre, (genreCounts.get(album.genre) || 0) + 1)
+    })
+    return Array.from(genreCounts.entries())
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 3)
+      .map(([genre]) => genre)
+  })()
+
+  const selectedGenres = (() => {
+    if (topGenres.length > 0) return topGenres
+    if (!genres || genres.length === 0) return []
+    return [...genres]
+      .sort((a, b) => (b.songCount || 0) - (a.songCount || 0))
+      .slice(0, 3)
+      .map((genre) => genre.value)
+  })()
+
+  if (selectedGenres.length === 0) return []
+
+  const genresMap = new Map((genres || []).map((genre) => [genre.value, genre]))
+  return selectedGenres.map((genreValue) => ({
+    value: genreValue,
+    albumCount: genresMap.get(genreValue)?.albumCount ?? 0,
+  }))
+}
 
 export const useGetRandomSongs = () => {
   return useQuery({
     queryKey: [queryKeys.song.random],
     queryFn: () => subsonic.songs.getRandomSongs({ size: 10 }),
+    ...HOME_QUERY_BASE,
   })
 }
 
 export const useGetRecentlyAdded = () => {
   return useQuery({
-    queryKey: [queryKeys.album.recentlyAdded],
-    queryFn: () =>
-      subsonic.albums.getAlbumList({
-        size: 16,
-        type: 'newest',
-      }),
+    ...createHomeAlbumListQuery(queryKeys.album.recentlyAdded, 'newest'),
+    ...HOME_QUERY_BASE,
   })
 }
 
 export const useGetMostPlayed = () => {
   return useQuery({
-    queryKey: [queryKeys.album.mostPlayed],
-    queryFn: () =>
-      subsonic.albums.getAlbumList({
-        size: 16,
-        type: 'frequent',
-      }),
+    ...createHomeAlbumListQuery(queryKeys.album.mostPlayed, 'frequent'),
+    ...HOME_QUERY_BASE,
   })
 }
 
 export const useGetRecentlyPlayed = () => {
   return useQuery({
-    queryKey: [queryKeys.album.recentlyPlayed],
-    queryFn: () =>
-      subsonic.albums.getAlbumList({
-        size: 16,
-        type: 'recent',
-      }),
+    ...createHomeAlbumListQuery(queryKeys.album.recentlyPlayed, 'recent'),
     refetchInterval: convertMinutesToMs(2),
+    staleTime: convertMinutesToMs(1),
+    gcTime: convertMinutesToMs(20),
+    refetchOnWindowFocus: false,
   })
 }
 
 export const useGetRandomAlbums = () => {
   return useQuery({
-    queryKey: [queryKeys.album.random],
-    queryFn: () =>
-      subsonic.albums.getAlbumList({
-        size: 16,
-        type: 'random',
-      }),
+    ...createHomeAlbumListQuery(queryKeys.album.random, 'random'),
+    ...HOME_QUERY_BASE,
   })
+}
+
+export const useHomeFeedData = () => {
+  const [recentlyAdded, recentlyPlayed, mostPlayed] = useQueries({
+    queries: [
+      {
+        ...createHomeAlbumListQuery(queryKeys.album.recentlyAdded, 'newest'),
+        ...HOME_QUERY_BASE,
+      },
+      {
+        ...createHomeAlbumListQuery(queryKeys.album.recentlyPlayed, 'recent'),
+        refetchInterval: convertMinutesToMs(2),
+        staleTime: convertMinutesToMs(1),
+        gcTime: convertMinutesToMs(20),
+        refetchOnWindowFocus: false,
+      },
+      {
+        ...createHomeAlbumListQuery(queryKeys.album.mostPlayed, 'frequent'),
+        ...HOME_QUERY_BASE,
+      },
+    ],
+  })
+
+  const similarArtists = useGetSimilarArtistsDiscovery()
+
+  return {
+    similarArtists,
+    recentlyAdded,
+    recentlyPlayed,
+    mostPlayed,
+  }
+}
+
+export const useHomeDashboardData = () => {
+  const feed = useHomeFeedData()
+  const genresQuery = useGetGenres()
+
+  const genres = useMemo(
+    () => deriveGenreDiscoveryItems(genresQuery.data, feed.mostPlayed.data),
+    [feed.mostPlayed.data, genresQuery.data],
+  )
+
+  return {
+    ...feed,
+    genres,
+    isGenresLoading: genresQuery.isLoading || feed.mostPlayed.isLoading,
+  }
 }
 
 // Get all genres
@@ -61,7 +158,9 @@ export const useGetGenres = () => {
   return useQuery({
     queryKey: [queryKeys.genre.all],
     queryFn: () => subsonic.genres.get(),
-    staleTime: convertMinutesToMs(30), // Genres don't change often
+    staleTime: convertMinutesToMs(30),
+    gcTime: convertMinutesToMs(60),
+    refetchOnWindowFocus: false,
   })
 }
 
@@ -76,6 +175,9 @@ export const useGetAlbumsByGenre = (genre: string, size: number = 16) => {
         genre,
       }),
     enabled: !!genre,
+    staleTime: convertMinutesToMs(15),
+    gcTime: convertMinutesToMs(45),
+    refetchOnWindowFocus: false,
   })
 }
 
@@ -83,51 +185,10 @@ export const useGetAlbumsByGenre = (genre: string, size: number = 16) => {
 export const useGetGenreDiscovery = () => {
   const { data: genres, isLoading: genresLoading } = useGetGenres()
   const { data: mostPlayed } = useGetMostPlayed()
-
-  // Extract top genres from most played albums
-  const topGenres = useMemo(() => {
-    if (!mostPlayed?.list) return []
-    
-    const genreCounts = new Map<string, number>()
-    
-    mostPlayed.list.forEach((album) => {
-      if (album.genre) {
-        genreCounts.set(album.genre, (genreCounts.get(album.genre) || 0) + 1)
-      }
-    })
-    
-    // Sort by count and take top 3
-    return Array.from(genreCounts.entries())
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 3)
-      .map(([genre]) => genre)
-  }, [mostPlayed])
-
-  // If no top genres found, pick random popular genres
-  const selectedGenres = useMemo(() => {
-    if (topGenres.length > 0) return topGenres
-    if (!genres || genres.length === 0) return []
-    
-    // Sort by song count and pick top 3
-    return [...genres]
-      .sort((a, b) => (b.songCount || 0) - (a.songCount || 0))
-      .slice(0, 3)
-      .map((g) => g.value)
-  }, [topGenres, genres])
-
-  const selectedGenreItems = useMemo(() => {
-    if (!selectedGenres.length) return []
-
-    const genresMap = new Map((genres || []).map((genre) => [genre.value, genre]))
-
-    return selectedGenres.map((genreValue) => {
-      const genreData = genresMap.get(genreValue)
-      return {
-        value: genreValue,
-        albumCount: genreData?.albumCount ?? 0,
-      }
-    })
-  }, [selectedGenres, genres])
+  const selectedGenreItems = useMemo(
+    () => deriveGenreDiscoveryItems(genres, mostPlayed),
+    [genres, mostPlayed],
+  )
 
   return {
     genres: selectedGenreItems,
@@ -141,8 +202,11 @@ export const useGetSimilarArtistsDiscovery = () => {
   const { data: recentlyPlayed } = useGetRecentlyPlayed()
 
   // Extract top artists and genres from listening history
-  const { topArtists, topGenres, topArtistIds } = useMemo(() => {
-    const artistCounts = new Map<string, { count: number; id: string; genre?: string }>()
+  const { topGenres, topArtistIds } = useMemo(() => {
+    const artistCounts = new Map<
+      string,
+      { count: number; id: string; genre?: string }
+    >()
     const genreCounts = new Map<string, number>()
     const artistIds = new Set<string>()
 
@@ -155,7 +219,11 @@ export const useGetSimilarArtistsDiscovery = () => {
     allAlbums.forEach((album) => {
       if (album.artist && album.artistId) {
         artistIds.add(album.artistId)
-        const current = artistCounts.get(album.artist) || { count: 0, id: album.artistId, genre: album.genre }
+        const current = artistCounts.get(album.artist) || {
+          count: 0,
+          id: album.artistId,
+          genre: album.genre,
+        }
         artistCounts.set(album.artist, {
           ...current,
           count: current.count + 1,
@@ -167,12 +235,6 @@ export const useGetSimilarArtistsDiscovery = () => {
       }
     })
 
-    // Get top 5 artists
-    const topArtistsList = Array.from(artistCounts.entries())
-      .sort((a, b) => b[1].count - a[1].count)
-      .slice(0, 5)
-      .map(([name, data]) => ({ name, ...data }))
-
     // Get top 3 genres
     const topGenresList = Array.from(genreCounts.entries())
       .sort((a, b) => b[1] - a[1])
@@ -180,7 +242,6 @@ export const useGetSimilarArtistsDiscovery = () => {
       .map(([genre]) => genre)
 
     return {
-      topArtists: topArtistsList,
       topGenres: topGenresList,
       topArtistIds: Array.from(artistIds),
     }
@@ -199,7 +260,8 @@ export const useGetSimilarArtistsDiscovery = () => {
       }
 
       // Get albums from one of the top genres
-      const randomGenre = topGenres[Math.floor(Math.random() * topGenres.length)]
+      const randomGenre =
+        topGenres[Math.floor(Math.random() * topGenres.length)]
       const albums = await subsonic.albums.getAlbumList({
         size: 50, // Get more to filter
         type: 'byGenre',
@@ -210,7 +272,7 @@ export const useGetSimilarArtistsDiscovery = () => {
 
       // Filter out albums from top artists (to show discovery)
       const discoveryAlbums = albums.list.filter(
-        (album) => !topArtistIds.includes(album.artistId || '')
+        (album) => !topArtistIds.includes(album.artistId || ''),
       )
 
       // Shuffle and take 10
@@ -224,6 +286,8 @@ export const useGetSimilarArtistsDiscovery = () => {
       }
     },
     enabled: !!mostPlayed || !!recentlyPlayed,
-    staleTime: convertMinutesToMs(10), // Refresh every 10 minutes
+    staleTime: convertMinutesToMs(10),
+    gcTime: convertMinutesToMs(30),
+    refetchOnWindowFocus: false,
   })
 }

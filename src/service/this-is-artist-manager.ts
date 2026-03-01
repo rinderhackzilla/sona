@@ -1,4 +1,11 @@
 import { generateThisIsArtist } from './this-is-artist'
+import {
+  readStoredJson,
+  readStoredPlaylist,
+  readStoredString,
+  writeStoredPlaylist,
+  writeStoredString,
+} from './playlist-storage'
 import type { Song } from '@/types/responses/song'
 import type { ISimilarArtist } from '@/types/responses/artist'
 
@@ -40,8 +47,8 @@ function _getMidnightToday(): Date {
 export function shouldGeneratePlaylist(): boolean {
   try {
     const today = getDateKey()
-    const storedDate = localStorage.getItem(STORAGE_KEY_DATE_FLAG)
-    const storedMetadata = localStorage.getItem(STORAGE_KEY_METADATA)
+    const storedDate = readStoredString(STORAGE_KEY_DATE_FLAG)
+    const storedMetadata = readStoredJson<PlaylistMetadata>(STORAGE_KEY_METADATA)
 
     // No playlist exists yet
     if (!storedMetadata) {
@@ -51,8 +58,8 @@ export function shouldGeneratePlaylist(): boolean {
 
     // Date flag missing, check metadata
     if (!storedDate) {
-      const metadata: PlaylistMetadata = JSON.parse(storedMetadata)
-      const playlistDate = metadata.dateKey || getDateKey(new Date(metadata.generatedAt))
+      const playlistDate =
+        storedMetadata.dateKey || getDateKey(new Date(storedMetadata.generatedAt))
       
       // Update flag and check
       if (playlistDate !== today) {
@@ -61,7 +68,7 @@ export function shouldGeneratePlaylist(): boolean {
       }
       
       // Save flag for future checks
-      localStorage.setItem(STORAGE_KEY_DATE_FLAG, playlistDate)
+      writeStoredString(STORAGE_KEY_DATE_FLAG, playlistDate)
       return false
     }
 
@@ -87,13 +94,11 @@ export function loadPlaylist(): {
   metadata: PlaylistMetadata | null
 } {
   try {
-    const storedPlaylist = localStorage.getItem(STORAGE_KEY)
-    const storedMetadata = localStorage.getItem(STORAGE_KEY_METADATA)
-
-    if (storedPlaylist && storedMetadata) {
-      const playlist = JSON.parse(storedPlaylist)
-      const metadata: PlaylistMetadata = JSON.parse(storedMetadata)
-      
+    const { playlist, metadata } = readStoredPlaylist<PlaylistMetadata>(
+      STORAGE_KEY,
+      STORAGE_KEY_METADATA,
+    )
+    if (metadata) {
       console.log(`[ThisIsArtist] Loaded playlist: This is ${metadata.artist.name} (${metadata.dateKey})`)
       
       return { playlist, metadata }
@@ -144,9 +149,8 @@ export async function generateAndSavePlaylist(
   }
 
   // Save to localStorage
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(result.playlist))
-  localStorage.setItem(STORAGE_KEY_METADATA, JSON.stringify(metadata))
-  localStorage.setItem(STORAGE_KEY_DATE_FLAG, today)
+  writeStoredPlaylist(STORAGE_KEY, STORAGE_KEY_METADATA, result.playlist, metadata)
+  writeStoredString(STORAGE_KEY_DATE_FLAG, today)
 
   console.log(`[ThisIsArtist] ✓ Playlist generated: This is ${result.artist.name} (${today})`)
 

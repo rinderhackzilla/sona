@@ -5,6 +5,7 @@ import { useSongList } from '@/app/hooks/use-song-list'
 import { ROUTES } from '@/routes/routesList'
 import { usePlayerActions } from '@/store/player.store'
 import { ISimilarArtist } from '@/types/responses/artist'
+import { navigateSafe } from '@/utils/navigateSafe'
 import { CustomGroup, CustomGroupHeader } from './command-group'
 import { CommandItemProps } from './command-menu'
 import { ResultItem } from './result-item'
@@ -40,12 +41,12 @@ export function CommandArtistResult({
               value={`artist-${artist.id}`}
               className="border mb-1"
               onSelect={() => {
-                runCommand(() => navigate(ROUTES.ARTIST.PAGE(artist.id)))
+                runCommand(() => navigateSafe(navigate, ROUTES.ARTIST.PAGE(artist.id)))
               }}
             >
               <ResultItem
                 coverArt={artist.coverArt}
-                coverArtType="artist"
+                coverArtType={artist.coverArtType ?? 'artist'}
                 title={artist.name}
                 artist={t('artist.info.albumsCount', {
                   count: artist.albumCount,

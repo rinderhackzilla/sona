@@ -735,6 +735,9 @@
       "services": "Services",
       "about": "System"
     },
+    "view": {
+      "advanced": "Advanced"
+    },
     "options": {
       "appearance": "Appearance",
       "language": "Language & Region",
@@ -850,6 +853,21 @@
           "label": "Show \"This is [Artist]\" Playlist"
         },
         "requiresLastfm": "Configure Last.fm in Services to enable this feature"
+      },
+      "sessionModes": {
+        "group": "Session Modes",
+        "genresButton": "Genres",
+        "modalDescription": "Choose which genres are allowed for this session mode.",
+        "reset": "Reset",
+        "save": "Save",
+        "focusGenres": {
+          "label": "Focus Mode Genres",
+          "modalTitle": "Focus Mode Genres"
+        },
+        "nightGenres": {
+          "label": "Night Mode Genres",
+          "modalTitle": "Night Mode Genres"
+        }
       }
     },
     "accounts": {
@@ -912,6 +930,10 @@
     "player": {
       "audioProcessing": {
         "group": "Audio Processing"
+      },
+      "equalizer": {
+        "label": "Equalizer",
+        "open": "Open"
       },
       "crossfade": {
         "label": "Crossfade",

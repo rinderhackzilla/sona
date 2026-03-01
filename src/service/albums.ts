@@ -6,6 +6,7 @@ import {
   AlbumListType,
   GetAlbumResponse,
 } from '@/types/responses/album'
+import { normalizeAlbums } from '@/service/mappers/album'
 import { dedupeAlbumsByIdentity, dedupeSingleAlbumSongs } from '@/utils/albumDedup'
 
 export interface AlbumListParams {
@@ -39,7 +40,9 @@ async function getAlbumList(params: Partial<AlbumListParams> = {}) {
     },
   })
 
-  const dedupedList = dedupeAlbumsByIdentity(response?.data.albumList2.album ?? [])
+  const dedupedList = dedupeAlbumsByIdentity(
+    normalizeAlbums(response?.data.albumList2.album ?? []),
+  )
 
   return {
     albumsCount: response?.count,

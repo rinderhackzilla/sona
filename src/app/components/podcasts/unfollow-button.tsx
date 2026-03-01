@@ -19,6 +19,7 @@ import { Button } from '@/app/components/ui/button'
 import { SimpleTooltip } from '@/app/components/ui/simple-tooltip'
 import { ROUTES } from '@/routes/routesList'
 import { podcasts } from '@/service/podcasts'
+import { navigateSafe } from '@/utils/navigateSafe'
 import { queryKeys } from '@/utils/queryKeys'
 
 interface UnfollowButtonProps {
@@ -39,7 +40,7 @@ export function UnfollowButton({ title, podcastId }: UnfollowButtonProps) {
         queryKey: [queryKeys.podcast.all],
       })
       toast.success(t('podcasts.header.unfollow.toasts.success'))
-      navigate(ROUTES.LIBRARY.PODCASTS)
+      navigateSafe(navigate, ROUTES.LIBRARY.PODCASTS)
     },
     onError: () => {
       toast.error(t('podcasts.header.unfollow.toasts.error'))

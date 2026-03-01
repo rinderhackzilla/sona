@@ -5,25 +5,29 @@ import {
   PreviewListFallback,
 } from '@/app/components/fallbacks/home-fallbacks'
 import AlbumHeader from '@/app/components/home/carousel/album-header'
-import PreviewList from '@/app/components/home/preview-list'
-import GenreDiscovery from '@/app/components/home/genre-discovery'
 import { DiscoverWeeklyCard } from '@/app/components/home/discover-weekly-card'
+import GenreDiscovery from '@/app/components/home/genre-discovery'
+import PreviewList from '@/app/components/home/preview-list'
 import { ThisIsArtist } from '@/app/components/home/this-is-artist'
-import { useAppStore } from '@/store/app.store'
-import {
-  useGetRecentlyAdded,
-  useGetRecentlyPlayed,
-  useGetSimilarArtistsDiscovery,
-} from '@/app/hooks/use-home'
+import { useHomeDashboardData } from '@/app/hooks/use-home'
+import { useRenderCounter } from '@/app/hooks/use-render-counter'
 import { ROUTES } from '@/routes/routesList'
+import { useAppStore } from '@/store/app.store'
 
 export default function Home() {
+  useRenderCounter('HomePage')
   const { t } = useTranslation()
-  const showThisIsArtist = useAppStore((state) => state.integrations.lastfm.showThisIsArtist)
+  const showThisIsArtist = useAppStore(
+    (state) => state.integrations.lastfm.showThisIsArtist,
+  )
 
-  const similarArtists = useGetSimilarArtistsDiscovery()
-  const recentlyPlayed = useGetRecentlyPlayed()
-  const recentlyAdded = useGetRecentlyAdded()
+  const {
+    similarArtists,
+    recentlyPlayed,
+    recentlyAdded,
+    genres,
+    isGenresLoading,
+  } = useHomeDashboardData()
 
   return (
     <div className="w-full px-4 py-4 sm:px-6 sm:py-5 lg:px-8">
@@ -59,7 +63,7 @@ export default function Home() {
 
         {/* Genre Discovery */}
         <section>
-          <GenreDiscovery />
+          <GenreDiscovery genres={genres} isLoading={isGenresLoading} />
         </section>
 
         {/* Recently Played */}

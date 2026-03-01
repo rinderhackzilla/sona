@@ -1,4 +1,5 @@
 import { AlbumListParams } from '@/service/albums'
+import { normalizeAlbums } from '@/service/mappers/album'
 import { subsonic } from '@/service/subsonic'
 import { dedupeAlbumsByIdentity } from '@/utils/albumDedup'
 
@@ -8,7 +9,7 @@ export async function getArtistDiscography(artistId: string) {
   const response = await subsonic.artists.getOne(artistId)
 
   if (!response || !response.album) return emptyResponse
-  const albums = dedupeAlbumsByIdentity(response.album)
+  const albums = dedupeAlbumsByIdentity(normalizeAlbums(response.album))
 
   return {
     albums,
@@ -34,7 +35,7 @@ export async function albumSearch({ query, count, offset }: AlbumSearch) {
 
   if (!response) return emptyResponse
   if (!response.album) return emptyResponse
-  const albums = dedupeAlbumsByIdentity(response.album)
+  const albums = dedupeAlbumsByIdentity(normalizeAlbums(response.album))
 
   let nextOffset: number | null = null
   if (albums.length >= count) {
@@ -53,7 +54,7 @@ export async function getAlbumList(params: Required<AlbumListParams>) {
 
   if (!response) return emptyResponse
   if (!response.list) return emptyResponse
-  const albums = dedupeAlbumsByIdentity(response.list)
+  const albums = dedupeAlbumsByIdentity(normalizeAlbums(response.list))
 
   let nextOffset: number | null = null
   if (albums.length >= params.size) {

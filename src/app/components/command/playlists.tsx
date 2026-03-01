@@ -9,6 +9,7 @@ import { ROUTES } from '@/routes/routesList'
 import { subsonic } from '@/service/subsonic'
 import { Playlist } from '@/types/responses/playlist'
 import { convertSecondsToHumanRead } from '@/utils/convertSecondsToTime'
+import { navigateSafe } from '@/utils/navigateSafe'
 import { queryKeys } from '@/utils/queryKeys'
 import { CommandItemProps } from './command-menu'
 
@@ -30,7 +31,7 @@ export function CommandPlaylists({ runCommand }: CommandItemProps) {
           key={playlist.id}
           value={playlist.name}
           onSelect={() =>
-            runCommand(() => navigate(ROUTES.PLAYLIST.PAGE(playlist.id)))
+            runCommand(() => navigateSafe(navigate, ROUTES.PLAYLIST.PAGE(playlist.id)))
           }
         >
           <PlaylistItem playlist={playlist} />

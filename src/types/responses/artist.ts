@@ -24,6 +24,7 @@ export interface ISimilarArtist {
   name: string
   albumCount: number
   coverArt: string
+  coverArtType?: 'artist' | 'album'
   artistImageUrl: string
   starred?: string
 }

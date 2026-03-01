@@ -1,0 +1,123 @@
+/* Session Mode: Focus (low motion + darker) */
+.session-mode-focus {
+  --background: 225 26% 4%;
+  --foreground: 220 16% 82%;
+  --card: 226 22% 7%;
+  --card-foreground: 220 14% 80%;
+  --popover: 226 22% 7%;
+  --popover-foreground: 220 14% 80%;
+  --primary: 224 22% 48%;
+  --primary-foreground: 220 18% 12%;
+  --secondary: 224 14% 18%;
+  --secondary-foreground: 220 14% 78%;
+  --muted: 226 14% 12%;
+  --muted-foreground: 218 10% 62%;
+  --accent: 224 20% 30%;
+  --accent-foreground: 220 14% 78%;
+  --border: 225 14% 19%;
+  --input: 225 14% 14%;
+  --ring: 224 22% 42%;
+  --session-motion-scale: 0.78;
+  --session-transition-scale: 0.82;
+}
+
+.session-mode-focus body {
+  background-color: hsl(var(--background));
+}
+
+.session-mode-focus .bg-background,
+.session-mode-focus .bg-card,
+.session-mode-focus .bg-popover,
+.session-mode-focus .main-drawer,
+.session-mode-focus header,
+.session-mode-focus footer {
+  background-color: hsl(var(--background) / 0.94) !important;
+  border-color: hsl(var(--border) / 0.75) !important;
+  box-shadow: none !important;
+}
+
+.session-mode-focus button:not(:disabled),
+.session-mode-focus [role="button"]:not([aria-disabled="true"]) {
+  border-color: hsl(var(--border) / 0.85);
+  background-color: hsl(var(--muted) / 0.65);
+  color: hsl(var(--foreground) / 0.92);
+}
+
+.session-mode-focus button:not(:disabled):hover,
+.session-mode-focus [role="button"]:not([aria-disabled="true"]):hover {
+  background-color: hsl(var(--muted) / 0.8);
+  border-color: hsl(var(--border));
+  box-shadow: none;
+}
+
+.session-mode-focus .fullscreen-utility-button,
+.session-mode-focus .fullscreen-utility-button:hover,
+.session-mode-focus .fullscreen-utility-button:focus-visible,
+.session-mode-focus .fullscreen-utility-button[data-state="active"] {
+  background-color: transparent !important;
+  border-color: transparent !important;
+  border-width: 0 !important;
+  box-shadow: none !important;
+}
+
+.session-mode-focus .fullscreen-bg-kenburns {
+  animation: none;
+  transform: scale(1.02);
+}
+
+.session-mode-focus .hypnotic-layer-a,
+.session-mode-focus .hypnotic-layer-b,
+.session-mode-focus .hypnotic-layer-c {
+  display: none;
+}
+
+.session-mode-focus .play-button-accent-glow,
+.session-mode-focus .dj-card-active-pulse {
+  animation: none;
+}
+
+/* Focus fullscreen: keep backdrop as-is, reduce element contrast */
+.session-mode-focus .fullscreen-top-tabs {
+  background: hsl(var(--background) / 0.26) !important;
+  border-color: hsl(var(--border) / 0.3) !important;
+  box-shadow: none !important;
+}
+
+.session-mode-focus .fullscreen-top-tab-trigger {
+  background: hsl(var(--muted) / 0.34) !important;
+  border-color: hsl(var(--border) / 0.38) !important;
+  color: hsl(var(--foreground) / 0.72) !important;
+  box-shadow: none !important;
+}
+
+.session-mode-focus .fullscreen-top-tab-trigger[data-state='active'] {
+  background: hsl(var(--primary) / 0.16) !important;
+  border-color: hsl(var(--primary) / 0.34) !important;
+  color: hsl(var(--foreground) / 0.86) !important;
+  box-shadow: 0 0 0 1px hsl(var(--primary) / 0.18) !important;
+}
+
+.session-mode-focus .fullscreen-utility-button {
+  color: hsl(var(--foreground) / 0.74) !important;
+  background: hsl(var(--background) / 0.12) !important;
+}
+
+.session-mode-focus .fullscreen-progress-slider .slider-track,
+.session-mode-focus .fullscreen-volume-slider .slider-track {
+  background-color: hsl(var(--foreground) / 0.2) !important;
+}
+
+.session-mode-focus .fullscreen-progress-slider .slider-range,
+.session-mode-focus .fullscreen-volume-slider .slider-range {
+  background-color: hsl(var(--primary) / 0.72) !important;
+  box-shadow: 0 0 8px hsl(var(--primary) / 0.16) !important;
+}
+
+.session-mode-focus .play-button-accent-glow {
+  background-color: hsl(var(--primary) / 0.16) !important;
+  border-color: hsl(var(--primary) / 0.28) !important;
+  box-shadow:
+    0 0 0 1px hsl(var(--primary) / 0.18),
+    0 0 10px hsl(var(--primary) / 0.14) !important;
+}
+

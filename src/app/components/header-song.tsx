@@ -2,7 +2,7 @@ import { usePlayerSonglist } from '@/store/player.store'
 import { AppTitle } from './header/app-title'
 
 export function HeaderSongInfo() {
-  const { currentList, currentSongIndex, currentSong } = usePlayerSonglist()
+  const { currentList, currentSong } = usePlayerSonglist()
 
   const isPlaylistEmpty = currentList.length === 0
 

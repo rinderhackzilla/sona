@@ -1,4 +1,6 @@
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { EqualizerModal } from '@/app/components/player/equalizer-modal'
 import {
   Content,
   ContentItem,
@@ -35,6 +37,7 @@ const replayGainModes: ReplayGainType[] = ['track', 'album']
 
 export function PlayerPage() {
   const { t } = useTranslation()
+  const [equalizerOpen, setEqualizerOpen] = useState(false)
   
   // Replay Gain
   const {
@@ -89,6 +92,22 @@ export function PlayerPage() {
           <HeaderTitle>{t('settings.player.audioProcessing.group', 'Audio Processing')}</HeaderTitle>
         </Header>
         <Content>
+          <ContentItem>
+            <ContentItemTitle>
+              {t('settings.player.equalizer.label', 'Equalizer')}
+            </ContentItemTitle>
+            <ContentItemForm>
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-8"
+                onClick={() => setEqualizerOpen(true)}
+              >
+                {t('settings.player.equalizer.open', 'Open')}
+              </Button>
+            </ContentItemForm>
+          </ContentItem>
+
           {/* Replay Gain toggle */}
           <ContentItem>
             <ContentItemTitle>
@@ -297,6 +316,8 @@ export function PlayerPage() {
           </Content>
         </Root>
       )}
+
+      <EqualizerModal open={equalizerOpen} onOpenChange={setEqualizerOpen} />
     </div>
   )
 }

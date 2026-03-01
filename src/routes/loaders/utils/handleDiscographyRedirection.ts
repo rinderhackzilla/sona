@@ -5,6 +5,7 @@ import {
   AlbumsSearchParams,
   PersistedAlbumListKeys,
 } from '@/utils/albumsFilter'
+import { safeStorageGet, safeStorageSet } from '@/utils/safe-storage'
 import { SearchParamsHandler } from '@/utils/searchParamsHandler'
 
 export function handleDiscographyRedirection(searchParams: URLSearchParams) {
@@ -14,13 +15,13 @@ export function handleDiscographyRedirection(searchParams: URLSearchParams) {
   const hasArtistNameFilter = searchParams.has(AlbumsSearchParams.ArtistName)
   const hasArtistIdFilter = searchParams.has(AlbumsSearchParams.ArtistId)
 
-  const savedArtistName = localStorage.getItem(
+  const savedArtistName = safeStorageGet(
     PersistedAlbumListKeys.ArtistNameFilter,
   )
-  const savedArtistId = localStorage.getItem(
+  const savedArtistId = safeStorageGet(
     PersistedAlbumListKeys.ArtistIdFilter,
   )
-  const savedFilter = localStorage.getItem(PersistedAlbumListKeys.MainFilter)
+  const savedFilter = safeStorageGet(PersistedAlbumListKeys.MainFilter)
 
   const isDiscography = savedFilter === AlbumsFilters.ByDiscography
   const hasPersistedValues = savedArtistName && savedArtistId
@@ -39,12 +40,12 @@ export function handleDiscographyRedirection(searchParams: URLSearchParams) {
     const artistName = getSearchParam<string>(AlbumsSearchParams.ArtistName, '')
     const artistId = getSearchParam<string>(AlbumsSearchParams.ArtistId, '')
 
-    localStorage.setItem(
+    safeStorageSet(
       PersistedAlbumListKeys.MainFilter,
       AlbumsFilters.ByDiscography,
     )
-    localStorage.setItem(PersistedAlbumListKeys.ArtistNameFilter, artistName)
-    localStorage.setItem(PersistedAlbumListKeys.ArtistIdFilter, artistId)
+    safeStorageSet(PersistedAlbumListKeys.ArtistNameFilter, artistName)
+    safeStorageSet(PersistedAlbumListKeys.ArtistIdFilter, artistId)
   }
 
   return null

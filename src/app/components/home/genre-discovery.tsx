@@ -1,13 +1,17 @@
-import { startTransition } from 'react'
-import type { MouseEvent } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
 import { Clock3, Music, Play } from 'lucide-react'
+import type { MouseEvent } from 'react'
+import { startTransition } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Skeleton } from '@/app/components/ui/skeleton'
+import { Link, useNavigate } from 'react-router-dom'
 import { ImageLoader } from '@/app/components/image-loader'
-import { useGetGenreDiscovery, useGetAlbumsByGenre } from '@/app/hooks/use-home'
-import { useTimeOfDayPlaylist } from '@/app/hooks/use-time-of-day-playlist'
 import { Button } from '@/app/components/ui/button'
+import { Skeleton } from '@/app/components/ui/skeleton'
+import {
+  GenreDiscoveryItem,
+  useGetAlbumsByGenre,
+  useGetGenreDiscovery,
+} from '@/app/hooks/use-home'
+import { useTimeOfDayPlaylist } from '@/app/hooks/use-time-of-day-playlist'
 import { ROUTES } from '@/routes/routesList'
 import { usePlayerActions } from '@/store/player.store'
 import type { ISong } from '@/types/responses/song'
@@ -31,7 +35,9 @@ function GenreCard({ genre, albumCount, index }: GenreCardProps) {
 
   if (!data?.list || data.list.length === 0) return null
 
-  const randomSeed = genre.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)
+  const randomSeed = genre
+    .split('')
+    .reduce((acc, char) => acc + char.charCodeAt(0), 0)
   const selectedAlbum = data.list[randomSeed % data.list.length]
 
   return (
@@ -53,8 +59,10 @@ function GenreCard({ genre, albumCount, index }: GenreCardProps) {
                     className="absolute right-0 top-0 h-full w-[58%] bg-cover bg-center opacity-70"
                     style={{
                       backgroundImage: `url(${src})`,
-                      WebkitMaskImage: 'linear-gradient(to left, rgba(0, 0, 0, 1) 58%, rgba(0, 0, 0, 0) 100%)',
-                      maskImage: 'linear-gradient(to left, rgba(0, 0, 0, 1) 58%, rgba(0, 0, 0, 0) 100%)',
+                      WebkitMaskImage:
+                        'linear-gradient(to left, rgba(0, 0, 0, 1) 58%, rgba(0, 0, 0, 0) 100%)',
+                      maskImage:
+                        'linear-gradient(to left, rgba(0, 0, 0, 1) 58%, rgba(0, 0, 0, 0) 100%)',
                     }}
                   />
                   <div className="absolute right-0 top-0 h-full w-[62%] bg-gradient-to-l from-background/58 via-background/34 to-transparent" />
@@ -71,9 +79,13 @@ function GenreCard({ genre, albumCount, index }: GenreCardProps) {
                 <Music className="h-3.5 w-3.5 text-foreground/65" />
                 <span>{t('home.topGenre')}</span>
               </div>
-              <h3 className="truncate text-[1.05rem] font-semibold leading-snug sm:text-[1.12rem]">{genre}</h3>
+              <h3 className="truncate text-[1.05rem] font-semibold leading-snug sm:text-[1.12rem]">
+                {genre}
+              </h3>
               <p className="mt-0.5 text-xs text-muted-foreground/90">
-                {t('genres.albumCount', { count: albumCount ?? data.list.length })}
+                {t('genres.albumCount', {
+                  count: albumCount ?? data.list.length,
+                })}
               </p>
               {isLoading && <Skeleton className="mt-1 h-3 w-16" />}
             </div>
@@ -87,8 +99,15 @@ function GenreCard({ genre, albumCount, index }: GenreCardProps) {
   )
 }
 
-export default function GenreDiscovery() {
-  const { genres, isLoading } = useGetGenreDiscovery()
+interface GenreDiscoveryProps {
+  genres?: GenreDiscoveryItem[]
+  isLoading?: boolean
+}
+
+export function GenreDiscovery({
+  genres = [],
+  isLoading = false,
+}: GenreDiscoveryProps) {
   const { playlist, dayPart } = useTimeOfDayPlaylist()
 
   if (isLoading) {
@@ -121,6 +140,13 @@ export default function GenreDiscovery() {
     </div>
   )
 }
+
+export function ConnectedGenreDiscovery() {
+  const { genres, isLoading } = useGetGenreDiscovery()
+  return <GenreDiscovery genres={genres} isLoading={isLoading} />
+}
+
+export default GenreDiscovery
 
 function DaypartPlaylistCard({
   playlist,
@@ -199,7 +225,9 @@ function DaypartPlaylistCard({
           <h3 className="truncate text-[1.05rem] font-semibold leading-snug sm:text-[1.12rem]">
             {title}
           </h3>
-          <p className="mt-0.5 line-clamp-2 max-w-[45%] text-xs text-muted-foreground/90">{mood}</p>
+          <p className="mt-0.5 line-clamp-2 max-w-[45%] text-xs text-muted-foreground/90">
+            {mood}
+          </p>
         </div>
 
         <div className="mt-2 flex items-center gap-2">

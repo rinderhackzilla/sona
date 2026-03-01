@@ -4,6 +4,7 @@ import {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -24,12 +25,14 @@ type AudioPlayerProps = ComponentPropsWithoutRef<'audio'> & {
   audioRef: RefObject<HTMLAudioElement>
   replayGain?: ReplayGainParams
   shouldPlay?: boolean
+  ignoreErrors?: boolean
 }
 
 export function AudioPlayer({
   audioRef,
   replayGain,
   shouldPlay = true,
+  ignoreErrors = false,
   ...props
 }: AudioPlayerProps) {
   const { t } = useTranslation()
@@ -54,6 +57,9 @@ export function AudioPlayer({
   }, [replayGain, replayGainEnabled, volume])
 
   const { resumeContext, setupGain } = useAudioContext(audioElement)
+  const fadeIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const fadeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const pausedByFadeRef = useRef(false)
   const handleAudioRef = useCallback(
     (node: HTMLAudioElement | null) => {
       audioRef.current = node
@@ -63,6 +69,44 @@ export function AudioPlayer({
   )
 
   const ignoreGain = !isSong || replayGainError
+
+  const clearPauseFade = useCallback(() => {
+    if (fadeIntervalRef.current) {
+      clearInterval(fadeIntervalRef.current)
+      fadeIntervalRef.current = null
+    }
+    if (fadeTimeoutRef.current) {
+      clearTimeout(fadeTimeoutRef.current)
+      fadeTimeoutRef.current = null
+    }
+  }, [])
+
+  const pauseWithFade = useCallback(
+    (audio: HTMLAudioElement) => {
+      clearPauseFade()
+
+      const fadeDurationMs = 500
+      const fadeSteps = 20
+      const tickMs = Math.max(12, Math.floor(fadeDurationMs / fadeSteps))
+      const startVolume = Math.max(audio.volume, Math.min(1, volume / 100))
+      let step = 0
+
+      pausedByFadeRef.current = true
+
+      fadeIntervalRef.current = setInterval(() => {
+        step += 1
+        const progress = Math.min(1, step / fadeSteps)
+        audio.volume = Math.max(0, startVolume * (1 - progress))
+      }, tickMs)
+
+      fadeTimeoutRef.current = setTimeout(() => {
+        clearPauseFade()
+        audio.pause()
+        audio.volume = 0
+      }, fadeDurationMs + tickMs)
+    },
+    [clearPauseFade, volume],
+  )
 
   useEffect(() => {
     if (ignoreGain || !audioRef.current) return
@@ -126,10 +170,19 @@ export function AudioPlayer({
 
       try {
         if (isPlaying && shouldPlay) {
+          clearPauseFade()
+          if (pausedByFadeRef.current) {
+            audio.volume = Math.min(1, volume / 100)
+            pausedByFadeRef.current = false
+          }
           if (isSong) await resumeContext()
           await audio.play()
         } else {
-          audio.pause()
+          if ((isSong || isPodcast) && !audio.paused) {
+            pauseWithFade(audio)
+          } else {
+            audio.pause()
+          }
         }
       } catch (error) {
         if (isBenignPlaybackError(error)) {
@@ -146,13 +199,16 @@ export function AudioPlayer({
     if (isSong || isPodcast) handleSong()
   }, [
     audioRef,
+    clearPauseFade,
     handleSongError,
     isBenignPlaybackError,
     isPlaying,
     isSong,
     isPodcast,
+    pauseWithFade,
     resumeContext,
     shouldPlay,
+    volume,
   ])
 
   useEffect(() => {
@@ -170,12 +226,19 @@ export function AudioPlayer({
     if (isRadio) handleRadio()
   }, [audioRef, isPlaying, isRadio])
 
+  useEffect(() => {
+    return () => {
+      clearPauseFade()
+    }
+  }, [clearPauseFade])
+
   const handleError = useMemo(() => {
+    if (ignoreErrors) return undefined
     if (isSong) return handleSongError
     if (isRadio) return handleRadioError
 
     return undefined
-  }, [handleRadioError, handleSongError, isRadio, isSong])
+  }, [handleRadioError, handleSongError, ignoreErrors, isRadio, isSong])
 
   return (
     <audio

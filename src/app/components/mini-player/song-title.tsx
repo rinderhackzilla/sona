@@ -1,4 +1,4 @@
-import { ComponentPropsWithoutRef } from 'react'
+import { ComponentPropsWithoutRef, startTransition } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { MarqueeTitle } from '@/app/components/fullscreen/marquee-title'
 import { cn } from '@/lib/utils'
@@ -12,7 +12,9 @@ export function MiniPlayerSongTitle() {
   const song = usePlayerCurrentSong()
 
   function handleTitleClick() {
-    navigate(ROUTES.ALBUM.PAGE(song.albumId))
+    startTransition(() => {
+      navigate(ROUTES.ALBUM.PAGE(song.albumId))
+    })
   }
 
   return (
@@ -21,7 +23,7 @@ export function MiniPlayerSongTitle() {
         <span
           className={cn(
             'text-base font-medium hover:underline cursor-pointer',
-            'mid-player:text-sm mini-player:text-xs mini-player:font-normal',
+            '[@media(min-height:133px)_and_(max-height:170px)]:text-sm [@media(max-height:132px)]:text-xs [@media(max-height:132px)]:font-normal',
           )}
           data-testid="track-title"
           onClick={handleTitleClick}
@@ -41,14 +43,16 @@ function ArtistsLinks({ song }: { song: ISong }) {
   function handleArtistClick(id?: string) {
     if (!id) return
 
-    navigate(ROUTES.ARTIST.PAGE(id))
+    startTransition(() => {
+      navigate(ROUTES.ARTIST.PAGE(id))
+    })
   }
 
   if (artists && artists.length > 1) {
     const data = artists.slice(0, ALBUM_ARTISTS_MAX_NUMBER)
 
     return (
-      <div className="flex items-center gap-1 text-xs mini-player:text-[11px] maskImage-marquee-fade-finished">
+      <div className="flex items-center gap-1 text-xs [@media(max-height:132px)]:text-[11px] maskImage-marquee-fade-finished">
         {data.map(({ id, name }, index) => (
           <div key={id} className="flex items-center">
             <ArtistLink
@@ -82,7 +86,7 @@ function ArtistLink({ id, name, className, ...props }: ArtistLinkProps) {
     <span
       className={cn(
         'w-fit max-w-full truncate text-xs font-normal text-foreground/70',
-        'mini-player:text-[11px] mini-player:font-light',
+        '[@media(max-height:132px)]:text-[11px] [@media(max-height:132px)]:font-light',
         className,
         id && 'hover:underline hover:text-foreground cursor-pointer',
       )}

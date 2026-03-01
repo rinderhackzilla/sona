@@ -7,6 +7,7 @@ import { ImageLoader } from '@/app/components/image-loader'
 import { useThisIsArtist } from '@/app/hooks/use-this-is-artist'
 import { ROUTES } from '@/routes/routesList'
 import { usePlayerActions } from '@/store/player.store'
+import { navigateSafe } from '@/utils/navigateSafe'
 
 export function ThisIsArtist() {
   const { t } = useTranslation()
@@ -100,11 +101,11 @@ export function ThisIsArtist() {
   return (
     <div
       className="relative h-full w-full cursor-pointer overflow-hidden rounded-xl border border-border/60 bg-card/20"
-      onClick={() => navigate(ROUTES.LIBRARY.THIS_IS_ARTIST)}
+      onClick={() => navigateSafe(navigate, ROUTES.LIBRARY.THIS_IS_ARTIST)}
       onKeyDown={(event) => {
         if (event.key === 'Enter' || event.key === ' ') {
           event.preventDefault()
-          navigate(ROUTES.LIBRARY.THIS_IS_ARTIST)
+          navigateSafe(navigate, ROUTES.LIBRARY.THIS_IS_ARTIST)
         }
       }}
       role="link"

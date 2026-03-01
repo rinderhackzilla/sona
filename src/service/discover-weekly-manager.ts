@@ -1,4 +1,11 @@
 import { generateDiscoverWeekly } from './discover-weekly'
+import {
+  readStoredJson,
+  readStoredPlaylist,
+  readStoredString,
+  writeStoredPlaylist,
+  writeStoredString,
+} from './playlist-storage'
 import type { Song } from '@/types/responses/song'
 
 const STORAGE_KEY = 'discover_weekly_playlist'
@@ -48,8 +55,8 @@ function isMonday(date: Date = new Date()): boolean {
 export function shouldGeneratePlaylist(): boolean {
   try {
     const currentWeek = getISOWeek(new Date())
-    const storedWeek = localStorage.getItem(STORAGE_KEY_WEEK_FLAG)
-    const storedMetadata = localStorage.getItem(STORAGE_KEY_METADATA)
+    const storedWeek = readStoredString(STORAGE_KEY_WEEK_FLAG)
+    const storedMetadata = readStoredJson<PlaylistMetadata>(STORAGE_KEY_METADATA)
 
     // No playlist exists yet
     if (!storedMetadata) {
@@ -59,8 +66,8 @@ export function shouldGeneratePlaylist(): boolean {
 
     // Week flag missing, check metadata
     if (!storedWeek) {
-      const metadata: PlaylistMetadata = JSON.parse(storedMetadata)
-      const playlistWeek = metadata.weekKey || getISOWeek(new Date(metadata.generatedAt))
+      const playlistWeek =
+        storedMetadata.weekKey || getISOWeek(new Date(storedMetadata.generatedAt))
       
       // Update flag and check
       if (playlistWeek !== currentWeek) {
@@ -69,7 +76,7 @@ export function shouldGeneratePlaylist(): boolean {
       }
       
       // Save flag for future checks
-      localStorage.setItem(STORAGE_KEY_WEEK_FLAG, playlistWeek)
+      writeStoredString(STORAGE_KEY_WEEK_FLAG, playlistWeek)
       return false
     }
 
@@ -95,13 +102,11 @@ export function loadPlaylist(): {
   metadata: PlaylistMetadata | null
 } {
   try {
-    const storedPlaylist = localStorage.getItem(STORAGE_KEY)
-    const storedMetadata = localStorage.getItem(STORAGE_KEY_METADATA)
-
-    if (storedPlaylist && storedMetadata) {
-      const playlist = JSON.parse(storedPlaylist)
-      const metadata: PlaylistMetadata = JSON.parse(storedMetadata)
-      
+    const { playlist, metadata } = readStoredPlaylist<PlaylistMetadata>(
+      STORAGE_KEY,
+      STORAGE_KEY_METADATA,
+    )
+    if (metadata) {
       console.log(`[DiscoverWeekly] Loaded playlist from week ${metadata.weekKey || 'unknown'}`)
       
       return { playlist, metadata }
@@ -152,9 +157,8 @@ export async function generateAndSavePlaylist(
   }
 
   // Save to localStorage
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(result.playlist))
-  localStorage.setItem(STORAGE_KEY_METADATA, JSON.stringify(metadata))
-  localStorage.setItem(STORAGE_KEY_WEEK_FLAG, currentWeek)
+  writeStoredPlaylist(STORAGE_KEY, STORAGE_KEY_METADATA, result.playlist, metadata)
+  writeStoredString(STORAGE_KEY_WEEK_FLAG, currentWeek)
 
   console.log(`[DiscoverWeekly] ✓ Playlist generated and saved for week ${currentWeek}`)
 

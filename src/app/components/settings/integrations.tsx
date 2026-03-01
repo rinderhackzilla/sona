@@ -6,6 +6,10 @@ import { Switch } from '@/app/components/ui/switch'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/app/components/ui/card'
 import { ExternalLink, Save, Check } from 'lucide-react'
 import { useAppStore } from '@/store/app.store'
+import {
+  safeStorageGet,
+  safeStorageRemove,
+} from '@/utils/safe-storage'
 
 const STORAGE_KEY = 'lastfm_config' // For migration only
 
@@ -18,7 +22,7 @@ export function Integrations() {
   // One-time migration from localStorage to Zustand
   useEffect(() => {
     try {
-      const stored = localStorage.getItem(STORAGE_KEY)
+      const stored = safeStorageGet(STORAGE_KEY)
       if (stored && !lastfmConfig.username && !lastfmConfig.apiKey) {
         const config = JSON.parse(stored)
         if (config.username || config.apiKey) {
@@ -28,7 +32,7 @@ export function Integrations() {
           setLocalApiKey(config.apiKey || '')
           console.log('[Integrations] Migrated Last.fm config from localStorage to Zustand')
           // Remove old localStorage key after migration
-          localStorage.removeItem(STORAGE_KEY)
+          safeStorageRemove(STORAGE_KEY)
         }
       }
     } catch (error) {

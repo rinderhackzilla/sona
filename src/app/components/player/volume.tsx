@@ -58,7 +58,7 @@ export function PlayerVolume({ disabled, audioRef }: PlayerVolumeProps) {
             </MuteButton>
           </div>
         </SimpleTooltip>
-        <VolumeSlider disabled={disabled} />
+        <VolumeSlider disabled={disabled} className="player-volume-slider-bar" />
       </div>
     </div>
   )

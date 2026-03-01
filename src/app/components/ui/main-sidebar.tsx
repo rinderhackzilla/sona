@@ -22,6 +22,7 @@ import {
 import { useIsMobile } from '@/app/hooks/use-mobile'
 import { cn } from '@/lib/utils'
 import { useMainDrawerState } from '@/store/player.store'
+import { safeStorageGet, safeStorageSet } from '@/utils/safe-storage'
 
 const SIDEBAR_STORAGE_KEY = 'main_sidebar_state'
 const SIDEBAR_WIDTH = '17.5rem'
@@ -71,10 +72,8 @@ function MainSidebarProvider({
   // This is the internal state of the sidebar.
   // We use openProp and setOpenProp for control from outside the component.
   const [_open, _setOpen] = React.useState(() => {
-    if (typeof window !== 'undefined') {
-      const stored = window.localStorage.getItem(SIDEBAR_STORAGE_KEY)
-      if (stored !== null) return stored === 'true'
-    }
+    const stored = safeStorageGet(SIDEBAR_STORAGE_KEY)
+    if (stored !== null) return stored === 'true'
     return defaultOpen
   })
   const open = openProp ?? _open
@@ -88,9 +87,7 @@ function MainSidebarProvider({
       }
 
       // This sets the storage to keep the sidebar state.
-      if (typeof window !== 'undefined') {
-        window.localStorage.setItem(SIDEBAR_STORAGE_KEY, String(openState))
-      }
+      safeStorageSet(SIDEBAR_STORAGE_KEY, String(openState))
     },
     [setOpenProp, open],
   )
@@ -276,7 +273,7 @@ function MainSidebar({
         <div
           data-sidebar="sidebar"
           data-slot="sidebar-inner"
-          className="bg-background/96 border-border/60 flex h-full w-full flex-col overflow-x-hidden border-r backdrop-blur-sm group-data-[variant=floating]:border-border group-data-[variant=floating]:rounded-lg group-data-[variant=floating]:border group-data-[variant=floating]:shadow-sm"
+          className="bg-background/96 border-border/60 flex h-full w-full flex-col overflow-x-hidden border-r backdrop-blur-sm group-data-[variant=floating]:border-border group-data-[variant=floating]:rounded-[var(--radius-surface)] group-data-[variant=floating]:border group-data-[variant=floating]:shadow-sm"
         >
           {children}
         </div>
@@ -354,7 +351,7 @@ function MainSidebarInset({
       className={cn(
         'bg-background relative flex w-[calc(100%-var(--sidebar-width))] flex-1 flex-col',
         'md:peer-data-[variant=inset]:m-2 md:peer-data-[variant=inset]:ml-0',
-        'md:peer-data-[variant=inset]:rounded-xl md:peer-data-[variant=inset]:shadow-sm',
+        'md:peer-data-[variant=inset]:rounded-[var(--radius-surface-lg)] md:peer-data-[variant=inset]:shadow-sm',
         'md:peer-data-[variant=inset]:peer-data-[state=collapsed]:ml-2',
         className,
       )}
@@ -465,7 +462,7 @@ function MainSidebarGroupLabel({
       data-slot="sidebar-group-label"
       data-sidebar="group-label"
       className={cn(
-        'text-foreground/60 ring-ring flex h-7 shrink-0 items-center rounded-md px-2 text-[11px] font-semibold tracking-[0.06em] outline-hidden duration-200 ease-linear focus-visible:ring-2 [&>svg]:size-4 [&>svg]:shrink-0',
+        'text-foreground/60 ring-ring flex h-7 shrink-0 items-center rounded-[var(--radius-control)] px-2 text-[11px] font-semibold tracking-[0.06em] outline-hidden duration-200 ease-linear focus-visible:ring-2 [&>svg]:size-4 [&>svg]:shrink-0',
         'transition-[margin,opacity] group-data-[collapsible=icon]:-mt-8 group-data-[collapsible=icon]:opacity-0',
         className,
       )}
@@ -486,7 +483,7 @@ function MainSidebarGroupAction({
       data-slot="sidebar-group-action"
       data-sidebar="group-action"
       className={cn(
-        'text-foreground ring-ring hover:bg-accent hover:text-accent-foreground absolute top-3.5 right-3 flex aspect-square w-5 items-center justify-center rounded-md p-0 outline-hidden transition-transform focus-visible:ring-2 [&>svg]:size-4 [&>svg]:shrink-0',
+        'text-foreground ring-ring hover:bg-accent hover:text-accent-foreground absolute top-3.5 right-3 flex aspect-square w-5 items-center justify-center rounded-[var(--radius-control-sm)] p-0 outline-hidden transition-transform focus-visible:ring-2 [&>svg]:size-4 [&>svg]:shrink-0',
         // Increases the hit area of the button on mobile.
         'after:absolute after:-inset-2 md:after:hidden',
         'group-data-[collapsible=icon]:hidden',
@@ -537,7 +534,7 @@ function MainSidebarMenuItem({
 }
 
 const sidebarMenuButtonVariants = cva(
-  'peer/menu-button flex w-full items-center gap-2 overflow-hidden rounded-lg px-2.5 py-2 text-left text-[13px] font-medium leading-none outline-hidden ring-ring transition-[width,height,padding,background-color,color,box-shadow] duration-200 hover:bg-accent/70 hover:text-accent-foreground focus-visible:ring-2 active:bg-accent active:text-accent-foreground disabled:pointer-events-none disabled:opacity-50 group-has-data-[sidebar=menu-action]/menu-item:pr-8 aria-disabled:pointer-events-none aria-disabled:opacity-50 data-[active=true]:bg-accent/75 data-[active=true]:font-semibold data-[active=true]:text-accent-foreground data-[active=true]:shadow-[inset_0_0_0_1px_hsl(var(--border)/0.55)] data-[state=open]:hover:bg-accent data-[state=open]:hover:text-accent-foreground group-data-[collapsible=icon]:mx-auto group-data-[collapsible=icon]:h-8! group-data-[collapsible=icon]:w-9! group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:gap-0 group-data-[collapsible=icon]:p-2! group-data-[collapsible=icon]:[&>span]:hidden group-data-[collapsible=icon]:[&>svg]:mx-0 [&>span:last-child]:truncate [&>svg]:size-[17px] [&>svg]:shrink-0',
+  'peer/menu-button flex w-full items-center gap-2 overflow-hidden rounded-[var(--radius-surface)] px-2.5 py-2 text-left text-[13px] font-medium leading-none outline-hidden ring-ring transition-[width,height,padding,background-color,color,box-shadow] duration-200 hover:bg-accent/70 hover:text-accent-foreground focus-visible:ring-2 active:bg-accent active:text-accent-foreground disabled:pointer-events-none disabled:opacity-50 group-has-data-[sidebar=menu-action]/menu-item:pr-8 aria-disabled:pointer-events-none aria-disabled:opacity-50 data-[active=true]:bg-accent/75 data-[active=true]:font-semibold data-[active=true]:text-accent-foreground data-[active=true]:shadow-[inset_0_0_0_1px_hsl(var(--border)/0.55)] data-[state=open]:hover:bg-accent data-[state=open]:hover:text-accent-foreground group-data-[collapsible=icon]:mx-auto group-data-[collapsible=icon]:h-8! group-data-[collapsible=icon]:w-9! group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:gap-0 group-data-[collapsible=icon]:p-2! group-data-[collapsible=icon]:[&>span]:hidden group-data-[collapsible=icon]:[&>svg]:mx-0 [&>span:last-child]:truncate [&>svg]:size-[17px] [&>svg]:shrink-0',
   {
     variants: {
       variant: {
@@ -623,7 +620,7 @@ function MainSidebarMenuAction({
       data-slot="sidebar-menu-action"
       data-sidebar="menu-action"
       className={cn(
-        'text-foreground ring-ring hover:bg-accent hover:text-accent-foreground peer-hover/menu-button:text-accent-foreground absolute top-1.5 right-1 flex aspect-square w-5 items-center justify-center rounded-md p-0 outline-hidden transition-transform focus-visible:ring-2 [&>svg]:size-4 [&>svg]:shrink-0',
+        'text-foreground ring-ring hover:bg-accent hover:text-accent-foreground peer-hover/menu-button:text-accent-foreground absolute top-1.5 right-1 flex aspect-square w-5 items-center justify-center rounded-[var(--radius-control-sm)] p-0 outline-hidden transition-transform focus-visible:ring-2 [&>svg]:size-4 [&>svg]:shrink-0',
         // Increases the hit area of the button on mobile.
         'after:absolute after:-inset-2 md:after:hidden',
         'peer-data-[size=sm]/menu-button:top-1',
@@ -648,7 +645,7 @@ function MainSidebarMenuBadge({
       data-slot="sidebar-menu-badge"
       data-sidebar="menu-badge"
       className={cn(
-        'text-foreground pointer-events-none absolute right-1 flex h-5 min-w-5 items-center justify-center rounded-md px-1 text-xs font-medium tabular-nums select-none',
+        'text-foreground pointer-events-none absolute right-1 flex h-5 min-w-5 items-center justify-center rounded-[var(--radius-control-sm)] px-1 text-xs font-medium tabular-nums select-none',
         'peer-hover/menu-button:text-accent-foreground peer-data-[active=true]/menu-button:text-accent-foreground',
         'peer-data-[size=sm]/menu-button:top-1',
         'peer-data-[size=default]/menu-button:top-1.5',
@@ -677,12 +674,12 @@ function MainSidebarMenuSkeleton({
     <div
       data-slot="sidebar-menu-skeleton"
       data-sidebar="menu-skeleton"
-      className={cn('flex h-8 items-center gap-2 rounded-md px-2', className)}
+      className={cn('flex h-8 items-center gap-2 rounded-[var(--radius-control)] px-2', className)}
       {...props}
     >
       {showIcon && (
         <Skeleton
-          className="size-4 rounded-md"
+          className="size-4 rounded-[var(--radius-control-sm)]"
           data-sidebar="menu-skeleton-icon"
         />
       )}
@@ -751,7 +748,7 @@ function MainSidebarMenuSubButton({
       data-size={size}
       data-active={isActive}
       className={cn(
-        'text-foreground/85 ring-ring hover:bg-accent/60 hover:text-accent-foreground active:bg-accent active:text-accent-foreground [&>svg]:text-accent-foreground flex h-7 min-w-0 -translate-x-px items-center gap-2 overflow-hidden rounded-md px-2 outline-hidden focus-visible:ring-2 disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 [&>span:last-child]:truncate [&>svg]:size-4 [&>svg]:shrink-0',
+        'text-foreground/85 ring-ring hover:bg-accent/60 hover:text-accent-foreground active:bg-accent active:text-accent-foreground [&>svg]:text-accent-foreground flex h-7 min-w-0 -translate-x-px items-center gap-2 overflow-hidden rounded-[var(--radius-control)] px-2 outline-hidden focus-visible:ring-2 disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 [&>span:last-child]:truncate [&>svg]:size-4 [&>svg]:shrink-0',
         'data-[active=true]:bg-accent data-[active=true]:text-accent-foreground',
         size === 'sm' && 'text-xs',
         size === 'md' && 'text-sm',

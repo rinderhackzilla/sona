@@ -6,6 +6,7 @@ import { Button } from '@/app/components/ui/button'
 import { useAppUpdate } from '@/store/app.store'
 import { getAppInfo } from '@/utils/appName'
 import { isDesktop } from '@/utils/desktop'
+import { safeStorageGet, safeStorageSet } from '@/utils/safe-storage'
 
 export function AboutPage() {
   const { name, version, url } = getAppInfo()
@@ -33,7 +34,7 @@ export function AboutPage() {
 
   const handleExportSettings = () => {
     try {
-      const raw = localStorage.getItem('app_store')
+      const raw = safeStorageGet('app_store')
       if (!raw) {
         toast.error('No settings found to export.')
         return
@@ -59,7 +60,7 @@ export function AboutPage() {
     reader.onload = (event) => {
       try {
         const parsed = JSON.parse(event.target?.result as string)
-        localStorage.setItem('app_store', JSON.stringify(parsed))
+        safeStorageSet('app_store', JSON.stringify(parsed))
         toast.success('Settings imported. Reloading...')
         setTimeout(() => window.location.reload(), 1500)
       } catch {

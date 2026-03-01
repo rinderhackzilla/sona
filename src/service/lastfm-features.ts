@@ -2,6 +2,7 @@
  * Last.fm Feature Services
  * Provides personalized music discovery features using Last.fm API
  */
+import type { Song } from '@/types/responses/song'
 
 interface LastfmConfig {
   username: string
@@ -144,7 +145,7 @@ export async function getTop50Year(
 export async function findTrackInNavidrome(
   artistName: string,
   trackName: string
-): Promise<any | null> {
+): Promise<Song | null> {
   try {
     // Import subsonic service dynamically to avoid circular deps
     const { subsonic } = await import('@/service/subsonic')
@@ -197,7 +198,7 @@ export async function findTrackInNavidrome(
       )
     }
 
-    const result = match || results.song[0]
+    const result = (match || results.song[0]) as Song
     console.log('[Last.fm Features] Found song:', result)
 
     return result
@@ -214,11 +215,11 @@ export async function findTrackInNavidrome(
  */
 export async function findTracksInNavidrome(
   tracks: Array<{ artistName: string; trackName: string; playcount?: number }>
-): Promise<Array<any | null>> {
+): Promise<Array<Song | null>> {
   const results = await Promise.all(
     tracks.map(async (track) => {
       const song = await findTrackInNavidrome(track.artistName, track.trackName)
-      return song ? { ...song, lastfmPlaycount: track.playcount } : null
+      return song
     })
   )
 

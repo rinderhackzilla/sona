@@ -15,6 +15,7 @@ import {
   albumsFilterValues,
   PersistedAlbumListKeys,
 } from '@/utils/albumsFilter'
+import { safeStorageSet } from '@/utils/safe-storage'
 import { scrollPageToTop } from '@/utils/scrollPageToTop'
 import { SearchParamsHandler } from '@/utils/searchParamsHandler'
 
@@ -35,7 +36,7 @@ export function AlbumsMainFilter() {
   )[0].label
 
   function handleChangeFilter(filter: AlbumListType) {
-    localStorage.setItem(PersistedAlbumListKeys.MainFilter, filter)
+    safeStorageSet(PersistedAlbumListKeys.MainFilter, filter)
 
     setSearchParams((state) => {
       state.set(AlbumsSearchParams.MainFilter, filter)

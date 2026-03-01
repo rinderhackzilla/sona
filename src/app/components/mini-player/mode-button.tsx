@@ -19,12 +19,12 @@ export function MiniPlayerModeButton() {
         variant="ghost"
         size="icon"
         className={clsx(
-          'relative z-30 rounded-full w-9 h-9',
+          'relative z-30 size-8 rounded-md',
           open && 'text-primary hover:text-primary player-button-active',
         )}
         onClick={toggleOpen}
       >
-        <PictureInPicture2Icon className="w-4 h-4" />
+        <PictureInPicture2Icon className="size-4" />
       </Button>
     </SimpleTooltip>
   )

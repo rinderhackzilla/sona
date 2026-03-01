@@ -14,6 +14,7 @@ import {
 import { ROUTES } from '@/routes/routesList'
 import { useAppActions, useAppStore } from '@/store/app.store'
 import { usePlayerActions } from '@/store/player.store'
+import { navigateSafe } from '@/utils/navigateSafe'
 
 interface AlertDialogProps {
   openDialog: boolean
@@ -38,7 +39,7 @@ export function LogoutConfirmDialog({
     clearPlayerState()
     resetConfig()
     setLogoutDialogState(false)
-    navigate(ROUTES.SERVER_CONFIG, { replace: true })
+    navigateSafe(navigate, ROUTES.SERVER_CONFIG, { replace: true })
   }
 
   return (

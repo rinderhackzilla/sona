@@ -80,6 +80,47 @@ export function PlayerControls({
     [audioRef],
   )
 
+  const handleNextWithSoftCut = useCallback(async () => {
+    if (!isSong || !isPlaying) {
+      playNextSong()
+      return
+    }
+
+    const audio = audioRef.current
+    if (!audio) {
+      playNextSong()
+      return
+    }
+
+    const startVolume = audio.volume
+    const fadeMs = 100
+    const startTs = performance.now()
+
+    await new Promise<void>((resolve) => {
+      const step = (now: number) => {
+        const progress = Math.min(1, (now - startTs) / fadeMs)
+        audio.volume = Math.max(0, startVolume * (1 - progress))
+
+        if (progress < 1) {
+          requestAnimationFrame(step)
+          return
+        }
+        resolve()
+      }
+
+      requestAnimationFrame(step)
+    })
+
+    playNextSong()
+
+    // Ensure the active deck returns to its original loudness right after switching.
+    window.setTimeout(() => {
+      if (audioRef.current) {
+        audioRef.current.volume = startVolume
+      }
+    }, 120)
+  }, [audioRef, isPlaying, isSong, playNextSong])
+
   // biome-ignore lint/correctness/useExhaustiveDependencies: isPlaying needed to trigger
   useEffect(() => {
     if (isPodcast) {
@@ -117,7 +158,10 @@ export function PlayerControls({
     <div className="flex w-full gap-1 justify-center items-center mb-1">
       {isSong && (
         <PlayerButton
-          className={clsx(isShuffleActive && 'player-button-active')}
+          className={clsx(
+            'night-player-side-button',
+            isShuffleActive && 'player-button-active',
+          )}
           disabled={!song || isPlayingOneSong() || !hasNext}
           onClick={toggleShuffle}
           data-testid="player-button-shuffle"
@@ -125,6 +169,7 @@ export function PlayerControls({
         >
           <Shuffle
             className={clsx(
+              'night-player-side-icon',
               isShuffleActive ? 'text-primary' : 'text-secondary-foreground',
             )}
           />
@@ -132,16 +177,18 @@ export function PlayerControls({
       )}
 
       <PlayerButton
+        className="night-player-side-button"
         disabled={disableButtons || !hasPrev}
         onClick={playPrevSong}
         data-testid="player-button-prev"
         tooltip={previousTooltip}
       >
-        <SkipBack className="text-secondary-foreground fill-secondary-foreground" />
+        <SkipBack className="night-player-side-icon text-secondary-foreground fill-secondary-foreground" />
       </PlayerButton>
 
       {isPodcast && (
         <PlayerButton
+          className="night-player-side-button"
           onClick={() => handleSeekAction(-15)}
           data-testid="player-button-skip-backward"
           tooltip={skipRewindTooltip}
@@ -149,7 +196,7 @@ export function PlayerControls({
           <span className="text-secondary-foreground font-light text-[8px] absolute">
             15
           </span>
-          <RotateCcwIcon className="text-secondary-foreground" />
+          <RotateCcwIcon className="night-player-side-icon text-secondary-foreground" />
         </PlayerButton>
       )}
 
@@ -170,6 +217,7 @@ export function PlayerControls({
 
       {isPodcast && (
         <PlayerButton
+          className="night-player-side-button"
           onClick={() => handleSeekAction(30)}
           data-testid="player-button-skip-forward"
           tooltip={skipForwardTooltip}
@@ -177,22 +225,24 @@ export function PlayerControls({
           <span className="text-secondary-foreground font-light text-[8px] absolute">
             30
           </span>
-          <RotateCwIcon className="text-secondary-foreground" />
+          <RotateCwIcon className="night-player-side-icon text-secondary-foreground" />
         </PlayerButton>
       )}
 
       <PlayerButton
+        className="night-player-side-button"
         disabled={disableButtons || cannotGotoNextSong}
-        onClick={playNextSong}
+        onClick={handleNextWithSoftCut}
         data-testid="player-button-next"
         tooltip={nextTooltip}
       >
-        <SkipForward className="text-secondary-foreground fill-secondary-foreground" />
+        <SkipForward className="night-player-side-icon text-secondary-foreground fill-secondary-foreground" />
       </PlayerButton>
 
       {isSong && (
         <PlayerButton
           className={clsx(
+            'night-player-side-button',
             loopState !== LoopState.Off && 'player-button-active',
           )}
           disabled={!song}
@@ -201,11 +251,13 @@ export function PlayerControls({
           tooltip={repeatTooltip}
         >
           {loopState === LoopState.Off && (
-            <Repeat className="text-secondary-foreground" />
+            <Repeat className="night-player-side-icon text-secondary-foreground" />
           )}
-          {loopState === LoopState.All && <Repeat className="text-primary" />}
+          {loopState === LoopState.All && (
+            <Repeat className="night-player-side-icon text-primary" />
+          )}
           {loopState === LoopState.One && (
-            <RepeatOne className="text-primary" />
+            <RepeatOne className="night-player-side-icon text-primary" />
           )}
         </PlayerButton>
       )}

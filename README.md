@@ -46,6 +46,7 @@
         <li><a href="#lidarr-integration-setup">Lidarr Integration Setup</a></li>
       </ul>
     </li>
+    <li><a href="#developer-notes">Developer Notes</a></li>
     <li><a href="#license">License</a></li>
   </ol>
 </details>
@@ -61,6 +62,15 @@ Sona is a fork of Aonsoku, customized and enhanced for Windows desktop use. This
 ### Core Features
 - **Subsonic Integration:** Sona integrates with your Navidrome or Subsonic server, providing you with easy access to your music collection.
 - **Intuitive UI:** Modern, clean and user-friendly interface designed to enhance your music listening experience.
+- **Fullscreen Player:** Dedicated fullscreen scene with queue/lyrics/now-playing views, animated backdrop option, and immersive layout.
+- **Mini Player Mode:** Compact always-on-top style player mode for quick control without the full interface.
+- **Session Modes:** One-click listening modes:
+  - **Focus:** reduced-distraction playback mood
+  - **Night:** high-contrast atmospheric mode with neon-inspired styling
+- **Sona DJ Modes:** Queue intelligence modes for different listening goals:
+  - **Wildcard:** musical detours between queue tracks
+  - **Drift:** keeps the current vibe/genre moving
+  - **Timekeeper:** stays within a similar era/decade flow
 - **Podcast Support:** Easily access, manage, and listen to your favorite podcasts directly within the app.
 - **Synchronized Lyrics:** Automatically find synced lyrics from LRCLIB if none is provided by the server.
 - **Unsynchronized Lyrics:** Display embedded unsynchronized lyrics from your songs.
@@ -71,12 +81,14 @@ Sona is a fork of Aonsoku, customized and enhanced for Windows desktop use. This
 ### Audio Features
 - **Audio Visualizer:** Real-time audio visualization with multiple visual styles for an immersive listening experience.
 - **Equalizer:** Built-in 10-band equalizer with presets and custom settings for personalized sound control.
+- **Crossfade Playback:** Smooth transitions between tracks for less abrupt song changes.
 
 ### Music Discovery & Playlists
 - **Discover Weekly:** Personalized weekly playlists powered by Last.fm integration, automatically generated every Monday with ~50 songs from similar artists based on your listening history.
 - **Your Top 50:** Your top 50 most played tracks from the last 12 months, synced from Last.fm listening history and updated weekly.
 - **Rabbit Hole:** Generate a 50-song discovery queue on-demand with tracks from similar artists. Perfect for diving deep into your music taste and finding new favorites.
-- **Daily Lists:** Discover top tracks from your favorite artists. Each day features a different artist from your library with their most popular songs.
+- **This Is [Artist]:** Daily artist-focused playlist generated from your listening profile.
+- **Daypart Playlist:** Time-of-day driven playlist logic (morning, noon, afternoon, evening, night, midnight) with mood-aware genre selection.
 
 ### Integrations
 - **Lidarr Integration:** Send music requests directly to Lidarr via API for automated music collection management via the search bar.
@@ -202,6 +214,13 @@ Connect Sona directly to your Lidarr instance via API to request and download mi
   - Check indexers are configured: **Settings → Indexers**
   - Ensure download client is set up: **Settings → Download Clients**
   - Review Lidarr activity: **Activity → Queue**
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+## Developer Notes
+
+- Storage conventions and key ownership:
+  - [`docs/architecture/storage.md`](docs/architecture/storage.md)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 

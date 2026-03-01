@@ -3,6 +3,7 @@ import { checkAndCatchUp } from '@/service/discover-weekly-manager'
 import { useAppIntegrations } from '@/store/app.store'
 import { usePlaylistDialog } from '@/app/context/playlist-dialog-context'
 import { isDesktop } from '@/utils/desktop'
+import { runWithRetry } from '@/utils/background-task-runner'
 
 /**
  * Observer component that listens to Electron IPC events
@@ -40,12 +41,28 @@ export function DiscoverWeeklyObserver() {
       }
 
       try {
-        const wasGenerated = await checkAndCatchUp({
-          username: lastfm.username,
-          apiKey: lastfm.apiKey,
-          targetArtists: 50, // CHANGED: 50 artists
-          songsPerArtist: 1,  // CHANGED: 1 song per artist
-        })
+        const wasGenerated = await runWithRetry(
+          () =>
+            checkAndCatchUp({
+              username: lastfm.username,
+              apiKey: lastfm.apiKey,
+              targetArtists: 50,
+              songsPerArtist: 1,
+            }),
+          {
+            taskName: 'discover-weekly-catchup',
+            policy: {
+              retries: 2,
+              baseDelayMs: 800,
+              maxDelayMs: 6000,
+            },
+            onRetry: ({ attempt, delayMs }) => {
+              console.warn(
+                `[DiscoverWeekly Observer] Retry ${attempt} in ${delayMs}ms`,
+              )
+            },
+          },
+        )
 
         if (wasGenerated) {
           console.log('[DiscoverWeekly Observer] ✓ Playlist generated successfully')

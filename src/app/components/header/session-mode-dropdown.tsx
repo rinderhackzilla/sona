@@ -1,5 +1,5 @@
 import { MoonStar, Sparkles, Target } from 'lucide-react'
-import { useMemo, useState } from 'react'
+import { startTransition, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'react-toastify'
 import { Button } from '@/app/components/ui/button'
@@ -12,43 +12,52 @@ import {
 } from '@/app/components/ui/dialog'
 import { usePlayerActions, useSessionModeSettings } from '@/store/player.store'
 import { useTheme } from '@/store/theme.store'
+import { useFullscreenState } from '@/store/ui.store'
 import { SessionMode } from '@/types/playerContext'
 import { Theme } from '@/types/themeContext'
+import { SESSION_MODE_THEMES } from '@/types/sessionMode'
+import {
+  FULLSCREEN_HYPNOTIC_BACKDROP_KEY,
+  LAST_NON_SESSION_THEME_KEY,
+  SESSION_PREVIOUS_THEME_KEY,
+} from '@/utils/session-storage-keys'
+import { safeStorageGet, safeStorageSet } from '@/utils/safe-storage'
 
 type ModeId = SessionMode
 
-const SESSION_PREVIOUS_THEME_KEY = 'sona.session.previousTheme'
-const LAST_NON_SESSION_THEME_KEY = 'sona.theme.lastNonSession'
+const SESSION_MODE_TRANSITION_MS = 420
 
-const modeThemeMap: Record<Exclude<ModeId, 'off'>, Theme> = {
-  focus: Theme.Black,
-  night: Theme.NuclearDark,
+let sessionModeTransitionTimer: ReturnType<typeof setTimeout> | null = null
+
+function openInAppFullscreen(setFullscreenOpen: (open: boolean) => void) {
+  startTransition(() => {
+    setFullscreenOpen(true)
+  })
 }
 
-function openInAppFullscreenWithRetry(tries = 4, delayMs = 180) {
-  const trigger = document.querySelector(
-    '[data-testid=\"track-fullscreen-button\"]',
-  ) as HTMLButtonElement | null
+function triggerSessionModeTransition() {
+  if (typeof window === 'undefined') return
+  const root = window.document.documentElement
+  root.classList.add('session-mode-transition')
 
-  if (trigger && !trigger.disabled) {
-    trigger.click()
-    return
+  if (sessionModeTransitionTimer) {
+    clearTimeout(sessionModeTransitionTimer)
   }
 
-  if (tries <= 0) return
-  window.setTimeout(() => openInAppFullscreenWithRetry(tries - 1, delayMs), delayMs)
+  sessionModeTransitionTimer = setTimeout(() => {
+    root.classList.remove('session-mode-transition')
+    sessionModeTransitionTimer = null
+  }, SESSION_MODE_TRANSITION_MS)
 }
 
 function getStoredTheme(): Theme | null {
-  if (typeof window === 'undefined') return null
-  const value = window.localStorage.getItem(SESSION_PREVIOUS_THEME_KEY)
+  const value = safeStorageGet(SESSION_PREVIOUS_THEME_KEY)
   if (!value) return null
   return Object.values(Theme).includes(value as Theme) ? (value as Theme) : null
 }
 
 function getLastNonSessionTheme(): Theme | null {
-  if (typeof window === 'undefined') return null
-  const value = window.localStorage.getItem(LAST_NON_SESSION_THEME_KEY)
+  const value = safeStorageGet(LAST_NON_SESSION_THEME_KEY)
   if (!value) return null
   return Object.values(Theme).includes(value as Theme) ? (value as Theme) : null
 }
@@ -59,6 +68,7 @@ export function SessionModeDropdown() {
   const { startSessionMode } = usePlayerActions()
   const { mode } = useSessionModeSettings()
   const { theme, setTheme } = useTheme()
+  const { setOpen: setFullscreenOpen } = useFullscreenState()
   const isActive = mode !== 'off'
 
   const statusLabel = useMemo(() => {
@@ -70,39 +80,40 @@ export function SessionModeDropdown() {
   const StatusIcon = mode === 'focus' ? Target : mode === 'night' ? MoonStar : Sparkles
 
   const selectMode = (selected: ModeId) => {
+    triggerSessionModeTransition()
     const previousMode = mode
     if (selected === 'off') {
       const previousTheme = getStoredTheme()
       const fallbackTheme = getLastNonSessionTheme()
-      setTheme(previousTheme ?? fallbackTheme ?? theme ?? Theme.Dark)
+      startTransition(() => {
+        setTheme(previousTheme ?? fallbackTheme ?? theme ?? Theme.Dark)
+      })
       if (mode === 'focus') {
         const closeButton = document.querySelector(
           '[data-testid=\"fullscreen-close-button\"]',
         ) as HTMLButtonElement | null
         closeButton?.click()
       }
-      if (typeof window !== 'undefined') {
-        window.localStorage.setItem('sona.fullscreen.hypnoticBackdrop', 'false')
-      }
-      startSessionMode('off').catch(() => undefined)
+      safeStorageSet(FULLSCREEN_HYPNOTIC_BACKDROP_KEY, 'false')
+      startTransition(() => {
+        startSessionMode('off').catch(() => undefined)
+      })
       return
     }
 
-    if (mode === 'off' && typeof window !== 'undefined') {
-      window.localStorage.setItem(SESSION_PREVIOUS_THEME_KEY, theme)
-    }
+    if (mode === 'off') safeStorageSet(SESSION_PREVIOUS_THEME_KEY, theme)
 
-    setTheme(modeThemeMap[selected])
+    startTransition(() => {
+      setTheme(SESSION_MODE_THEMES[selected])
+    })
     if (selected === 'focus') {
-      openInAppFullscreenWithRetry()
-      if (typeof window !== 'undefined') {
-        window.localStorage.setItem('sona.fullscreen.hypnoticBackdrop', 'false')
-      }
+      openInAppFullscreen(setFullscreenOpen)
+      safeStorageSet(FULLSCREEN_HYPNOTIC_BACKDROP_KEY, 'false')
     }
-    if (selected === 'night' && typeof window !== 'undefined') {
-      window.localStorage.setItem('sona.fullscreen.hypnoticBackdrop', 'true')
-    }
-    startSessionMode(selected).catch(() => undefined)
+    if (selected === 'night') safeStorageSet(FULLSCREEN_HYPNOTIC_BACKDROP_KEY, 'true')
+    startTransition(() => {
+      startSessionMode(selected).catch(() => undefined)
+    })
     if (selected !== previousMode) {
       toast.info(
         selected === 'focus'

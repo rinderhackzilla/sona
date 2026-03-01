@@ -1,0 +1,39 @@
+/* Session-mode motion profile scaling */
+.session-mode-night .fullscreen-bg-kenburns,
+.session-mode-night .hypnotic-layer-a,
+.session-mode-night .hypnotic-layer-b,
+.session-mode-night .hypnotic-layer-c,
+.session-mode-focus .fullscreen-bg-kenburns,
+.session-mode-focus .hypnotic-layer-a,
+.session-mode-focus .hypnotic-layer-b,
+.session-mode-focus .hypnotic-layer-c {
+  animation-duration: calc(var(--session-motion-scale, 1) * 22s) !important;
+}
+
+.session-mode-night .fullscreen-drawer-content *,
+.session-mode-focus .fullscreen-drawer-content * {
+  transition-duration: calc(var(--session-transition-scale, 1) * 260ms) !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .session-mode-night body,
+  .session-mode-night header,
+  .session-mode-night footer,
+  .session-mode-night .play-button-accent-glow,
+  .session-mode-night .night-control-main-pulse,
+  .session-mode-night .night-control-soft-pulse,
+  .session-mode-night .dj-card-active-pulse,
+  .session-mode-night .fullscreen-bg-kenburns,
+  .session-mode-night .hypnotic-layer-a,
+  .session-mode-night .hypnotic-layer-b,
+  .session-mode-night .hypnotic-layer-c,
+  .session-mode-night .fullscreen-progress-slider .slider-range,
+  .session-mode-night .fullscreen-volume-slider .slider-range,
+  .session-mode-night .player-progress-slider .slider-range,
+  .session-mode-night .player-volume-slider-bar .slider-range {
+    animation: none !important;
+    transition-duration: 0ms !important;
+  }
+}
+
+

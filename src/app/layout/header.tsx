@@ -13,15 +13,15 @@ export function Header() {
 
   return (
     <header className="w-full grid grid-cols-header h-header px-4 fixed top-0 right-0 left-0 z-20 bg-background border-b electron-drag">
-      <div className="flex items-center">
+      <div className="flex items-center gap-1">
         {isMacOS && !isFullscreen && <div className="w-[70px]" />}
         <NavigationButtons />
-        <MainSidebarTrigger className="ml-2" />
+        <MainSidebarTrigger className="ml-1" />
+        <MiniPlayerModeButton />
       </div>
       <HeaderSongInfo />
       <div className="flex justify-end items-center gap-2">
         <SessionModeDropdown />
-        <MiniPlayerModeButton />
         <SettingsButton />
         <UserDropdown />
         {isWindows && !isFullscreen && <div className="w-[122px]" />}

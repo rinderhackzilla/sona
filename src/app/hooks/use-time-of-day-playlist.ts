@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import type { Song } from '@/types/responses/song'
 import {
   checkAndCatchUpTimeOfDayPlaylist,
-  generateAndSaveTimeOfDayPlaylist,
+  generateAndSaveTimeOfDayPlaylistWithRetry,
   loadTimeOfDayPlaylist,
   startTimeOfDayScheduler,
 } from '@/service/time-of-day-playlist-manager'
@@ -42,7 +42,7 @@ export function useTimeOfDayPlaylist() {
     setError(null)
 
     try {
-      const { playlist, metadata } = await generateAndSaveTimeOfDayPlaylist(force)
+      const { playlist, metadata } = await generateAndSaveTimeOfDayPlaylistWithRetry(force)
       setState({
         playlist,
         dayPart: metadata.dayPart,

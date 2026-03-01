@@ -17,6 +17,7 @@ import {
 import { ROUTES } from '@/routes/routesList'
 import { subsonic } from '@/service/subsonic'
 import { useRemovePlaylist } from '@/store/playlists.store'
+import { navigateSafe } from '@/utils/navigateSafe'
 import { queryKeys } from '@/utils/queryKeys'
 
 export function RemovePlaylistDialog() {
@@ -31,7 +32,7 @@ export function RemovePlaylistDialog() {
     const isOnPlaylistPage = matches.find((route) => route.id === 'playlist')
     const pageId = isOnPlaylistPage?.params.playlistId ?? ''
 
-    if (pageId === playlistId) navigate(ROUTES.LIBRARY.HOME)
+    if (pageId === playlistId) navigateSafe(navigate, ROUTES.LIBRARY.HOME)
   }
 
   const queryClient = useQueryClient()

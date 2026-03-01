@@ -5,6 +5,7 @@ import { LazyLoadImage } from 'react-lazy-load-image-component'
 import { getSimpleCoverArtUrl } from '@/api/httpClient'
 import { ImageLoader } from '@/app/components/image-loader'
 import { useVisualizerContext } from '@/app/components/fullscreen/settings'
+import { useReducedMotion } from '@/app/hooks/use-reduced-motion'
 import {
   usePlayerCurrentSong,
   useSessionModeSettings,
@@ -88,11 +89,12 @@ function useBackdropLuminance(coverUrl: string) {
 export function FullscreenBackdrop() {
   const { useSongColorOnBigPlayer } = useSongColor()
   const { hypnoticBackdropEnabled } = useVisualizerContext()
+  const reduceMotion = useReducedMotion()
 
   return (
     <>
       {useSongColorOnBigPlayer ? <DynamicColorBackdrop /> : <ImageBackdrop />}
-      {hypnoticBackdropEnabled && <HypnoticMotionLayer />}
+      {hypnoticBackdropEnabled && !reduceMotion && <HypnoticMotionLayer />}
     </>
   )
 }
@@ -112,6 +114,7 @@ function OtherBackdrop() {
   const luminance = useBackdropLuminance(coverArtUrl)
   const [backgroundImage, setBackgroundImage] = useState(coverArtUrl)
   const { bigPlayerBlur } = useSongColor()
+  const reduceMotion = useReducedMotion()
 
   const newBackgroundImage = useMemo(() => coverArtUrl, [coverArtUrl])
 
@@ -134,7 +137,10 @@ function OtherBackdrop() {
   return (
     <div className="relative w-full h-full transition-colors duration-1000 bg-black/0">
       <div
-        className="absolute -inset-10 bg-cover bg-center z-0 transition-[background-image,filter] duration-1000 fullscreen-bg-kenburns"
+        className={clsx(
+          'absolute -inset-10 bg-cover bg-center z-0 transition-[background-image,filter] duration-1000',
+          !reduceMotion && 'fullscreen-bg-kenburns',
+        )}
         style={{
           backgroundImage: `url(${backgroundImage})`,
           filter: `blur(${bigPlayerBlur.value}px) ${modeFilter}`,
@@ -177,6 +183,7 @@ function MacBackdrop() {
   const luminance = useBackdropLuminance(coverArtUrl)
   const { bigPlayerBlur } = useSongColor()
   const { currentSongColor, currentSongColorIntensity } = useSongColor()
+  const reduceMotion = useReducedMotion()
 
   const backgroundColor = useMemo(() => {
     if (!currentSongColor) return undefined
@@ -205,7 +212,7 @@ function MacBackdrop() {
             alt={title}
             effect="opacity"
             width="100%"
-            className="w-full bg-contain fullscreen-bg-kenburns"
+            className={clsx('w-full bg-contain', !reduceMotion && 'fullscreen-bg-kenburns')}
             style={{ filter: modeFilter }}
           />
         )}
@@ -249,6 +256,7 @@ function DynamicColorBackdrop() {
   const luminance = useBackdropLuminance(coverArtUrl)
   const [backgroundImage, setBackgroundImage] = useState(coverArtUrl)
   const { currentSongColorIntensity, bigPlayerBlur } = useSongColor()
+  const reduceMotion = useReducedMotion()
 
   const newBackgroundImage = useMemo(() => coverArtUrl, [coverArtUrl])
 
@@ -278,7 +286,10 @@ function DynamicColorBackdrop() {
       >
         {/* Blurred background image */}
         <div
-          className="absolute -inset-10 bg-cover bg-center z-0 transition-[background-image,filter] duration-1000 fullscreen-bg-kenburns"
+          className={clsx(
+            'absolute -inset-10 bg-cover bg-center z-0 transition-[background-image,filter] duration-1000',
+            !reduceMotion && 'fullscreen-bg-kenburns',
+          )}
           style={{
             backgroundImage: `url(${backgroundImage})`,
             filter: `blur(${bigPlayerBlur.value}px) ${modeFilter}`,

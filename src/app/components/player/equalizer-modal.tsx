@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   Dialog,
@@ -56,12 +56,16 @@ export function EqualizerModal({ open, onOpenChange }: EqualizerModalProps) {
   const SVG_HEIGHT = 140
   const EQ_RANGE = 12
 
-  const clampGain = (value: number) =>
+  const clampGain = useCallback((value: number) =>
     Math.max(-EQ_RANGE, Math.min(EQ_RANGE, Math.round(value)))
+  , [])
 
-  const normalizeGains = (values: number[]) => values.map((value) => clampGain(value))
+  const normalizeGains = useCallback(
+    (values: number[]) => values.map((value) => clampGain(value)),
+    [clampGain],
+  )
 
-  const buildSmoothPath = (points: { x: number; y: number }[]) => {
+  const buildSmoothPath = useCallback((points: { x: number; y: number }[]) => {
     if (points.length === 0) return ''
     if (points.length === 1) return `M ${points[0].x},${points[0].y}`
 
@@ -80,14 +84,14 @@ export function EqualizerModal({ open, onOpenChange }: EqualizerModalProps) {
     path += ` Q ${penultimate.x},${penultimate.y} ${last.x},${last.y}`
 
     return path
-  }
+  }, [])
 
   // Load saved state on mount
   useEffect(() => {
     const state = getEqState()
     setIsEnabled(state.enabled)
     setGains(normalizeGains(state.gains))
-  }, [])
+  }, [normalizeGains])
 
   const handleGainChange = (index: number, value: number) => {
     const safeValue = clampGain(value)
@@ -121,7 +125,10 @@ export function EqualizerModal({ open, onOpenChange }: EqualizerModalProps) {
   const bandStep = SVG_WIDTH / (gains.length - 1)
   const centerY = SVG_HEIGHT / 2
 
-  const gainToY = (gain: number) => centerY - (gain / EQ_RANGE) * (SVG_HEIGHT / 2.5)
+  const gainToY = useCallback(
+    (gain: number) => centerY - (gain / EQ_RANGE) * (SVG_HEIGHT / 2.5),
+    [centerY],
+  )
 
   const curvePoints = useMemo(
     () =>
@@ -129,9 +136,12 @@ export function EqualizerModal({ open, onOpenChange }: EqualizerModalProps) {
         x: index * bandStep,
         y: gainToY(gain),
       })),
-    [gains, bandStep],
+    [gains, bandStep, gainToY],
   )
-  const pathData = useMemo(() => buildSmoothPath(curvePoints), [curvePoints])
+  const pathData = useMemo(
+    () => buildSmoothPath(curvePoints),
+    [buildSmoothPath, curvePoints],
+  )
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

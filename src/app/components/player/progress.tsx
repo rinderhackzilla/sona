@@ -25,8 +25,6 @@ interface PlayerProgressProps {
   audioRef: RefObject<HTMLAudioElement>
 }
 
-let isSeeking = false
-
 export function PlayerProgress({ audioRef }: PlayerProgressProps) {
   const progress = usePlayerProgress()
   const [localProgress, setLocalProgress] = useState(progress)
@@ -39,12 +37,13 @@ export function PlayerProgress({ audioRef }: PlayerProgressProps) {
   const { setProgress, setUpdatePodcastProgress, getCurrentPodcastProgress } =
     usePlayerActions()
   const isScrobbleSentRef = useRef(false)
+  const isSeekingRef = useRef(false)
 
   const isEmpty = isSong && currentList.length === 0
 
   const updateAudioCurrentTime = useCallback(
     (value: number) => {
-      isSeeking = false
+      isSeekingRef.current = false
       if (audioRef.current) {
         audioRef.current.currentTime = value
       }
@@ -53,7 +52,7 @@ export function PlayerProgress({ audioRef }: PlayerProgressProps) {
   )
 
   const handleSeeking = useCallback((amount: number) => {
-    isSeeking = true
+    isSeekingRef.current = true
     setLocalProgress(amount)
     setVisualProgress(amount)
   }, [])
@@ -77,7 +76,7 @@ export function PlayerProgress({ audioRef }: PlayerProgressProps) {
   }, [localProgress, progress, setProgress, updateAudioCurrentTime])
 
   useEffect(() => {
-    if (isSeeking) return
+    if (isSeekingRef.current) return
     if (!isPlaying) {
       setVisualProgress(progress)
       return
@@ -92,7 +91,7 @@ export function PlayerProgress({ audioRef }: PlayerProgressProps) {
 
     frameId = requestAnimationFrame(tick)
     return () => cancelAnimationFrame(frameId)
-  }, [audioRef, isPlaying, isSeeking, progress])
+  }, [audioRef, isPlaying, progress])
 
   const [showRemaining, setShowRemaining] = useState(false)
 
@@ -101,7 +100,7 @@ export function PlayerProgress({ audioRef }: PlayerProgressProps) {
     [currentDuration],
   )
 
-  const activeProgress = isSeeking ? localProgress : visualProgress
+  const activeProgress = isSeekingRef.current ? localProgress : visualProgress
   const remainingTime = `-${convertSecondsToTime((currentDuration ?? 0) - activeProgress)}`
 
   const sendScrobble = useCallback(async (songId: string) => {
@@ -111,7 +110,7 @@ export function PlayerProgress({ audioRef }: PlayerProgressProps) {
   const progressTicks = useRef(0)
 
   useEffect(() => {
-    if (isSeeking || !isPlaying) {
+    if (isSeekingRef.current || !isPlaying) {
       return
     }
     if (isSong) {
@@ -208,7 +207,7 @@ export function PlayerProgress({ audioRef }: PlayerProgressProps) {
           tooltipTransformer={convertSecondsToTime}
           max={currentDuration}
           step={1}
-          className="cursor-pointer w-[32rem]"
+          className="cursor-pointer w-[32rem] player-progress-slider"
           onValueChange={([value]) => handleSeeking(value)}
           onValueCommit={([value]) => handleSeeked(value)}
           // Sometimes onValueCommit doesn't work properly
@@ -224,7 +223,7 @@ export function PlayerProgress({ audioRef }: PlayerProgressProps) {
           max={100}
           step={1}
           disabled={true}
-          className="cursor-pointer w-[32rem] pointer-events-none"
+          className="cursor-pointer w-[32rem] pointer-events-none player-progress-slider"
         />
       )}
       <small

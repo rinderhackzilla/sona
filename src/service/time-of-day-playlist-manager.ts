@@ -1,4 +1,6 @@
 import type { Song } from '@/types/responses/song'
+import { runWithRetry } from '@/utils/background-task-runner'
+import { readStoredPlaylist, writeStoredPlaylist } from './playlist-storage'
 import {
   generateTimeOfDayPlaylist,
   getCurrentDayPart,
@@ -14,17 +16,10 @@ export function loadTimeOfDayPlaylist(): {
   metadata: TimeOfDayPlaylistMetadata | null
 } {
   try {
-    const storedPlaylist = localStorage.getItem(STORAGE_KEY)
-    const storedMetadata = localStorage.getItem(STORAGE_KEY_METADATA)
-
-    if (!storedPlaylist || !storedMetadata) {
-      return { playlist: [], metadata: null }
-    }
-
-    return {
-      playlist: JSON.parse(storedPlaylist),
-      metadata: JSON.parse(storedMetadata) as TimeOfDayPlaylistMetadata,
-    }
+    return readStoredPlaylist<TimeOfDayPlaylistMetadata>(
+      STORAGE_KEY,
+      STORAGE_KEY_METADATA,
+    )
   } catch (error) {
     console.error('[DayPartPlaylist] Failed to load playlist:', error)
     return { playlist: [], metadata: null }
@@ -53,16 +48,46 @@ export async function generateAndSaveTimeOfDayPlaylist(force: boolean = false) {
   }
 
   const generated = await generateTimeOfDayPlaylist(50)
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(generated.playlist))
-  localStorage.setItem(STORAGE_KEY_METADATA, JSON.stringify(generated.metadata))
+  writeStoredPlaylist(
+    STORAGE_KEY,
+    STORAGE_KEY_METADATA,
+    generated.playlist,
+    generated.metadata,
+  )
   return generated
+}
+
+export async function generateAndSaveTimeOfDayPlaylistWithRetry(
+  force: boolean = false,
+) {
+  return runWithRetry(
+    () => generateAndSaveTimeOfDayPlaylist(force),
+    {
+      taskName: force ? 'daypart-generate-force' : 'daypart-generate',
+      policy: {
+        retries: 2,
+        baseDelayMs: 500,
+        maxDelayMs: 4000,
+      },
+    },
+  )
 }
 
 export async function checkAndCatchUpTimeOfDayPlaylist() {
   if (!shouldGenerateTimeOfDayPlaylist()) return false
 
   try {
-    await generateAndSaveTimeOfDayPlaylist(false)
+    await runWithRetry(
+      () => generateAndSaveTimeOfDayPlaylist(false),
+      {
+        taskName: 'daypart-catchup',
+        policy: {
+          retries: 2,
+          baseDelayMs: 500,
+          maxDelayMs: 4000,
+        },
+      },
+    )
     return true
   } catch (error) {
     console.error('[DayPartPlaylist] Catch-up generation failed:', error)
@@ -78,7 +103,22 @@ export function startTimeOfDayScheduler(onGenerate?: (success: boolean) => void)
 
     timeoutId = setTimeout(async () => {
       try {
-        await generateAndSaveTimeOfDayPlaylist(true)
+        await runWithRetry(
+          () => generateAndSaveTimeOfDayPlaylist(true),
+          {
+            taskName: 'daypart-scheduled-generate',
+            policy: {
+              retries: 2,
+              baseDelayMs: 800,
+              maxDelayMs: 6000,
+            },
+            onRetry: ({ attempt, delayMs }) => {
+              console.warn(
+                `[DayPartPlaylist] Scheduled retry ${attempt} in ${delayMs}ms`,
+              )
+            },
+          },
+        )
         onGenerate?.(true)
       } catch (error) {
         console.error('[DayPartPlaylist] Scheduled generation failed:', error)
@@ -97,4 +137,3 @@ export function startTimeOfDayScheduler(onGenerate?: (success: boolean) => void)
     }
   }
 }
-

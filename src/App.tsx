@@ -11,6 +11,8 @@ import { ThemeObserver } from '@/app/observers/theme-observer'
 import { ToastContainer } from '@/app/observers/toast-container'
 import { UpdateObserver } from '@/app/observers/update-observer'
 import { SessionModeObserver } from '@/app/observers/session-mode-observer'
+import { PerformanceHud } from '@/app/observers/performance-hud'
+import { ArtworkPrefetchObserver } from '@/app/observers/artwork-prefetch-observer'
 import { PlaylistDialogProvider } from '@/app/context/playlist-dialog-context'
 import { Mobile } from '@/app/pages/mobile'
 import { router } from '@/routes/router'
@@ -32,6 +34,8 @@ function App() {
         <LangObserver />
         <ThemeObserver />
         <SessionModeObserver />
+        <ArtworkPrefetchObserver />
+        <PerformanceHud />
         <SettingsDialog />
         <RouterProvider router={router} future={{ v7_startTransition: true }} />
         <ToastContainer />

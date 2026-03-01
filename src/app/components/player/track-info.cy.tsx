@@ -87,7 +87,7 @@ describe('TrackInfo Component', () => {
         .and('have.text', 'No song playing')
     })
 
-    it('should create the fullscreen button and show tooltip', () => {
+    it('should not render fullscreen button in control bar anymore', () => {
       cy.fixture('songs/song').then((song: ISong) => {
         cy.mount(
           <Wrapper>
@@ -95,12 +95,7 @@ describe('TrackInfo Component', () => {
           </Wrapper>,
         )
 
-        cy.getByTestId('track-fullscreen-button')
-          .should('exist')
-          .and('have.css', 'opacity', '0')
-
-        cy.getByTestId('track-fullscreen-button').wait(1500).realHover()
-        cy.contains('Switch to fullscreen').should('be.visible')
+        cy.getByTestId('track-fullscreen-button').should('not.exist')
       })
     })
   })
@@ -126,7 +121,7 @@ describe('TrackInfo Component', () => {
         .and('have.text', 'Nenhuma música tocando')
     })
 
-    it('should create the fullscreen button and show tooltip', () => {
+    it('should not render fullscreen button in control bar anymore', () => {
       cy.fixture('songs/song').then((song: ISong) => {
         cy.mount(
           <Wrapper>
@@ -134,12 +129,7 @@ describe('TrackInfo Component', () => {
           </Wrapper>,
         )
 
-        cy.getByTestId('track-fullscreen-button')
-          .should('exist')
-          .and('have.css', 'opacity', '0')
-
-        cy.getByTestId('track-fullscreen-button').wait(1500).realHover()
-        cy.contains('Mudar para tela cheia').should('be.visible')
+        cy.getByTestId('track-fullscreen-button').should('not.exist')
       })
     })
   })

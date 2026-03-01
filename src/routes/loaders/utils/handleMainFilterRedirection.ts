@@ -5,9 +5,10 @@ import {
   AlbumsSearchParams,
   PersistedAlbumListKeys,
 } from '@/utils/albumsFilter'
+import { safeStorageGet } from '@/utils/safe-storage'
 
 export function handleMainFilterRedirection(searchParams: URLSearchParams) {
-  const savedFilter = localStorage.getItem(
+  const savedFilter = safeStorageGet(
     PersistedAlbumListKeys.MainFilter,
   ) as AlbumListType | null
 

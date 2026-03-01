@@ -41,6 +41,7 @@ import { Password } from '@/app/components/ui/password'
 import { ROUTES } from '@/routes/routesList'
 import { useAppActions, useAppData } from '@/store/app.store'
 import { isDesktop } from '@/utils/desktop'
+import { navigateSafe } from '@/utils/navigateSafe'
 import { removeSlashFromUrl } from '@/utils/removeSlashFromUrl'
 
 const loginSchema = z.object({
@@ -107,7 +108,7 @@ export function LoginForm() {
     if (status) {
       await queryClient.invalidateQueries()
       toast.success(t('toast.server.success'))
-      navigate(ROUTES.LIBRARY.HOME, { replace: true })
+      navigateSafe(navigate, ROUTES.LIBRARY.HOME, { replace: true })
     } else {
       setLoading(false)
       toast.error(t('toast.server.error'))

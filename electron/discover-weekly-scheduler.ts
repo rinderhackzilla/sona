@@ -67,8 +67,6 @@ function notifyRenderer(event: 'check' | 'monday-trigger') {
       weekKey: getISOWeek(new Date()),
     })
     console.log(`[Electron Scheduler] Sent ${event} event to renderer`)
-  } else {
-    console.log('[Electron Scheduler] No window available to notify')
   }
 }
 

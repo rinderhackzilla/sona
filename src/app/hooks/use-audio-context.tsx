@@ -6,94 +6,29 @@ import {
   type IMediaElementAudioSourceNode,
   type IBiquadFilterNode,
 } from 'standardized-audio-context'
+import {
+  getGlobalAnalyserNode,
+  getGlobalAudioContext,
+  getGlobalMediaSourceNode,
+  setGlobalAnalyserNode,
+  setGlobalAudioContext,
+  setGlobalMediaSourceNode,
+} from '@/app/audio/context-singleton'
+import {
+  EQ_BANDS,
+  getEqEnabled,
+  getEqFilters,
+  getEqGains,
+  normalizeEqGains,
+  setEqEnabledState,
+  setEqFilters,
+  setEqGainsState,
+} from '@/app/audio/eq-state'
 import { usePlayerMediaType, useReplayGainState } from '@/store/player.store'
 import { logger } from '@/utils/logger'
 import { ReplayGainParams } from '@/utils/replayGain'
 
 type IAudioSource = IMediaElementAudioSourceNode<IAudioContext>
-
-// EQ Filter configuration
-const EQ_BANDS = [
-  { hz: 32, type: 'lowshelf' as BiquadFilterType },
-  { hz: 64, type: 'peaking' as BiquadFilterType },
-  { hz: 125, type: 'peaking' as BiquadFilterType },
-  { hz: 250, type: 'peaking' as BiquadFilterType },
-  { hz: 500, type: 'peaking' as BiquadFilterType },
-  { hz: 1000, type: 'peaking' as BiquadFilterType },
-  { hz: 2000, type: 'peaking' as BiquadFilterType },
-  { hz: 4000, type: 'highshelf' as BiquadFilterType },
-]
-
-// Global EQ state shared across app
-let globalEqFilters: IBiquadFilterNode<IAudioContext>[] = []
-let globalEqEnabled = false
-let globalEqGains: number[] = [0, 0, 0, 0, 0, 0, 0, 0]
-const EQ_STORAGE_KEY = 'sona.eq.state'
-
-type PersistedEqState = {
-  enabled: boolean
-  gains: number[]
-}
-
-function clampEqGain(value: number) {
-  return Math.max(-12, Math.min(12, Math.round(value)))
-}
-
-function normalizeEqGains(gains: unknown): number[] {
-  if (!Array.isArray(gains)) return [0, 0, 0, 0, 0, 0, 0, 0]
-
-  const normalized = gains
-    .map((value) => (typeof value === 'number' ? clampEqGain(value) : 0))
-    .slice(0, EQ_BANDS.length)
-
-  while (normalized.length < EQ_BANDS.length) {
-    normalized.push(0)
-  }
-
-  return normalized
-}
-
-function loadPersistedEqState(): PersistedEqState | null {
-  if (typeof window === 'undefined') return null
-
-  try {
-    const raw = window.localStorage.getItem(EQ_STORAGE_KEY)
-    if (!raw) return null
-    const parsed = JSON.parse(raw) as Partial<PersistedEqState>
-    return {
-      enabled: Boolean(parsed.enabled),
-      gains: normalizeEqGains(parsed.gains),
-    }
-  } catch {
-    return null
-  }
-}
-
-function persistEqState() {
-  if (typeof window === 'undefined') return
-
-  const payload: PersistedEqState = {
-    enabled: globalEqEnabled,
-    gains: normalizeEqGains(globalEqGains),
-  }
-
-  try {
-    window.localStorage.setItem(EQ_STORAGE_KEY, JSON.stringify(payload))
-  } catch {
-    // Ignore storage failures to keep audio pipeline resilient.
-  }
-}
-
-const persistedEqState = loadPersistedEqState()
-if (persistedEqState) {
-  globalEqEnabled = persistedEqState.enabled
-  globalEqGains = persistedEqState.gains
-}
-
-// Global analyser for visualizer
-let globalAnalyser: AnalyserNode | null = null
-let globalAudioContext: IAudioContext | null = null
-const globalMediaSourceNodes = new WeakMap<HTMLAudioElement, IAudioSource>()
 
 export function useAudioContext(audio: HTMLAudioElement | null) {
   const { isSong } = usePlayerMediaType()
@@ -110,22 +45,22 @@ export function useAudioContext(audio: HTMLAudioElement | null) {
   const setupAudioContext = useCallback(() => {
     if (!audio || !isSong) return
 
-    if (!globalAudioContext) {
-      globalAudioContext = new AudioContext()
+    if (!getGlobalAudioContext()) {
+      setGlobalAudioContext(new AudioContext())
     }
     if (!audioContextRef.current) {
-      audioContextRef.current = globalAudioContext
+      audioContextRef.current = getGlobalAudioContext()
     }
 
     const audioContext = audioContextRef.current
 
     if (!sourceNodeRef.current) {
-      const existingSource = globalMediaSourceNodes.get(audio)
+      const existingSource = getGlobalMediaSourceNode(audio)
       if (existingSource) {
         sourceNodeRef.current = existingSource
       } else {
         const nextSource = audioContext.createMediaElementSource(audio)
-        globalMediaSourceNodes.set(audio, nextSource)
+        setGlobalMediaSourceNode(audio, nextSource)
         sourceNodeRef.current = nextSource
       }
     }
@@ -144,6 +79,7 @@ export function useAudioContext(audio: HTMLAudioElement | null) {
 
     // Reuse existing global analyser when available to keep visualizer chain alive
     if (!analyserRef.current) {
+      const globalAnalyser = getGlobalAnalyserNode()
       if (globalAnalyser) {
         analyserRef.current = globalAnalyser
       } else {
@@ -151,7 +87,7 @@ export function useAudioContext(audio: HTMLAudioElement | null) {
         analyser.fftSize = 512
         analyser.smoothingTimeConstant = 0.75
         analyserRef.current = analyser
-        globalAnalyser = analyser
+        setGlobalAnalyserNode(analyser)
         logger.info('[AudioContext] Created analyser for visualizer')
       }
     }
@@ -167,11 +103,10 @@ export function useAudioContext(audio: HTMLAudioElement | null) {
         return filter
       })
       eqFiltersRef.current = filters
-      globalEqFilters = filters
-      const initialGains = normalizeEqGains(globalEqGains)
-      globalEqGains = initialGains
+      setEqFilters(filters)
+      const initialGains = normalizeEqGains(getEqGains())
       filters.forEach((filter, index) => {
-        filter.gain.value = globalEqEnabled ? initialGains[index] : 0
+        filter.gain.value = getEqEnabled() ? initialGains[index] : 0
       })
       logger.info('Created EQ filters', { count: filters.length })
     }
@@ -249,7 +184,7 @@ export function useAudioContext(audio: HTMLAudioElement | null) {
     if (analyserRef.current) {
       analyserRef.current.disconnect()
       analyserRef.current = null
-      globalAnalyser = null
+      setGlobalAnalyserNode(null)
     }
     eqFiltersRef.current.forEach(filter => {
       filter.disconnect()
@@ -259,7 +194,7 @@ export function useAudioContext(audio: HTMLAudioElement | null) {
       gainNodeRef.current.disconnect()
       gainNodeRef.current = null
     }
-    audioContextRef.current = globalAudioContext
+    audioContextRef.current = getGlobalAudioContext()
     chainConnectedRef.current = false
   }, [])
 
@@ -287,45 +222,30 @@ export function useAudioContext(audio: HTMLAudioElement | null) {
 
 // Export function to get global analyser for visualizer
 export function getGlobalAnalyser(): AnalyserNode | null {
-  return globalAnalyser
+  return getGlobalAnalyserNode()
 }
 
 // Export functions to control EQ from equalizer modal
 export function setEqEnabled(enabled: boolean) {
-  globalEqEnabled = enabled
+  setEqEnabledState(enabled)
   logger.info('EQ enabled:', enabled)
-  
-  if (!enabled) {
-    // Bypass EQ by setting all gains to 0
-    globalEqFilters.forEach(filter => {
-      filter.gain.value = 0
-    })
-  } else {
-    // Restore saved gains
-    globalEqGains = normalizeEqGains(globalEqGains)
-    globalEqFilters.forEach((filter, index) => {
-      filter.gain.value = globalEqGains[index]
-    })
-  }
-  persistEqState()
 }
 
 export function setEqGains(gains: number[]) {
-  globalEqGains = normalizeEqGains(gains)
-  
-  if (globalEqEnabled && globalEqFilters.length) {
-    globalEqFilters.forEach((filter, index) => {
-      filter.gain.value = globalEqGains[index]
-      logger.info(`EQ Filter ${index}: ${globalEqGains[index]} dB`)
-    })
-  }
-  persistEqState()
+  setEqGainsState(gains)
+
+    if (getEqEnabled() && getEqFilters().length) {
+      getEqFilters().forEach((filter, index) => {
+        filter.gain.value = getEqGains()[index]
+        logger.info(`EQ Filter ${index}: ${getEqGains()[index]} dB`)
+      })
+    }
 }
 
 export function getEqState() {
   return {
-    enabled: globalEqEnabled,
-    gains: globalEqGains,
-    filters: globalEqFilters,
+    enabled: getEqEnabled(),
+    gains: getEqGains(),
+    filters: getEqFilters(),
   }
 }

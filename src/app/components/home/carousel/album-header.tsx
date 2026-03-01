@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Play } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
@@ -159,30 +159,30 @@ export default function AlbumHeader({
 }: AlbumHeaderProps) {
   const [currentSlide, setCurrentSlide] = useState(0)
   const { data: onRepeat, isLoading: onRepeatLoading } = useOnRepeat()
+  const carouselItems = useMemo(() => {
+    const items: Array<
+      | { type: 'onRepeat'; data: NonNullable<typeof onRepeat> }
+      | { type: 'album'; data: Albums }
+    > = []
 
-  // Combine On Repeat with albums
-  const carouselItems = []
-  
-  // Add On Repeat as first item if available
-  if (onRepeat?.song) {
-    carouselItems.push({
-      type: 'onRepeat' as const,
-      data: onRepeat,
+    if (onRepeat?.song) {
+      items.push({
+        type: 'onRepeat',
+        data: onRepeat,
+      })
+    }
+
+    const maxAlbums = onRepeat?.song ? 5 : 6
+    const limitedAlbums = albums.slice(0, maxAlbums)
+    limitedAlbums.forEach((album) => {
+      items.push({
+        type: 'album',
+        data: album,
+      })
     })
-  }
 
-  const maxAlbums = onRepeat?.song ? 5 : 6
-  const limitedAlbums = albums.slice(0, maxAlbums)
-
-  // Add regular albums
-  limitedAlbums.forEach((album) => {
-    carouselItems.push({
-      type: 'album' as const,
-      data: album,
-    })
-  })
-
-  if (carouselItems.length === 0 && !onRepeatLoading) return null
+    return items
+  }, [albums, onRepeat])
 
   useEffect(() => {
     if (carouselItems.length <= 1) return
@@ -193,6 +193,8 @@ export default function AlbumHeader({
       clearInterval(timer)
     }
   }, [carouselItems.length])
+
+  if (carouselItems.length === 0 && !onRepeatLoading) return null
 
   return (
     <div className="h-full">

@@ -42,7 +42,7 @@ const Slider = React.forwardRef<
     >
       <SliderPrimitive.Track
         className={clsx(
-          'relative h-1 w-full grow overflow-hidden rounded-full select-none',
+          'slider-track relative h-1 w-full grow overflow-hidden rounded-full select-none',
           variant === 'default' && 'bg-secondary',
           variant === 'secondary' && 'bg-muted-foreground/70',
         )}
@@ -50,7 +50,7 @@ const Slider = React.forwardRef<
       >
         <SliderPrimitive.Range
           className={clsx(
-            'absolute h-full select-none rounded',
+            'slider-range absolute h-full select-none rounded',
             variant === 'default' && 'bg-primary',
             variant === 'secondary' && 'bg-secondary-foreground',
           )}
@@ -301,7 +301,7 @@ export function ProgressSlider(props: ProgressSliderProps) {
       >
         <SliderPrimitive.Track
           className={clsx(
-            'relative h-1 w-full grow overflow-hidden rounded-full select-none',
+            'slider-track relative h-1 w-full grow overflow-hidden rounded-full select-none',
             variant === 'default' && 'bg-secondary',
             variant === 'secondary' && 'bg-muted-foreground/70',
           )}
@@ -309,7 +309,7 @@ export function ProgressSlider(props: ProgressSliderProps) {
         >
           <SliderPrimitive.Range
             className={clsx(
-              'absolute h-full select-none transition-[border-radius]',
+              'slider-range absolute h-full select-none transition-[border-radius]',
               variant === 'default' && 'bg-primary',
               variant === 'secondary' && 'bg-secondary-foreground',
               showTooltip ? 'rounded-none' : 'rounded',

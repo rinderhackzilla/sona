@@ -1,8 +1,10 @@
 import { memo, useCallback, useEffect, useRef, useState } from 'react'
-import { getCoverArtUrl, getSongStreamUrl } from '@/api/httpClient'
+import {
+  getCoverArtUrl,
+  getSongStreamUrl,
+} from '@/api/httpClient'
 import { getProxyURL } from '@/api/podcastClient'
 import { SonaDjButton } from '@/app/components/fullscreen/sona-dj'
-import { MiniPlayerButton } from '@/app/components/mini-player/button'
 import { RadioInfo } from '@/app/components/player/radio-info'
 import { TrackInfo } from '@/app/components/player/track-info'
 import { podcasts } from '@/service/podcasts'
@@ -19,14 +21,12 @@ import {
   useReplayGainState,
 } from '@/store/player.store'
 import { LoopState } from '@/types/playerContext'
-import { hasPiPSupport } from '@/utils/browser'
 import { logger } from '@/utils/logger'
 import { ReplayGainParams } from '@/utils/replayGain'
+import { useRenderCounter } from '@/app/hooks/use-render-counter'
 import { AudioPlayer } from './audio'
 import { PlayerClearQueueButton } from './clear-queue-button'
 import { PlayerControls } from './controls'
-import { EqualizerButton } from './equalizer-button'
-import { PlayerExpandButton } from './expand-button'
 import { PlayerLikeButton } from './like-button'
 import { PlayerLyricsButton } from './lyrics-button'
 import { PodcastInfo } from './podcast-info'
@@ -43,26 +43,28 @@ const MemoPlayerProgress = memo(PlayerProgress)
 const MemoPlayerLikeButton = memo(PlayerLikeButton)
 const MemoPlayerQueueButton = memo(PlayerQueueButton)
 const MemoPlayerClearQueueButton = memo(PlayerClearQueueButton)
-const MemoEqualizerButton = memo(EqualizerButton)
 const MemoPlayerVolume = memo(PlayerVolume)
-const MemoPlayerExpandButton = memo(PlayerExpandButton)
 const MemoPodcastPlaybackRate = memo(PodcastPlaybackRate)
 const MemoLyricsButton = memo(PlayerLyricsButton)
-const MemoMiniPlayerButton = memo(MiniPlayerButton)
 const MemoAudioPlayer = memo(AudioPlayer)
 
 type DeckId = 'a' | 'b'
+type CrossfadeState = 'idle' | 'arming' | 'fading' | 'committing' | 'failed'
 
 export function Player({ hideUi = false }: { hideUi?: boolean }) {
+  useRenderCounter('Player')
   const songDeckARef = useRef<HTMLAudioElement>(null)
   const songDeckBRef = useRef<HTMLAudioElement>(null)
   const radioRef = useRef<HTMLAudioElement>(null)
   const podcastRef = useRef<HTMLAudioElement>(null)
   const crossfadeIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const crossfadeRetryTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const fadeOutStartedRef = useRef(false)
   const isCrossfadingRef = useRef(false)
   const crossfadeCommitRef = useRef(false)
   const incomingDeckRef = useRef<DeckId | null>(null)
+  const crossfadeStateRef = useRef<CrossfadeState>('idle')
+  const crossfadeRetryRef = useRef(0)
   const [activeDeck, setActiveDeck] = useState<DeckId>('a')
   const [incomingDeck, setIncomingDeck] = useState<DeckId | null>(null)
   const [deckAIndex, setDeckAIndex] = useState<number | null>(null)
@@ -90,6 +92,8 @@ export function Player({ hideUi = false }: { hideUi?: boolean }) {
   const { enabled: crossfadeEnabled } = useCrossfadeSettings()
 
   const CROSSFADE_DURATION_S = 3
+  const MAX_CROSSFADE_RETRIES = 2
+  const CROSSFADE_RETRY_DELAY_MS = 150
 
   const song = currentList[currentSongIndex]
   const radio = radioList[currentSongIndex]
@@ -111,6 +115,10 @@ export function Player({ hideUi = false }: { hideUi?: boolean }) {
     if (crossfadeIntervalRef.current !== null) {
       clearInterval(crossfadeIntervalRef.current)
       crossfadeIntervalRef.current = null
+    }
+    if (crossfadeRetryTimeoutRef.current !== null) {
+      clearTimeout(crossfadeRetryTimeoutRef.current)
+      crossfadeRetryTimeoutRef.current = null
     }
   }, [])
 
@@ -135,6 +143,8 @@ export function Player({ hideUi = false }: { hideUi?: boolean }) {
       incomingDeckRef.current = null
       setIncomingDeck(null)
       fadeOutStartedRef.current = false
+      crossfadeStateRef.current = 'idle'
+      crossfadeRetryRef.current = 0
       clearFade()
       return
     }
@@ -154,6 +164,8 @@ export function Player({ hideUi = false }: { hideUi?: boolean }) {
     incomingDeckRef.current = null
     setIncomingDeck(null)
     fadeOutStartedRef.current = false
+    crossfadeStateRef.current = 'idle'
+    crossfadeRetryRef.current = 0
     clearFade()
   }, [activeDeck, clearFade, currentSongIndex, isSong])
 
@@ -164,7 +176,7 @@ export function Player({ hideUi = false }: { hideUi?: boolean }) {
     if (activeRef) {
       setAudioPlayerRef(activeRef)
     }
-  }, [getActiveSongDeckRef, isSong, setAudioPlayerRef, song?.id])
+  }, [getActiveSongDeckRef, isSong, setAudioPlayerRef])
 
   useEffect(() => {
     const audio = podcastRef.current
@@ -179,6 +191,8 @@ export function Player({ hideUi = false }: { hideUi?: boolean }) {
     setIncomingDeck(null)
     isCrossfadingRef.current = false
     fadeOutStartedRef.current = false
+    crossfadeStateRef.current = 'idle'
+    crossfadeRetryRef.current = 0
     if (activeDeck === 'a') setDeckBIndex(null)
     if (activeDeck === 'b') setDeckAIndex(null)
   }, [activeDeck, clearFade, crossfadeEnabled, isSong])
@@ -199,13 +213,40 @@ export function Player({ hideUi = false }: { hideUi?: boolean }) {
     const steps = Math.max(20, Math.floor(durationMs / 30))
     const stepMs = Math.max(16, Math.floor(durationMs / steps))
     let step = 0
+    crossfadeStateRef.current = 'fading'
 
     incomingAudio.volume = 0
-    if (isPlaying) {
-      incomingAudio.play().catch(() => undefined)
+    let aborted = false
+    const finalizeFallback = () => {
+      if (aborted) return
+      clearFade()
+      incomingDeckRef.current = null
+      setIncomingDeck(null)
+      isCrossfadingRef.current = false
+      fadeOutStartedRef.current = false
+      crossfadeStateRef.current = 'failed'
+      crossfadeRetryRef.current = 0
+      playNextSong()
     }
 
+    const attemptPlayIncoming = () => {
+      incomingAudio.play().catch(() => {
+        if (aborted) return
+        if (crossfadeRetryRef.current < MAX_CROSSFADE_RETRIES) {
+          crossfadeRetryRef.current += 1
+          crossfadeRetryTimeoutRef.current = setTimeout(
+            attemptPlayIncoming,
+            CROSSFADE_RETRY_DELAY_MS * (crossfadeRetryRef.current + 1),
+          )
+          return
+        }
+        finalizeFallback()
+      })
+    }
+    if (isPlaying) attemptPlayIncoming()
+
     crossfadeIntervalRef.current = setInterval(() => {
+      if (aborted) return
       step += 1
       const progress = Math.min(1, step / steps)
 
@@ -214,6 +255,7 @@ export function Player({ hideUi = false }: { hideUi?: boolean }) {
 
       if (progress >= 1) {
         clearFade()
+        crossfadeStateRef.current = 'committing'
 
         outgoingAudio.pause()
         outgoingAudio.currentTime = 0
@@ -228,6 +270,8 @@ export function Player({ hideUi = false }: { hideUi?: boolean }) {
         setIncomingDeck(null)
         isCrossfadingRef.current = false
         fadeOutStartedRef.current = false
+        crossfadeStateRef.current = 'idle'
+        crossfadeRetryRef.current = 0
 
         playNextSong()
         setAudioPlayerRef(incomingAudio)
@@ -237,10 +281,13 @@ export function Player({ hideUi = false }: { hideUi?: boolean }) {
         setProgress(Math.floor(incomingAudio.currentTime))
       }
     }, stepMs)
+
+    return () => {
+      aborted = true
+    }
   }, [
     activeDeck,
     clearFade,
-    crossfadeEnabled,
     getDeckRef,
     isPlaying,
     isSong,
@@ -316,6 +363,7 @@ export function Player({ hideUi = false }: { hideUi?: boolean }) {
       isPodcast,
       isSong,
       podcast,
+      activeDeck,
       setCurrentDuration,
       setProgress,
     ],
@@ -346,6 +394,7 @@ export function Player({ hideUi = false }: { hideUi?: boolean }) {
       if (timeLeft > 0 && timeLeft <= CROSSFADE_DURATION_S) {
         const incomingDeck: DeckId = activeDeck === 'a' ? 'b' : 'a'
 
+        crossfadeStateRef.current = 'arming'
         fadeOutStartedRef.current = true
         isCrossfadingRef.current = true
         incomingDeckRef.current = incomingDeck
@@ -427,6 +476,7 @@ export function Player({ hideUi = false }: { hideUi?: boolean }) {
           src={getSongStreamUrl(deckASong.id)}
           autoPlay={isPlaying}
           shouldPlay={isPlaying && (activeDeck === 'a' || incomingDeck === 'a')}
+          ignoreErrors={activeDeck !== 'a' && incomingDeck !== 'a'}
           audioRef={songDeckARef}
           onPlay={() => {
             if (activeDeck === 'a') setPlayingState(true)
@@ -451,6 +501,7 @@ export function Player({ hideUi = false }: { hideUi?: boolean }) {
           src={getSongStreamUrl(deckBSong.id)}
           autoPlay={isPlaying}
           shouldPlay={isPlaying && (activeDeck === 'b' || incomingDeck === 'b')}
+          ignoreErrors={activeDeck !== 'b' && incomingDeck !== 'b'}
           audioRef={songDeckBRef}
           onPlay={() => {
             if (activeDeck === 'b') setPlayingState(true)
@@ -558,15 +609,11 @@ export function Player({ hideUi = false }: { hideUi?: boolean }) {
                   <MemoPlayerClearQueueButton disabled={!radio && !podcast} />
                 )}
 
-                <MemoEqualizerButton disabled={!song && !radio && !podcast} />
-
                 <MemoPlayerVolume
                   audioRef={getAudioRef()}
                   disabled={!song && !radio && !podcast}
                 />
 
-                {isSong && <MemoPlayerExpandButton disabled={!song} />}
-                {isSong && hasPiPSupport && <MemoMiniPlayerButton />}
               </div>
             </div>
           </div>

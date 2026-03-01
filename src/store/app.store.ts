@@ -7,6 +7,7 @@ import { createWithEqualityFn } from 'zustand/traditional'
 import { pingServer } from '@/api/pingServer'
 import { queryServerInfo } from '@/api/queryServerInfo'
 import { AuthType, IAppContext, IServerConfig } from '@/types/serverConfig'
+import type { SettingsPage } from '@/types/settings'
 import { isDesktop } from '@/utils/desktop'
 import { discordRpc } from '@/utils/discordRpc'
 import { logger } from '@/utils/logger'
@@ -211,7 +212,7 @@ export const useAppStore = createWithEqualityFn<IAppContext>()(
                 state.settings.openDialog = value
               })
             },
-            currentPage: 'appearance' as 'appearance' | 'player' | 'content' | 'services',
+            currentPage: 'appearance' as SettingsPage,
             setCurrentPage: (page) => {
               set((state) => {
                 state.settings.currentPage = page

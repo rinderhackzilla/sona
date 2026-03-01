@@ -95,7 +95,8 @@ export function GeometricMandala() {
       for (let sym = 0; sym < symmetry; sym++) {
         const symOff = (sym / symmetry) * TWO_PI
 
-        const bx: number[] = [], by: number[] = []
+        const bx: number[] = []
+        const by: number[] = []
         for (let i = 0; i < pts; i++) {
           const angle = (i / pts) * TWO_PI + rot + symOff
           const freqIdx = Math.floor(((i / pts + freqOff) % 1) * (BUF / 4))
@@ -168,7 +169,9 @@ export function GeometricMandala() {
       const { h: ah } = accentHSL()
 
       // Energy bands
-      let bassSum = 0, midSum = 0, highSum = 0
+      let bassSum = 0
+      let midSum = 0
+      let highSum = 0
       for (let i = 0; i < 6; i++) bassSum += smoothed[i]
       for (let i = 6; i < 40; i++) midSum += smoothed[i]
       for (let i = 40; i < 90; i++) highSum += smoothed[i]

@@ -3,6 +3,7 @@ import { useAppIntegrations, } from '@/store/app.store'
 import { getTop50Year, findTracksInNavidrome } from '@/service/lastfm-features'
 import { usePlaylistDialog } from '@/app/context/playlist-dialog-context'
 import type { Song } from '@/types/responses/song'
+import { safeStorageGet, safeStorageSet } from '@/utils/safe-storage'
 
 interface Top50YearData {
   playlist: Song[]
@@ -28,7 +29,7 @@ export function useTop50Year() {
   // Get cached data from localStorage
   const getCachedData = (): Top50YearData | null => {
     try {
-      const cached = localStorage.getItem(CACHE_KEY)
+      const cached = safeStorageGet(CACHE_KEY)
       if (!cached) return null
       return JSON.parse(cached)
     } catch {
@@ -39,7 +40,7 @@ export function useTop50Year() {
   // Save data to localStorage
   const setCachedData = (data: Top50YearData) => {
     try {
-      localStorage.setItem(CACHE_KEY, JSON.stringify(data))
+      safeStorageSet(CACHE_KEY, JSON.stringify(data))
     } catch (error) {
       console.error('[Top 50 Year] Failed to cache data:', error)
     }

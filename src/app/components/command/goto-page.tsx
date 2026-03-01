@@ -4,6 +4,7 @@ import { CommandGroup, CommandItem } from '@/app/components/ui/command'
 import { libraryItems, mainNavItems, SidebarItems } from '@/app/layout/sidebar'
 import { useAppStore } from '@/store/app.store'
 import { GridViewWrapperType, resetGridClickedItem } from '@/utils/gridTools'
+import { navigateSafe } from '@/utils/navigateSafe'
 import { CommandItemProps } from './command-menu'
 
 export function CommandGotoPage({ runCommand }: CommandItemProps) {
@@ -25,7 +26,7 @@ export function CommandGotoPage({ runCommand }: CommandItemProps) {
             key={route}
             onSelect={() => {
               resetGridClickedItem({ name: id as GridViewWrapperType })
-              runCommand(() => navigate(route))
+              runCommand(() => navigateSafe(navigate, route))
             }}
           >
             {t(title)}

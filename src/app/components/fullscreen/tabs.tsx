@@ -12,6 +12,11 @@ import {
 import { usePlayerActions, useSessionModeSettings } from '@/store/player.store'
 import { useTheme } from '@/store/theme.store'
 import { Theme } from '@/types/themeContext'
+import {
+  FULLSCREEN_HYPNOTIC_BACKDROP_KEY,
+  SESSION_PREVIOUS_THEME_KEY,
+} from '@/utils/session-storage-keys'
+import { safeStorageGet, safeStorageSet } from '@/utils/safe-storage'
 import { LyricsTab } from './lyrics'
 import { FullscreenSongQueue } from './queue'
 import { SongInfo } from './song-info'
@@ -54,16 +59,13 @@ const getTransform = (currentTab: TabValue, tabValue: TabValue) => {
 const tabStyles =
   'absolute inset-0 mt-0 h-[calc(100%-64px)] overflow-y-auto transition-transform duration-300'
 const playingTabStyles =
-  'absolute inset-0 mt-0 h-[calc(100%-64px)] overflow-hidden transition-transform duration-300'
+  'absolute inset-0 mt-0 h-[calc(100%-64px)] overflow-visible transition-transform duration-300'
 
 const triggerStyles =
-  'w-full rounded-full text-foreground/78 data-[state=active]:text-foreground data-[state=active]:bg-primary/15 data-[state=active]:shadow-[0_6px_14px_hsl(var(--primary)/0.12)] hover:text-foreground transition-all duration-300'
-
-const SESSION_PREVIOUS_THEME_KEY = 'sona.session.previousTheme'
+  'fullscreen-top-tab-trigger w-full rounded-full text-foreground/78 data-[state=active]:text-foreground data-[state=active]:bg-primary/15 data-[state=active]:shadow-[0_6px_14px_hsl(var(--primary)/0.12)] hover:text-foreground transition-all duration-300'
 
 function getStoredTheme(): Theme | null {
-  if (typeof window === 'undefined') return null
-  const value = window.localStorage.getItem(SESSION_PREVIOUS_THEME_KEY)
+  const value = safeStorageGet(SESSION_PREVIOUS_THEME_KEY)
   if (!value) return null
   return Object.values(Theme).includes(value as Theme) ? (value as Theme) : null
 }
@@ -83,9 +85,7 @@ export function FullscreenTabs({ isChromeVisible }: FullscreenTabsProps) {
   const exitFocusMode = () => {
     const previousTheme = getStoredTheme()
     setTheme(previousTheme ?? Theme.Dark)
-    if (typeof window !== 'undefined') {
-      window.localStorage.setItem('sona.fullscreen.hypnoticBackdrop', 'false')
-    }
+    safeStorageSet(FULLSCREEN_HYPNOTIC_BACKDROP_KEY, 'false')
     startSessionMode('off').catch(() => undefined)
 
     const closeButton = document.querySelector(
@@ -103,7 +103,7 @@ export function FullscreenTabs({ isChromeVisible }: FullscreenTabsProps) {
       {isFocusMode ? (
         <div
           className={clsx(
-            'w-full mb-4 flex justify-end transition-all duration-300',
+            'relative z-40 w-full mb-4 flex justify-start transition-all duration-300',
             !isChromeVisible && 'opacity-0 -translate-y-2 pointer-events-none',
           )}
         >
@@ -121,7 +121,7 @@ export function FullscreenTabs({ isChromeVisible }: FullscreenTabsProps) {
       ) : (
         <TabsList
           className={clsx(
-            'w-full mb-4 p-1 rounded-full border border-primary/15 bg-primary/10 backdrop-blur-md shadow-[0_8px_24px_rgba(0,0,0,0.28)] transition-all duration-500 ease-in-out',
+            'fullscreen-top-tabs relative z-40 w-full mb-4 p-1 rounded-full border border-primary/15 bg-primary/10 backdrop-blur-md shadow-[0_8px_24px_rgba(0,0,0,0.28)] transition-all duration-700 [transition-timing-function:cubic-bezier(0.22,1,0.36,1)]',
             !isChromeVisible && 'opacity-0 -translate-y-2 pointer-events-none',
           )}
         >
@@ -180,3 +180,4 @@ export function FullscreenTabs({ isChromeVisible }: FullscreenTabsProps) {
     </Tabs>
   )
 }
+

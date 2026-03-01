@@ -22,6 +22,8 @@ import { VISUALIZER_NAMES } from '@/app/components/fullscreen/visualizers'
 import { cn } from '@/lib/utils'
 import { useSongColor } from '@/store/player.store'
 import type { VisualizerPreset } from '@/types/visualizer'
+import { FULLSCREEN_HYPNOTIC_BACKDROP_KEY } from '@/utils/session-storage-keys'
+import { safeStorageGetBoolean, safeStorageSet } from '@/utils/safe-storage'
 import { buttonsStyle } from './controls'
 
 // Context for visualizer state (POC - will move to store)
@@ -54,17 +56,13 @@ export function useVisualizerSettings() {
 
 export function VisualizerProvider({ children }: { children: React.ReactNode }) {
   const [preset, setPreset] = useState<VisualizerPreset>('geometric-mandala')
-  const [hypnoticBackdropEnabled, setHypnoticBackdropEnabled] = useState(() => {
-    if (typeof window === 'undefined') return true
-    const value = window.localStorage.getItem('sona.fullscreen.hypnoticBackdrop')
-    return value === null ? true : value === 'true'
-  })
+  const [hypnoticBackdropEnabled, setHypnoticBackdropEnabled] = useState(() =>
+    safeStorageGetBoolean(FULLSCREEN_HYPNOTIC_BACKDROP_KEY, true),
+  )
 
   const setHypnoticBackdropEnabledWithPersistence = (enabled: boolean) => {
     setHypnoticBackdropEnabled(enabled)
-    if (typeof window !== 'undefined') {
-      window.localStorage.setItem('sona.fullscreen.hypnoticBackdrop', String(enabled))
-    }
+    safeStorageSet(FULLSCREEN_HYPNOTIC_BACKDROP_KEY, String(enabled))
   }
 
   return (
@@ -92,6 +90,7 @@ export function FullscreenSettings() {
           size="icon"
           className={clsx(
             buttonsStyle.utility,
+            'fullscreen-utility-button',
             'data-[state=open]:scale-110',
           )}
           style={{ ...buttonsStyle.style }}

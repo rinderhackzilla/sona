@@ -10,7 +10,7 @@ export function CloseFullscreenButton() {
         variant="ghost"
         size="icon"
         data-testid="fullscreen-close-button"
-        className={buttonsStyle.utility}
+        className={`${buttonsStyle.utility} fullscreen-utility-button`}
         style={{ ...buttonsStyle.style }}
       >
         <ChevronDown className="size-9 drop-shadow-lg" strokeWidth={1.5} />

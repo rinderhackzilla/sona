@@ -15,13 +15,13 @@ export function FullscreenPlayer({ isChromeVisible }: FullscreenPlayerProps) {
   return (
     <div
       className={clsx(
-        'relative w-full h-full flex flex-col justify-end transition-[padding] duration-500 ease-in-out',
+        'relative w-full h-full flex flex-col justify-end transition-[padding] duration-700 [transition-timing-function:cubic-bezier(0.22,1,0.36,1)]',
         isChromeVisible ? 'pb-[68px]' : 'pb-4',
       )}
     >
       <div
         className={clsx(
-          'transition-all duration-500 ease-in-out',
+          'transition-all duration-700 [transition-timing-function:cubic-bezier(0.22,1,0.36,1)]',
           isChromeVisible ? 'mb-2.5 translate-y-0 opacity-100' : 'mb-0 translate-y-0 opacity-100',
         )}
       >
@@ -30,7 +30,7 @@ export function FullscreenPlayer({ isChromeVisible }: FullscreenPlayerProps) {
 
       <div
         className={clsx(
-          'absolute left-0 right-0 bottom-0 flex items-center justify-between gap-4 px-1 py-1 transition-all duration-500 ease-in-out',
+          'absolute left-0 right-0 bottom-0 flex items-center justify-between gap-4 px-1 py-1 transition-all duration-700 [transition-timing-function:cubic-bezier(0.22,1,0.36,1)]',
           isChromeVisible
             ? 'opacity-100 translate-y-0'
             : 'opacity-0 translate-y-2 pointer-events-none',
@@ -69,3 +69,4 @@ export function FullscreenPlayer({ isChromeVisible }: FullscreenPlayerProps) {
     </div>
   )
 }
+

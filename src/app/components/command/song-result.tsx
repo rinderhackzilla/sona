@@ -4,6 +4,7 @@ import { CommandGroup, CommandItem } from '@/app/components/ui/command'
 import { ROUTES } from '@/routes/routesList'
 import { usePlayerActions } from '@/store/player.store'
 import { ISong } from '@/types/responses/song'
+import { navigateSafe } from '@/utils/navigateSafe'
 import {
   CustomGroup,
   CustomGroupHeader,
@@ -31,7 +32,9 @@ export function CommandSongResult({
       <CustomGroupHeader>
         <span>{t('sidebar.songs')}</span>
         <CustomHeaderLink
-          onClick={() => runCommand(() => navigate(ROUTES.SONGS.SEARCH(query)))}
+          onClick={() =>
+            runCommand(() => navigateSafe(navigate, ROUTES.SONGS.SEARCH(query)))
+          }
         >
           {t('generic.seeMore')}
         </CustomHeaderLink>
@@ -44,7 +47,7 @@ export function CommandSongResult({
               value={`song-${song.id}`}
               className="border mb-1"
               onSelect={() => {
-                runCommand(() => navigate(ROUTES.ALBUM.PAGE(song.albumId)))
+                runCommand(() => navigateSafe(navigate, ROUTES.ALBUM.PAGE(song.albumId)))
               }}
             >
               <ResultItem

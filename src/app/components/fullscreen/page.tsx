@@ -1,5 +1,5 @@
 import { clsx } from 'clsx'
-import { memo, useCallback, useEffect, useRef, useState } from 'react'
+import { ComponentProps, memo } from 'react'
 import {
   Drawer,
   DrawerContent,
@@ -8,7 +8,9 @@ import {
 } from '@/app/components/ui/drawer'
 import { useAppWindow } from '@/app/hooks/use-app-window'
 import { useAlbumColorExtractor } from '@/app/hooks/useAlbumColorExtractor'
+import { useRenderCounter } from '@/app/hooks/use-render-counter'
 import { useFullscreenState } from '@/store/ui.store'
+import { useFullscreenChromeVisibility } from './use-fullscreen-chrome-visibility'
 import { VisualizerProvider } from './settings'
 import { FullscreenBackdrop } from './backdrop'
 import { FullscreenDragHandler } from './drag-handler'
@@ -22,40 +24,12 @@ type FullscreenModeProps = {
 }
 
 function FullscreenScene() {
-  const [isChromeVisible, setIsChromeVisible] = useState(true)
-  const hideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const isChromeVisibleRef = useRef(true)
+  useRenderCounter('FullscreenScene')
+  const { isChromeVisible, revealChrome, scheduleHideChrome } =
+    useFullscreenChromeVisibility(3000)
 
   // Extract album colors automatically
   useAlbumColorExtractor()
-
-  const clearHideTimer = useCallback(() => {
-    if (hideTimerRef.current) {
-      clearTimeout(hideTimerRef.current)
-      hideTimerRef.current = null
-    }
-  }, [])
-
-  const scheduleHideChrome = useCallback(() => {
-    clearHideTimer()
-    hideTimerRef.current = setTimeout(() => {
-      isChromeVisibleRef.current = false
-      setIsChromeVisible(false)
-    }, 3000)
-  }, [clearHideTimer])
-
-  const revealChrome = useCallback(() => {
-    if (!isChromeVisibleRef.current) {
-      isChromeVisibleRef.current = true
-      setIsChromeVisible(true)
-    }
-    scheduleHideChrome()
-  }, [scheduleHideChrome])
-
-  useEffect(() => {
-    scheduleHideChrome()
-    return () => clearHideTimer()
-  }, [clearHideTimer, scheduleHideChrome])
 
   return (
     <>
@@ -63,7 +37,7 @@ function FullscreenScene() {
       <FullscreenDragHandler />
       <div
         className={clsx(
-          'absolute inset-0 flex flex-col p-0 2xl:p-8 w-full h-full bg-black/0 z-10 transition-all duration-500 ease-in-out',
+          'absolute inset-0 flex flex-col p-0 2xl:p-8 w-full h-full bg-black/0 z-10 transition-all duration-700 [transition-timing-function:cubic-bezier(0.22,1,0.36,1)]',
           isChromeVisible
             ? 'pt-6 2xl:pt-8 gap-4'
             : 'pt-6 2xl:pt-7 gap-2',
@@ -74,7 +48,7 @@ function FullscreenScene() {
       >
         <div
           className={clsx(
-            'w-full flex-1 min-h-0 px-8 2xl:px-16 transition-all duration-500 ease-in-out',
+            'w-full flex-1 min-h-0 px-8 2xl:px-16 transition-all duration-700 [transition-timing-function:cubic-bezier(0.22,1,0.36,1)]',
             isChromeVisible ? 'pt-1 2xl:pt-2' : 'pt-1',
           )}
         >
@@ -85,7 +59,7 @@ function FullscreenScene() {
 
         <div
           className={clsx(
-            'px-8 2xl:px-16 transition-all duration-500 ease-in-out',
+            'px-8 2xl:px-16 transition-all duration-700 [transition-timing-function:cubic-bezier(0.22,1,0.36,1)]',
             isChromeVisible
               ? 'h-[154px] min-h-[154px] py-2'
               : 'h-[102px] min-h-[102px] pt-0 pb-0',
@@ -93,7 +67,7 @@ function FullscreenScene() {
         >
           <div
             className={clsx(
-              'flex h-full transition-all duration-500 ease-in-out',
+              'flex h-full transition-all duration-700 [transition-timing-function:cubic-bezier(0.22,1,0.36,1)]',
               isChromeVisible ? 'items-start' : 'items-end',
             )}
           >
@@ -109,26 +83,9 @@ export function FullscreenMode({ children }: FullscreenModeProps) {
   const { handleFullscreen } = useAppWindow()
 
   return (
-    <VisualizerProvider>
-      <Drawer
-        onAnimationEnd={handleFullscreen}
-        fixed={true}
-        handleOnly={true}
-        disablePreventScroll={true}
-        dismissible={true}
-        modal={false}
-      >
-        <DrawerTrigger asChild>{children}</DrawerTrigger>
-        <DrawerTitle className="sr-only">Big Player</DrawerTitle>
-        <DrawerContent
-          className="h-screen w-screen rounded-t-none border-none select-none cursor-default mt-0"
-          showHandle={false}
-          aria-describedby={undefined}
-        >
-          <FullscreenScene />
-        </DrawerContent>
-      </Drawer>
-    </VisualizerProvider>
+    <FullscreenDrawer onAnimationEnd={handleFullscreen}>
+      <DrawerTrigger asChild>{children}</DrawerTrigger>
+    </FullscreenDrawer>
   )
 }
 
@@ -137,20 +94,31 @@ export function FullscreenGlobal() {
   const { open, setOpen } = useFullscreenState()
 
   return (
+    <FullscreenDrawer
+      open={open}
+      onOpenChange={setOpen}
+      onAnimationEnd={handleFullscreen}
+    />
+  )
+}
+
+type FullscreenDrawerProps = ComponentProps<typeof Drawer>
+
+function FullscreenDrawer(props: FullscreenDrawerProps) {
+  return (
     <VisualizerProvider>
       <Drawer
-        open={open}
-        onOpenChange={setOpen}
-        onAnimationEnd={handleFullscreen}
         fixed={true}
         handleOnly={true}
         disablePreventScroll={true}
         dismissible={true}
         modal={false}
+        {...props}
       >
+        {props.children}
         <DrawerTitle className="sr-only">Big Player</DrawerTitle>
         <DrawerContent
-          className="h-screen w-screen rounded-t-none border-none select-none cursor-default mt-0"
+          className="fullscreen-drawer-content h-screen w-screen rounded-t-none border-none select-none cursor-default mt-0"
           showHandle={false}
           aria-describedby={undefined}
         >
@@ -160,3 +128,4 @@ export function FullscreenGlobal() {
     </VisualizerProvider>
   )
 }
+

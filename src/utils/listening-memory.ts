@@ -1,3 +1,5 @@
+import { safeStorageGet, safeStorageSet } from '@/utils/safe-storage'
+
 type MemorySong = {
   id: string
   artistId?: string
@@ -30,9 +32,8 @@ function getAlbumKey(song: MemorySong) {
 }
 
 function loadEntries(): MemoryEntry[] {
-  if (typeof window === 'undefined') return []
   try {
-    const raw = window.localStorage.getItem(MEMORY_STORAGE_KEY)
+    const raw = safeStorageGet(MEMORY_STORAGE_KEY)
     if (!raw) return []
     const parsed = JSON.parse(raw) as MemoryEntry[]
     if (!Array.isArray(parsed)) return []
@@ -49,9 +50,8 @@ function loadEntries(): MemoryEntry[] {
 }
 
 function saveEntries(entries: MemoryEntry[]) {
-  if (typeof window === 'undefined') return
   try {
-    window.localStorage.setItem(
+    safeStorageSet(
       MEMORY_STORAGE_KEY,
       JSON.stringify(entries.slice(-MAX_ENTRIES)),
     )
@@ -61,15 +61,13 @@ function saveEntries(entries: MemoryEntry[]) {
 }
 
 export function getListeningMemoryEnabledPreference() {
-  if (typeof window === 'undefined') return true
-  const value = window.localStorage.getItem(MEMORY_ENABLED_KEY)
+  const value = safeStorageGet(MEMORY_ENABLED_KEY)
   if (value == null) return true
   return value === '1'
 }
 
 export function setListeningMemoryEnabledPreference(enabled: boolean) {
-  if (typeof window === 'undefined') return
-  window.localStorage.setItem(MEMORY_ENABLED_KEY, enabled ? '1' : '0')
+  safeStorageSet(MEMORY_ENABLED_KEY, enabled ? '1' : '0')
 }
 
 export function rememberSongPlayback(song: MemorySong | null | undefined) {

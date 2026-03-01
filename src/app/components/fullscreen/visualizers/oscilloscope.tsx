@@ -9,12 +9,6 @@ function hexToRgba(hex: string, alpha: number): string {
   return `rgba(${r}, ${g}, ${b}, ${alpha})`
 }
 
-function accentHSL() {
-  const v = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim()
-  const [h, s, l] = v.split(' ')
-  return { h: h ?? '220', s: s ?? '80%', l: l ?? '60%' }
-}
-
 export function Oscilloscope() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const { currentSongColorPalette } = useSongColor()
@@ -102,9 +96,9 @@ export function Oscilloscope() {
       const palette = paletteRef.current
       const c1 = palette?.vibrant ?? null
       const c2 = palette?.accent ?? null  // single accent color for orbs
-      const { h: ah, s: as_, l: al } = accentHSL()
-
-      let bassSum = 0, midSum = 0, highSum = 0
+      let bassSum = 0
+      let midSum = 0
+      let highSum = 0
       for (let i = 0; i < 6; i++) bassSum += smoothed[i]
       for (let i = 6; i < 40; i++) midSum += smoothed[i]
       for (let i = 40; i < 90; i++) highSum += smoothed[i]
@@ -189,7 +183,10 @@ export function Oscilloscope() {
           const rawPhase = ((i / NUM_H) + scrollPhase) % 1.0
           const screenT = rawPhase * rawPhase
 
-          let lx0: number, ly0: number, lx1: number, ly1: number
+          let lx0: number
+          let ly0: number
+          let lx1: number
+          let ly1: number
 
           if (isHoriz) {
             const dir = side === 'floor' ? 1 : -1
@@ -213,7 +210,10 @@ export function Oscilloscope() {
             const t0 = s / NUM_SEG
             const t1 = (s + 1) / NUM_SEG
 
-            let sx0: number, sy0: number, sx1: number, sy1: number
+            let sx0: number
+            let sy0: number
+            let sx1: number
+            let sy1: number
             if (isHoriz) {
               sx0 = lx0 + (lx1 - lx0) * t0; sy0 = ly0
               sx1 = lx0 + (lx1 - lx0) * t1; sy1 = ly1

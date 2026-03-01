@@ -1,5 +1,6 @@
 import { memo } from 'react'
 import { MainDrawerPage } from '@/app/components/drawer/page'
+import { FullscreenGlobal } from '@/app/components/fullscreen/page'
 import { MiniPlayerModePage } from '@/app/components/mini-player/mode-page'
 import { Player } from '@/app/components/player/player'
 import { CreatePlaylistDialog } from '@/app/components/playlist/form-dialog'
@@ -20,6 +21,7 @@ const MemoSongInfoDialog = memo(SongInfoDialog)
 const MemoRemovePlaylistDialog = memo(RemovePlaylistDialog)
 const MemoMainDrawerPage = memo(MainDrawerPage)
 const MemoMiniPlayerModePage = memo(MiniPlayerModePage)
+const MemoFullscreenGlobal = memo(FullscreenGlobal)
 
 export default function BaseLayout() {
   const { open: miniPlayerOpen } = useMiniPlayerState()
@@ -40,6 +42,7 @@ export default function BaseLayout() {
           <MemoSongInfoDialog />
           <MemoRemovePlaylistDialog />
           <MemoMainDrawerPage />
+          <MemoFullscreenGlobal />
           <CreatePlaylistDialog />
         </>
       )}

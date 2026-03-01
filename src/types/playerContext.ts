@@ -86,6 +86,12 @@ export type SessionMode = 'off' | 'focus' | 'night'
 interface ISessionModeSettings {
   mode: SessionMode
   setMode: (value: SessionMode) => void
+  focusGenres: string[]
+  nightGenres: string[]
+  setFocusGenres: (values: string[]) => void
+  setNightGenres: (values: string[]) => void
+  resetFocusGenres: () => void
+  resetNightGenres: () => void
 }
 
 interface IFullscreen {

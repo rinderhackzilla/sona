@@ -53,6 +53,7 @@ const ScrollBar = React.forwardRef<
 >(({ className, thumbClassName, orientation = 'vertical', ...props }, ref) => (
   <ScrollAreaPrimitive.ScrollAreaScrollbar
     ref={ref}
+    data-slot="scrollbar"
     orientation={orientation}
     className={cn(
       'flex touch-none select-none transition-colors z-30',
@@ -65,6 +66,7 @@ const ScrollBar = React.forwardRef<
     {...props}
   >
     <ScrollAreaPrimitive.ScrollAreaThumb
+      data-slot="scrollbar-thumb"
       className={cn(
         'relative flex-1 rounded-full bg-border transition-colors',
         thumbClassName,

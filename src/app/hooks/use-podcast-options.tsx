@@ -4,6 +4,7 @@ import { ROUTES } from '@/routes/routesList'
 import { podcasts } from '@/service/podcasts'
 import { Episode } from '@/types/responses/podcasts'
 import { isDesktop } from '@/utils/desktop'
+import { navigateSafe } from '@/utils/navigateSafe'
 import { queryKeys } from '@/utils/queryKeys'
 import { useDownload } from './use-download'
 
@@ -40,11 +41,11 @@ export function usePodcastOptions({ episode }: PodcastOptionsProps) {
   })
 
   function gotoPodcast() {
-    navigate(ROUTES.PODCASTS.PAGE(episode.podcast_id))
+    navigateSafe(navigate, ROUTES.PODCASTS.PAGE(episode.podcast_id))
   }
 
   function gotoEpisode() {
-    navigate(ROUTES.EPISODES.PAGE(episode.id))
+    navigateSafe(navigate, ROUTES.EPISODES.PAGE(episode.id))
   }
 
   return {

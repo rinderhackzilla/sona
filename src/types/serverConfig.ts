@@ -1,4 +1,4 @@
-import { SettingsOptions } from '@/app/components/settings/options'
+import type { SettingsPage } from '@/types/settings'
 
 export enum AuthType {
   PASSWORD,
@@ -66,8 +66,8 @@ export interface IAppUpdate {
 interface IAppSettings {
   openDialog: boolean
   setOpenDialog: (value: boolean) => void
-  currentPage: SettingsOptions
-  setCurrentPage: (page: SettingsOptions) => void
+  currentPage: SettingsPage
+  setCurrentPage: (page: SettingsPage) => void
 }
 
 interface IPodcasts {

@@ -154,10 +154,6 @@ module.exports = {
         '2xl':
           '0px 2px 4px rgb(0 0 0 / 0.15), 0px 6px 8px rgb(0 0 0 / 0.15), 0px 10px 24px rgb(0 0 0 / 0.15)',
       },
-      screens: {
-        'mid-player': { raw: '(min-height: 133px) and (max-height: 170px)' },
-        'mini-player': { raw: '(max-height: 132px)' },
-      },
     },
   },
   plugins: [

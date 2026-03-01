@@ -1,5 +1,5 @@
 import omit from 'lodash/omit'
-import { getCachedImage } from '@/cache/image'
+import { getCachedImage, prefetchCachedImages } from '@/cache/image'
 import { useAppStore } from '@/store/app.store'
 import { CoverArt } from '@/types/coverArtType'
 import { AuthType } from '@/types/serverConfig'
@@ -139,6 +139,15 @@ export async function getCoverArtUrl(
   }
 
   return getCachedImage(url)
+}
+
+export async function prefetchCoverArtUrls(
+  covers: Array<{ id?: string; type?: CoverArt; size?: string | number }>,
+) {
+  const urls = covers.map(({ id, type = 'album', size = '300' }) =>
+    getSimpleCoverArtUrl(id, type, size.toString()),
+  )
+  await prefetchCachedImages(urls)
 }
 
 export function getSongStreamUrl(

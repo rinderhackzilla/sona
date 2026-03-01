@@ -26,6 +26,7 @@ import 'dayjs/locale/zh-cn'
 
 import i18n from '@/i18n'
 import { languages, resources } from '@/i18n/languages'
+import { safeStorageGet } from '@/utils/safe-storage'
 
 function getDayJsLocale(langCode: string) {
   const lang = languages.find((lang) => lang.langCode === langCode)
@@ -51,7 +52,7 @@ languages.forEach((lang) => {
 const browserTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone
 dayjs.tz.setDefault(browserTimezone)
 
-const savedLang = localStorage.getItem('i18nextLng') || 'en-US'
+const savedLang = safeStorageGet('i18nextLng') || 'en-US'
 dayjs.locale(getDayJsLocale(savedLang))
 
 i18n.on('languageChanged', (lang: string) => {

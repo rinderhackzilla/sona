@@ -1,4 +1,4 @@
-import { memo, useRef } from 'react'
+import { memo, startTransition, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Dot } from '@/app/components/dot'
 import { MarqueeTitle } from '@/app/components/fullscreen/marquee-title'
@@ -27,14 +27,18 @@ export function SongInfo({ isChromeVisible }: SongInfoProps) {
   function handleTitleClick() {
     closeButtonRef.current?.click()
     setTimeout(() => {
-      navigate(ROUTES.ALBUM.PAGE(currentSong.albumId))
+      startTransition(() => {
+        navigate(ROUTES.ALBUM.PAGE(currentSong.albumId))
+      })
     }, 100)
   }
 
   function handleAlbumClick() {
     closeButtonRef.current?.click()
     setTimeout(() => {
-      navigate(ROUTES.ALBUM.PAGE(currentSong.albumId))
+      startTransition(() => {
+        navigate(ROUTES.ALBUM.PAGE(currentSong.albumId))
+      })
     }, 100)
   }
 
@@ -42,7 +46,9 @@ export function SongInfo({ isChromeVisible }: SongInfoProps) {
     if (!id) return
     closeButtonRef.current?.click()
     setTimeout(() => {
-      navigate(ROUTES.ARTIST.PAGE(id))
+      startTransition(() => {
+        navigate(ROUTES.ARTIST.PAGE(id))
+      })
     }, 100)
   }
 
@@ -58,8 +64,8 @@ export function SongInfo({ isChromeVisible }: SongInfoProps) {
     >
       <div
         className={cn(
-          'flex items-center justify-start h-full min-h-full max-h-full gap-4 2xl:gap-6 flex-1 overflow-hidden transition-all duration-500 ease-in-out',
-          isChromeVisible ? 'pt-1 translate-y-0' : 'pt-0 -translate-y-1',
+          'flex items-center justify-start h-full min-h-full max-h-full gap-4 2xl:gap-6 flex-1 overflow-visible transition-all duration-700 [transition-timing-function:cubic-bezier(0.22,1,0.36,1)]',
+          isChromeVisible ? 'pt-2 translate-y-0' : 'pt-1 translate-y-0',
         )}
       >
         {/* Hidden close button for programmatic closing */}
@@ -71,8 +77,8 @@ export function SongInfo({ isChromeVisible }: SongInfoProps) {
           className={cn(
             'flex flex-col flex-1 min-w-0 h-full min-h-0 text-left overflow-hidden transition-all duration-500 ease-in-out',
             isChromeVisible
-              ? 'max-h-[520px] 2xl:max-h-[640px] justify-end pb-2'
-              : 'max-h-[595px] 2xl:max-h-[720px] justify-center',
+              ? 'max-h-[520px] 2xl:max-h-[640px] justify-end pb-1'
+              : 'max-h-[595px] 2xl:max-h-[720px] justify-end pb-2',
           )}
         >
           <MarqueeTitle gap="mr-6">
@@ -156,3 +162,4 @@ function ArtistNames({
     </p>
   )
 }
+

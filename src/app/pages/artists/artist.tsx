@@ -20,6 +20,7 @@ import ErrorPage from '@/app/pages/error-page'
 import { ROUTES } from '@/routes/routesList'
 import { dedupeAlbumsByIdentity } from '@/utils/albumDedup'
 import { sortRecentAlbums } from '@/utils/album'
+import { getNewestAlbumCoverArt } from '@/utils/artistCover'
 
 export default function Artist() {
   const { t } = useTranslation()
@@ -75,6 +76,13 @@ export default function Artist() {
     return [...byDisplayIdentity.values()]
   }, [dedupedAlbums])
 
+  const fallbackAlbumCoverArt = useMemo(
+    () => getNewestAlbumCoverArt(dedupedAlbums),
+    [dedupedAlbums],
+  )
+  const headerCoverArt = artist?.coverArt || fallbackAlbumCoverArt
+  const headerCoverArtType = artist?.coverArt ? 'artist' : 'album'
+
   if (artistIsLoading) return <AlbumFallback />
   if (isFetched && !artist) {
     return <ErrorPage status={404} statusText="Not Found" />
@@ -124,8 +132,8 @@ export default function Artist() {
       <ImageHeader
         type={t('artist.headline')}
         title={artist.name}
-        coverArtId={artist.coverArt}
-        coverArtType="artist"
+        coverArtId={headerCoverArt}
+        coverArtType={headerCoverArtType}
         coverArtSize="700"
         coverArtAlt={artist.name}
         badges={badges}
