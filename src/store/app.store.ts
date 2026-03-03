@@ -164,6 +164,12 @@ export const useAppStore = createWithEqualityFn<IAppContext>()(
                 state.pages.autoPlaylistImport = value
               })
             },
+            listDensity: 'default',
+            setListDensity: (value) => {
+              set((state) => {
+                state.pages.listDensity = value
+              })
+            },
             playlistOrder: [],
             setPlaylistOrder: (order) => {
               set((state) => {
@@ -292,6 +298,7 @@ export const useAppStore = createWithEqualityFn<IAppContext>()(
                 state.pages.showInfoPanel = true
                 state.pages.hideRadiosSection = HIDE_RADIOS_SECTION ?? false
                 state.pages.artistsPageViewType = 'table'
+                state.pages.listDensity = 'default'
                 state.podcasts.active = false
                 state.podcasts.serviceUrl = ''
                 state.podcasts.useDefaultUser = true
@@ -421,7 +428,8 @@ useAppStore.subscribe(
 
 export const useAppData = () => useAppStore((state) => state.data)
 export const useAppAccounts = () => useAppStore((state) => state.accounts)
-export const useAppIntegrations = () => useAppStore((state) => state.integrations)
+export const useAppIntegrations = () =>
+  useAppStore((state) => state.integrations)
 export const useAppPodcasts = () => useAppStore((state) => state.podcasts)
 export const useAppPodcastCollapsibleState = () =>
   useAppStore((state) => ({
@@ -429,6 +437,11 @@ export const useAppPodcastCollapsibleState = () =>
     setCollapsibleState: state.podcasts.setCollapsibleState,
   }))
 export const useAppPages = () => useAppStore((state) => state.pages)
+export const useAppListDensity = () =>
+  useAppStore((state) => ({
+    listDensity: state.pages.listDensity,
+    setListDensity: state.pages.setListDensity,
+  }))
 export const useAppDesktopData = () =>
   useAppStore((state) => state.desktop.data)
 export const useAppDesktopActions = () =>

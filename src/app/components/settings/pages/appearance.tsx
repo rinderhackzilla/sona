@@ -8,7 +8,6 @@ import {
   HeaderTitle,
   Root,
 } from '@/app/components/settings/section'
-import { Switch } from '@/app/components/ui/switch'
 import {
   Select,
   SelectContent,
@@ -17,9 +16,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/app/components/ui/select'
-import { useFullscreenPlayerSettings } from '@/store/player.store'
-import { useLang } from '@/store/lang.store'
+import { Switch } from '@/app/components/ui/switch'
 import { languages } from '@/i18n/languages'
+import { useLang } from '@/store/lang.store'
+import { useFullscreenPlayerSettings } from '@/store/player.store'
 import { ThemeSettingsPicker } from './appearance/theme'
 
 const appearanceLanguages = languages.filter((language) =>
@@ -28,7 +28,8 @@ const appearanceLanguages = languages.filter((language) =>
 
 export function AppearancePage() {
   const { t } = useTranslation()
-  const { autoFullscreenEnabled, setAutoFullscreenEnabled } = useFullscreenPlayerSettings()
+  const { autoFullscreenEnabled, setAutoFullscreenEnabled } =
+    useFullscreenPlayerSettings()
   const { langCode, setLang } = useLang()
 
   return (
@@ -36,8 +37,13 @@ export function AppearancePage() {
       <Root>
         <Content>
           <ContentItem>
-            <ContentItemTitle info={t('settings.appearance.general.fullscreen.info')}>
-              {t('settings.appearance.general.fullscreen.label', 'Automatic Fullscreen')}
+            <ContentItemTitle
+              info={t('settings.appearance.general.fullscreen.info')}
+            >
+              {t(
+                'settings.appearance.general.fullscreen.label',
+                'Automatic Fullscreen',
+              )}
             </ContentItemTitle>
             <ContentItemForm>
               <Switch

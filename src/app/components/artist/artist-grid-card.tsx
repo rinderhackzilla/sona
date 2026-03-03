@@ -27,7 +27,11 @@ function ArtistCard({ artist }: ArtistCardProps) {
   return (
     <PreviewCard.Root className="flex flex-col w-full h-full">
       <PreviewCard.ImageWrapper link={ROUTES.ARTIST.PAGE(artist.id)}>
-        <ImageLoader id={artist.coverArt} type={artist.coverArtType ?? 'artist'} size={300}>
+        <ImageLoader
+          id={artist.coverArt}
+          type={artist.coverArtType ?? 'artist'}
+          size={300}
+        >
           {(src) => <PreviewCard.Image src={src} alt={artist.name} />}
         </ImageLoader>
         <PreviewCard.PlayButton onClick={handlePlayArtistRadio} />

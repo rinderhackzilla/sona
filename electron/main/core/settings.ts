@@ -15,7 +15,7 @@ export function saveAppSettings(payload: ISettingPayload) {
   try {
     settingsStore.set(payload)
   } catch (error) {
-    console.log('Unable to save app settings to store.', error)
+    console.error('Unable to save app settings to store.', error)
   }
 }
 

@@ -3,7 +3,27 @@
     "recentlyPlayed": "Duela gutxi entzundakoak",
     "mostPlayed": "Gehien entzundakoak",
     "recentlyAdded": "Duela gutxi gehitutakoak",
-    "explore": "Arakatu"
+    "explore": "Arakatu",
+    "daypart": {
+      "label": "Daypart Mix",
+      "usedGenres": "Using: {{genres}}",
+      "names": {
+        "morning": "Coffee Before Chaos",
+        "noon": "Lunch Break Bangers",
+        "afternoon": "Post-Lunch Liftoff",
+        "evening": "Golden Hour Groove",
+        "night": "Night Shift Stereo",
+        "midnight": "Midnight Mood Machine"
+      },
+      "moods": {
+        "morning": "Soft, focused energy for a calm start.",
+        "noon": "Catchy, upbeat momentum for the middle of the day.",
+        "afternoon": "Driven energy with sharper edges for late-day focus.",
+        "evening": "Warm groove and color for golden-hour listening.",
+        "night": "Cinematic late-evening flow with atmospheric textures.",
+        "midnight": "Dark, heavy energy for deep night sessions."
+      }
+    }
   },
   "sidebar": {
     "home": "Hasiera",
@@ -58,5 +78,108 @@
     "songCount_other": "{{count}} abesti",
     "duration": "{{duration}} inguru",
     "refresh": "Zerrenda berritu"
+  },
+  "onboarding": {
+    "label": "Quick Tour",
+    "next": "Next",
+    "skip": "Skip",
+    "steps": {
+      "dj": {
+        "title": "Sona DJ",
+        "text": "Open Sona DJ here to blend your queue with wildcard, drift or timekeeper behavior."
+      },
+      "session": {
+        "title": "Session Mode",
+        "text": "Switch between Focus and Night mode. Click again to disable the active mode."
+      },
+      "idle": {
+        "title": "Fullscreen Idle",
+        "text": "In fullscreen, UI fades after a few seconds of inactivity. Use settings here to tune the behavior."
+      }
+    }
+  },
+  "sessionMode": {
+    "label": "Session Mode",
+    "description": "Switch playback mood and visuals in one click.",
+    "normal": {
+      "label": "Disable",
+      "info": "Familiar look and normal playback"
+    },
+    "focus": {
+      "label": "Focus",
+      "info": "Calm flow without distractions",
+      "exit": "Exit Focus Mode"
+    },
+    "night": {
+      "label": "Night",
+      "info": "Atmospheric late-hour rotation"
+    },
+    "toasts": {
+      "focusEnabled": "Focus Mode enabled",
+      "nightEnabled": "Night Mode enabled",
+      "focusDisabled": "Focus Mode disabled",
+      "nightDisabled": "Night Mode disabled"
+    }
+  },
+  "settings": {
+    "content": {
+      "sessionModes": {
+        "group": "Session Modes",
+        "genresButton": "Genres",
+        "modalDescription": "Choose which genres are allowed for this session mode.",
+        "reset": "Reset",
+        "save": "Save",
+        "focusGenres": {
+          "label": "Focus Mode Genres",
+          "modalTitle": "Focus Mode Genres"
+        },
+        "nightGenres": {
+          "label": "Night Mode Genres",
+          "modalTitle": "Night Mode Genres"
+        }
+      }
+    },
+    "system": {
+      "onboarding": {
+        "label": "Quick tour",
+        "info": "Show the onboarding coach marks again.",
+        "button": "Show again",
+        "resetDone": "Onboarding reset. The quick tour will appear again.",
+        "resetError": "Failed to reset onboarding."
+      }
+    },
+    "privacy": {
+      "services": {
+        "lrclib": {
+          "enabled": "Enable LRCLIB",
+          "customUrl": {
+            "toggle": "Use a custom URL",
+            "info": "Use a custom URL for LRCLIB instead of the default one.",
+            "label": "URL",
+            "example": "Example: https://my-lrclib.com"
+          }
+        }
+      }
+    },
+    "integrations": {
+      "lastfm": {
+        "username": {
+          "placeholder": "Last.fm username"
+        },
+        "apiKey": {
+          "placeholder": "Last.fm API key",
+          "helpPrefix": "Get your API key from",
+          "helpLink": "Last.fm API"
+        }
+      },
+      "lidarr": {
+        "url": {
+          "placeholder": "http://localhost:8686"
+        },
+        "apiKey": {
+          "placeholder": "Lidarr API key"
+        }
+      }
+    }
   }
 }

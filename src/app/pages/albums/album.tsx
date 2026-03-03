@@ -11,6 +11,7 @@ import { BadgesData } from '@/app/components/header-info'
 import PreviewList from '@/app/components/home/preview-list'
 import ListWrapper from '@/app/components/list-wrapper'
 import { DataTable } from '@/app/components/ui/data-table'
+import { PageState } from '@/app/components/ui/page-state'
 import {
   useGetAlbum,
   useGetArtistAlbums,
@@ -149,9 +150,18 @@ export default function Album() {
           data={albumSongs}
           handlePlaySong={(row) => playAlbumFromIndex(row.index)}
           columnFilter={columnsToShow}
+          noRowsMessage={t('states.empty.noTracks')}
           showDiscNumber={true}
           variant="modern"
         />
+
+        {albumSongs.length === 0 && (
+          <PageState
+            title={t('states.empty.title')}
+            description={t('states.empty.albumDescription')}
+            className="min-h-[160px] px-0 py-2"
+          />
+        )}
 
         {albumComment && <AlbumComment comment={albumComment} />}
 

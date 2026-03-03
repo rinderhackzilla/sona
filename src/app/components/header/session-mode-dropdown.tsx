@@ -14,14 +14,14 @@ import { usePlayerActions, useSessionModeSettings } from '@/store/player.store'
 import { useTheme } from '@/store/theme.store'
 import { useFullscreenState } from '@/store/ui.store'
 import { SessionMode } from '@/types/playerContext'
-import { Theme } from '@/types/themeContext'
 import { SESSION_MODE_THEMES } from '@/types/sessionMode'
+import { Theme } from '@/types/themeContext'
+import { safeStorageGet, safeStorageSet } from '@/utils/safe-storage'
 import {
   FULLSCREEN_HYPNOTIC_BACKDROP_KEY,
   LAST_NON_SESSION_THEME_KEY,
   SESSION_PREVIOUS_THEME_KEY,
 } from '@/utils/session-storage-keys'
-import { safeStorageGet, safeStorageSet } from '@/utils/safe-storage'
 
 type ModeId = SessionMode
 
@@ -77,7 +77,8 @@ export function SessionModeDropdown() {
     return t('sessionMode.normal.label', 'Normal')
   }, [mode, t])
 
-  const StatusIcon = mode === 'focus' ? Target : mode === 'night' ? MoonStar : Sparkles
+  const StatusIcon =
+    mode === 'focus' ? Target : mode === 'night' ? MoonStar : Sparkles
 
   const selectMode = (selected: ModeId) => {
     triggerSessionModeTransition()
@@ -110,7 +111,8 @@ export function SessionModeDropdown() {
       openInAppFullscreen(setFullscreenOpen)
       safeStorageSet(FULLSCREEN_HYPNOTIC_BACKDROP_KEY, 'false')
     }
-    if (selected === 'night') safeStorageSet(FULLSCREEN_HYPNOTIC_BACKDROP_KEY, 'true')
+    if (selected === 'night')
+      safeStorageSet(FULLSCREEN_HYPNOTIC_BACKDROP_KEY, 'true')
     startTransition(() => {
       startSessionMode(selected).catch(() => undefined)
     })
@@ -151,6 +153,7 @@ export function SessionModeDropdown() {
       <Button
         variant="ghost"
         size="sm"
+        data-coach-id="session-mode"
         onClick={() => {
           if (isActive) {
             disableCurrentMode()

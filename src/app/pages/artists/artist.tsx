@@ -1,5 +1,5 @@
-import { useTranslation } from 'react-i18next'
 import { useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useParams } from 'react-router-dom'
 import ImageHeader from '@/app/components/album/image-header'
 import ArtistTopSongs from '@/app/components/artist/artist-top-songs'
@@ -11,16 +11,17 @@ import { TopSongsTableFallback } from '@/app/components/fallbacks/table-fallback
 import { BadgesData } from '@/app/components/header-info'
 import PreviewList from '@/app/components/home/preview-list'
 import ListWrapper from '@/app/components/list-wrapper'
+import { PageState } from '@/app/components/ui/page-state'
 import {
   useGetArtist,
   useGetArtistInfo,
+  useGetArtists,
   useGetTopSongs,
 } from '@/app/hooks/use-artist'
 import ErrorPage from '@/app/pages/error-page'
 import { ROUTES } from '@/routes/routesList'
-import { dedupeAlbumsByIdentity } from '@/utils/albumDedup'
 import { sortRecentAlbums } from '@/utils/album'
-import { getNewestAlbumCoverArt } from '@/utils/artistCover'
+import { dedupeAlbumsByIdentity } from '@/utils/albumDedup'
 
 export default function Artist() {
   const { t } = useTranslation()
@@ -31,6 +32,7 @@ export default function Artist() {
     isLoading: artistIsLoading,
     isFetched,
   } = useGetArtist(artistId)
+  const { data: artistsList } = useGetArtists()
   const { data: artistInfo, isLoading: artistInfoIsLoading } =
     useGetArtistInfo(artistId)
   const { data: topSongs, isLoading: topSongsIsLoading } = useGetTopSongs(
@@ -76,12 +78,10 @@ export default function Artist() {
     return [...byDisplayIdentity.values()]
   }, [dedupedAlbums])
 
-  const fallbackAlbumCoverArt = useMemo(
-    () => getNewestAlbumCoverArt(dedupedAlbums),
-    [dedupedAlbums],
+  const listArtist = useMemo(
+    () => artistsList?.find((entry) => entry.id === artistId),
+    [artistsList, artistId],
   )
-  const headerCoverArt = artist?.coverArt || fallbackAlbumCoverArt
-  const headerCoverArtType = artist?.coverArt ? 'artist' : 'album'
 
   if (artistIsLoading) return <AlbumFallback />
   if (isFetched && !artist) {
@@ -127,6 +127,49 @@ export default function Artist() {
     },
   ]
 
+  const coverCandidates: Array<{ id?: string; type: 'artist' | 'album' }> = [
+    { id: artistInfo?.largeImageUrl, type: 'artist' },
+    { id: artistInfo?.mediumImageUrl, type: 'artist' },
+    { id: artistInfo?.smallImageUrl, type: 'artist' },
+    { id: listArtist?.coverArt, type: listArtist?.coverArtType ?? 'artist' },
+    { id: artist.artistImageUrl, type: 'artist' },
+    { id: artist.coverArt, type: 'artist' },
+  ]
+
+  const isExternalUrl = (value?: string) => /^(https?:)?\/\//i.test(value ?? '')
+  const preferredExternal = coverCandidates.find((candidate) =>
+    isExternalUrl(candidate.id),
+  )
+  const preferredInternal = coverCandidates.find(
+    (candidate) => Boolean(candidate.id) && !isExternalUrl(candidate.id),
+  )
+
+  const preferredCover = preferredExternal ?? preferredInternal
+  const headerCoverArt = preferredCover?.id ?? ''
+  const headerCoverArtType = preferredCover?.type ?? 'artist'
+
+  if (import.meta.env.DEV) {
+    const candidateUrls = coverCandidates.map((candidate, index) => ({
+      index,
+      id: candidate.id ?? '',
+      type: candidate.type,
+    }))
+    console.info('[ArtistPage] cover source decision', {
+      artistId,
+      selected: preferredCover,
+      candidates: candidateUrls,
+    })
+    console.info('[ArtistPage] artistInfo image urls', {
+      artistId,
+      large: artistInfo?.largeImageUrl ?? '',
+      medium: artistInfo?.mediumImageUrl ?? '',
+      small: artistInfo?.smallImageUrl ?? '',
+      artistImageUrl: artist.artistImageUrl ?? '',
+      artistCoverArt: artist.coverArt ?? '',
+      listCoverArt: listArtist?.coverArt ?? '',
+    })
+  }
+
   return (
     <div className="w-full">
       <ImageHeader
@@ -146,6 +189,15 @@ export default function Artist() {
         {topSongs && !topSongsIsLoading && (
           <ArtistTopSongs topSongs={topSongs} artist={artist} />
         )}
+        {!topSongsIsLoading &&
+          (topSongs?.length ?? 0) === 0 &&
+          recentAlbums.length === 0 && (
+            <PageState
+              title={t('states.empty.title')}
+              description={t('states.empty.artistDescription')}
+              className="min-h-[180px] px-0 py-4"
+            />
+          )}
 
         {recentAlbums.length > 0 && (
           <PreviewList

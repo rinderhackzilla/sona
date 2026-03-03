@@ -85,7 +85,9 @@ class LidarrService {
     ])
 
     if (qualityProfiles.length === 0 || rootFolders.length === 0) {
-      throw new Error('No quality profiles or root folders configured in Lidarr')
+      throw new Error(
+        'No quality profiles or root folders configured in Lidarr',
+      )
     }
 
     const addRequest: LidarrArtistAddRequest = {

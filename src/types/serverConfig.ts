@@ -15,6 +15,7 @@ export interface IServerConfig {
 }
 
 export type PageViewType = 'grid' | 'table'
+export type ListDensity = 'compact' | 'default' | 'cozy'
 
 interface IAppPages {
   showInfoPanel: boolean
@@ -27,6 +28,8 @@ interface IAppPages {
   setImagesCacheLayerEnabled: (value: boolean) => void
   autoPlaylistImport: boolean
   setAutoPlaylistImport: (value: boolean) => void
+  listDensity: ListDensity
+  setListDensity: (value: ListDensity) => void
   playlistOrder: string[]
   setPlaylistOrder: (order: string[]) => void
 }

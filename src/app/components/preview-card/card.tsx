@@ -13,7 +13,13 @@ type RootProps = ComponentPropsWithoutRef<'div'>
 
 function Root({ className, children, ...props }: RootProps) {
   return (
-    <div className={cn('group/card cursor-pointer rounded-lg transition-all duration-200', className)} {...props}>
+    <div
+      className={cn(
+        'group/card cursor-pointer rounded-lg transition-all duration-200',
+        className,
+      )}
+      {...props}
+    >
       {children}
     </div>
   )
@@ -82,7 +88,11 @@ function PlayButton({ onClick }: PlayButtonProps) {
 interface InfoWrapperProps extends Children {}
 
 function InfoWrapper({ children }: InfoWrapperProps) {
-  return <div className="mt-1.5 flex cursor-default flex-col px-0.5">{children}</div>
+  return (
+    <div className="mt-[var(--card-info-gap)] flex cursor-default flex-col px-0.5">
+      {children}
+    </div>
+  )
 }
 
 interface TitleProps {
@@ -95,7 +105,7 @@ function Title({ link, children }: TitleProps) {
     <div className="w-full truncate" data-testid="card-title">
       <Link
         to={link}
-        className="max-w-full truncate text-[13px] font-medium leading-6 hover:underline"
+        className="max-w-full truncate text-[length:var(--card-title-size)] font-medium leading-6 hover:underline"
         data-testid="card-title-link"
       >
         {children}
@@ -123,6 +133,7 @@ function Subtitle({
         <p
           className={cn(
             '-mt-1 truncate text-xs leading-5 text-muted-foreground',
+            'text-[length:var(--card-subtitle-size)]',
             className,
           )}
           data-testid="card-subtitle"
@@ -140,6 +151,7 @@ function Subtitle({
         data-testid="card-subtitle-link"
         className={cn(
           'max-w-full truncate text-xs text-muted-foreground hover:underline',
+          'text-[length:var(--card-subtitle-size)]',
           className,
         )}
       >

@@ -1,6 +1,6 @@
-import { Cell, flexRender, Row } from '@tanstack/react-table'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
+import { Cell, flexRender, Row } from '@tanstack/react-table'
 import clsx from 'clsx'
 import { GripVerticalIcon } from 'lucide-react'
 import { ComponentPropsWithoutRef, memo, ReactNode, useMemo } from 'react'
@@ -72,7 +72,7 @@ export function TableRow<TData>({
         data-test-id="table-row"
         data-state={row.getIsSelected() && 'selected'}
         className={clsx(
-          'group/tablerow w-full flex flex-row transition-colors',
+          'group/tablerow w-full min-h-[var(--list-row-min-h)] flex flex-row transition-colors',
           isModern &&
             row.getIsSelected() &&
             !isPrevRowSelected(index) &&
@@ -116,7 +116,7 @@ function TableCell<TData, TValue>({ cell }: TableCellProps<TData, TValue>) {
     <div
       key={cell.id}
       className={clsx(
-        'p-2 flex flex-row items-center justify-start [&:has([role=checkbox])]:pr-4',
+        'px-[var(--list-cell-px)] py-[var(--list-cell-py)] flex flex-row items-center justify-start [&:has([role=checkbox])]:pr-4',
         columnDef.className,
       )}
       style={columnDef.style}

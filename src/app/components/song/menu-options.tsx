@@ -57,7 +57,8 @@ export function SongMenuOptions({
     })
   }
 
-  const RabbitHoleMenuItem = variant === 'context' ? ContextMenuItem : DropdownMenuItem
+  const RabbitHoleMenuItem =
+    variant === 'context' ? ContextMenuItem : DropdownMenuItem
 
   return (
     <>
@@ -111,17 +112,11 @@ export function SongMenuOptions({
         />
       </DownloadOptionHandler>
       <ContextMenuSeparator />
-      <RabbitHoleMenuItem
-        onClick={handleCopyTitle}
-        className="cursor-pointer"
-      >
+      <RabbitHoleMenuItem onClick={handleCopyTitle} className="cursor-pointer">
         <Copy className="mr-2 h-4 w-4" />
         <span>Copy Track Name</span>
       </RabbitHoleMenuItem>
-      <RabbitHoleMenuItem
-        onClick={handleCopyArtist}
-        className="cursor-pointer"
-      >
+      <RabbitHoleMenuItem onClick={handleCopyArtist} className="cursor-pointer">
         <Copy className="mr-2 h-4 w-4" />
         <span>Copy Artist</span>
       </RabbitHoleMenuItem>

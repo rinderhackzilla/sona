@@ -6,8 +6,8 @@ import { IUiContext } from '@/types/uiContext'
 export const useUiStore = createWithEqualityFn<IUiContext>()(
   subscribeWithSelector(
     devtools(
-        immer((set) => ({
-          songInfo: {
+      immer((set) => ({
+        songInfo: {
           songId: '',
           setSongId: (id) => {
             set((state) => {
@@ -25,41 +25,41 @@ export const useUiStore = createWithEqualityFn<IUiContext>()(
               state.songInfo.songId = ''
               state.songInfo.modalOpen = false
             })
-            },
           },
-          miniPlayer: {
-            open: false,
-            pinned: false,
-            setOpen: (open) => {
-              set((state) => {
-                state.miniPlayer.open = open
-              })
-            },
-            toggleOpen: () => {
-              set((state) => {
-                state.miniPlayer.open = !state.miniPlayer.open
-              })
-            },
-            setPinned: (pinned) => {
-              set((state) => {
-                state.miniPlayer.pinned = pinned
-              })
-            },
-            togglePinned: () => {
-              set((state) => {
-                state.miniPlayer.pinned = !state.miniPlayer.pinned
-              })
-            },
+        },
+        miniPlayer: {
+          open: false,
+          pinned: false,
+          setOpen: (open) => {
+            set((state) => {
+              state.miniPlayer.open = open
+            })
           },
-          fullscreen: {
-            open: false,
-            setOpen: (open) => {
-              set((state) => {
-                state.fullscreen.open = open
-              })
-            },
+          toggleOpen: () => {
+            set((state) => {
+              state.miniPlayer.open = !state.miniPlayer.open
+            })
           },
-        })),
+          setPinned: (pinned) => {
+            set((state) => {
+              state.miniPlayer.pinned = pinned
+            })
+          },
+          togglePinned: () => {
+            set((state) => {
+              state.miniPlayer.pinned = !state.miniPlayer.pinned
+            })
+          },
+        },
+        fullscreen: {
+          open: false,
+          setOpen: (open) => {
+            set((state) => {
+              state.fullscreen.open = open
+            })
+          },
+        },
+      })),
       {
         name: 'ui_store',
       },

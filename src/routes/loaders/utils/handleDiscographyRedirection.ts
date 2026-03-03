@@ -18,9 +18,7 @@ export function handleDiscographyRedirection(searchParams: URLSearchParams) {
   const savedArtistName = safeStorageGet(
     PersistedAlbumListKeys.ArtistNameFilter,
   )
-  const savedArtistId = safeStorageGet(
-    PersistedAlbumListKeys.ArtistIdFilter,
-  )
+  const savedArtistId = safeStorageGet(PersistedAlbumListKeys.ArtistIdFilter)
   const savedFilter = safeStorageGet(PersistedAlbumListKeys.MainFilter)
 
   const isDiscography = savedFilter === AlbumsFilters.ByDiscography

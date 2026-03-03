@@ -3,8 +3,8 @@ import { useEffect, useMemo, useState } from 'react'
 import { isSafari } from 'react-device-detect'
 import { LazyLoadImage } from 'react-lazy-load-image-component'
 import { getSimpleCoverArtUrl } from '@/api/httpClient'
-import { ImageLoader } from '@/app/components/image-loader'
 import { useVisualizerContext } from '@/app/components/fullscreen/settings'
+import { ImageLoader } from '@/app/components/image-loader'
 import { useReducedMotion } from '@/app/hooks/use-reduced-motion'
 import {
   usePlayerCurrentSong,
@@ -212,7 +212,10 @@ function MacBackdrop() {
             alt={title}
             effect="opacity"
             width="100%"
-            className={clsx('w-full bg-contain', !reduceMotion && 'fullscreen-bg-kenburns')}
+            className={clsx(
+              'w-full bg-contain',
+              !reduceMotion && 'fullscreen-bg-kenburns',
+            )}
             style={{ filter: modeFilter }}
           />
         )}
@@ -295,11 +298,11 @@ function DynamicColorBackdrop() {
             filter: `blur(${bigPlayerBlur.value}px) ${modeFilter}`,
           }}
         />
-        
+
         {/* Color overlay using theme colors - slider controls opacity */}
-        <div 
+        <div
           className="absolute inset-0 w-full h-full z-[1] transition-opacity duration-1000"
-          style={{ 
+          style={{
             backgroundColor: 'hsl(var(--primary))',
             opacity:
               mode === 'focus'
@@ -309,12 +312,12 @@ function DynamicColorBackdrop() {
                   : Math.min(currentSongColorIntensity * 0.26, 0.2),
           }}
         />
-        
+
         <div
           className="absolute inset-0 w-full h-full z-[2]"
           style={{ backgroundColor: `rgba(0,0,0,${adaptiveDimOpacity})` }}
         />
-        
+
         {/* Gradient overlay */}
         <div
           className={clsx(

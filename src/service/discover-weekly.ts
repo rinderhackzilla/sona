@@ -1,8 +1,9 @@
+import type { Song } from '@/types/responses/song'
+import { logger } from '@/utils/logger'
+import type { LastFmArtist, LastFmSimilarArtist } from './lastfm'
 import { lastfm } from './lastfm'
 import { search } from './search'
 import { songs } from './songs'
-import type { LastFmArtist, LastFmSimilarArtist } from './lastfm'
-import type { Song } from '@/types/responses/song'
 
 interface DiscoverWeeklyConfig {
   username: string
@@ -41,9 +42,7 @@ function fuzzyMatch(name1: string, name2: string): boolean {
 /**
  * Check if artist exists in Subsonic library
  */
-async function findArtistInLibrary(
-  artistName: string,
-): Promise<string | null> {
+async function findArtistInLibrary(artistName: string): Promise<string | null> {
   try {
     const results = await search.get({
       query: artistName,
@@ -76,7 +75,7 @@ async function getArtistSongs(
     const topSongs = await songs.getTopSongs(artistName)
 
     if (!topSongs || topSongs.length === 0) {
-      console.log(`[DiscoverWeekly] No songs found for ${artistName}`)
+      logger.info(`[DiscoverWeekly] No songs found for ${artistName}`)
       return []
     }
 
@@ -84,7 +83,7 @@ async function getArtistSongs(
     const shuffled = topSongs.sort(() => Math.random() - 0.5)
     const selected = shuffled.slice(0, 1)
 
-    console.log(
+    logger.info(
       `[DiscoverWeekly] Got ${selected.length} song from ${artistName}`,
     )
 
@@ -112,7 +111,7 @@ export async function generateDiscoverWeekly(
     songsPerArtist = 1, // CHANGED: 1 song per artist
   } = config
 
-  console.log('[DiscoverWeekly] Starting generation...')
+  logger.info('[DiscoverWeekly] Starting generation...')
 
   // Step 1: Get top artists from Last.fm
   const [overallTopArtists, recentTopArtists] = await Promise.all([
@@ -120,7 +119,7 @@ export async function generateDiscoverWeekly(
     lastfm.getTopArtists(username, apiKey, '1month', 30),
   ])
 
-  console.log(
+  logger.info(
     `[DiscoverWeekly] Got ${overallTopArtists.length} overall + ${recentTopArtists.length} recent artists`,
   )
 
@@ -161,7 +160,7 @@ export async function generateDiscoverWeekly(
     }
   }
 
-  console.log(
+  logger.info(
     `[DiscoverWeekly] Found ${similarArtistsMap.size} similar artists`,
   )
 
@@ -181,13 +180,13 @@ export async function generateDiscoverWeekly(
         name: simArtist.name,
         id: artistId,
       })
-      console.log(
-        `[DiscoverWeekly] ✓ Found ${simArtist.name} (score: ${simArtist.score.toFixed(2)})`,
+      logger.info(
+        `[DiscoverWeekly] Found ${simArtist.name} (score: ${simArtist.score.toFixed(2)})`,
       )
     }
   }
 
-  console.log(
+  logger.info(
     `[DiscoverWeekly] Found ${foundArtists.length}/${targetArtists} artists in library`,
   )
 
@@ -202,8 +201,8 @@ export async function generateDiscoverWeekly(
   // Step 5: Shuffle final playlist
   const shuffledPlaylist = allSongs.sort(() => Math.random() - 0.5)
 
-  console.log(
-    `[DiscoverWeekly] ✓ Generated playlist with ${shuffledPlaylist.length} songs`,
+  logger.info(
+    `[DiscoverWeekly] Generated playlist with ${shuffledPlaylist.length} songs`,
   )
 
   return {

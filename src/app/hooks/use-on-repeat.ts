@@ -1,7 +1,8 @@
 import { useQuery } from '@tanstack/react-query'
+import { findTrackInNavidrome, getOnRepeat } from '@/service/lastfm-features'
 import { useAppIntegrations } from '@/store/app.store'
-import { getOnRepeat, findTrackInNavidrome } from '@/service/lastfm-features'
 import type { Song } from '@/types/responses/song'
+import { logger } from '@/utils/logger'
 
 interface OnRepeatData {
   song: Song | null
@@ -31,25 +32,35 @@ export function useOnRepeat() {
         apiKey: lastfm.apiKey,
       })
 
-      if (!result.track || result.error || !result.artistName || !result.trackName) {
-        console.warn('[On Repeat] No track found:', result.error || 'Missing data')
+      if (
+        !result.track ||
+        result.error ||
+        !result.artistName ||
+        !result.trackName
+      ) {
+        console.warn(
+          '[On Repeat] No track found:',
+          result.error || 'Missing data',
+        )
         return null
       }
 
       const artistName = result.artistName
       const trackName = result.trackName
 
-      console.log('[On Repeat] Looking for:', { artistName, trackName })
+      logger.info('[On Repeat] Looking for:', { artistName, trackName })
 
       // Find matching song in Navidrome
       const song = await findTrackInNavidrome(artistName, trackName)
 
       if (!song) {
-        console.warn(`[On Repeat] Track not found in Navidrome: ${artistName} - ${trackName}`)
+        console.warn(
+          `[On Repeat] Track not found in Navidrome: ${artistName} - ${trackName}`,
+        )
         return null
       }
 
-      console.log('[On Repeat] Success! Found song:', song)
+      logger.info('[On Repeat] Success! Found song:', song)
 
       return {
         song,

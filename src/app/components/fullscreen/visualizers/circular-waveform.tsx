@@ -10,7 +10,9 @@ function hexToRgba(hex: string, alpha: number): string {
 }
 
 function accentHSL() {
-  const v = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim()
+  const v = getComputedStyle(document.documentElement)
+    .getPropertyValue('--accent')
+    .trim()
   const [h, s, l] = v.split(' ')
   return { h: h ?? '220', s: s ?? '80%', l: l ?? '60%' }
 }
@@ -123,8 +125,9 @@ export function CircularWaveform() {
       }
 
       // Draw order: smallest (farthest) first
-      const order = Array.from({ length: N }, (_, i) => i)
-        .sort((a, b) => progress[a] - progress[b])
+      const order = Array.from({ length: N }, (_, i) => i).sort(
+        (a, b) => progress[a] - progress[b],
+      )
 
       for (const idx of order) {
         const p = progress[idx]
@@ -145,7 +148,7 @@ export function CircularWaveform() {
         for (let i = 0; i <= POINTS; i++) {
           const angle = (i / POINTS) * TWO_PI + angleOffset
           // Map angle position to a frequency bin
-          const freqIdx = Math.floor(((i / POINTS) * 0.55) * (BUF / 2))
+          const freqIdx = Math.floor((i / POINTS) * 0.55 * (BUF / 2))
           const fv = smoothed[Math.min(freqIdx, BUF / 2 - 1)] / 255
           const r = baseR * (1 + fv * distMult)
           const x = cx + Math.cos(angle) * r
@@ -156,7 +159,7 @@ export function CircularWaveform() {
         ctx.closePath()
 
         // Alpha: fades in from center, full opacity near edge, then fades just before clipping
-        const alpha = Math.pow(p, 0.5) * (p < 0.9 ? 1 : (1 - p) / 0.1) * 0.80
+        const alpha = Math.pow(p, 0.5) * (p < 0.9 ? 1 : (1 - p) / 0.1) * 0.8
 
         // Color: cycle through palette based on ring position
         // Creates a color depth illusion (far = one color, close = another)
@@ -187,7 +190,10 @@ export function CircularWaveform() {
         vpGrad.addColorStop(0.5, hexToRgba(c1, 0.06))
         vpGrad.addColorStop(1, hexToRgba(c1, 0))
       } else {
-        vpGrad.addColorStop(0, `hsla(${ah}, ${as_}, ${al}, ${0.2 + bassAvg * 0.3})`)
+        vpGrad.addColorStop(
+          0,
+          `hsla(${ah}, ${as_}, ${al}, ${0.2 + bassAvg * 0.3})`,
+        )
         vpGrad.addColorStop(1, `hsla(${ah}, ${as_}, ${al}, 0)`)
       }
       ctx.beginPath()
@@ -206,5 +212,3 @@ export function CircularWaveform() {
 
   return <canvas ref={canvasRef} className="absolute inset-0 w-full h-full" />
 }
-
-

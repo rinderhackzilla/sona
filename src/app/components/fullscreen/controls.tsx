@@ -117,8 +117,7 @@ export const buttonsStyle = {
   utility:
     'relative w-12 h-12 rounded-full border border-transparent bg-transparent text-foreground/88 hover:text-foreground data-[state=active]:text-foreground hover:bg-transparent hover:scale-110 transition-transform will-change-transform',
   secondaryIcon: 'w-6 h-6 drop-shadow-lg',
-  secondaryIconFilled:
-    'w-6 h-6 text-foreground fill-foreground drop-shadow-lg',
+  secondaryIconFilled: 'w-6 h-6 text-foreground fill-foreground drop-shadow-lg',
   activeDot: 'player-button-active',
   style: {
     backfaceVisibility: 'hidden' as const,

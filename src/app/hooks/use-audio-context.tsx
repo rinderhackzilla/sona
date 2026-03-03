@@ -2,9 +2,9 @@ import { useCallback, useEffect, useRef } from 'react'
 import {
   AudioContext,
   type IAudioContext,
+  type IBiquadFilterNode,
   type IGainNode,
   type IMediaElementAudioSourceNode,
-  type IBiquadFilterNode,
 } from 'standardized-audio-context'
 import {
   getGlobalAnalyserNode,
@@ -133,7 +133,9 @@ export function useAudioContext(audio: HTMLAudioElement | null) {
       if (lastEqFilter && visualizerGainRef.current && analyserRef.current) {
         lastEqFilter.connect(visualizerGainRef.current)
         visualizerGainRef.current.connect(analyserRef.current)
-        logger.info('Visualizer chain connected: EQ -> visualizer gain (25%) -> analyser')
+        logger.info(
+          'Visualizer chain connected: EQ -> visualizer gain (25%) -> analyser',
+        )
       }
 
       chainConnectedRef.current = true
@@ -186,7 +188,7 @@ export function useAudioContext(audio: HTMLAudioElement | null) {
       analyserRef.current = null
       setGlobalAnalyserNode(null)
     }
-    eqFiltersRef.current.forEach(filter => {
+    eqFiltersRef.current.forEach((filter) => {
       filter.disconnect()
     })
     eqFiltersRef.current = []
@@ -234,12 +236,12 @@ export function setEqEnabled(enabled: boolean) {
 export function setEqGains(gains: number[]) {
   setEqGainsState(gains)
 
-    if (getEqEnabled() && getEqFilters().length) {
-      getEqFilters().forEach((filter, index) => {
-        filter.gain.value = getEqGains()[index]
-        logger.info(`EQ Filter ${index}: ${getEqGains()[index]} dB`)
-      })
-    }
+  if (getEqEnabled() && getEqFilters().length) {
+    getEqFilters().forEach((filter, index) => {
+      filter.gain.value = getEqGains()[index]
+      logger.info(`EQ Filter ${index}: ${getEqGains()[index]} dB`)
+    })
+  }
 }
 
 export function getEqState() {

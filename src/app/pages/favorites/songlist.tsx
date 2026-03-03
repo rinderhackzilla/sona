@@ -4,6 +4,7 @@ import { ShadowHeader } from '@/app/components/album/shadow-header'
 import { InfinitySongListFallback } from '@/app/components/fallbacks/song-fallbacks'
 import { HeaderTitle } from '@/app/components/header-title'
 import { DataTableList } from '@/app/components/ui/data-table-list'
+import { PageState } from '@/app/components/ui/page-state'
 import { useFavoriteSongs } from '@/app/hooks/use-favorite-songs'
 import { songsColumns } from '@/app/tables/songs-columns'
 import { usePlayerActions } from '@/store/player.store'
@@ -55,14 +56,22 @@ export default function SongList() {
       </ShadowHeader>
 
       <div className="w-full h-[calc(100%-80px)] overflow-auto">
-        <DataTableList
-          columns={columns}
-          data={songlist}
-          handlePlaySong={(row) => handlePlaySong(row.index)}
-          columnFilter={columnsToShow}
-          noRowsMessage={t('favorites.noSongList')}
-          enableSorting={true}
-        />
+        {songlist.length === 0 ? (
+          <PageState
+            title={t('states.empty.title')}
+            description={t('favorites.noSongList')}
+            className="min-h-[280px]"
+          />
+        ) : (
+          <DataTableList
+            columns={columns}
+            data={songlist}
+            handlePlaySong={(row) => handlePlaySong(row.index)}
+            columnFilter={columnsToShow}
+            noRowsMessage={t('favorites.noSongList')}
+            enableSorting={true}
+          />
+        )}
       </div>
     </div>
   )

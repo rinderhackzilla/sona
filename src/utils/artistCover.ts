@@ -15,7 +15,8 @@ export function getNewestAlbumCoverArt(albums?: Albums[]) {
       const yearDelta = (right.year ?? -Infinity) - (left.year ?? -Infinity)
       if (yearDelta !== 0) return yearDelta
 
-      const createdDelta = parseCreated(right.created) - parseCreated(left.created)
+      const createdDelta =
+        parseCreated(right.created) - parseCreated(left.created)
       if (createdDelta !== 0) return createdDelta
 
       return right.songCount - left.songCount
@@ -23,4 +24,3 @@ export function getNewestAlbumCoverArt(albums?: Albums[]) {
 
   return sorted[0]?.coverArt
 }
-

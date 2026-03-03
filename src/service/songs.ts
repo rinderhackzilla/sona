@@ -49,7 +49,7 @@ async function getTopSongs(artistName: string) {
     },
   })
 
-  return response?.data.topSongs.song
+  return response?.data.topSongs.song ?? []
 }
 
 async function getAllSongs(songCount: number) {

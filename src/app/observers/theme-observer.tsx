@@ -1,6 +1,6 @@
 import { useLayoutEffect } from 'react'
-import { useTheme } from '@/store/theme.store'
 import { usePlayerCurrentSong, useSongColor } from '@/store/player.store'
+import { useTheme } from '@/store/theme.store'
 import { Theme } from '@/types/themeContext'
 import { setDesktopTitleBarColors } from '@/utils/theme'
 
@@ -31,10 +31,13 @@ function hexToHsl(hex: string) {
   if (hue < 0) hue += 360
 
   const lightness = (max + min) / 2
-  const saturation =
-    delta === 0 ? 0 : delta / (1 - Math.abs(2 * lightness - 1))
+  const saturation = delta === 0 ? 0 : delta / (1 - Math.abs(2 * lightness - 1))
 
-  return { h: Math.round(hue), s: Math.round(saturation * 100), l: Math.round(lightness * 100) }
+  return {
+    h: Math.round(hue),
+    s: Math.round(saturation * 100),
+    l: Math.round(lightness * 100),
+  }
 }
 
 function toHslToken(h: number, s: number, l: number) {
@@ -75,7 +78,12 @@ function applyReactiveThemeColors(
 
 function applyReactivePaletteColors(
   root: HTMLElement,
-  palette: { dominant: string; vibrant: string; muted: string; accent: string } | null,
+  palette: {
+    dominant: string
+    vibrant: string
+    muted: string
+    accent: string
+  } | null,
 ) {
   if (!palette) {
     root.style.removeProperty('--accent')

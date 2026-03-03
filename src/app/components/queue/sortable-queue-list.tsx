@@ -1,10 +1,10 @@
 import {
+  closestCenter,
   DndContext,
   DragEndEvent,
   DragOverlay,
   DragStartEvent,
   PointerSensor,
-  closestCenter,
   useSensor,
   useSensors,
 } from '@dnd-kit/core'
@@ -16,8 +16,9 @@ import {
 import { CSS } from '@dnd-kit/utilities'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import clsx from 'clsx'
-import { GripVerticalIcon } from 'lucide-react'
+import { GripVerticalIcon, MoonStarIcon, SparklesIcon } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import PlaySongButton from '@/app/components/table/play-button'
 import { QueueActions } from '@/app/components/table/queue-actions'
@@ -54,21 +55,34 @@ function SortableQueueRow({
   songs,
   isOverlay = false,
 }: SortableQueueRowProps) {
+  const { t } = useTranslation()
   const { setSongList } = usePlayerActions()
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
-    useSortable({ id: song.id, disabled: isOverlay })
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: song.id, disabled: isOverlay })
 
   const currentSong = usePlayerCurrentSong()
   const isActive = song.id === currentSong.id
   const { closeDrawer } = usePlayerStore.getState().actions
+  const sourceLabel =
+    song.queueSource === 'dj'
+      ? t('queue.source.dj')
+      : song.queueSource === 'session'
+        ? t('queue.source.session')
+        : null
 
   const outerStyle = isOverlay
-    ? { height: virtualSize, width: '100%' }
+    ? { height: virtualSize, width: 'calc(100% - 12px)' }
     : {
         position: 'absolute' as const,
         top: virtualStart,
         height: virtualSize,
-        width: '100%',
+        width: 'calc(100% - 12px)',
         transform: CSS.Transform.toString(transform),
         transition,
       }
@@ -77,7 +91,7 @@ function SortableQueueRow({
     <div ref={isOverlay ? undefined : setNodeRef} style={outerStyle}>
       <div
         className={clsx(
-          'group/tablerow w-[calc(100%-10px)] flex flex-row items-center rounded-md h-14 transition-colors select-none',
+          'group/tablerow w-full flex flex-row items-center rounded-md h-14 transition-colors select-none',
           isDragging && !isOverlay
             ? 'opacity-20 bg-foreground/5'
             : 'hover:bg-foreground/20',
@@ -87,20 +101,34 @@ function SortableQueueRow({
         )}
       >
         {/* Drag handle */}
-        <div
-          {...(isOverlay ? {} : { ...attributes, ...listeners })}
-          className={clsx(
-            'w-7 shrink-0 flex items-center justify-center ml-1 text-foreground/40 hover:text-foreground/70',
-            isOverlay
-              ? 'cursor-grabbing'
-              : 'cursor-grab active:cursor-grabbing opacity-0 group-hover/tablerow:opacity-100 transition-opacity',
+        <div className="w-6 shrink-0 ml-1 relative flex items-center justify-center">
+          {!isOverlay && song.queueSource === 'dj' && (
+            <SparklesIcon
+              className="absolute w-3.5 h-3.5 text-foreground/60 transition-opacity group-hover/tablerow:opacity-0"
+              title={sourceLabel ?? undefined}
+            />
           )}
-        >
-          <GripVerticalIcon className="w-4 h-4" />
+          {!isOverlay && song.queueSource === 'session' && (
+            <MoonStarIcon
+              className="absolute w-3.5 h-3.5 text-foreground/60 transition-opacity group-hover/tablerow:opacity-0"
+              title={sourceLabel ?? undefined}
+            />
+          )}
+          <div
+            {...(isOverlay ? {} : { ...attributes, ...listeners })}
+            className={clsx(
+              'absolute flex items-center justify-center text-foreground/40 hover:text-foreground/70',
+              isOverlay
+                ? 'cursor-grabbing'
+                : 'cursor-grab active:cursor-grabbing opacity-0 group-hover/tablerow:opacity-100 transition-opacity',
+            )}
+          >
+            <GripVerticalIcon className="w-4 h-4" />
+          </div>
         </div>
 
         {/* Play button */}
-        <div className="w-10 min-w-10 flex items-center p-1">
+        <div className="w-9 min-w-9 flex items-center p-1">
           <PlaySongButton
             trackNumber={songIndex + 1}
             trackId={song.id}
@@ -109,12 +137,12 @@ function SortableQueueRow({
         </div>
 
         {/* Title + artist */}
-        <div className="flex-1 min-w-0 p-2">
+        <div className="flex-1 min-w-0 p-2 flex items-center gap-1.5">
           <TableSongTitle song={song} />
         </div>
 
         {/* Album (hidden on small screens) */}
-        <div className="hidden lg:flex w-[24%] min-w-[14%] max-w-[24%] p-2 overflow-hidden">
+        <div className="hidden xl:flex w-[22%] min-w-[14%] max-w-[24%] p-2 overflow-hidden">
           <Link
             to={ROUTES.ALBUM.PAGE(song.albumId)}
             className="hover:underline truncate text-foreground/70 hover:text-foreground text-sm"
@@ -130,12 +158,12 @@ function SortableQueueRow({
         </div>
 
         {/* Duration */}
-        <div className="w-20 max-w-20 min-w-20 p-2 text-sm text-foreground/70 shrink-0">
+        <div className="w-16 max-w-16 min-w-16 p-1.5 text-sm text-foreground/70 shrink-0 text-right">
           {convertSecondsToTime(song.duration ?? 0)}
         </div>
 
         {/* Remove */}
-        <div className="w-[60px] max-w-[60px] min-w-[60px] p-2 flex items-center justify-center">
+        <div className="w-[52px] max-w-[52px] min-w-[52px] p-1.5 flex items-center justify-center">
           <QueueActions row={{ original: song } as never} />
         </div>
       </div>
@@ -217,7 +245,7 @@ export function SortableQueueList({
         <ScrollArea
           ref={parentRef}
           type="always"
-          className="h-full [&_div:last-child]:border-0"
+          className="h-full pr-1 [&_div:last-child]:border-0"
           thumbClassName="secondary-thumb-bar"
         >
           <div

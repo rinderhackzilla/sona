@@ -27,7 +27,8 @@ export function PlaylistSavedDialog({
         <AlertDialogHeader>
           <AlertDialogTitle>✓ Playlist gespeichert</AlertDialogTitle>
           <AlertDialogDescription>
-            Deine personalisierte <strong>{playlistName}</strong> wurde erfolgreich aktualisiert!
+            Deine personalisierte <strong>{playlistName}</strong> wurde
+            erfolgreich aktualisiert!
             {trackCount > 0 && (
               <>
                 <br />

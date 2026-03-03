@@ -9,8 +9,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/app/components/ui/dialog'
-import { SonaDjMode, useSonaDj } from '@/store/sona-dj.store'
 import { usePlayerActions } from '@/store/player.store'
+import { SonaDjMode, useSonaDj } from '@/store/sona-dj.store'
 
 const triggerStyles = {
   fullscreen:
@@ -78,9 +78,12 @@ export function SonaDjButton({ variant = 'fullscreen' }: SonaDjButtonProps) {
     <Button
       size="icon"
       variant="ghost"
+      data-coach-id="sona-dj"
       data-state={enabled && 'active'}
       className={clsx(
-        variant === 'fullscreen' ? triggerStyles.fullscreen : triggerStyles.player,
+        variant === 'fullscreen'
+          ? triggerStyles.fullscreen
+          : triggerStyles.player,
         variant === 'fullscreen' && 'fullscreen-utility-button',
         enabled && triggerStyles.active,
       )}
@@ -93,16 +96,16 @@ export function SonaDjButton({ variant = 'fullscreen' }: SonaDjButtonProps) {
 
   return (
     <Dialog>
-      <DialogTrigger asChild>
-        {triggerButton}
-      </DialogTrigger>
-        <DialogContent className="max-w-xl" aria-describedby={undefined}>
+      <DialogTrigger asChild>{triggerButton}</DialogTrigger>
+      <DialogContent className="max-w-xl" aria-describedby={undefined}>
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <SonaDjIcon variant="player" className="w-5 h-5 text-white" />
             {t('fullscreen.sonaDj.title')}
           </DialogTitle>
-          <DialogDescription>{t('fullscreen.sonaDj.subtitle')}</DialogDescription>
+          <DialogDescription>
+            {t('fullscreen.sonaDj.subtitle')}
+          </DialogDescription>
         </DialogHeader>
 
         <div className="grid gap-3">
@@ -134,7 +137,9 @@ export function SonaDjButton({ variant = 'fullscreen' }: SonaDjButtonProps) {
                 <DjModeIcon fileName={dj.icon} />
                 <div className="min-w-0">
                   <p className="font-semibold">{dj.name}</p>
-                  <p className="text-sm text-muted-foreground mt-1">{dj.description}</p>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    {dj.description}
+                  </p>
                 </div>
               </button>
             )

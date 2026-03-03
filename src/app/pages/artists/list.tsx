@@ -9,6 +9,7 @@ import { HeaderTitle } from '@/app/components/header-title'
 import ListWrapper from '@/app/components/list-wrapper'
 import { MainViewTypeSelector } from '@/app/components/main-grid'
 import { DataTable } from '@/app/components/ui/data-table'
+import { PageState } from '@/app/components/ui/page-state'
 import { useSongList } from '@/app/hooks/use-song-list'
 import { artistsColumns } from '@/app/tables/artists-columns'
 import { subsonic } from '@/service/subsonic'
@@ -36,7 +37,12 @@ export default function ArtistsList() {
 
   const columns = artistsColumns()
 
-  const { data: artists, isLoading } = useQuery({
+  const {
+    data: artists,
+    isLoading,
+    isError,
+    refetch,
+  } = useQuery({
     queryKey: [queryKeys.artist.all],
     queryFn: subsonic.artists.getAll,
   })
@@ -48,7 +54,30 @@ export default function ArtistsList() {
   }
 
   if (isLoading) return <ArtistsFallback />
-  if (!artists) return null
+  if (isError) {
+    return (
+      <PageState
+        variant="error"
+        title={t('states.error.title')}
+        description={t('states.error.description', {
+          status: 500,
+          detail: t('generic.error'),
+        })}
+        actionLabel={t('states.error.retry')}
+        onAction={() => {
+          refetch().catch(() => undefined)
+        }}
+      />
+    )
+  }
+  if (!artists || artists.length === 0) {
+    return (
+      <PageState
+        title={t('states.empty.title')}
+        description={t('states.empty.noResults')}
+      />
+    )
+  }
 
   return (
     <div className="w-full h-full">

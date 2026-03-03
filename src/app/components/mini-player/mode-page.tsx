@@ -14,6 +14,7 @@ import {
   type SyntheticEvent,
   useCallback,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useState,
   type WheelEvent,
@@ -28,13 +29,14 @@ import { SimpleTooltip } from '@/app/components/ui/simple-tooltip'
 import { useTimeoutController } from '@/app/hooks/use-timeout-controller'
 import {
   usePlayerActions,
-  usePlayerCurrentList,
+  usePlayerSonglist,
   usePlayerCurrentSong,
   usePlayerIsPlaying,
   usePlayerLoop,
   usePlayerPrevAndNext,
   usePlayerSongStarred,
   usePlayerVolume,
+  useSongColor,
 } from '@/store/player.store'
 import { useMiniPlayerState } from '@/store/ui.store'
 import { LoopState } from '@/types/playerContext'
@@ -48,9 +50,10 @@ export function MiniPlayerModePage() {
   const isPlaying = usePlayerIsPlaying()
   const loopState = usePlayerLoop()
   const song = usePlayerCurrentSong()
+  const { currentList, currentSongIndex } = usePlayerSonglist()
   const { togglePlayPause, playPrevSong, playNextSong, starCurrentSong } =
     usePlayerActions()
-  const currentList = usePlayerCurrentList()
+  const { currentSongColor } = useSongColor()
   const hasMiniPlayerApi =
     typeof window !== 'undefined' &&
     typeof window.api?.setMiniPlayerMode === 'function'
@@ -62,14 +65,45 @@ export function MiniPlayerModePage() {
     const headerHeight = Number.parseFloat(raw) || 44
     return Math.round(headerHeight * 2.4)
   }, [])
+  const [viewportHeight, setViewportHeight] = useState(() => {
+    if (typeof window === 'undefined') return 198
+    return (
+      window.innerHeight || document.documentElement?.clientHeight || 198
+    )
+  })
+
+  const syncViewportHeight = useCallback(() => {
+    if (typeof window === 'undefined') return
+    setViewportHeight(
+      window.innerHeight || document.documentElement?.clientHeight || 198,
+    )
+  }, [])
 
   useEffect(() => {
     if (!hasMiniPlayerApi) return
     window.api.setMiniPlayerMode(true)
+    // Window bounds change asynchronously; resync layout shortly after entering mini mode.
+    const t1 = setTimeout(syncViewportHeight, 0)
+    const t2 = setTimeout(syncViewportHeight, 80)
+    const t3 = setTimeout(syncViewportHeight, 180)
     return () => {
+      clearTimeout(t1)
+      clearTimeout(t2)
+      clearTimeout(t3)
       window.api.setMiniPlayerMode(false)
     }
-  }, [hasMiniPlayerApi])
+  }, [hasMiniPlayerApi, syncViewportHeight])
+
+  useLayoutEffect(() => {
+    syncViewportHeight()
+  }, [syncViewportHeight])
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const onResize = () => syncViewportHeight()
+    window.addEventListener('resize', onResize)
+    return () => window.removeEventListener('resize', onResize)
+  }, [syncViewportHeight])
 
   useEffect(() => {
     if (!hasMiniPlayerApi) return
@@ -89,20 +123,56 @@ export function MiniPlayerModePage() {
     }
   }, [setOpen])
 
-  const title = song?.title ?? t('player.noPlayback', 'No playback active.')
-  const artist = song?.artist ?? ''
-  const hasSong = currentList.length > 0 && Boolean(song?.id)
+  const resolvedSong = useMemo(() => {
+    const listSong = currentList[currentSongIndex]
+    if (!song && !listSong) return song
+    return {
+      ...listSong,
+      ...song,
+      coverArt: song?.coverArt ?? listSong?.coverArt,
+      albumId: song?.albumId ?? listSong?.albumId,
+      artist: song?.artist ?? listSong?.artist,
+      title: song?.title ?? listSong?.title,
+      album: song?.album ?? listSong?.album,
+      id: song?.id ?? listSong?.id,
+    }
+  }, [song, currentList, currentSongIndex])
+
+  const title =
+    resolvedSong?.title ?? t('player.noPlayback', 'No playback active.')
+  const artist = resolvedSong?.artist ?? ''
+  const hasSong = Boolean(
+    resolvedSong?.id ||
+      resolvedSong?.title ||
+      resolvedSong?.artist ||
+      resolvedSong?.album,
+  )
+  const coverSource = resolvedSong?.coverArt
+    ? { id: resolvedSong.coverArt, type: 'song' as const }
+    : resolvedSong?.albumId
+      ? { id: resolvedSong.albumId, type: 'album' as const }
+      : resolvedSong?.id
+        ? { id: resolvedSong.id, type: 'song' as const }
+        : null
   const [isIdle, setIsIdle] = useState(false)
   const [showVolumeOverlay, setShowVolumeOverlay] = useState(false)
   const [backgroundDimOpacity, setBackgroundDimOpacity] = useState(0.42)
   const idleTimer = useTimeoutController()
   const volumeOverlayTimer = useTimeoutController()
   const coverDisplaySize = isIdle ? Math.round(coverSize * 1.34) : coverSize
-  const viewportHeight =
-    typeof window !== 'undefined' ? window.innerHeight : 198
+  const utilityButtonsHeight = 32
+  const utilityToCoverGap = 6
+  const activeGroupHeight = utilityButtonsHeight + utilityToCoverGap + coverSize
+  const activeGroupTop = Math.max(
+    8,
+    Math.round((viewportHeight - activeGroupHeight) / 2),
+  )
   const coverTop = isIdle
     ? Math.max(3, Math.round((viewportHeight - coverDisplaySize) / 2))
-    : 18
+    : activeGroupTop + utilityButtonsHeight + utilityToCoverGap
+  const actionButtonsTop = isIdle
+    ? coverTop + coverDisplaySize + 6
+    : activeGroupTop
 
   const clearIdleTimer = useCallback(() => {
     idleTimer.clear()
@@ -173,6 +243,20 @@ export function MiniPlayerModePage() {
   }
 
   useEffect(() => {
+    // Entering mini-player should always start in active mode.
+    setIsIdle(false)
+    clearIdleTimer()
+  }, [clearIdleTimer])
+
+  useEffect(() => {
+    // On track updates, reset idle once so controls/cover stay visible.
+    if (resolvedSong?.id || resolvedSong?.title) {
+      setIsIdle(false)
+      clearIdleTimer()
+    }
+  }, [resolvedSong?.id, resolvedSong?.title, clearIdleTimer])
+
+  useEffect(() => {
     return () => {
       clearIdleTimer()
       volumeOverlayTimer.clear()
@@ -182,6 +266,11 @@ export function MiniPlayerModePage() {
   return (
     <div
       className="relative h-screen w-screen overflow-hidden bg-black"
+      style={{
+        background: currentSongColor
+          ? `radial-gradient(120% 120% at 15% 15%, ${currentSongColor}22 0%, transparent 55%), #06070a`
+          : '#06070a',
+      }}
       onMouseEnter={() => {
         clearIdleTimer()
         setIsIdle(false)
@@ -189,8 +278,8 @@ export function MiniPlayerModePage() {
       onMouseLeave={startIdleTimer}
       onWheelCapture={handleMiniPlayerWheel}
     >
-      {hasSong && song?.coverArt ? (
-        <ImageLoader id={song.coverArt} type="song" size={500}>
+      {hasSong && coverSource ? (
+        <ImageLoader id={coverSource.id} type={coverSource.type} size={500}>
           {(src) => (
             <LazyLoadImage
               src={src}
@@ -216,7 +305,7 @@ export function MiniPlayerModePage() {
       <div className="hypnotic-layer-b z-10" />
       <div className="hypnotic-layer-c z-10" />
 
-      <header className="absolute top-0 left-0 right-0 z-50 h-header bg-transparent electron-drag">
+      <header className="absolute top-0 left-0 right-0 z-40 h-header bg-transparent electron-drag">
         <div className="h-full px-2 flex items-center justify-between">
           <div className="flex items-center gap-1" />
         </div>
@@ -224,8 +313,8 @@ export function MiniPlayerModePage() {
 
       <div
         className={clsx(
-          'absolute left-[12px] top-[26px] z-[45] shrink-0 overflow-hidden rounded-lg border border-white/22 bg-black/30 shadow-lg shadow-black/35',
-          'transition-[width,height,transform] duration-500 ease-out',
+          'absolute left-[12px] top-[26px] z-[45] shrink-0 overflow-hidden rounded-lg border border-white/24 bg-black/24 shadow-xl shadow-black/40',
+          'transition-[width,height,top,transform,opacity] duration-650 [transition-timing-function:cubic-bezier(0.2,0.8,0.2,1)]',
         )}
         style={{
           width: `${coverDisplaySize}px`,
@@ -233,23 +322,23 @@ export function MiniPlayerModePage() {
           top: `${coverTop}px`,
         }}
       >
-        {hasSong && song?.coverArt ? (
-          <ImageLoader id={song.coverArt} type="song" size={500}>
+        {hasSong && coverSource ? (
+          <ImageLoader id={coverSource.id} type={coverSource.type} size={500}>
             {(src) => (
-              <LazyLoadImage
-                src={src}
-                width="100%"
-                height="100%"
-                loading="eager"
-                effect="opacity"
-                className="h-full w-full object-cover object-center"
-                alt={`${song.artist} - ${song.title}`}
-              />
-            )}
-          </ImageLoader>
+                <LazyLoadImage
+                  src={src}
+                  width="100%"
+                  height="100%"
+                  loading="eager"
+                  effect="opacity"
+                  className="h-full w-full object-cover object-center"
+                  alt={`${resolvedSong?.artist ?? ''} - ${resolvedSong?.title ?? ''}`}
+                />
+              )}
+            </ImageLoader>
         ) : (
-          <div className="h-full w-full flex items-center justify-center text-white/80">
-            <Music2Icon className="h-10 w-10" />
+          <div className="h-full w-full flex items-center justify-center bg-gradient-to-br from-primary/35 via-background/70 to-background text-white/85">
+            <Music2Icon className="h-10 w-10 drop-shadow-[0_2px_6px_rgba(0,0,0,0.45)]" />
           </div>
         )}
         <div
@@ -272,15 +361,27 @@ export function MiniPlayerModePage() {
 
       <div
         className={clsx(
-          'absolute left-[12px] z-[46] flex items-center gap-0 overflow-hidden rounded-lg border border-white/14 bg-black/44 p-0 shadow-lg shadow-black/35',
-          'transition-all duration-400 ease-out',
+          'absolute left-[12px] z-[46] flex items-center gap-0 overflow-hidden rounded-lg border border-white/28 bg-black/66 p-0 shadow-lg shadow-black/45 backdrop-blur-lg',
+          'transition-[top,width,transform,opacity,background-color,border-color] duration-620 [transition-timing-function:cubic-bezier(0.2,0.8,0.2,1)]',
           isIdle && 'opacity-0 translate-y-1 pointer-events-none',
         )}
         style={{
-          top: `${coverTop + coverDisplaySize + 6}px`,
+          top: `${actionButtonsTop}px`,
           width: `${isIdle ? coverDisplaySize : coverSize}px`,
         }}
       >
+        <SimpleTooltip
+          text={t('player.tooltips.miniPlayer.expand', 'Expand Player')}
+        >
+          <Button
+            variant="ghost"
+            className="h-8 flex-1 rounded-none rounded-l-lg border-r border-white/18 bg-primary/30 text-primary-foreground/95 transition-colors hover:bg-primary/40"
+            onClick={() => setOpen(false)}
+          >
+            <Maximize2Icon className="h-4 w-4" />
+          </Button>
+        </SimpleTooltip>
+
         <SimpleTooltip
           text={
             pinned
@@ -291,10 +392,10 @@ export function MiniPlayerModePage() {
           <Button
             variant="ghost"
             className={clsx(
-              'h-8 flex-1 rounded-none rounded-l-lg border-r border-white/14 transition-colors',
+              'h-8 flex-1 rounded-none rounded-r-lg transition-colors',
               pinned
                 ? 'bg-primary text-primary-foreground hover:bg-primary/88'
-                : 'bg-primary/14 text-primary-foreground hover:bg-primary/24',
+                : 'bg-primary/30 text-primary-foreground/95 hover:bg-primary/40',
             )}
             onClick={togglePinned}
           >
@@ -305,33 +406,21 @@ export function MiniPlayerModePage() {
             )}
           </Button>
         </SimpleTooltip>
-
-        <SimpleTooltip
-          text={t('player.tooltips.miniPlayer.expand', 'Expand Player')}
-        >
-          <Button
-            variant="ghost"
-            className="h-8 flex-1 rounded-none rounded-r-lg bg-primary/14 text-primary-foreground transition-colors hover:bg-primary/24"
-            onClick={() => setOpen(false)}
-          >
-            <Maximize2Icon className="h-4 w-4" />
-          </Button>
-        </SimpleTooltip>
       </div>
 
       <main
         className={clsx(
-          'absolute inset-0 z-40 pr-2 pb-0 pt-0 transition-[padding] duration-500 ease-out',
+          'absolute inset-0 z-40 pr-2 pb-0 pt-0 transition-[padding] duration-620 [transition-timing-function:cubic-bezier(0.2,0.8,0.2,1)]',
           isIdle
             ? 'pl-[calc(var(--header-height)*2.9+24px)]'
-            : 'pl-[calc(var(--header-height)*2.4+26px)]',
+            : 'pl-[calc(var(--header-height)*2.4+34px)]',
         )}
       >
         <div className="h-full flex">
           <div className="min-w-0 flex-1 h-full flex flex-col justify-end">
             <div
               className={clsx(
-                'min-w-0 pt-[25px] transition-all duration-500 ease-out',
+                'min-w-0 pt-[25px] transition-[transform,opacity] duration-620 [transition-timing-function:cubic-bezier(0.2,0.8,0.2,1)]',
                 isIdle && 'translate-x-[10px]',
               )}
             >
@@ -379,7 +468,7 @@ export function MiniPlayerModePage() {
 
             <div
               className={clsx(
-                'mt-auto mb-2.5 flex items-center gap-1.5 transition-all duration-400 ease-out',
+                'mt-auto mb-2.5 flex items-center gap-1.5 rounded-xl bg-black/24 px-1.5 py-1 transition-[transform,opacity] duration-620 [transition-timing-function:cubic-bezier(0.2,0.8,0.2,1)] backdrop-blur-sm',
                 (isIdle || !hasSong) &&
                   'opacity-0 translate-y-2 pointer-events-none',
               )}
@@ -389,8 +478,8 @@ export function MiniPlayerModePage() {
                   variant="ghost"
                   size="icon"
                   className={clsx(
-                    'w-[54px] h-10 rounded-lg relative border border-white/45',
-                    'text-primary-foreground hover:text-primary-foreground bg-primary/24 hover:bg-primary/34',
+                    'w-[54px] h-10 rounded-lg relative border border-white/20',
+                    'text-primary-foreground hover:text-primary-foreground bg-white/14 hover:bg-white/22',
                     'hover:scale-105 transition-transform will-change-transform',
                   )}
                   onClick={playPrevSong}
@@ -410,13 +499,13 @@ export function MiniPlayerModePage() {
                 <Button
                   variant="link"
                   size="icon"
-                  className="w-[50px] h-11 rounded-lg border border-primary/50 shadow-lg bg-primary/50 text-primary-foreground hover:bg-primary/62 hover:scale-105 transition-transform will-change-transform"
+                  className="w-[50px] h-11 rounded-lg border border-white/75 bg-white/95 text-black hover:bg-white hover:scale-105 transition-transform will-change-transform shadow-[0_2px_10px_rgba(255,255,255,0.15)]"
                   onClick={togglePlayPause}
                 >
                   {isPlaying ? (
-                    <PauseIcon className="w-5 h-5 text-primary-foreground fill-primary-foreground" />
+                    <PauseIcon className="w-5 h-5 text-black fill-black" />
                   ) : (
-                    <PlayIcon className="w-5 h-5 text-primary-foreground fill-primary-foreground" />
+                    <PlayIcon className="w-5 h-5 text-black fill-black" />
                   )}
                 </Button>
               </SimpleTooltip>
@@ -426,9 +515,9 @@ export function MiniPlayerModePage() {
                   variant="ghost"
                   size="icon"
                   className={clsx(
-                    'w-[54px] h-10 rounded-lg relative border border-white/45',
+                    'w-[54px] h-10 rounded-lg relative border border-white/20',
                     'text-primary-foreground hover:text-primary-foreground',
-                    'bg-primary/24 hover:bg-primary/34 hover:scale-105 transition-transform will-change-transform',
+                    'bg-white/14 hover:bg-white/22 hover:scale-105 transition-transform will-change-transform',
                   )}
                   onClick={playNextSong}
                   disabled={!hasNext && loopState !== LoopState.All}
@@ -456,9 +545,9 @@ export function MiniPlayerModePage() {
                   variant="ghost"
                   size="icon"
                   className={clsx(
-                    'w-[44px] h-10 rounded-lg relative border border-primary/34',
+                    'w-[44px] h-10 rounded-lg relative border border-white/20',
                     'text-primary-foreground hover:text-primary-foreground',
-                    'bg-primary/20 hover:bg-primary/30 hover:scale-105 transition-transform will-change-transform',
+                    'bg-white/14 hover:bg-white/22 hover:scale-105 transition-transform will-change-transform',
                   )}
                   onClick={starCurrentSong}
                 >
@@ -476,7 +565,7 @@ export function MiniPlayerModePage() {
 
             <div
               className={clsx(
-                'mt-auto transition-[padding,width] duration-500 ease-out',
+                'mt-auto transition-[padding,width] duration-620 [transition-timing-function:cubic-bezier(0.2,0.8,0.2,1)]',
                 isIdle ? 'pr-6 pb-6 pl-[12px]' : 'pr-1 pb-6 pl-[6px]',
               )}
             >

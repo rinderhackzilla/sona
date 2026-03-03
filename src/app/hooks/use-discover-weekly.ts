@@ -1,12 +1,13 @@
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import {
-  loadPlaylist,
-  generateAndSavePlaylist,
-  shouldGeneratePlaylist,
   checkAndCatchUp,
+  generateAndSavePlaylist,
+  loadPlaylist,
+  shouldGeneratePlaylist,
 } from '@/service/discover-weekly-manager'
 import { useAppIntegrations } from '@/store/app.store'
 import type { Song } from '@/types/responses/song'
+import { logger } from '@/utils/logger'
 
 interface PlaylistMetadata {
   generatedAt: string
@@ -34,8 +35,9 @@ export function useDiscoverWeekly() {
     // Use setTimeout to make this async
     setTimeout(() => {
       try {
-        const { playlist: storedPlaylist, metadata: storedMetadata } = loadPlaylist()
-        
+        const { playlist: storedPlaylist, metadata: storedMetadata } =
+          loadPlaylist()
+
         if (storedPlaylist.length > 0 && storedMetadata) {
           setPlaylist(storedPlaylist)
           setMetadata(storedMetadata)
@@ -55,14 +57,14 @@ export function useDiscoverWeekly() {
     const performCatchup = async () => {
       // Mark as checked (using ref to avoid re-renders)
       hasCheckedCatchupRef.current = true
-      
+
       // Check if generation is needed
       if (!shouldGeneratePlaylist()) {
-        console.log('[DiscoverWeekly Hook] No catch-up needed')
+        logger.info('[DiscoverWeekly Hook] No catch-up needed')
         return
       }
 
-      console.log('[DiscoverWeekly Hook] Performing catch-up generation...')
+      logger.info('[DiscoverWeekly Hook] Performing catch-up generation...')
       setIsGenerating(true)
       setError(null)
 
@@ -71,17 +73,19 @@ export function useDiscoverWeekly() {
           username: lastfm.username,
           apiKey: lastfm.apiKey,
           targetArtists: 50, // CHANGED: 50 artists
-          songsPerArtist: 1,  // CHANGED: 1 song per artist
+          songsPerArtist: 1, // CHANGED: 1 song per artist
         })
 
         if (success) {
           // Reload playlist after generation
-          const { playlist: newPlaylist, metadata: newMetadata } = loadPlaylist()
+          const { playlist: newPlaylist, metadata: newMetadata } =
+            loadPlaylist()
           setPlaylist(newPlaylist)
           setMetadata(newMetadata)
         }
       } catch (error) {
-        const message = error instanceof Error ? error.message : 'Catch-up failed'
+        const message =
+          error instanceof Error ? error.message : 'Catch-up failed'
         setError(message)
         console.error('[DiscoverWeekly Hook] Catch-up error:', error)
       } finally {
@@ -110,15 +114,16 @@ export function useDiscoverWeekly() {
           username: lastfm.username,
           apiKey: lastfm.apiKey,
           targetArtists: 50, // CHANGED: 50 artists
-          songsPerArtist: 1,  // CHANGED: 1 song per artist
+          songsPerArtist: 1, // CHANGED: 1 song per artist
         },
-        true // Force regeneration
+        true, // Force regeneration
       )
 
       setPlaylist(result.playlist)
       setMetadata(result.metadata)
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Generation failed'
+      const message =
+        error instanceof Error ? error.message : 'Generation failed'
       setError(message)
       console.error('[DiscoverWeekly Hook] Manual generation error:', error)
     } finally {

@@ -1,8 +1,6 @@
-import { LazyLoadImage } from 'react-lazy-load-image-component'
 import { Link } from 'react-router-dom'
 import { ImageLoader } from '@/app/components/image-loader'
 import { LinkWithoutTo } from '@/app/components/song/artist-link'
-import { AspectRatio } from '@/app/components/ui/aspect-ratio'
 import { cn } from '@/lib/utils'
 import { ROUTES } from '@/routes/routesList'
 import { useMainDrawerState, usePlayerSonglist } from '@/store/player.store'
@@ -12,46 +10,51 @@ import { ALBUM_ARTISTS_MAX_NUMBER } from '@/utils/multipleArtists'
 export function CurrentSongInfo() {
   const { currentSong } = usePlayerSonglist()
   const { closeDrawer } = useMainDrawerState()
+  const { title, album, albumId, artist, artistId, coverArt } = currentSong
 
   return (
-    <div className="mr-12 hidden lg:block w-[260px] lg:w-[320px] 2xl:w-[380px]">
-      <AspectRatio
-        ratio={1 / 1}
-        className="shadow-header-image rounded-md overflow-hidden bg-accent"
-      >
-        <ImageLoader id={currentSong.coverArt} type="song" size={900}>
+    <div className="flex-shrink-0 w-64 flex flex-col gap-4">
+      <div className="w-full aspect-square rounded-lg overflow-hidden shadow-2xl bg-accent">
+        <ImageLoader id={coverArt} type="song" size={900}>
           {(src) => (
-            <LazyLoadImage
+            <img
               id="song-info-image"
               src={src}
-              effect="opacity"
-              alt={`${currentSong.artist} - ${currentSong.title}`}
-              className="rounded-md aspect-square object-cover text-transparent"
-              width="100%"
-              height="100%"
+              alt={`${artist} - ${title}`}
+              className="w-full h-full object-cover text-transparent"
             />
           )}
         </ImageLoader>
-      </AspectRatio>
+      </div>
 
-      <div className="flex flex-col items-center justify-center mt-6 px-1">
-        <h4 className="scroll-m-20 text-xl font-semibold tracking-tight text-center text-balance text-shadow-lg">
-          {currentSong.albumId ? (
+      <div className="flex flex-col gap-1">
+        <h4 className="scroll-m-20 text-xl font-semibold tracking-tight truncate text-shadow-lg">
+          {albumId ? (
             <Link
-              to={ROUTES.ALBUM.PAGE(currentSong.albumId)}
+              to={ROUTES.ALBUM.PAGE(albumId)}
               className="hover:underline"
               onClick={closeDrawer}
             >
-              {currentSong.title}
+              {title}
             </Link>
           ) : (
-            <>{currentSong.title}</>
+            <>{title}</>
           )}
         </h4>
 
-        <div className="leading-5 mt-1 text-foreground/70 text-shadow-lg flex items-center justify-center flex-wrap gap-1">
+        <div className="leading-5 text-lg text-muted-foreground truncate text-shadow-lg">
           <QueueArtistsLinks song={currentSong} />
         </div>
+
+        {album && albumId && (
+          <Link
+            to={ROUTES.ALBUM.PAGE(albumId)}
+            className="text-sm text-muted-foreground truncate hover:text-foreground hover:underline transition-colors"
+            onClick={closeDrawer}
+          >
+            {album}
+          </Link>
+        )}
       </div>
     </div>
   )
@@ -65,14 +68,14 @@ function QueueArtistsLinks({ song }: { song: ISong }) {
     const data = artists.slice(0, ALBUM_ARTISTS_MAX_NUMBER)
 
     return (
-      <>
+      <div className="flex items-center flex-wrap gap-1">
         {data.map(({ id, name }, index) => (
-          <div key={id}>
+          <div key={id} className="flex">
             <ArtistLink id={id} name={name} onClick={closeDrawer} />
             {index < data.length - 1 && ','}
           </div>
         ))}
-      </>
+      </div>
     )
   }
 

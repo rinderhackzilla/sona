@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react'
 import { User } from 'lucide-react'
+import { useEffect, useState } from 'react'
 
 interface LastfmAvatarProps {
   username: string
@@ -11,7 +11,11 @@ interface LastfmUserInfo {
   image: Array<{ '#text': string; size: string }>
 }
 
-export function LastfmAvatar({ username, apiKey, size = 256 }: LastfmAvatarProps) {
+export function LastfmAvatar({
+  username,
+  apiKey,
+  size = 256,
+}: LastfmAvatarProps) {
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
@@ -20,22 +24,23 @@ export function LastfmAvatar({ username, apiKey, size = 256 }: LastfmAvatarProps
     const fetchUserInfo = async () => {
       try {
         const response = await fetch(
-          `https://ws.audioscrobbler.com/2.0/?method=user.getinfo&user=${username}&api_key=${apiKey}&format=json`
+          `https://ws.audioscrobbler.com/2.0/?method=user.getinfo&user=${username}&api_key=${apiKey}&format=json`,
         )
-        
+
         if (!response.ok) {
           throw new Error('Failed to fetch user info')
         }
 
         const data = await response.json()
         const userInfo: LastfmUserInfo = data.user
-        
+
         // Get largest image (usually 'extralarge' or 'large')
         const images = userInfo.image
-        const largeImage = images.find(img => img.size === 'extralarge') || 
-                          images.find(img => img.size === 'large') ||
-                          images[images.length - 1]
-        
+        const largeImage =
+          images.find((img) => img.size === 'extralarge') ||
+          images.find((img) => img.size === 'large') ||
+          images[images.length - 1]
+
         if (largeImage?.['#text']) {
           setAvatarUrl(largeImage['#text'])
         } else {
@@ -56,7 +61,7 @@ export function LastfmAvatar({ username, apiKey, size = 256 }: LastfmAvatarProps
 
   if (loading) {
     return (
-      <div 
+      <div
         className="w-full h-full bg-gradient-to-br from-violet-600 via-indigo-600 to-blue-600 rounded-lg flex items-center justify-center"
         style={{ width: size, height: size }}
       >
@@ -69,7 +74,7 @@ export function LastfmAvatar({ username, apiKey, size = 256 }: LastfmAvatarProps
 
   if (error || !avatarUrl) {
     return (
-      <div 
+      <div
         className="w-full h-full bg-gradient-to-br from-violet-600 via-indigo-600 to-blue-600 rounded-lg flex items-center justify-center"
         style={{ width: size, height: size }}
       >
@@ -89,10 +94,11 @@ export function LastfmAvatar({ username, apiKey, size = 256 }: LastfmAvatarProps
       {/* Gradient overlay */}
       <div className="absolute inset-0 bg-gradient-to-br from-violet-600/30 via-indigo-600/25 to-blue-600/30" />
       {/* Vignette */}
-      <div 
+      <div
         className="absolute inset-0"
         style={{
-          background: 'radial-gradient(circle at center, transparent 30%, rgba(0,0,0,0.4) 80%)'
+          background:
+            'radial-gradient(circle at center, transparent 30%, rgba(0,0,0,0.4) 80%)',
         }}
       />
     </div>

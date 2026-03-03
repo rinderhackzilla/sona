@@ -595,11 +595,7 @@ function MainSidebarMenuButton({
   return (
     <Tooltip>
       <TooltipTrigger asChild>{button}</TooltipTrigger>
-      <TooltipContent
-        side="right"
-        align="center"
-        {...tooltip}
-      />
+      <TooltipContent side="right" align="center" {...tooltip} />
     </Tooltip>
   )
 }
@@ -674,7 +670,10 @@ function MainSidebarMenuSkeleton({
     <div
       data-slot="sidebar-menu-skeleton"
       data-sidebar="menu-skeleton"
-      className={cn('flex h-8 items-center gap-2 rounded-[var(--radius-control)] px-2', className)}
+      className={cn(
+        'flex h-8 items-center gap-2 rounded-[var(--radius-control)] px-2',
+        className,
+      )}
       {...props}
     >
       {showIcon && (

@@ -10,7 +10,9 @@ function hexToRgba(hex: string, alpha: number): string {
 }
 
 function accentHSL() {
-  const v = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim()
+  const v = getComputedStyle(document.documentElement)
+    .getPropertyValue('--accent')
+    .trim()
   const [h, s, l] = v.split(' ')
   return { h: h ?? '220', s: s ?? '80%', l: l ?? '60%' }
 }
@@ -73,7 +75,7 @@ export function WaveformTunnel() {
       if (analyser) {
         analyser.getByteFrequencyData(freqBuf)
         for (let i = 0; i < BUF; i++) {
-          smoothed[i] = smoothed[i] * 0.80 + freqBuf[i] * 0.20
+          smoothed[i] = smoothed[i] * 0.8 + freqBuf[i] * 0.2
         }
       }
 
@@ -90,7 +92,7 @@ export function WaveformTunnel() {
       ctx.clearRect(0, 0, w, h)
 
       const BAR_COUNT = 90
-      const totalW = w * 0.90
+      const totalW = w * 0.9
       const startX = (w - totalW) / 2
       const barW = totalW / BAR_COUNT
       const gap = Math.max(1, barW * 0.18)
@@ -113,8 +115,12 @@ export function WaveformTunnel() {
       // Glow pass
       ctx.save()
       ctx.shadowBlur = 16
-      ctx.shadowColor = c1 ? hexToRgba(c1, 0.55) : `hsla(${ah}, ${as_}, ${al}, 0.5)`
-      ctx.fillStyle = c1 ? hexToRgba(c1, 0.35) : `hsla(${ah}, ${as_}, ${al}, 0.35)`
+      ctx.shadowColor = c1
+        ? hexToRgba(c1, 0.55)
+        : `hsla(${ah}, ${as_}, ${al}, 0.5)`
+      ctx.fillStyle = c1
+        ? hexToRgba(c1, 0.35)
+        : `hsla(${ah}, ${as_}, ${al}, 0.35)`
       for (let i = 0; i < BAR_COUNT; i++) {
         const freqIdx = Math.floor((i / BAR_COUNT) * (BUF / 2))
         const norm = smoothed[freqIdx] / 255
@@ -182,5 +188,3 @@ export function WaveformTunnel() {
 
   return <canvas ref={canvasRef} className="absolute inset-0 w-full h-full" />
 }
-
-

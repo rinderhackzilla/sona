@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { readRenderCounters } from '@/app/hooks/use-render-counter'
-import { safeStorageGet, safeStorageSet } from '@/utils/safe-storage'
 import { logger } from '@/utils/logger'
+import { safeStorageGet, safeStorageSet } from '@/utils/safe-storage'
 
 const DEV_ONLY = import.meta.env.DEV
 const HUD_STORAGE_KEY = 'sona.dev.perfHud'
@@ -29,7 +29,8 @@ export function PerformanceHud() {
   useEffect(() => {
     if (!DEV_ONLY) return
     const onKeyDown = (event: KeyboardEvent) => {
-      if (!(event.ctrlKey && event.shiftKey && event.key.toLowerCase() === 'h')) return
+      if (!(event.ctrlKey && event.shiftKey && event.key.toLowerCase() === 'h'))
+        return
       event.preventDefault()
       setEnabled((prev) => {
         const next = !prev
@@ -118,7 +119,12 @@ export function PerformanceHud() {
     <div className="pointer-events-none fixed right-3 top-[calc(var(--header-height)+8px)] z-[120] rounded-md border border-border/60 bg-background/75 px-2 py-1 text-[11px] font-medium text-foreground/90 backdrop-blur-sm">
       <div>FPS: {stats.fps}</div>
       <div>Long tasks: {stats.longTasks}</div>
-      <div>Renders: {Object.entries(stats.renders).map(([name, count]) => `${name}:${count}`).join(' | ') || '-'}</div>
+      <div>
+        Renders:{' '}
+        {Object.entries(stats.renders)
+          .map(([name, count]) => `${name}:${count}`)
+          .join(' | ') || '-'}
+      </div>
     </div>
   )
 }

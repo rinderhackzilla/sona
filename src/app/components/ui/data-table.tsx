@@ -1,4 +1,15 @@
 import {
+  closestCenter,
+  DndContext,
+  DragEndEvent,
+  DragOverlay,
+  DragStartEvent,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core'
+import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
+import {
   ColumnFiltersState,
   flexRender,
   getCoreRowModel,
@@ -12,20 +23,6 @@ import {
   Table,
   useReactTable,
 } from '@tanstack/react-table'
-import {
-  DndContext,
-  DragEndEvent,
-  DragOverlay,
-  DragStartEvent,
-  PointerSensor,
-  closestCenter,
-  useSensor,
-  useSensors,
-} from '@dnd-kit/core'
-import {
-  SortableContext,
-  verticalListSortingStrategy,
-} from '@dnd-kit/sortable'
 import clsx from 'clsx'
 import { Disc2Icon, XIcon } from 'lucide-react'
 import {
@@ -100,7 +97,7 @@ export function DataTable<TData, TValue>({
   showPagination = false,
   showSearch = false,
   searchColumn,
-  noRowsMessage = 'No results.',
+  noRowsMessage,
   allowRowSelection = true,
   showContextMenu = true,
   showHeader = true,
@@ -111,6 +108,7 @@ export function DataTable<TData, TValue>({
   enableSorting,
 }: DataTableProps<TData, TValue>) {
   const { t } = useTranslation()
+  const resolvedNoRowsMessage = noRowsMessage ?? t('states.empty.noResults')
   const newColumns = columns.filter((column) => {
     return columnFilter?.includes(column.id as ColumnFilter)
   })
@@ -432,7 +430,7 @@ export function DataTable<TData, TValue>({
   ) : (
     <div role="row">
       <div className="flex h-24 items-center justify-center p-2" role="cell">
-        {noRowsMessage}
+        {resolvedNoRowsMessage}
       </div>
     </div>
   )
@@ -544,7 +542,10 @@ export function DataTable<TData, TValue>({
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
     >
-      <SortableContext items={sortableIds} strategy={verticalListSortingStrategy}>
+      <SortableContext
+        items={sortableIds}
+        strategy={verticalListSortingStrategy}
+      >
         {tableContent}
       </SortableContext>
 

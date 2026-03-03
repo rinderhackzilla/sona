@@ -12,12 +12,14 @@ export const useGetAlbum = (albumId: string) => {
     queryKey: [queryKeys.album.single, albumId],
     queryFn: async () => {
       const candidates = Array.from(
-        new Set([
-          albumId,
-          safeDecodeURIComponent(albumId),
-          safeDecodeURIComponent(safeDecodeURIComponent(albumId)),
-          safeEncodeURIComponent(albumId),
-        ].filter(Boolean)),
+        new Set(
+          [
+            albumId,
+            safeDecodeURIComponent(albumId),
+            safeDecodeURIComponent(safeDecodeURIComponent(albumId)),
+            safeEncodeURIComponent(albumId),
+          ].filter(Boolean),
+        ),
       )
 
       for (const candidate of candidates) {
@@ -40,7 +42,9 @@ export const useGetAlbum = (albumId: string) => {
         // Fallback path for cases where album list dedupe has no registry entry:
         // find same-name albums under the same artist and merge them.
         if (data.artistId) {
-          const artist = await subsonic.artists.getOne(data.artistId).catch(() => null)
+          const artist = await subsonic.artists
+            .getOne(data.artistId)
+            .catch(() => null)
           if (artist?.album) {
             const sourceName = normalize(data.name)
             const sameNameAlbums = artist.album.filter((album) => {
@@ -54,7 +58,9 @@ export const useGetAlbum = (albumId: string) => {
         }
 
         const relatedAlbums = await Promise.all(
-          [...relatedIds].map((id) => subsonic.albums.getOne(id).catch(() => null)),
+          [...relatedIds].map((id) =>
+            subsonic.albums.getOne(id).catch(() => null),
+          ),
         )
         const existingAlbums = relatedAlbums.filter(Boolean)
         const merged = mergeSingleAlbums(existingAlbums)

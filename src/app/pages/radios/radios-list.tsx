@@ -12,6 +12,7 @@ import { RadioFormDialog } from '@/app/components/radios/form-dialog'
 import { RemoveRadioDialog } from '@/app/components/radios/remove-dialog'
 import { Button } from '@/app/components/ui/button'
 import { DataTable } from '@/app/components/ui/data-table'
+import { PageState } from '@/app/components/ui/page-state'
 import { radiosColumns } from '@/app/tables/radios-columns'
 import { subsonic } from '@/service/subsonic'
 import { usePlayerActions } from '@/store/player.store'
@@ -24,7 +25,12 @@ export default function Radios() {
   const { t } = useTranslation()
   const { setPlayRadio } = usePlayerActions()
 
-  const { data: radios, isLoading } = useQuery({
+  const {
+    data: radios,
+    isLoading,
+    isError,
+    refetch,
+  } = useQuery({
     queryKey: [queryKeys.radio.all],
     queryFn: subsonic.radios.getAll,
   })
@@ -37,6 +43,22 @@ export default function Radios() {
   }
 
   if (isLoading) return <SongListFallback />
+  if (isError) {
+    return (
+      <PageState
+        variant="error"
+        title={t('states.error.title')}
+        description={t('states.error.description', {
+          status: 500,
+          detail: t('generic.error'),
+        })}
+        actionLabel={t('states.error.retry')}
+        onAction={() => {
+          refetch().catch(() => undefined)
+        }}
+      />
+    )
+  }
 
   const showTable = radios && radios.length > 0
 
@@ -52,7 +74,7 @@ export default function Radios() {
           <Button
             size="sm"
             variant="default"
-            className="px-4"
+            className="h-9 px-3.5"
             onClick={handleAddRadio}
           >
             <PlusIcon className="w-5 h-5 -ml-[3px]" />

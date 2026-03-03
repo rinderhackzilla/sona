@@ -1,12 +1,12 @@
-import { Calendar, Play, Info } from 'lucide-react'
+import { Calendar, Info, Play } from 'lucide-react'
 import type { MouseEvent } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { Button } from '@/app/components/ui/button'
+import { useNavigate } from 'react-router-dom'
 import { ImageLoader } from '@/app/components/image-loader'
+import { Button } from '@/app/components/ui/button'
 import { useDiscoverWeekly } from '@/app/hooks/use-discover-weekly'
-import { usePlayerActions } from '@/store/player.store'
 import { ROUTES } from '@/routes/routesList'
+import { usePlayerActions } from '@/store/player.store'
 import { navigateSafe } from '@/utils/navigateSafe'
 
 export function DiscoverWeeklyCard() {
@@ -21,7 +21,9 @@ export function DiscoverWeeklyCard() {
         <div className="relative z-10 flex h-full items-center justify-center p-8">
           <div className="max-w-sm text-center">
             <Info className="mx-auto mb-2 h-6 w-6 text-muted-foreground" />
-            <h3 className="mb-1 text-sm font-semibold">{t('home.discoverWeekly')}</h3>
+            <h3 className="mb-1 text-sm font-semibold">
+              {t('home.discoverWeekly')}
+            </h3>
             <p className="text-xs text-muted-foreground">
               {t('home.configureLastfm')}
             </p>
@@ -36,7 +38,12 @@ export function DiscoverWeeklyCard() {
       <div className="relative h-full w-full overflow-hidden rounded-xl border border-destructive/60 bg-destructive/5">
         <div className="relative z-10 flex h-full items-center justify-center p-8">
           <div className="max-w-sm text-center">
-            <p className="text-xs text-destructive">Error: {error}</p>
+            <p className="text-xs text-destructive">
+              {t('states.error.title')}
+            </p>
+            <p className="mt-1 text-[11px] text-destructive/85 line-clamp-2">
+              {error}
+            </p>
           </div>
         </div>
       </div>
@@ -50,7 +57,9 @@ export function DiscoverWeeklyCard() {
         <div className="relative z-10 flex h-full items-center justify-center">
           <div className="flex flex-col items-center gap-2">
             <Calendar className="h-6 w-6 animate-pulse text-muted-foreground" />
-            <span className="text-xs text-muted-foreground">{t('generic.loading')}</span>
+            <span className="text-xs text-muted-foreground">
+              {t('home.generating')}
+            </span>
           </div>
         </div>
       </div>
@@ -64,7 +73,9 @@ export function DiscoverWeeklyCard() {
         <div className="relative z-10 flex h-full items-center justify-center p-8">
           <div className="text-center">
             <Calendar className="h-8 w-8 mx-auto mb-3 text-muted-foreground" />
-            <h3 className="font-semibold mb-2 text-sm">{t('home.discoverWeekly')}</h3>
+            <h3 className="font-semibold mb-2 text-sm">
+              {t('home.discoverWeekly')}
+            </h3>
             <p className="text-xs text-muted-foreground">
               {t('home.weeklyMixSoon')}
             </p>
@@ -84,7 +95,7 @@ export function DiscoverWeeklyCard() {
 
   return (
     <div
-      className="relative h-full w-full cursor-pointer overflow-hidden rounded-xl border border-border/60 bg-card/20"
+      className="group relative h-full w-full cursor-pointer overflow-hidden rounded-xl border border-border/60 bg-card/20 transition-colors hover:border-primary/35"
       onClick={() => navigateSafe(navigate, ROUTES.LIBRARY.DISCOVER_WEEKLY)}
       onKeyDown={(event) => {
         if (event.key === 'Enter' || event.key === ' ') {
@@ -135,7 +146,10 @@ export function DiscoverWeeklyCard() {
               className="h-7 gap-1.5 border border-primary/35 bg-primary/90 px-2.5 text-xs hover:bg-primary min-[2300px]:h-8 min-[2300px]:gap-2 min-[2300px]:px-3"
               size="sm"
             >
-              <Play className="h-3.5 w-3.5 min-[2300px]:h-4 min-[2300px]:w-4" fill="currentColor" />
+              <Play
+                className="h-3.5 w-3.5 min-[2300px]:h-4 min-[2300px]:w-4"
+                fill="currentColor"
+              />
               {t('options.play')}
             </Button>
           </div>

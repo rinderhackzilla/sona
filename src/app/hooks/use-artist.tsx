@@ -21,18 +21,30 @@ export const useGetArtist = (artistId: string) => {
   })
 }
 
+export const useGetArtists = () => {
+  return useQuery({
+    queryKey: [queryKeys.artist.all],
+    queryFn: subsonic.artists.getAll,
+  })
+}
+
 export const useGetArtistInfo = (artistId: string) => {
   return useQuery({
     queryKey: [queryKeys.artist.info, artistId],
     queryFn: () => subsonic.artists.getInfo(artistId),
     enabled: !!artistId,
+    staleTime: 1000 * 60 * 5,
+    refetchOnMount: 'always',
+    refetchOnReconnect: false,
+    refetchOnWindowFocus: false,
   })
 }
 
 export const useGetTopSongs = (artistName?: string) => {
   return useQuery({
     queryKey: [queryKeys.artist.topSongs, artistName],
-    queryFn: () => subsonic.songs.getTopSongs(artistName ?? ''),
+    queryFn: async () =>
+      (await subsonic.songs.getTopSongs(artistName ?? '')) ?? [],
     enabled: !!artistName,
   })
 }

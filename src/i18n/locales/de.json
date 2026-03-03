@@ -12,7 +12,9 @@
     "playlists": "Wiedergabelisten",
     "emptyPlaylist": "Noch keine Wiedergabelisten erstellt",
     "podcasts": "Podcasts",
-    "genres": "Genres"
+    "genres": "Genres",
+    "discoverWeekly": "Discover Weekly",
+    "yourTop50": "Your Top 50"
   },
   "theme": {
     "nuclear-dark": "Nuclear Dark",
@@ -421,6 +423,23 @@
       "nightDisabled": "Night Mode deaktiviert"
     }
   },
+  "onboarding": {
+    "label": "Kurztour",
+    "steps": {
+      "dj": {
+        "title": "Sona DJ",
+        "text": "Hier steuert Sona, was als Nächstes passiert: Wildcard, Drift oder Timekeeper."
+      },
+      "session": {
+        "title": "Session Mode",
+        "text": "Wechsle mit einem Klick den gesamten Player-Style zwischen Focus und Night."
+      },
+      "fullscreen": {
+        "title": "Fullscreen-Player",
+        "text": "Klicke auf das Cover in der Controlbar, um den Fullscreen-Player zu öffnen."
+      }
+    }
+  },
   "generic": {
     "seeMore": "Mehr anzeigen",
     "showDetails": "Details anzeigen",
@@ -438,8 +457,30 @@
     "error": "Fehler",
     "shuffle": "Zufällig",
     "playAll": "Alle abspielen",
+    "refresh": "Aktualisieren",
+    "moreSongs_one": "{{count}} weiterer Song",
+    "moreSongs_other": "{{count}} weitere Songs",
     "saveAsPlaylist": "Als Playlist speichern",
     "saving": "Wird gespeichert..."
+  },
+  "states": {
+    "empty": {
+      "title": "Hier ist noch nichts",
+      "homeDescription": "Deine Bibliothek ist erreichbar, aber dieser Bereich enthält gerade keine Inhalte.",
+      "artistDescription": "Für diesen Künstler sind aktuell keine Songs oder Alben verfügbar.",
+      "albumDescription": "Für dieses Album sind aktuell keine Songs verfügbar.",
+      "playlistDescription": "Diese Wiedergabeliste ist leer. Füge Songs hinzu, um zu starten.",
+      "daypartDescription": "Für dieses Zeitfenster sind aktuell keine Songs verfügbar.",
+      "noResults": "Keine Ergebnisse gefunden.",
+      "noTracks": "Keine Songs verfügbar."
+    },
+    "error": {
+      "title": "Etwas ist schiefgelaufen",
+      "description": "Status {{status}}: {{detail}}",
+      "homeDescription": "Die Startseite konnte nicht geladen werden. Bitte versuche es erneut.",
+      "retry": "Erneut versuchen",
+      "backHome": "Zur Startseite"
+    }
   },
   "songs": {
     "list": {
@@ -536,6 +577,26 @@
     "noSongPlaying": "Kein Lied wird abgespielt",
     "noRadioPlaying": "Kein Radio wird abgespielt",
     "noPlayback": "Keine Wiedergabe aktiv.",
+    "equalizer": {
+      "title": "Equalizer",
+      "enabled": "Aktiviert",
+      "disabled": "Deaktiviert",
+      "preset": "Preset",
+      "reset": "Zurücksetzen",
+      "presets": {
+        "flat": "Flat",
+        "rock": "Rock",
+        "pop": "Pop",
+        "jazz": "Jazz",
+        "classical": "Classical",
+        "electronic": "Electronic",
+        "acoustic": "Acoustic",
+        "bass_boost": "Bass Boost",
+        "treble_boost": "Treble Boost",
+        "vocal": "Vocal",
+        "custom": "Custom"
+      }
+    },
     "tooltips": {
       "shuffle": {
         "enable": "Zufallswiedergabe aktivieren",
@@ -623,7 +684,11 @@
     "title": "Warteschlange",
     "clear": "Warteschlange leeren",
     "open": "Warteschlange öffnen",
-    "close": "Warteschlange schließen"
+    "close": "Warteschlange schließen",
+    "source": {
+      "dj": "Von DJ hinzugefügt",
+      "session": "Vom Session-Modus hinzugefügt"
+    }
   },
   "shortcuts": {
     "modal": {
@@ -715,14 +780,16 @@
     },
     "label": "Einstellungen",
     "tabs": {
-      "appearance": "Erscheinungsbild",
-      "player": "Player",
-      "content": "Inhalte",
-      "services": "Dienste",
+      "appearance": "Oberfläche",
+      "player": "Wiedergabe",
+      "content": "Bibliothek",
+      "services": "Integrationen",
       "about": "System"
     },
     "view": {
-      "advanced": "Erweitert"
+      "advanced": "Erweitert",
+      "normalDescription": "Wiedergabe, Oberfläche, Bibliothek und Integrationen.",
+      "advancedDescription": "Enthält zusätzlich System- und Wartungsoptionen."
     },
     "options": {
       "appearance": "Erscheinungsbild",
@@ -769,7 +836,13 @@
         "description": "Legt fest welche Dienste Sona verwenden kann",
         "lrclib": {
           "info": "LRCLIB wird für Liedtexte verwendet.",
-          "label": "LRCLIB"
+          "label": "LRCLIB",
+          "enabled": "LRCLIB aktivieren",
+          "customUrl": {
+            "toggle": "Benutzerdefinierte URL verwenden",
+            "info": "Verwendet statt der Standard-URL eine eigene LRCLIB-URL.",
+            "label": "Benutzerdefinierte Server-URL"
+          }
         }
       }
     },
@@ -843,20 +916,26 @@
         "group": "Lidarr",
         "description": "Verbinde mit deiner Lidarr-Instanz für Album-Requests.",
         "url": {
-          "label": "Lidarr URL"
+          "label": "Lidarr URL",
+          "placeholder": "http://localhost:8686"
         },
         "apiKey": {
-          "label": "API Key"
+          "label": "API Key",
+          "placeholder": "Lidarr API Key"
         }
       },
       "lastfm": {
         "group": "Last.fm",
         "description": "Verbinden Sie Ihr Last.fm-Konto, um personalisierte Musikempfehlungen zu erhalten.",
         "username": {
-          "label": "Benutzername"
+          "label": "Benutzername",
+          "placeholder": "Last.fm Benutzername"
         },
         "apiKey": {
-          "label": "API Key"
+          "label": "API Key",
+          "placeholder": "Last.fm API Key",
+          "helpPrefix": "API-Key abrufen unter",
+          "helpLink": "Last.fm API"
         }
       }
     },
@@ -873,7 +952,26 @@
       },
       "toast": {
         "importSuccess": "Einstellungen erfolgreich importiert",
-        "importError": "Import fehlgeschlagen: ungültige oder nicht unterstützte Datei"
+        "importError": "Import fehlgeschlagen: ungültige oder nicht unterstützte Datei",
+        "exportError": "Einstellungen konnten nicht exportiert werden."
+      }
+    },
+    "system": {
+      "upToDate": "Auf dem neuesten Stand",
+      "cache": {
+        "label": "App-Cache",
+        "info": "Leert Artwork- und Netzwerk-Cache und lädt die App neu.",
+        "button": "Cache leeren",
+        "cleared": "Cache geleert. App wird neu geladen...",
+        "partial": "Cache nur teilweise geleert. App wird neu geladen...",
+        "error": "Cache konnte nicht geleert werden."
+      },
+      "onboarding": {
+        "label": "Schnellstart",
+        "info": "Blendet die Onboarding-Hinweise erneut ein.",
+        "button": "Erneut anzeigen",
+        "resetDone": "Onboarding zurückgesetzt. Die Tour wird wieder angezeigt.",
+        "resetError": "Onboarding konnte nicht zurückgesetzt werden."
       }
     },
     "player": {
@@ -912,6 +1010,14 @@
       },
       "tray": {
         "label": "In Systemtray minimieren"
+      },
+      "density": {
+        "label": "Listendichte",
+        "options": {
+          "compact": "Kompakt",
+          "default": "Standard",
+          "cozy": "Großzügig"
+        }
       }
     }
   },

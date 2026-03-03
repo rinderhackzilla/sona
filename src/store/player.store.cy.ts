@@ -33,4 +33,18 @@ describe('player.store critical flows', () => {
     expect(stateAfter.songlist.currentSongIndex).to.equal(0)
     expect(stateAfter.playerState.isPlaying).to.equal(true)
   })
+
+  it('switches from queue to lyrics in main drawer without leaving both active', () => {
+    const actions = usePlayerStore.getState().actions
+
+    actions.setMainDrawerState(true)
+    actions.setQueueState(true)
+    actions.setLyricsState(false)
+    actions.toggleLyricsAction()
+
+    const state = usePlayerStore.getState()
+    expect(state.playerState.mainDrawerState).to.equal(true)
+    expect(state.playerState.queueState).to.equal(false)
+    expect(state.playerState.lyricsState).to.equal(true)
+  })
 })

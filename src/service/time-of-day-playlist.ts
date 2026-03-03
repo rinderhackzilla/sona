@@ -1,12 +1,18 @@
-import { subsonic } from './subsonic'
 import type { Song } from '@/types/responses/song'
 import { isGenreUsable, normalizeGenreName } from '@/utils/genreNormalization'
 import {
   getListeningMemoryEnabledPreference,
   sortByListeningMemory,
 } from '@/utils/listening-memory'
+import { subsonic } from './subsonic'
 
-export type DayPart = 'morning' | 'noon' | 'afternoon' | 'evening' | 'night' | 'midnight'
+export type DayPart =
+  | 'morning'
+  | 'noon'
+  | 'afternoon'
+  | 'evening'
+  | 'night'
+  | 'midnight'
 
 export interface TimeOfDayPlaylistMetadata {
   generatedAt: string
@@ -55,7 +61,13 @@ const DAYPART_CONFIG: Record<DayPart, DaypartConfig> = {
       {
         label: 'warm-rnb',
         targetShare: 0.35,
-        genres: ['Neo Soul', 'R&B', 'Contemporary Rnb', 'Trip Hop', 'Ambient Pop'],
+        genres: [
+          'Neo Soul',
+          'R&B',
+          'Contemporary Rnb',
+          'Trip Hop',
+          'Ambient Pop',
+        ],
       },
       {
         label: 'light-electronic',
@@ -91,7 +103,13 @@ const DAYPART_CONFIG: Record<DayPart, DaypartConfig> = {
       {
         label: 'dance-drive',
         targetShare: 0.2,
-        genres: ['Dance', 'Electronic', 'Electro House', 'Synthpop', 'Indietronica'],
+        genres: [
+          'Dance',
+          'Electronic',
+          'Electro House',
+          'Synthpop',
+          'Indietronica',
+        ],
       },
     ],
   },
@@ -121,7 +139,13 @@ const DAYPART_CONFIG: Record<DayPart, DaypartConfig> = {
       {
         label: 'electro-alt',
         targetShare: 0.3,
-        genres: ['Electronic', 'Dance Punk', 'Indietronica', 'Synthwave', 'Alternative'],
+        genres: [
+          'Electronic',
+          'Dance Punk',
+          'Indietronica',
+          'Synthwave',
+          'Alternative',
+        ],
       },
     ],
   },
@@ -174,7 +198,13 @@ const DAYPART_CONFIG: Record<DayPart, DaypartConfig> = {
       {
         label: 'dark-electronic',
         targetShare: 0.35,
-        genres: ['Industrial', 'Industrial Metal', 'Dark Ambient', 'Electronic', 'Grime'],
+        genres: [
+          'Industrial',
+          'Industrial Metal',
+          'Dark Ambient',
+          'Electronic',
+          'Grime',
+        ],
       },
       {
         label: 'spoken-night',
@@ -206,7 +236,12 @@ const DAYPART_CONFIG: Record<DayPart, DaypartConfig> = {
       {
         label: 'dark-atmosphere',
         targetShare: 0.3,
-        genres: ['Dark Ambient', 'Industrial', 'Industrial Metal', 'Experimental'],
+        genres: [
+          'Dark Ambient',
+          'Industrial',
+          'Industrial Metal',
+          'Experimental',
+        ],
       },
       {
         label: 'heavy-spoken',
@@ -247,11 +282,15 @@ export function getCurrentDayPart(date: Date = new Date()): {
   windowKey: string
 } {
   const minutes = date.getHours() * 60 + date.getMinutes()
-  const midnightStart = SLOT_STARTS.midnight.hour * 60 + SLOT_STARTS.midnight.minute
-  const morningStart = SLOT_STARTS.morning.hour * 60 + SLOT_STARTS.morning.minute
+  const midnightStart =
+    SLOT_STARTS.midnight.hour * 60 + SLOT_STARTS.midnight.minute
+  const morningStart =
+    SLOT_STARTS.morning.hour * 60 + SLOT_STARTS.morning.minute
   const noonStart = SLOT_STARTS.noon.hour * 60 + SLOT_STARTS.noon.minute
-  const afternoonStart = SLOT_STARTS.afternoon.hour * 60 + SLOT_STARTS.afternoon.minute
-  const eveningStart = SLOT_STARTS.evening.hour * 60 + SLOT_STARTS.evening.minute
+  const afternoonStart =
+    SLOT_STARTS.afternoon.hour * 60 + SLOT_STARTS.afternoon.minute
+  const eveningStart =
+    SLOT_STARTS.evening.hour * 60 + SLOT_STARTS.evening.minute
   const nightStart = SLOT_STARTS.night.hour * 60 + SLOT_STARTS.night.minute
 
   let dayPart: DayPart
@@ -259,25 +298,49 @@ export function getCurrentDayPart(date: Date = new Date()): {
 
   if (minutes >= nightStart) {
     dayPart = 'night'
-    windowStart = setTime(date, SLOT_STARTS.night.hour, SLOT_STARTS.night.minute)
+    windowStart = setTime(
+      date,
+      SLOT_STARTS.night.hour,
+      SLOT_STARTS.night.minute,
+    )
   } else if (minutes >= eveningStart) {
     dayPart = 'evening'
-    windowStart = setTime(date, SLOT_STARTS.evening.hour, SLOT_STARTS.evening.minute)
+    windowStart = setTime(
+      date,
+      SLOT_STARTS.evening.hour,
+      SLOT_STARTS.evening.minute,
+    )
   } else if (minutes >= afternoonStart) {
     dayPart = 'afternoon'
-    windowStart = setTime(date, SLOT_STARTS.afternoon.hour, SLOT_STARTS.afternoon.minute)
+    windowStart = setTime(
+      date,
+      SLOT_STARTS.afternoon.hour,
+      SLOT_STARTS.afternoon.minute,
+    )
   } else if (minutes >= noonStart) {
     dayPart = 'noon'
     windowStart = setTime(date, SLOT_STARTS.noon.hour, SLOT_STARTS.noon.minute)
   } else if (minutes >= morningStart) {
     dayPart = 'morning'
-    windowStart = setTime(date, SLOT_STARTS.morning.hour, SLOT_STARTS.morning.minute)
+    windowStart = setTime(
+      date,
+      SLOT_STARTS.morning.hour,
+      SLOT_STARTS.morning.minute,
+    )
   } else if (minutes >= midnightStart) {
     dayPart = 'midnight'
-    windowStart = setTime(date, SLOT_STARTS.midnight.hour, SLOT_STARTS.midnight.minute)
+    windowStart = setTime(
+      date,
+      SLOT_STARTS.midnight.hour,
+      SLOT_STARTS.midnight.minute,
+    )
   } else {
     dayPart = 'midnight'
-    windowStart = setTime(date, SLOT_STARTS.midnight.hour, SLOT_STARTS.midnight.minute)
+    windowStart = setTime(
+      date,
+      SLOT_STARTS.midnight.hour,
+      SLOT_STARTS.midnight.minute,
+    )
   }
 
   return {
@@ -287,7 +350,9 @@ export function getCurrentDayPart(date: Date = new Date()): {
   }
 }
 
-export function getMillisecondsUntilNextDayPartBoundary(date: Date = new Date()) {
+export function getMillisecondsUntilNextDayPartBoundary(
+  date: Date = new Date(),
+) {
   const boundaries = [
     setTime(date, SLOT_STARTS.morning.hour, SLOT_STARTS.morning.minute),
     setTime(date, SLOT_STARTS.noon.hour, SLOT_STARTS.noon.minute),
@@ -297,12 +362,18 @@ export function getMillisecondsUntilNextDayPartBoundary(date: Date = new Date())
     setTime(date, 24, 0),
   ]
 
-  const nextToday = boundaries.find((boundary) => boundary.getTime() > date.getTime())
+  const nextToday = boundaries.find(
+    (boundary) => boundary.getTime() > date.getTime(),
+  )
   if (nextToday) return nextToday.getTime() - date.getTime()
 
   const tomorrow = new Date(date)
   tomorrow.setDate(tomorrow.getDate() + 1)
-  const nextMorning = setTime(tomorrow, SLOT_STARTS.morning.hour, SLOT_STARTS.morning.minute)
+  const nextMorning = setTime(
+    tomorrow,
+    SLOT_STARTS.morning.hour,
+    SLOT_STARTS.morning.minute,
+  )
   return nextMorning.getTime() - date.getTime()
 }
 
@@ -319,7 +390,10 @@ function getTokenSet(value: string) {
   )
 }
 
-function resolveMatchingGenres(preferredGenres: string[], libraryGenres: string[]) {
+function resolveMatchingGenres(
+  preferredGenres: string[],
+  libraryGenres: string[],
+) {
   const normalizedLibrary = libraryGenres
     .filter(isGenreUsable)
     .map((genre) => ({
@@ -380,7 +454,9 @@ function dedupeSongs(songs: Song[]) {
 }
 
 function getArtistKey(song: Song) {
-  return song.artistId ?? song.artist?.trim().toLowerCase() ?? `artist:${song.id}`
+  return (
+    song.artistId ?? song.artist?.trim().toLowerCase() ?? `artist:${song.id}`
+  )
 }
 
 function getAlbumKey(song: Song) {
@@ -404,7 +480,10 @@ function planBucketSizes(size: number, buckets: DaypartBucket[]) {
   return planned
 }
 
-function buildWeightedGenreOrder(genres: string[], targetCountByGenre: Map<string, number>) {
+function buildWeightedGenreOrder(
+  genres: string[],
+  targetCountByGenre: Map<string, number>,
+) {
   const order: string[] = []
   genres.forEach((genre) => {
     const count = Math.max(1, targetCountByGenre.get(genre) ?? 1)
@@ -430,7 +509,10 @@ function pickWithConstraints(
   const genreCounts = new Map<string, number>()
 
   const uniqueGenresTarget = Math.min(minUniqueGenres, queuesByGenre.size)
-  const genreCapSoft = Math.max(1, Math.ceil(size / Math.max(1, uniqueGenresTarget)))
+  const genreCapSoft = Math.max(
+    1,
+    Math.ceil(size / Math.max(1, uniqueGenresTarget)),
+  )
 
   const takeSong = (genre: string, song: Song, allowGenreOverflow: boolean) => {
     if (selectedIds.has(song.id)) return false
@@ -462,7 +544,9 @@ function pickWithConstraints(
       while (queue.length > 0) {
         const candidate = queue.shift()
         if (!candidate) break
-        const effectiveAlbumCap = allowAlbumRelax ? maxPerAlbum + 1 : maxPerAlbum
+        const effectiveAlbumCap = allowAlbumRelax
+          ? maxPerAlbum + 1
+          : maxPerAlbum
         const ok = takeSong(genre, candidate, allowGenreOverflow)
         if (ok) break
 
@@ -522,13 +606,19 @@ export async function generateTimeOfDayPlaylist(
     const selectedGenres = bucketMatches.length > 0 ? bucketMatches : []
     if (selectedGenres.length === 0) continue
 
-    const perGenreTarget = Math.max(1, Math.floor(planned.count / selectedGenres.length))
+    const perGenreTarget = Math.max(
+      1,
+      Math.floor(planned.count / selectedGenres.length),
+    )
     let remainder = planned.count - perGenreTarget * selectedGenres.length
 
     selectedGenres.forEach((genre) => {
       const target = perGenreTarget + (remainder > 0 ? 1 : 0)
       if (remainder > 0) remainder -= 1
-      targetCountByGenre.set(genre, (targetCountByGenre.get(genre) ?? 0) + target)
+      targetCountByGenre.set(
+        genre,
+        (targetCountByGenre.get(genre) ?? 0) + target,
+      )
     })
   }
 
@@ -536,7 +626,8 @@ export async function generateTimeOfDayPlaylist(
   for (const genre of fetchGenres) {
     const baseTarget = targetCountByGenre.get(genre) ?? 1
     const fetchSize = Math.max(10, Math.min(40, baseTarget * 4))
-    const fetched = (await subsonic.songs.getRandomSongs({ size: fetchSize, genre })) ?? []
+    const fetched =
+      (await subsonic.songs.getRandomSongs({ size: fetchSize, genre })) ?? []
     songsByGenre.set(genre, dedupeSongs(fetched))
   }
 
@@ -567,7 +658,8 @@ export async function generateTimeOfDayPlaylist(
 
   if (playlist.length < size) {
     const fallbackSongs =
-      (await subsonic.songs.getRandomSongs({ size: Math.max(60, size * 3) })) ?? []
+      (await subsonic.songs.getRandomSongs({ size: Math.max(60, size * 3) })) ??
+      []
     const fallbackSorted = sortByListeningMemory(
       dedupeSongs(fallbackSongs),
       listeningMemoryEnabled,

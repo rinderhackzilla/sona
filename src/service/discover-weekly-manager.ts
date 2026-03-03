@@ -1,3 +1,5 @@
+import type { Song } from '@/types/responses/song'
+import { logger } from '@/utils/logger'
 import { generateDiscoverWeekly } from './discover-weekly'
 import {
   readStoredJson,
@@ -6,7 +8,6 @@ import {
   writeStoredPlaylist,
   writeStoredString,
 } from './playlist-storage'
-import type { Song } from '@/types/responses/song'
 
 const STORAGE_KEY = 'discover_weekly_playlist'
 const STORAGE_KEY_METADATA = 'discover_weekly_metadata'
@@ -38,7 +39,8 @@ function getISOWeek(date: Date): string {
   if (target.getDay() !== 4) {
     target.setMonth(0, 1 + ((4 - target.getDay() + 7) % 7))
   }
-  const weekNumber = 1 + Math.ceil((firstThursday - target.valueOf()) / 604800000)
+  const weekNumber =
+    1 + Math.ceil((firstThursday - target.valueOf()) / 604800000)
   return `${target.getFullYear()}-W${String(weekNumber).padStart(2, '0')}`
 }
 
@@ -56,25 +58,29 @@ export function shouldGeneratePlaylist(): boolean {
   try {
     const currentWeek = getISOWeek(new Date())
     const storedWeek = readStoredString(STORAGE_KEY_WEEK_FLAG)
-    const storedMetadata = readStoredJson<PlaylistMetadata>(STORAGE_KEY_METADATA)
+    const storedMetadata =
+      readStoredJson<PlaylistMetadata>(STORAGE_KEY_METADATA)
 
     // No playlist exists yet
     if (!storedMetadata) {
-      console.log('[DiscoverWeekly] No playlist found, needs generation')
+      logger.info('[DiscoverWeekly] No playlist found, needs generation')
       return true
     }
 
     // Week flag missing, check metadata
     if (!storedWeek) {
       const playlistWeek =
-        storedMetadata.weekKey || getISOWeek(new Date(storedMetadata.generatedAt))
-      
+        storedMetadata.weekKey ||
+        getISOWeek(new Date(storedMetadata.generatedAt))
+
       // Update flag and check
       if (playlistWeek !== currentWeek) {
-        console.log(`[DiscoverWeekly] Playlist from old week (${playlistWeek}), needs regeneration`)
+        logger.info(
+          `[DiscoverWeekly] Playlist from old week (${playlistWeek}), needs regeneration`,
+        )
         return true
       }
-      
+
       // Save flag for future checks
       writeStoredString(STORAGE_KEY_WEEK_FLAG, playlistWeek)
       return false
@@ -82,11 +88,15 @@ export function shouldGeneratePlaylist(): boolean {
 
     // Check if current week differs from stored week
     if (currentWeek !== storedWeek) {
-      console.log(`[DiscoverWeekly] New week detected (${currentWeek} vs ${storedWeek}), needs regeneration`)
+      logger.info(
+        `[DiscoverWeekly] New week detected (${currentWeek} vs ${storedWeek}), needs regeneration`,
+      )
       return true
     }
 
-    console.log(`[DiscoverWeekly] Playlist for week ${currentWeek} already exists`)
+    logger.info(
+      `[DiscoverWeekly] Playlist for week ${currentWeek} already exists`,
+    )
     return false
   } catch (error) {
     console.error('[DiscoverWeekly] Error checking generation status:', error)
@@ -107,8 +117,10 @@ export function loadPlaylist(): {
       STORAGE_KEY_METADATA,
     )
     if (metadata) {
-      console.log(`[DiscoverWeekly] Loaded playlist from week ${metadata.weekKey || 'unknown'}`)
-      
+      logger.info(
+        `[DiscoverWeekly] Loaded playlist from week ${metadata.weekKey || 'unknown'}`,
+      )
+
       return { playlist, metadata }
     }
 
@@ -124,7 +136,7 @@ export function loadPlaylist(): {
  */
 export async function generateAndSavePlaylist(
   config: DiscoverWeeklyConfig,
-  force: boolean = false
+  force: boolean = false,
 ): Promise<{
   playlist: Song[]
   metadata: PlaylistMetadata
@@ -133,14 +145,16 @@ export async function generateAndSavePlaylist(
 
   // Check if generation is needed (unless forced)
   if (!force && !shouldGeneratePlaylist()) {
-    console.log('[DiscoverWeekly] Generation not needed, loading existing playlist')
+    logger.info(
+      '[DiscoverWeekly] Generation not needed, loading existing playlist',
+    )
     const { playlist, metadata } = loadPlaylist()
     if (metadata) {
       return { playlist, metadata }
     }
   }
 
-  console.log(`[DiscoverWeekly] Generating playlist for week ${currentWeek}...`)
+  logger.info(`[DiscoverWeekly] Generating playlist for week ${currentWeek}...`)
 
   // Generate playlist
   const result = await generateDiscoverWeekly({
@@ -157,10 +171,17 @@ export async function generateAndSavePlaylist(
   }
 
   // Save to localStorage
-  writeStoredPlaylist(STORAGE_KEY, STORAGE_KEY_METADATA, result.playlist, metadata)
+  writeStoredPlaylist(
+    STORAGE_KEY,
+    STORAGE_KEY_METADATA,
+    result.playlist,
+    metadata,
+  )
   writeStoredString(STORAGE_KEY_WEEK_FLAG, currentWeek)
 
-  console.log(`[DiscoverWeekly] ✓ Playlist generated and saved for week ${currentWeek}`)
+  logger.info(
+    `[DiscoverWeekly] Playlist generated and saved for week ${currentWeek}`,
+  )
 
   return {
     playlist: result.playlist,
@@ -172,17 +193,19 @@ export async function generateAndSavePlaylist(
  * Check if catch-up generation is needed (called on app startup)
  */
 export async function checkAndCatchUp(
-  config: DiscoverWeeklyConfig
+  config: DiscoverWeeklyConfig,
 ): Promise<boolean> {
   if (!config.username || !config.apiKey) {
-    console.log('[DiscoverWeekly] Last.fm not configured, skipping catch-up')
+    logger.info('[DiscoverWeekly] Last.fm not configured, skipping catch-up')
     return false
   }
 
   const needsGeneration = shouldGeneratePlaylist()
 
   if (needsGeneration) {
-    console.log('[DiscoverWeekly] 🔄 Catch-up generation needed, generating now...')
+    logger.info(
+      '[DiscoverWeekly] Catch-up generation needed, generating now...',
+    )
     try {
       await generateAndSavePlaylist(config, false)
       return true
@@ -202,14 +225,14 @@ export async function checkAndCatchUp(
 export function getMillisecondsUntilNextMonday(): number {
   const now = new Date()
   const nextMonday = new Date(now)
-  
+
   // Calculate days until next Monday
   const daysUntilMonday = (8 - now.getDay()) % 7 || 7
   nextMonday.setDate(now.getDate() + daysUntilMonday)
-  
+
   // Set to midnight
   nextMonday.setHours(0, 0, 0, 0)
-  
+
   return nextMonday.getTime() - now.getTime()
 }
 
@@ -218,19 +241,21 @@ export function getMillisecondsUntilNextMonday(): number {
  */
 export function startWeeklyScheduler(
   config: DiscoverWeeklyConfig,
-  onGenerate?: (success: boolean) => void
+  onGenerate?: (success: boolean) => void,
 ): () => void {
   let timeoutId: NodeJS.Timeout | null = null
 
   const scheduleNext = () => {
     const msUntilMonday = getMillisecondsUntilNextMonday()
     const hoursUntilMonday = (msUntilMonday / (1000 * 60 * 60)).toFixed(1)
-    
-    console.log(`[DiscoverWeekly] ⏰ Next generation scheduled in ${hoursUntilMonday} hours`)
+
+    logger.info(
+      `[DiscoverWeekly] Next generation scheduled in ${hoursUntilMonday} hours`,
+    )
 
     timeoutId = setTimeout(async () => {
       if (isMonday() && shouldGeneratePlaylist()) {
-        console.log('[DiscoverWeekly] 🎵 Monday arrived! Generating playlist...')
+        logger.info('[DiscoverWeekly] Monday arrived. Generating playlist...')
         try {
           await generateAndSavePlaylist(config)
           onGenerate?.(true)
@@ -239,7 +264,7 @@ export function startWeeklyScheduler(
           onGenerate?.(false)
         }
       }
-      
+
       // Schedule next check
       scheduleNext()
     }, msUntilMonday)
@@ -252,7 +277,7 @@ export function startWeeklyScheduler(
   return () => {
     if (timeoutId) {
       clearTimeout(timeoutId)
-      console.log('[DiscoverWeekly] Scheduler stopped')
+      logger.info('[DiscoverWeekly] Scheduler stopped')
     }
   }
 }

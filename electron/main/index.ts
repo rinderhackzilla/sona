@@ -1,9 +1,9 @@
 import { electronApp, is, optimizer, platform } from '@electron-toolkit/utils'
 import { app, globalShortcut, session } from 'electron'
+import { startDiscoverWeeklyScheduler } from '../discover-weekly-scheduler'
 import { APP_ID } from './core/app-id'
 import { createAppMenu } from './core/menu'
 import { createWindow, mainWindow } from './window'
-import { startDiscoverWeeklyScheduler } from '../discover-weekly-scheduler'
 
 const currentDesktop = process.env.XDG_CURRENT_DESKTOP ?? ''
 
@@ -57,10 +57,6 @@ if (!instanceLock) {
   app.whenReady().then(() => {
     electronApp.setAppUserModelId(APP_ID)
 
-    // Recover from broken Chromium disk cache states that can cause
-    // random missing images on startup.
-    session.defaultSession.clearCache().catch(() => {})
-
     // Harden CSP for renderer documents and keep media CORS scoped to media only.
     session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
       const responseHeaders = details.responseHeaders ?? {}
@@ -97,7 +93,7 @@ if (!instanceLock) {
     })
 
     createWindow()
-    
+
     // Start Discover Weekly background scheduler
     startDiscoverWeeklyScheduler()
   })

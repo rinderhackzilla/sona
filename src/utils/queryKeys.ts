@@ -20,7 +20,7 @@ const album = {
 const artist = {
   all: 'get-all-artists',
   single: 'get-artist',
-  info: 'get-artist-info',
+  info: 'get-artist-info-v2',
   topSongs: 'get-artist-top-songs',
 }
 

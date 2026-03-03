@@ -2,13 +2,13 @@ import { HomeIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import CommandMenu from '@/app/components/command/command-menu'
+import { Button } from '@/app/components/ui/button'
 import {
   MainSidebar,
   MainSidebarContent,
   MainSidebarHeader,
   MainSidebarRail,
 } from '@/app/components/ui/main-sidebar'
-import { Button } from '@/app/components/ui/button'
 import { ScrollArea } from '@/app/components/ui/scroll-area'
 import { SimpleTooltip } from '@/app/components/ui/simple-tooltip'
 import { useRouteIsActive } from '@/app/hooks/use-route-is-active'
@@ -36,7 +36,12 @@ export function AppSidebar({
               variant="outline"
               className={`h-10 w-10 p-0 rounded-lg hover:bg-background-foreground/80 ${isActive(ROUTES.LIBRARY.HOME) ? 'bg-accent/70' : ''}`}
             >
-              <Link to={ROUTES.LIBRARY.HOME} className={isActive(ROUTES.LIBRARY.HOME) ? 'pointer-events-none' : ''}>
+              <Link
+                to={ROUTES.LIBRARY.HOME}
+                className={
+                  isActive(ROUTES.LIBRARY.HOME) ? 'pointer-events-none' : ''
+                }
+              >
                 <HomeIcon className="h-5 w-5" />
               </Link>
             </Button>
@@ -45,7 +50,7 @@ export function AppSidebar({
         </div>
       </MainSidebarHeader>
       <MiniSidebarSearch />
-      
+
       <MainSidebarContent className="overflow-hidden">
         <ScrollArea className="h-full">
           <SidebarMiniSeparator />
@@ -53,7 +58,7 @@ export function AppSidebar({
           <NavPlaylists />
         </ScrollArea>
       </MainSidebarContent>
-      
+
       <MainSidebarRail />
     </MainSidebar>
   )

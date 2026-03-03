@@ -108,9 +108,7 @@ export function UpdateObserver() {
                 dangerouslySetInnerHTML={{ __html: releaseNotes }}
               />
             ) : (
-              <Markdown remarkPlugins={[remarkGfm]}>
-                {releaseNotes}
-              </Markdown>
+              <Markdown remarkPlugins={[remarkGfm]}>{releaseNotes}</Markdown>
             )}
           </div>
         </div>

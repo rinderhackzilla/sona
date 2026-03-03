@@ -12,16 +12,19 @@ import {
   HeaderTitle,
   Root,
 } from '@/app/components/settings/section'
-import { Switch } from '@/app/components/ui/switch'
 import { Input } from '@/app/components/ui/input'
+import { Switch } from '@/app/components/ui/switch'
+import { useDebouncedFormSync } from '@/app/hooks/use-debounced-form-sync'
 import { useAppIntegrations } from '@/store/app.store'
 import { useLrcLibSettings } from '@/store/player.store'
-import { useDebouncedFormSync } from '@/app/hooks/use-debounced-form-sync'
 
 const { DISABLE_LRCLIB } = window
 
 const lrclibSchema = z.object({
-  customUrl: z.string().url({ message: 'login.form.validations.url' }).optional(),
+  customUrl: z
+    .string()
+    .url({ message: 'login.form.validations.url' })
+    .optional(),
 })
 
 type LrclibSchemaType = z.infer<typeof lrclibSchema>
@@ -54,11 +57,15 @@ export function ServicesPage() {
     },
   })
 
-  useDebouncedFormSync(watch, (data: Partial<LrclibSchemaType>) => {
-    if (data.customUrl !== undefined) {
-      setCustomUrl(data.customUrl)
-    }
-  }, 500)
+  useDebouncedFormSync(
+    watch,
+    (data: Partial<LrclibSchemaType>) => {
+      if (data.customUrl !== undefined) {
+        setCustomUrl(data.customUrl)
+      }
+    },
+    500,
+  )
 
   const isLrclibEnabled = DISABLE_LRCLIB ? false : enabled
 
@@ -67,9 +74,17 @@ export function ServicesPage() {
       {/* Last.fm */}
       <Root>
         <Header>
-          <HeaderTitle>{t('settings.integrations.lastfm.group', 'Last.fm')}</HeaderTitle>
+          <HeaderTitle>
+            {t('settings.integrations.lastfm.group', 'Last.fm')}
+          </HeaderTitle>
         </Header>
         <Content>
+          <p className="text-xs text-muted-foreground px-2 pb-1">
+            {t(
+              'settings.integrations.lastfm.description',
+              'Connect your Last.fm account to enable personalized music recommendations.',
+            )}
+          </p>
           <ContentItem>
             <ContentItemTitle>
               {t('settings.integrations.lastfm.username.label', 'Username')}
@@ -77,7 +92,10 @@ export function ServicesPage() {
             <ContentItemForm>
               <Input
                 type="text"
-                placeholder="Last.fm Username"
+                placeholder={t(
+                  'settings.integrations.lastfm.username.placeholder',
+                  'Last.fm username',
+                )}
                 value={lastfm.username}
                 onChange={(e) => lastfm.setUsername(e.target.value)}
                 className="h-8"
@@ -91,7 +109,10 @@ export function ServicesPage() {
             <ContentItemForm>
               <Input
                 type="password"
-                placeholder="API Key"
+                placeholder={t(
+                  'settings.integrations.lastfm.apiKey.placeholder',
+                  'Last.fm API key',
+                )}
                 value={lastfm.apiKey}
                 onChange={(e) => lastfm.setApiKey(e.target.value)}
                 className="h-8"
@@ -99,14 +120,17 @@ export function ServicesPage() {
             </ContentItemForm>
           </ContentItem>
           <p className="text-xs text-muted-foreground">
-            Get your API key from{' '}
+            {t(
+              'settings.integrations.lastfm.apiKey.helpPrefix',
+              'Get your API key from',
+            )}{' '}
             <a
               href="https://www.last.fm/api/account/create"
               target="_blank"
               rel="noopener noreferrer"
               className="text-primary hover:underline"
             >
-              Last.fm API
+              {t('settings.integrations.lastfm.apiKey.helpLink', 'Last.fm API')}
             </a>
           </p>
         </Content>
@@ -115,9 +139,17 @@ export function ServicesPage() {
       {/* Lidarr */}
       <Root>
         <Header>
-          <HeaderTitle>{t('settings.integrations.lidarr.group', 'Lidarr')}</HeaderTitle>
+          <HeaderTitle>
+            {t('settings.integrations.lidarr.group', 'Lidarr')}
+          </HeaderTitle>
         </Header>
         <Content>
+          <p className="text-xs text-muted-foreground px-2 pb-1">
+            {t(
+              'settings.integrations.lidarr.description',
+              'Connect to your Lidarr instance for album requests.',
+            )}
+          </p>
           <ContentItem>
             <ContentItemTitle>
               {t('settings.integrations.lidarr.url.label', 'Server URL')}
@@ -125,7 +157,10 @@ export function ServicesPage() {
             <ContentItemForm>
               <Input
                 type="url"
-                placeholder="http://localhost:8686"
+                placeholder={t(
+                  'settings.integrations.lidarr.url.placeholder',
+                  'http://localhost:8686',
+                )}
                 value={lidarr.url}
                 onChange={(e) => lidarr.setUrl(e.target.value)}
                 className="h-8"
@@ -139,7 +174,10 @@ export function ServicesPage() {
             <ContentItemForm>
               <Input
                 type="password"
-                placeholder="API Key"
+                placeholder={t(
+                  'settings.integrations.lidarr.apiKey.placeholder',
+                  'Lidarr API key',
+                )}
                 value={lidarr.apiKey}
                 onChange={(e) => lidarr.setApiKey(e.target.value)}
                 className="h-8"
@@ -152,9 +190,17 @@ export function ServicesPage() {
       {/* LRCLIB */}
       <Root>
         <Header>
-          <HeaderTitle>{t('settings.privacy.services.lrclib.label', 'LRCLIB')}</HeaderTitle>
+          <HeaderTitle>
+            {t('settings.privacy.services.lrclib.label', 'LRCLIB')}
+          </HeaderTitle>
         </Header>
         <Content>
+          <p className="text-xs text-muted-foreground px-2 pb-1">
+            {t(
+              'settings.privacy.services.lrclib.info',
+              'LRCLIB is used to find song lyrics.',
+            )}
+          </p>
           <ContentItem>
             <ContentItemTitle>
               {t('settings.privacy.services.lrclib.enabled', 'Enable LRCLIB')}
@@ -171,8 +217,13 @@ export function ServicesPage() {
           {isLrclibEnabled && (
             <>
               <ContentItem>
-                <ContentItemTitle info={t('settings.privacy.services.lrclib.customUrl.info')}>
-                  {t('settings.privacy.services.lrclib.customUrl.toggle', 'Use Custom URL')}
+                <ContentItemTitle
+                  info={t('settings.privacy.services.lrclib.customUrl.info')}
+                >
+                  {t(
+                    'settings.privacy.services.lrclib.customUrl.toggle',
+                    'Use Custom URL',
+                  )}
                 </ContentItemTitle>
                 <ContentItemForm>
                   <Switch
@@ -185,14 +236,22 @@ export function ServicesPage() {
               {customUrlEnabled && (
                 <ContentItem>
                   <ContentItemTitle>
-                    {t('settings.privacy.services.lrclib.customUrl.label', 'Custom Server URL')}
+                    {t(
+                      'settings.privacy.services.lrclib.customUrl.label',
+                      'Custom Server URL',
+                    )}
                   </ContentItemTitle>
                   <ContentItemForm>
                     <Input
                       {...register('customUrl')}
-                      className={clsx('h-8', errors.customUrl && 'border-destructive')}
+                      className={clsx(
+                        'h-8',
+                        errors.customUrl && 'border-destructive',
+                      )}
                       onChange={(e) => {
-                        setValue('customUrl', e.target.value, { shouldValidate: true })
+                        setValue('customUrl', e.target.value, {
+                          shouldValidate: true,
+                        })
                       }}
                       autoCorrect="off"
                       autoCapitalize="off"

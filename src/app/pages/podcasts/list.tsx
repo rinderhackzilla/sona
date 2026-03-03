@@ -11,6 +11,7 @@ import { EmptyPodcastsResults } from '@/app/components/podcasts/empty-results'
 import { PodcastsHeader } from '@/app/components/podcasts/header'
 import { PodcastListImage } from '@/app/components/podcasts/list-image'
 import { PreviewCard } from '@/app/components/preview-card/card'
+import { PageState } from '@/app/components/ui/page-state'
 import { getPodcastList, searchPodcasts } from '@/queries/podcasts'
 import { ROUTES } from '@/routes/routesList'
 import {
@@ -62,18 +63,19 @@ export default function PodcastsList() {
     })
   }
 
-  const { data, fetchNextPage, hasNextPage, isLoading } = useInfiniteQuery({
-    queryKey: [
-      queryKeys.podcast.all,
-      currentFilter,
-      query,
-      orderByFilter,
-      sortFilter,
-    ],
-    queryFn: fetchPodcasts,
-    initialPageParam: 1,
-    getNextPageParam: (lastPage) => lastPage.nextOffset,
-  })
+  const { data, fetchNextPage, hasNextPage, isLoading, isError, refetch } =
+    useInfiniteQuery({
+      queryKey: [
+        queryKeys.podcast.all,
+        currentFilter,
+        query,
+        orderByFilter,
+        sortFilter,
+      ],
+      queryFn: fetchPodcasts,
+      initialPageParam: 1,
+      getNextPageParam: (lastPage) => lastPage.nextOffset,
+    })
 
   useEffect(() => {
     const scrollElement = scrollDivRef.current
@@ -97,6 +99,22 @@ export default function PodcastsList() {
   }, [fetchNextPage, hasNextPage])
 
   if (isLoading) return <AlbumsFallback />
+  if (isError) {
+    return (
+      <PageState
+        variant="error"
+        title={t('states.error.title')}
+        description={t('states.error.description', {
+          status: 500,
+          detail: t('generic.error'),
+        })}
+        actionLabel={t('states.error.retry')}
+        onAction={() => {
+          refetch().catch(() => undefined)
+        }}
+      />
+    )
+  }
   if (!data) return <EmptyPodcastsPage />
 
   const items = data.pages.flatMap((page) => page.podcasts) || []

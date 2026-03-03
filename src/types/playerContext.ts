@@ -219,7 +219,9 @@ export interface IPlayerActions {
   setUseSongColorOnQueue: (value: boolean) => void
   setUseSongColorOnBigPlayer: (value: boolean) => void
   setBigPlayerBlurValue: (value: number) => void
-  seedSonaDjTrack: (mode?: 'off' | 'adventure' | 'drift' | 'era') => Promise<void>
+  seedSonaDjTrack: (
+    mode?: 'off' | 'adventure' | 'drift' | 'era',
+  ) => Promise<void>
   setRuntimeSonaDjMode: (mode: 'off' | 'adventure' | 'drift' | 'era') => void
   startRuntimeShuffleAll: () => Promise<void>
   startSessionMode: (mode: SessionMode) => Promise<void>

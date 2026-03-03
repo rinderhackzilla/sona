@@ -1,13 +1,13 @@
-import { useState } from 'react'
-import { Link } from 'react-router-dom'
-import { useTranslation } from 'react-i18next'
 import { Play, Repeat } from 'lucide-react'
+import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { Link } from 'react-router-dom'
 import { ImageLoader } from '@/app/components/image-loader'
 import { Button } from '@/app/components/ui/button'
-import { ROUTES } from '@/routes/routesList'
-import type { Song } from '@/types/responses/song'
-import { usePlayerActions } from '@/store/player.store'
 import { cn } from '@/lib/utils'
+import { ROUTES } from '@/routes/routesList'
+import { usePlayerActions } from '@/store/player.store'
+import type { Song } from '@/types/responses/song'
 
 interface OnRepeatItemProps {
   song: Song
@@ -41,7 +41,10 @@ export function OnRepeatItem({ song, playcount }: OnRepeatItemProps) {
       {/* Content */}
       <div className="relative z-10 grid h-full grid-cols-[auto,minmax(0,1fr)] items-center gap-5 py-4 pl-7 pr-5 min-[1700px]:gap-6 min-[1700px]:py-5 min-[1700px]:pl-8 min-[1700px]:pr-6 min-[2600px]:gap-7 min-[2600px]:pl-9 min-[2600px]:pr-7">
         <div className="flex flex-col items-center justify-center gap-3">
-          <Link to={ROUTES.ALBUM.PAGE(song.albumId)} className="group relative block">
+          <Link
+            to={ROUTES.ALBUM.PAGE(song.albumId)}
+            className="group relative block"
+          >
             <ImageLoader id={song.coverArt} type="album">
               {(src) => (
                 <img
@@ -59,15 +62,11 @@ export function OnRepeatItem({ song, playcount }: OnRepeatItemProps) {
 
           <div className="w-[236px] min-[1700px]:w-[272px] min-[2600px]:w-[300px]">
             <div className="inline-flex w-full items-center justify-center gap-2 rounded-md border border-border/60 bg-background/70 px-3 py-1.5 text-center text-sm text-foreground/80 min-[2300px]:text-base">
-              {song.genre && (
-                <span className="truncate">{song.genre}</span>
-              )}
+              {song.genre && <span className="truncate">{song.genre}</span>}
               {song.genre && song.year && (
                 <span className="text-foreground/40">•</span>
               )}
-              {song.year && (
-                <span>{song.year}</span>
-              )}
+              {song.year && <span>{song.year}</span>}
             </div>
           </div>
         </div>

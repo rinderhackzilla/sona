@@ -4,10 +4,10 @@ import { Link } from 'react-router-dom'
 
 import { ArtistLink, ArtistsLinks } from '@/app/components/song/artist-link'
 import { SongQualityBadge } from '@/app/components/song/quality-badge'
+import { TableLikeButton } from '@/app/components/table/like-button'
 import PlaySongButton from '@/app/components/table/play-button'
 import { SongTableActions } from '@/app/components/table/song-actions'
 import { TableSongTitle } from '@/app/components/table/song-title'
-import { TableLikeButton } from '@/app/components/table/like-button'
 import { DataTableColumnHeader } from '@/app/components/ui/data-table-column-header'
 import { SimpleTooltip } from '@/app/components/ui/simple-tooltip'
 import i18n from '@/i18n'
@@ -32,7 +32,9 @@ interface SongsColumnsConfig {
   showHeartInSelect?: boolean
 }
 
-export function songsColumns({ showHeartInSelect = true }: SongsColumnsConfig = {}): ColumnDefType<ISong>[] {
+export function songsColumns({
+  showHeartInSelect = true,
+}: SongsColumnsConfig = {}): ColumnDefType<ISong>[] {
   return [
     {
       id: 'index',
@@ -319,7 +321,9 @@ export function songsColumns({ showHeartInSelect = true }: SongsColumnsConfig = 
             </MemoSimpleTooltip>
           )
         : '',
-      cell: ({ row }) => <MemoSongTableActions row={row} showHeart={showHeartInSelect} />,
+      cell: ({ row }) => (
+        <MemoSongTableActions row={row} showHeart={showHeartInSelect} />
+      ),
     },
   ]
 }

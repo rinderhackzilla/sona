@@ -1,15 +1,19 @@
-import { useState, useEffect } from 'react'
+import { Check, ExternalLink, Save } from 'lucide-react'
+import { useEffect, useState } from 'react'
 import { Button } from '@/app/components/ui/button'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/app/components/ui/card'
 import { Input } from '@/app/components/ui/input'
 import { Label } from '@/app/components/ui/label'
 import { Switch } from '@/app/components/ui/switch'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/app/components/ui/card'
-import { ExternalLink, Save, Check } from 'lucide-react'
 import { useAppStore } from '@/store/app.store'
-import {
-  safeStorageGet,
-  safeStorageRemove,
-} from '@/utils/safe-storage'
+import { logger } from '@/utils/logger'
+import { safeStorageGet, safeStorageRemove } from '@/utils/safe-storage'
 
 const STORAGE_KEY = 'lastfm_config' // For migration only
 
@@ -30,7 +34,9 @@ export function Integrations() {
           lastfmConfig.setApiKey(config.apiKey || '')
           setLocalUsername(config.username || '')
           setLocalApiKey(config.apiKey || '')
-          console.log('[Integrations] Migrated Last.fm config from localStorage to Zustand')
+          logger.info(
+            '[Integrations] Migrated Last.fm config from localStorage to Zustand',
+          )
           // Remove old localStorage key after migration
           safeStorageRemove(STORAGE_KEY)
         }
@@ -38,7 +44,12 @@ export function Integrations() {
     } catch (error) {
       console.error('Failed to migrate Last.fm config:', error)
     }
-  }, [lastfmConfig.apiKey, lastfmConfig.setApiKey, lastfmConfig.setUsername, lastfmConfig.username])
+  }, [
+    lastfmConfig.apiKey,
+    lastfmConfig.setApiKey,
+    lastfmConfig.setUsername,
+    lastfmConfig.username,
+  ])
 
   // Sync local state with store
   useEffect(() => {
@@ -54,8 +65,8 @@ export function Integrations() {
   }
 
   const isValid = localUsername.trim() !== '' && localApiKey.trim() !== ''
-  const hasChanges = 
-    localUsername !== lastfmConfig.username || 
+  const hasChanges =
+    localUsername !== lastfmConfig.username ||
     localApiKey !== lastfmConfig.apiKey
 
   return (
@@ -71,8 +82,9 @@ export function Integrations() {
         <CardHeader>
           <CardTitle>Last.fm</CardTitle>
           <CardDescription>
-            Connect your Last.fm account to enable personalized music recommendations,
-            Discover Weekly playlists, and the daily "This is [Artist]" feature.
+            Connect your Last.fm account to enable personalized music
+            recommendations, Discover Weekly playlists, and the daily "This is
+            [Artist]" feature.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">

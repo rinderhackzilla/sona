@@ -1,6 +1,5 @@
 import { Rabbit } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import { useRabbitHole } from '@/app/hooks/use-rabbit-hole'
 import { Button } from '@/app/components/ui/button'
 import {
   Tooltip,
@@ -8,6 +7,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/app/components/ui/tooltip'
+import { useRabbitHole } from '@/app/hooks/use-rabbit-hole'
 import { cn } from '@/lib/utils'
 
 interface RabbitHoleButtonProps {
@@ -66,12 +66,7 @@ export function RabbitHoleButton({
               className,
             )}
           >
-            <Rabbit
-              className={cn(
-                'h-5 w-5',
-                isLoading && 'animate-pulse',
-              )}
-            />
+            <Rabbit className={cn('h-5 w-5', isLoading && 'animate-pulse')} />
             {showLabel && (
               <span className="ml-2">{t('rabbitHole.button')}</span>
             )}

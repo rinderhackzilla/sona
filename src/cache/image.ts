@@ -7,8 +7,36 @@ const failedFetches = new Map<string, number>()
 const objectUrlCache = new Map<string, string>()
 const objectUrlTimestamps = new Map<string, number>()
 const cacheMetadata = new Map<string, number>()
+const inFlightRequests = new Map<string, Promise<string>>()
 const MAX_OBJECT_URL_CACHE_SIZE = 400
+const PREFETCH_STEP_DELAY_MS = 150
+const DEFAULT_RATE_LIMIT_COOLDOWN_MS = 15_000
+const MAX_CONCURRENT_IMAGE_FETCHES = 1
 let metadataWriteTimer: ReturnType<typeof setTimeout> | null = null
+let rateLimitedUntil = 0
+let activeImageFetches = 0
+const imageFetchQueue: Array<() => void> = []
+
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms))
+}
+
+async function withImageFetchSlot<T>(task: () => Promise<T>): Promise<T> {
+  if (activeImageFetches >= MAX_CONCURRENT_IMAGE_FETCHES) {
+    await new Promise<void>((resolve) => {
+      imageFetchQueue.push(resolve)
+    })
+  }
+
+  activeImageFetches += 1
+  try {
+    return await task()
+  } finally {
+    activeImageFetches = Math.max(0, activeImageFetches - 1)
+    const next = imageFetchQueue.shift()
+    if (next) next()
+  }
+}
 
 function loadMetadata() {
   try {
@@ -71,9 +99,24 @@ function setObjectUrl(url: string, objectUrl: string) {
 }
 
 async function fetchAndCacheImage(url: string, cache: Cache, now: number) {
-  const networkResponse = await fetch(url, { cache: 'no-store' })
+  if (Date.now() < rateLimitedUntil) {
+    failedFetches.set(url, now)
+    return url
+  }
+
+  const networkResponse = await withImageFetchSlot(() =>
+    fetch(url, { cache: 'no-store' }),
+  )
 
   if (!networkResponse.ok) {
+    if (networkResponse.status === 429) {
+      const retryAfterHeader = networkResponse.headers.get('retry-after')
+      const retryAfterSec = retryAfterHeader ? Number(retryAfterHeader) : NaN
+      const cooldownMs = Number.isFinite(retryAfterSec)
+        ? Math.max(DEFAULT_RATE_LIMIT_COOLDOWN_MS, retryAfterSec * 1000)
+        : DEFAULT_RATE_LIMIT_COOLDOWN_MS
+      rateLimitedUntil = Date.now() + cooldownMs
+    }
     failedFetches.set(url, now)
     return url
   }
@@ -114,40 +157,58 @@ export async function getCachedImage(url: string): Promise<string> {
     return cachedObjectUrl
   }
 
-  try {
-    const cache = await caches.open('images')
-
-    const cachedResponse = await cache.match(url)
-
-    if (cachedResponse) {
-      const blob = await cachedResponse.blob()
-      const isImage = blob.type.startsWith('image/')
-      const hasContent = blob.size > 0
-
-      if (isImage && hasContent) {
-        const objectUrl = URL.createObjectURL(blob)
-        setObjectUrl(url, objectUrl)
-        const staleBy = cacheMetadata.get(key) ?? now
-        if (now - staleBy > STALE_WHILE_REVALIDATE_MS) {
-          fetchAndCacheImage(url, cache, now).catch(() => undefined)
-        }
-        return objectUrl
-      }
-
-      await cache.delete(url)
-    }
-    return await fetchAndCacheImage(url, cache, now)
-  } catch (error) {
-    console.error('Error fetching image:', error)
-    failedFetches.set(url, now)
-
-    return url
+  const inFlight = inFlightRequests.get(url)
+  if (inFlight) {
+    return inFlight
   }
+
+  const request = (async () => {
+    try {
+      const cache = await caches.open('images')
+
+      const cachedResponse = await cache.match(url)
+
+      if (cachedResponse) {
+        const blob = await cachedResponse.blob()
+        const isImage = blob.type.startsWith('image/')
+        const hasContent = blob.size > 0
+
+        if (isImage && hasContent) {
+          const objectUrl = URL.createObjectURL(blob)
+          setObjectUrl(url, objectUrl)
+          const staleBy = cacheMetadata.get(key) ?? now
+          if (now - staleBy > STALE_WHILE_REVALIDATE_MS) {
+            fetchAndCacheImage(url, cache, now).catch(() => undefined)
+          }
+          return objectUrl
+        }
+
+        await cache.delete(url)
+      }
+      return await fetchAndCacheImage(url, cache, now)
+    } catch (error) {
+      console.error('Error fetching image:', error)
+      failedFetches.set(url, now)
+
+      return url
+    } finally {
+      inFlightRequests.delete(url)
+    }
+  })()
+
+  inFlightRequests.set(url, request)
+  return request
 }
 
 export async function prefetchCachedImages(urls: string[]) {
   const deduped = [...new Set(urls.filter(Boolean))]
-  await Promise.all(deduped.map((url) => getCachedImage(url).catch(() => url)))
+  for (const url of deduped) {
+    if (Date.now() < rateLimitedUntil) {
+      break
+    }
+    await getCachedImage(url).catch(() => url)
+    await sleep(PREFETCH_STEP_DELAY_MS)
+  }
 }
 
 loadMetadata()

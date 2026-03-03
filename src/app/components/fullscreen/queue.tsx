@@ -1,12 +1,16 @@
 import {
+  closestCenter,
   DndContext,
   DragEndEvent,
   PointerSensor,
-  closestCenter,
   useSensor,
   useSensors,
 } from '@dnd-kit/core'
-import { SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable'
+import {
+  SortableContext,
+  useSortable,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { useEffect, useRef } from 'react'
 import { ScrollArea } from '@/app/components/ui/scroll-area'
@@ -34,8 +38,14 @@ function SortableFullscreenQueueItem({
   const { currentList, currentSong } = usePlayerSonglist()
 
   const song = currentList[index]
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
-    useSortable({ id: song.id })
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: song.id })
 
   return (
     <QueueItem
@@ -58,7 +68,9 @@ function SortableFullscreenQueueItem({
         transition,
         opacity: isDragging ? 0.4 : undefined,
       }}
-      className={isDragging ? 'cursor-grabbing' : 'cursor-grab active:cursor-grabbing'}
+      className={
+        isDragging ? 'cursor-grabbing' : 'cursor-grab active:cursor-grabbing'
+      }
       {...attributes}
       {...listeners}
     />
@@ -144,7 +156,8 @@ export function FullscreenSongQueue() {
                 index={virtualRow.index}
                 isActive={currentSong.id === currentList[virtualRow.index].id}
                 isPlaying={
-                  currentSong.id === currentList[virtualRow.index].id && isPlaying
+                  currentSong.id === currentList[virtualRow.index].id &&
+                  isPlaying
                 }
                 virtualStart={virtualRow.start}
               />

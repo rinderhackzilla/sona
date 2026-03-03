@@ -20,7 +20,8 @@ export function useRenderCounter(name: string) {
     if (!mountedRef.current) {
       mountedRef.current = true
     }
-    window.__sonaRenderCounters[name] = (window.__sonaRenderCounters[name] ?? 0) + 1
+    window.__sonaRenderCounters[name] =
+      (window.__sonaRenderCounters[name] ?? 0) + 1
   })
 }
 

@@ -24,6 +24,7 @@ import {
 } from 'react'
 import { isMacOs } from 'react-device-detect'
 import { useHotkeys } from 'react-hotkeys-hook'
+import { useTranslation } from 'react-i18next'
 import { SongMenuOptions } from '@/app/components/song/menu-options'
 import { SelectedSongsMenuOptions } from '@/app/components/song/selected-options'
 import { ColumnFilter } from '@/types/columnFilter'
@@ -72,7 +73,7 @@ export function DataTableList<TData, TValue>({
   data,
   handlePlaySong,
   columnFilter,
-  noRowsMessage = 'No results.',
+  noRowsMessage,
   showHeader = true,
   allowRowSelection = true,
   showContextMenu = true,
@@ -84,6 +85,8 @@ export function DataTableList<TData, TValue>({
   currentSongIndex,
   enableSorting = false,
 }: DataTableProps<TData, TValue>) {
+  const { t } = useTranslation()
+  const resolvedNoRowsMessage = noRowsMessage ?? t('states.empty.noResults')
   const newColumns = columns.filter((column) => {
     return columnFilter?.includes(column.id as ColumnFilter)
   })
@@ -382,7 +385,7 @@ export function DataTableList<TData, TValue>({
                   className="flex h-24 items-center justify-center p-2"
                   role="cell"
                 >
-                  {noRowsMessage}
+                  {resolvedNoRowsMessage}
                 </div>
               </div>
             )}

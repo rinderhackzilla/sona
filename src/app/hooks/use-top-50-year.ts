@@ -1,8 +1,9 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { useAppIntegrations, } from '@/store/app.store'
-import { getTop50Year, findTracksInNavidrome } from '@/service/lastfm-features'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { usePlaylistDialog } from '@/app/context/playlist-dialog-context'
+import { findTracksInNavidrome, getTop50Year } from '@/service/lastfm-features'
+import { useAppIntegrations } from '@/store/app.store'
 import type { Song } from '@/types/responses/song'
+import { logger } from '@/utils/logger'
 import { safeStorageGet, safeStorageSet } from '@/utils/safe-storage'
 
 interface Top50YearData {
@@ -52,7 +53,7 @@ export function useTop50Year() {
     queryFn: async () => {
       const cached = getCachedData()
       if (cached) {
-        console.log('[Top 50 Year] Loaded from cache:', cached)
+        logger.info('[Top 50 Year] Loaded from cache:', cached)
         return cached
       }
 
@@ -76,7 +77,7 @@ export function useTop50Year() {
         throw new Error('Last.fm not configured')
       }
 
-      console.log('[Top 50 Year] Generating playlist...')
+      logger.info('[Top 50 Year] Generating playlist...')
 
       // Get top 50 tracks from Last.fm
       const result = await getTop50Year({
@@ -88,14 +89,19 @@ export function useTop50Year() {
         throw new Error(result.error || 'No tracks found')
       }
 
-      console.log('[Top 50 Year] Found', result.tracks.length, 'tracks from Last.fm')
+      logger.info(
+        '[Top 50 Year] Found',
+        result.tracks.length,
+        'tracks from Last.fm',
+      )
 
       // Extract track info
       const tracksToFind = result.tracks.map((track) => {
-        const artistName = track.artist?.['#text'] || 
-                          track.artist?.name || 
-                          (typeof track.artist === 'string' ? track.artist : 'Unknown')
-        
+        const artistName =
+          track.artist?.['#text'] ||
+          track.artist?.name ||
+          (typeof track.artist === 'string' ? track.artist : 'Unknown')
+
         return {
           artistName,
           trackName: track.name,
@@ -104,13 +110,13 @@ export function useTop50Year() {
       })
 
       // Find all tracks in Navidrome
-      console.log('[Top 50 Year] Searching for tracks in Navidrome...')
+      logger.info('[Top 50 Year] Searching for tracks in Navidrome...')
       const foundSongs = await findTracksInNavidrome(tracksToFind)
 
       // Filter out nulls
       const playlist = foundSongs.filter((song): song is Song => song !== null)
 
-      console.log('[Top 50 Year] Found', playlist.length, 'tracks in Navidrome')
+      logger.info('[Top 50 Year] Found', playlist.length, 'tracks in Navidrome')
 
       const data: Top50YearData = {
         playlist,
@@ -127,8 +133,8 @@ export function useTop50Year() {
     onSuccess: (data) => {
       // Update query cache
       queryClient.setQueryData(['top50Year', lastfm.username], data)
-      console.log('[Top 50 Year] Playlist generated successfully')
-      
+      logger.info('[Top 50 Year] Playlist generated successfully')
+
       // Show modal dialog
       showPlaylistSaved('Top 50 des Jahres', data.totalTracks)
     },

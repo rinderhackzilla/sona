@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useState } from 'react'
-import type { Song } from '@/types/responses/song'
+import type { DayPart } from '@/service/time-of-day-playlist'
 import {
   checkAndCatchUpTimeOfDayPlaylist,
   generateAndSaveTimeOfDayPlaylistWithRetry,
   loadTimeOfDayPlaylist,
   startTimeOfDayScheduler,
 } from '@/service/time-of-day-playlist-manager'
-import type { DayPart } from '@/service/time-of-day-playlist'
+import type { Song } from '@/types/responses/song'
 
 interface TimeOfDayState {
   playlist: Song[]
@@ -42,7 +42,8 @@ export function useTimeOfDayPlaylist() {
     setError(null)
 
     try {
-      const { playlist, metadata } = await generateAndSaveTimeOfDayPlaylistWithRetry(force)
+      const { playlist, metadata } =
+        await generateAndSaveTimeOfDayPlaylistWithRetry(force)
       setState({
         playlist,
         dayPart: metadata.dayPart,

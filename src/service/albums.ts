@@ -1,13 +1,16 @@
 import { httpClient } from '@/api/httpClient'
+import { normalizeAlbums } from '@/service/mappers/album'
 import {
   AlbumInfoResponse,
   AlbumListResponse,
-  Albums,
   AlbumListType,
+  Albums,
   GetAlbumResponse,
 } from '@/types/responses/album'
-import { normalizeAlbums } from '@/service/mappers/album'
-import { dedupeAlbumsByIdentity, dedupeSingleAlbumSongs } from '@/utils/albumDedup'
+import {
+  dedupeAlbumsByIdentity,
+  dedupeSingleAlbumSongs,
+} from '@/utils/albumDedup'
 
 export interface AlbumListParams {
   type: AlbumListType

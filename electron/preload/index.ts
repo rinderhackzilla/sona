@@ -88,6 +88,7 @@ const api: IAonsokuAPI = {
   setMiniPlayerPinned: (pinned) => {
     ipcRenderer.send(IpcChannels.SetMiniPlayerPinned, pinned)
   },
+  clearAppCache: () => ipcRenderer.invoke(IpcChannels.ClearAppCache),
 }
 
 // Use `contextBridge` APIs to expose Electron APIs to

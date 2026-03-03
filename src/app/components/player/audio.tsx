@@ -1,6 +1,7 @@
 import {
   ComponentPropsWithoutRef,
   RefObject,
+  SyntheticEvent,
   useCallback,
   useEffect,
   useMemo,
@@ -33,8 +34,10 @@ export function AudioPlayer({
   replayGain,
   shouldPlay = true,
   ignoreErrors = false,
+  src,
   ...props
 }: AudioPlayerProps) {
+  const isDev = import.meta.env.DEV
   const { t } = useTranslation()
   const [previousGain, setPreviousGain] = useState(1)
   const { replayGainEnabled, replayGainError } = useReplayGainState()
@@ -43,7 +46,9 @@ export function AudioPlayer({
   const { setReplayGainEnabled, setReplayGainError } = useReplayGainActions()
   const { volume } = usePlayerVolume()
   const isPlaying = usePlayerIsPlaying()
-  const [audioElement, setAudioElement] = useState<HTMLAudioElement | null>(null)
+  const [audioElement, setAudioElement] = useState<HTMLAudioElement | null>(
+    null,
+  )
 
   const gainValue = useMemo(() => {
     const audioVolume = volume / 100
@@ -60,6 +65,7 @@ export function AudioPlayer({
   const fadeIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const fadeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const pausedByFadeRef = useRef(false)
+  const playbackRequestedAtRef = useRef<number | null>(null)
   const handleAudioRef = useCallback(
     (node: HTMLAudioElement | null) => {
       audioRef.current = node
@@ -69,6 +75,86 @@ export function AudioPlayer({
   )
 
   const ignoreGain = !isSong || replayGainError
+
+  const getMediaType = useCallback(
+    () =>
+      isSong ? 'song' : isRadio ? 'radio' : isPodcast ? 'podcast' : 'unknown',
+    [isPodcast, isRadio, isSong],
+  )
+
+  const streamStartAtRef = useRef<number | null>(null)
+  const loadStartAtRef = useRef<number | null>(null)
+  const loadedMetadataAtRef = useRef<number | null>(null)
+  const canPlayAtRef = useRef<number | null>(null)
+  const lastStreamSrcRef = useRef<string | null>(null)
+
+  const resetStreamDebugRefs = useCallback(() => {
+    streamStartAtRef.current = null
+    loadStartAtRef.current = null
+    loadedMetadataAtRef.current = null
+    canPlayAtRef.current = null
+    playbackRequestedAtRef.current = null
+  }, [])
+
+  const logStreamPhase = useCallback(
+    (phase: string, extra?: Record<string, unknown>) => {
+      if (!isDev) return
+      const now = performance.now()
+      const streamStartAt = streamStartAtRef.current
+      const loadStartAt = loadStartAtRef.current
+      const metadataAt = loadedMetadataAtRef.current
+      const canPlayAt = canPlayAtRef.current
+      const audio = audioRef.current
+
+      logger.info('[PlaybackDebug] Stream phase', {
+        phase,
+        mediaType: getMediaType(),
+        src: audio?.currentSrc || audio?.src || src,
+        sinceStreamStartMs:
+          streamStartAt === null ? null : Math.round(now - streamStartAt),
+        sinceLoadStartMs:
+          loadStartAt === null ? null : Math.round(now - loadStartAt),
+        loadStartToMetadataMs:
+          loadStartAt === null || metadataAt === null
+            ? null
+            : Math.round(metadataAt - loadStartAt),
+        metadataToCanPlayMs:
+          metadataAt === null || canPlayAt === null
+            ? null
+            : Math.round(canPlayAt - metadataAt),
+        readyState: audio?.readyState,
+        networkState: audio?.networkState,
+        ...extra,
+      })
+    },
+    [audioRef, getMediaType, src],
+  )
+
+  const logPlaybackLatency = useCallback(
+    (event: 'play' | 'playing') => {
+      if (!isDev) return
+      const requestedAt = playbackRequestedAtRef.current
+      const audio = audioRef.current
+      if (requestedAt === null || !audio) return
+
+      const latencyMs = Math.round(performance.now() - requestedAt)
+      logger.info('[PlaybackDebug] Running -> actual playback', {
+        event,
+        latencyMs,
+        readyState: audio.readyState,
+        networkState: audio.networkState,
+        src: audio.currentSrc || audio.src,
+        mediaType: getMediaType(),
+        loadStartToPlayingMs:
+          loadStartAtRef.current === null
+            ? null
+            : Math.round(performance.now() - loadStartAtRef.current),
+      })
+
+      playbackRequestedAtRef.current = null
+    },
+    [audioRef, getMediaType],
+  )
 
   const clearPauseFade = useCallback(() => {
     if (fadeIntervalRef.current) {
@@ -170,6 +256,13 @@ export function AudioPlayer({
 
       try {
         if (isPlaying && shouldPlay) {
+          if (streamStartAtRef.current === null) {
+            streamStartAtRef.current = performance.now()
+            logStreamPhase('run-requested')
+          }
+          if (playbackRequestedAtRef.current === null) {
+            playbackRequestedAtRef.current = performance.now()
+          }
           clearPauseFade()
           if (pausedByFadeRef.current) {
             audio.volume = Math.min(1, volume / 100)
@@ -178,6 +271,7 @@ export function AudioPlayer({
           if (isSong) await resumeContext()
           await audio.play()
         } else {
+          resetStreamDebugRefs()
           if ((isSong || isPodcast) && !audio.paused) {
             pauseWithFade(audio)
           } else {
@@ -193,6 +287,7 @@ export function AudioPlayer({
           return
         }
         logger.error('Audio playback failed', error)
+        resetStreamDebugRefs()
         handleSongError()
       }
     }
@@ -209,6 +304,8 @@ export function AudioPlayer({
     resumeContext,
     shouldPlay,
     volume,
+    logStreamPhase,
+    resetStreamDebugRefs,
   ])
 
   useEffect(() => {
@@ -240,12 +337,88 @@ export function AudioPlayer({
     return undefined
   }, [handleRadioError, handleSongError, ignoreErrors, isRadio, isSong])
 
+  useEffect(() => {
+    resetStreamDebugRefs()
+  }, [resetStreamDebugRefs])
+
+  const {
+    onPlay: onPlayProp,
+    onPlaying: onPlayingProp,
+    onLoadStart: onLoadStartProp,
+    onLoadedMetadata: onLoadedMetadataProp,
+    onCanPlay: onCanPlayProp,
+    ...audioProps
+  } = props
+
+  const handleLoadStart = useCallback(
+    (event: SyntheticEvent<HTMLAudioElement, Event>) => {
+      const currentSrc =
+        event.currentTarget.currentSrc || event.currentTarget.src || src || null
+      if (currentSrc !== lastStreamSrcRef.current) {
+        resetStreamDebugRefs()
+        lastStreamSrcRef.current = currentSrc
+      }
+      if (loadStartAtRef.current === null) {
+        loadStartAtRef.current = performance.now()
+      }
+      if (streamStartAtRef.current === null) {
+        streamStartAtRef.current = loadStartAtRef.current
+      }
+      logStreamPhase('loadstart')
+      onLoadStartProp?.(event)
+    },
+    [logStreamPhase, onLoadStartProp, resetStreamDebugRefs, src],
+  )
+
+  const handleLoadedMetadata = useCallback(
+    (event: SyntheticEvent<HTMLAudioElement, Event>) => {
+      if (loadedMetadataAtRef.current === null) {
+        loadedMetadataAtRef.current = performance.now()
+      }
+      logStreamPhase('loadedmetadata')
+      onLoadedMetadataProp?.(event)
+    },
+    [logStreamPhase, onLoadedMetadataProp],
+  )
+
+  const handleCanPlay = useCallback(
+    (event: SyntheticEvent<HTMLAudioElement, Event>) => {
+      if (canPlayAtRef.current === null) {
+        canPlayAtRef.current = performance.now()
+      }
+      logStreamPhase('canplay')
+      onCanPlayProp?.(event)
+    },
+    [logStreamPhase, onCanPlayProp],
+  )
+
+  const handlePlay = useCallback(
+    (event: SyntheticEvent<HTMLAudioElement, Event>) => {
+      onPlayProp?.(event)
+    },
+    [onPlayProp],
+  )
+
+  const handlePlaying = useCallback(
+    (event: SyntheticEvent<HTMLAudioElement, Event>) => {
+      logPlaybackLatency('playing')
+      onPlayingProp?.(event)
+    },
+    [logPlaybackLatency, onPlayingProp],
+  )
+
   return (
     <audio
       ref={handleAudioRef}
-      {...props}
+      {...audioProps}
+      src={src}
       crossOrigin="anonymous"
       onError={handleError}
+      onLoadStart={handleLoadStart}
+      onLoadedMetadata={handleLoadedMetadata}
+      onCanPlay={handleCanPlay}
+      onPlay={handlePlay}
+      onPlaying={handlePlaying}
     />
   )
 }

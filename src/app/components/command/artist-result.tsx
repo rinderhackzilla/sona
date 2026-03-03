@@ -41,7 +41,9 @@ export function CommandArtistResult({
               value={`artist-${artist.id}`}
               className="border mb-1"
               onSelect={() => {
-                runCommand(() => navigateSafe(navigate, ROUTES.ARTIST.PAGE(artist.id)))
+                runCommand(() =>
+                  navigateSafe(navigate, ROUTES.ARTIST.PAGE(artist.id)),
+                )
               }}
             >
               <ResultItem

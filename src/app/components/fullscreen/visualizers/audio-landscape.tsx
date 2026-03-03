@@ -10,12 +10,14 @@ function hexToRgba(hex: string, alpha: number): string {
 }
 
 function accentHSL() {
-  const v = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim()
+  const v = getComputedStyle(document.documentElement)
+    .getPropertyValue('--accent')
+    .trim()
   const [h, s, l] = v.split(' ')
   return { h: h ?? '220', s: s ?? '80%', l: l ?? '60%' }
 }
 
-const GAIN = 14       // extreme tanh saturation — waveform violently fills the canvas
+const GAIN = 14 // extreme tanh saturation — waveform violently fills the canvas
 const DRAW_PTS = 60
 const TRACES = 36
 
@@ -76,7 +78,11 @@ export function AudioLandscape() {
     let frameCount = 0
     let animId: number
 
-    const buildPath = (arr: Float32Array, getY: (v: number) => number, w: number) => {
+    const buildPath = (
+      arr: Float32Array,
+      getY: (v: number) => number,
+      w: number,
+    ) => {
       const step = arr.length / DRAW_PTS
       const xs: number[] = []
       const ys: number[] = []
@@ -121,7 +127,7 @@ export function AudioLandscape() {
       const w = canvas.offsetWidth
       const h = canvas.offsetHeight
       const cy = h / 2
-      const maxAmp = h * 0.50  // use every pixel of vertical space
+      const maxAmp = h * 0.5 // use every pixel of vertical space
       const palette = paletteRef.current
       const c1 = palette?.vibrant ?? null
       const { h: ah, s: as_, l: al } = accentHSL()
@@ -146,8 +152,10 @@ export function AudioLandscape() {
 
           buildPath(history[t], toY, w)
 
-          ctx.shadowBlur = age > 0.50 ? (age - 0.50) / 0.50 * 12 : 0
-          ctx.shadowColor = c1 ? hexToRgba(c1, 0.6) : `hsla(${ah}, ${as_}, ${al}, 0.55)`
+          ctx.shadowBlur = age > 0.5 ? ((age - 0.5) / 0.5) * 12 : 0
+          ctx.shadowColor = c1
+            ? hexToRgba(c1, 0.6)
+            : `hsla(${ah}, ${as_}, ${al}, 0.55)`
           ctx.strokeStyle = c1
             ? hexToRgba(c1, alpha)
             : `hsla(${ah}, ${as_}, ${al}, ${alpha})`
@@ -161,16 +169,24 @@ export function AudioLandscape() {
       // Live: massive outer glow
       buildPath(smoothedTime, toY, w)
       ctx.shadowBlur = 38 + bassAvg * 30
-      ctx.shadowColor = c1 ? hexToRgba(c1, 0.8) : `hsla(${ah}, ${as_}, ${al}, 0.75)`
-      ctx.strokeStyle = c1 ? hexToRgba(c1, 0.60) : `hsla(${ah}, ${as_}, ${al}, 0.60)`
+      ctx.shadowColor = c1
+        ? hexToRgba(c1, 0.8)
+        : `hsla(${ah}, ${as_}, ${al}, 0.75)`
+      ctx.strokeStyle = c1
+        ? hexToRgba(c1, 0.6)
+        : `hsla(${ah}, ${as_}, ${al}, 0.60)`
       ctx.lineWidth = 10 + bassAvg * 8
       ctx.stroke()
 
       // Live: focused glow
       buildPath(smoothedTime, toY, w)
       ctx.shadowBlur = 14
-      ctx.shadowColor = c1 ? hexToRgba(c1, 1.0) : `hsla(${ah}, ${as_}, ${al}, 1.0)`
-      ctx.strokeStyle = c1 ? hexToRgba(c1, 1.0) : `hsla(${ah}, ${as_}, ${al}, 1.0)`
+      ctx.shadowColor = c1
+        ? hexToRgba(c1, 1.0)
+        : `hsla(${ah}, ${as_}, ${al}, 1.0)`
+      ctx.strokeStyle = c1
+        ? hexToRgba(c1, 1.0)
+        : `hsla(${ah}, ${as_}, ${al}, 1.0)`
       ctx.lineWidth = 3.5
       ctx.stroke()
 
@@ -192,5 +208,3 @@ export function AudioLandscape() {
 
   return <canvas ref={canvasRef} className="absolute inset-0 w-full h-full" />
 }
-
-

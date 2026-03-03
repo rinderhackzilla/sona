@@ -85,6 +85,7 @@ export interface ISong {
   contributors?: IContributor[]
   displayComposer?: string
   explicitStatus?: string
+  queueSource?: 'dj' | 'session'
 }
 
 export interface SongList {

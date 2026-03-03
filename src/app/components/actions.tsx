@@ -23,7 +23,7 @@ function Container({ children, className, ...rest }: ActionsContainerProps) {
   return (
     <div
       {...rest}
-      className={cn('w-full mb-6 flex items-center gap-1', className)}
+      className={cn('mb-6 flex w-full items-center gap-1.5', className)}
     >
       {children}
     </div>
@@ -46,10 +46,10 @@ function Button({
   const button = (
     <ComponentButton
       className={cn(
-        'rounded-full w-14 h-14 ease-linear duration-100 transition',
-        'border-[1px] border-transparent',
+        'h-14 w-14 rounded-full border border-transparent transition-all duration-150',
+        'active:scale-[0.98] disabled:pointer-events-none disabled:opacity-45',
         buttonStyle === 'primary'
-          ? 'hover:scale-105 mr-2'
+          ? 'mr-2 hover:scale-105'
           : 'hover:bg-foreground/20',
         className,
       )}
@@ -79,10 +79,10 @@ function Dropdown({ tooltip, options }: DropdownProps) {
       >
         <ComponentButton
           className={clsx(
-            'rounded-full w-14 h-14 border-transparent',
+            'h-14 w-14 rounded-full border border-transparent',
             'data-[state=open]:bg-foreground/20',
             'hover:bg-foreground/20',
-            'ease-linear duration-100 transition',
+            'transition-all duration-150 active:scale-[0.98] disabled:pointer-events-none disabled:opacity-45',
           )}
           variant="ghost"
         >

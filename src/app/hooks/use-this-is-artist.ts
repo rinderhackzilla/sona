@@ -1,13 +1,14 @@
-import { useState, useEffect, useCallback } from 'react'
-import { useAppStore } from '@/store/app.store'
+import { useCallback, useEffect, useState } from 'react'
 import {
+  checkAndCatchUp,
   generateAndSavePlaylist,
   loadPlaylist,
-  checkAndCatchUp,
   startDailyScheduler,
 } from '@/service/this-is-artist-manager'
-import type { Song } from '@/types/responses/song'
+import { useAppStore } from '@/store/app.store'
 import type { ISimilarArtist } from '@/types/responses/artist'
+import type { Song } from '@/types/responses/song'
+import { logger } from '@/utils/logger'
 
 interface UseThisIsArtistReturn {
   playlist: Song[]
@@ -29,9 +30,7 @@ export function useThisIsArtist(): UseThisIsArtistReturn {
   const [lastGenerated, setLastGenerated] = useState<string | null>(null)
   const [dateKey, setDateKey] = useState<string | null>(null)
 
-  const isConfigured = Boolean(
-    lastfmConfig.username && lastfmConfig.apiKey
-  )
+  const isConfigured = Boolean(lastfmConfig.username && lastfmConfig.apiKey)
 
   // Load playlist from storage
   const loadFromStorage = useCallback(() => {
@@ -60,7 +59,7 @@ export function useThisIsArtist(): UseThisIsArtistReturn {
           username: lastfmConfig.username,
           apiKey: lastfmConfig.apiKey,
         },
-        true // Force generation
+        true, // Force generation
       )
 
       setPlaylist(result.playlist)
@@ -69,7 +68,9 @@ export function useThisIsArtist(): UseThisIsArtistReturn {
       setDateKey(result.metadata.dateKey)
       setError(null)
 
-      console.log(`[ThisIsArtist Hook] Generated: This is ${result.metadata.artist.name}`)
+      logger.info(
+        `[ThisIsArtist Hook] Generated: This is ${result.metadata.artist.name}`,
+      )
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Unknown error'
       setError(message)
@@ -104,7 +105,12 @@ export function useThisIsArtist(): UseThisIsArtistReturn {
     }
 
     runCatchUp()
-  }, [isConfigured, lastfmConfig.username, lastfmConfig.apiKey, loadFromStorage])
+  }, [
+    isConfigured,
+    lastfmConfig.username,
+    lastfmConfig.apiKey,
+    loadFromStorage,
+  ])
 
   // Start scheduler
   useEffect(() => {
@@ -119,11 +125,16 @@ export function useThisIsArtist(): UseThisIsArtistReturn {
         if (success) {
           loadFromStorage()
         }
-      }
+      },
     )
 
     return cleanup
-  }, [isConfigured, lastfmConfig.username, lastfmConfig.apiKey, loadFromStorage])
+  }, [
+    isConfigured,
+    lastfmConfig.username,
+    lastfmConfig.apiKey,
+    loadFromStorage,
+  ])
 
   return {
     playlist,

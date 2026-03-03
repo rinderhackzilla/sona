@@ -1,4 +1,6 @@
-import { generateThisIsArtist } from './this-is-artist'
+import type { ISimilarArtist } from '@/types/responses/artist'
+import type { Song } from '@/types/responses/song'
+import { logger } from '@/utils/logger'
 import {
   readStoredJson,
   readStoredPlaylist,
@@ -6,8 +8,7 @@ import {
   writeStoredPlaylist,
   writeStoredString,
 } from './playlist-storage'
-import type { Song } from '@/types/responses/song'
-import type { ISimilarArtist } from '@/types/responses/artist'
+import { generateThisIsArtist } from './this-is-artist'
 
 const STORAGE_KEY = 'this_is_artist_playlist'
 const STORAGE_KEY_METADATA = 'this_is_artist_metadata'
@@ -48,25 +49,29 @@ export function shouldGeneratePlaylist(): boolean {
   try {
     const today = getDateKey()
     const storedDate = readStoredString(STORAGE_KEY_DATE_FLAG)
-    const storedMetadata = readStoredJson<PlaylistMetadata>(STORAGE_KEY_METADATA)
+    const storedMetadata =
+      readStoredJson<PlaylistMetadata>(STORAGE_KEY_METADATA)
 
     // No playlist exists yet
     if (!storedMetadata) {
-      console.log('[ThisIsArtist] No playlist found, needs generation')
+      logger.info('[ThisIsArtist] No playlist found, needs generation')
       return true
     }
 
     // Date flag missing, check metadata
     if (!storedDate) {
       const playlistDate =
-        storedMetadata.dateKey || getDateKey(new Date(storedMetadata.generatedAt))
-      
+        storedMetadata.dateKey ||
+        getDateKey(new Date(storedMetadata.generatedAt))
+
       // Update flag and check
       if (playlistDate !== today) {
-        console.log(`[ThisIsArtist] Playlist from old date (${playlistDate}), needs regeneration`)
+        logger.info(
+          `[ThisIsArtist] Playlist from old date (${playlistDate}), needs regeneration`,
+        )
         return true
       }
-      
+
       // Save flag for future checks
       writeStoredString(STORAGE_KEY_DATE_FLAG, playlistDate)
       return false
@@ -74,11 +79,13 @@ export function shouldGeneratePlaylist(): boolean {
 
     // Check if current date differs from stored date
     if (today !== storedDate) {
-      console.log(`[ThisIsArtist] New day detected (${today} vs ${storedDate}), needs regeneration`)
+      logger.info(
+        `[ThisIsArtist] New day detected (${today} vs ${storedDate}), needs regeneration`,
+      )
       return true
     }
 
-    console.log(`[ThisIsArtist] Playlist for ${today} already exists`)
+    logger.info(`[ThisIsArtist] Playlist for ${today} already exists`)
     return false
   } catch (error) {
     console.error('[ThisIsArtist] Error checking generation status:', error)
@@ -99,8 +106,10 @@ export function loadPlaylist(): {
       STORAGE_KEY_METADATA,
     )
     if (metadata) {
-      console.log(`[ThisIsArtist] Loaded playlist: This is ${metadata.artist.name} (${metadata.dateKey})`)
-      
+      logger.info(
+        `[ThisIsArtist] Loaded playlist: This is ${metadata.artist.name} (${metadata.dateKey})`,
+      )
+
       return { playlist, metadata }
     }
 
@@ -116,7 +125,7 @@ export function loadPlaylist(): {
  */
 export async function generateAndSavePlaylist(
   config: ThisIsArtistConfig,
-  force: boolean = false
+  force: boolean = false,
 ): Promise<{
   playlist: Song[]
   metadata: PlaylistMetadata
@@ -125,14 +134,16 @@ export async function generateAndSavePlaylist(
 
   // Check if generation is needed (unless forced)
   if (!force && !shouldGeneratePlaylist()) {
-    console.log('[ThisIsArtist] Generation not needed, loading existing playlist')
+    logger.info(
+      '[ThisIsArtist] Generation not needed, loading existing playlist',
+    )
     const { playlist, metadata } = loadPlaylist()
     if (metadata) {
       return { playlist, metadata }
     }
   }
 
-  console.log(`[ThisIsArtist] Generating playlist for ${today}...`)
+  logger.info(`[ThisIsArtist] Generating playlist for ${today}...`)
 
   // Generate playlist
   const result = await generateThisIsArtist({
@@ -149,10 +160,17 @@ export async function generateAndSavePlaylist(
   }
 
   // Save to localStorage
-  writeStoredPlaylist(STORAGE_KEY, STORAGE_KEY_METADATA, result.playlist, metadata)
+  writeStoredPlaylist(
+    STORAGE_KEY,
+    STORAGE_KEY_METADATA,
+    result.playlist,
+    metadata,
+  )
   writeStoredString(STORAGE_KEY_DATE_FLAG, today)
 
-  console.log(`[ThisIsArtist] ✓ Playlist generated: This is ${result.artist.name} (${today})`)
+  logger.info(
+    `[ThisIsArtist] Playlist generated: This is ${result.artist.name} (${today})`,
+  )
 
   return {
     playlist: result.playlist,
@@ -164,17 +182,17 @@ export async function generateAndSavePlaylist(
  * Check if catch-up generation is needed (called on app startup)
  */
 export async function checkAndCatchUp(
-  config: ThisIsArtistConfig
+  config: ThisIsArtistConfig,
 ): Promise<boolean> {
   if (!config.username || !config.apiKey) {
-    console.log('[ThisIsArtist] Last.fm not configured, skipping catch-up')
+    logger.info('[ThisIsArtist] Last.fm not configured, skipping catch-up')
     return false
   }
 
   const needsGeneration = shouldGeneratePlaylist()
 
   if (needsGeneration) {
-    console.log('[ThisIsArtist] 🔄 Catch-up generation needed, generating now...')
+    logger.info('[ThisIsArtist] Catch-up generation needed, generating now...')
     try {
       await generateAndSavePlaylist(config, false)
       return true
@@ -202,19 +220,23 @@ export function getMillisecondsUntilMidnight(): number {
  */
 export function startDailyScheduler(
   config: ThisIsArtistConfig,
-  onGenerate?: (success: boolean) => void
+  onGenerate?: (success: boolean) => void,
 ): () => void {
   let timeoutId: NodeJS.Timeout | null = null
 
   const scheduleNext = () => {
     const msUntilMidnight = getMillisecondsUntilMidnight()
     const hoursUntilMidnight = (msUntilMidnight / (1000 * 60 * 60)).toFixed(1)
-    
-    console.log(`[ThisIsArtist] ⏰ Next generation scheduled in ${hoursUntilMidnight} hours`)
+
+    logger.info(
+      `[ThisIsArtist] Next generation scheduled in ${hoursUntilMidnight} hours`,
+    )
 
     timeoutId = setTimeout(async () => {
       if (shouldGeneratePlaylist()) {
-        console.log('[ThisIsArtist] 🎵 Midnight! Generating new playlist...')
+        logger.info(
+          '[ThisIsArtist] Midnight reached. Generating new playlist...',
+        )
         try {
           await generateAndSavePlaylist(config)
           onGenerate?.(true)
@@ -223,7 +245,7 @@ export function startDailyScheduler(
           onGenerate?.(false)
         }
       }
-      
+
       // Schedule next check
       scheduleNext()
     }, msUntilMidnight)
@@ -236,7 +258,7 @@ export function startDailyScheduler(
   return () => {
     if (timeoutId) {
       clearTimeout(timeoutId)
-      console.log('[ThisIsArtist] Scheduler stopped')
+      logger.info('[ThisIsArtist] Scheduler stopped')
     }
   }
 }

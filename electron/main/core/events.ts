@@ -1,5 +1,5 @@
 import { is, platform } from '@electron-toolkit/utils'
-import { BrowserWindow, ipcMain, nativeTheme, shell } from 'electron'
+import { BrowserWindow, ipcMain, nativeTheme, session, shell } from 'electron'
 import { electron } from '../../../package.json'
 import {
   IpcChannels,
@@ -134,6 +134,16 @@ export function setupIpcEvents(window: BrowserWindow | null) {
   ipcMain.removeHandler(IpcChannels.IsMaximized)
   ipcMain.handle(IpcChannels.IsMaximized, () => {
     return window.isMaximized()
+  })
+
+  ipcMain.removeHandler(IpcChannels.ClearAppCache)
+  ipcMain.handle(IpcChannels.ClearAppCache, async () => {
+    try {
+      await session.defaultSession.clearCache()
+      return true
+    } catch {
+      return false
+    }
   })
 
   ipcMain.on(IpcChannels.ToggleMaximize, (_, isMaximized: boolean) => {

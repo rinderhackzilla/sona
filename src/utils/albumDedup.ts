@@ -148,7 +148,9 @@ function songTrackKey(song: ISong) {
   const disc = Number.isFinite(song.discNumber) ? String(song.discNumber) : ''
   const track = Number.isFinite(song.track) ? String(song.track) : ''
   const title = normalizeText(song.title)
-  const duration = Number.isFinite(song.duration) ? String(Math.round(song.duration)) : ''
+  const duration = Number.isFinite(song.duration)
+    ? String(Math.round(song.duration))
+    : ''
   return `${disc}|${track}|${title}|${duration}`
 }
 
@@ -194,7 +196,10 @@ export function dedupeSingleAlbumSongs(album?: SingleAlbum) {
     ...album,
     song: dedupedSongs,
     songCount: dedupedSongs.length,
-    duration: dedupedSongs.reduce((total, song) => total + (song.duration ?? 0), 0),
+    duration: dedupedSongs.reduce(
+      (total, song) => total + (song.duration ?? 0),
+      0,
+    ),
   }
 }
 
@@ -221,6 +226,9 @@ export function mergeSingleAlbums(albums: SingleAlbum[]) {
     ...representative,
     song: dedupedSongs,
     songCount: dedupedSongs.length,
-    duration: dedupedSongs.reduce((total, song) => total + (song.duration ?? 0), 0),
+    duration: dedupedSongs.reduce(
+      (total, song) => total + (song.duration ?? 0),
+      0,
+    ),
   }
 }

@@ -1,5 +1,5 @@
-@import './styles/session-modes.css';
-@import './styles/fullscreen.css';
+@import "./styles/session-modes.css";
+@import "./styles/fullscreen.css";
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -47,7 +47,35 @@
     --radius-surface-lg: 14px;
     --radius-surface-xl: 16px;
     --radius-pill: 9999px;
+
+    --list-row-min-h: 40px;
+    --list-cell-px: 8px;
+    --list-cell-py: 8px;
+    --card-info-gap: 6px;
+    --card-title-size: 13px;
+    --card-subtitle-size: 12px;
+    --grid-gap: 1rem;
   }
+}
+
+body[data-list-density="compact"] {
+  --list-row-min-h: 34px;
+  --list-cell-px: 7px;
+  --list-cell-py: 5px;
+  --card-info-gap: 4px;
+  --card-title-size: 12px;
+  --card-subtitle-size: 11px;
+  --grid-gap: 0.75rem;
+}
+
+body[data-list-density="cozy"] {
+  --list-row-min-h: 46px;
+  --list-cell-px: 10px;
+  --list-cell-py: 10px;
+  --card-info-gap: 8px;
+  --card-title-size: 14px;
+  --card-subtitle-size: 12px;
+  --grid-gap: 1.125rem;
 }
 
 /* Harmonize Tailwind rounded utilities across the app */
@@ -212,12 +240,7 @@ img {
 
 .reactive-theme-transition * {
   transition-property:
-    color,
-    background-color,
-    border-color,
-    fill,
-    stroke,
-    text-decoration-color,
+    color, background-color, border-color, fill, stroke, text-decoration-color,
     box-shadow;
   transition-duration: 2000ms;
   transition-timing-function: ease;
@@ -225,13 +248,7 @@ img {
 
 .session-mode-transition * {
   transition-property:
-    color,
-    background-color,
-    border-color,
-    fill,
-    stroke,
-    box-shadow,
-    filter,
+    color, background-color, border-color, fill, stroke, box-shadow, filter,
     opacity;
   transition-duration: 420ms !important;
   transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1) !important;
@@ -266,6 +283,20 @@ img {
 
 .bg-skeleton {
   @apply bg-accent;
+}
+
+.animate-skeleton {
+  animation: skeleton-pulse 1.15s ease-in-out infinite;
+}
+
+@keyframes skeleton-pulse {
+  0%,
+  100% {
+    opacity: 0.62;
+  }
+  50% {
+    opacity: 0.96;
+  }
 }
 
 .required {
@@ -463,4 +494,3 @@ div[data-test-id="table-row"]:hover {
     @apply text-foreground;
   }
 }
-

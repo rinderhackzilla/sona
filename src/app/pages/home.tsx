@@ -9,6 +9,7 @@ import { DiscoverWeeklyCard } from '@/app/components/home/discover-weekly-card'
 import GenreDiscovery from '@/app/components/home/genre-discovery'
 import PreviewList from '@/app/components/home/preview-list'
 import { ThisIsArtist } from '@/app/components/home/this-is-artist'
+import { PageState } from '@/app/components/ui/page-state'
 import { useHomeDashboardData } from '@/app/hooks/use-home'
 import { useRenderCounter } from '@/app/hooks/use-render-counter'
 import { ROUTES } from '@/routes/routesList'
@@ -28,6 +29,48 @@ export default function Home() {
     genres,
     isGenresLoading,
   } = useHomeDashboardData()
+
+  const hasCriticalError =
+    similarArtists.isError && recentlyPlayed.isError && recentlyAdded.isError
+
+  if (hasCriticalError) {
+    return (
+      <PageState
+        variant="error"
+        title={t('states.error.title')}
+        description={t('states.error.homeDescription')}
+        actionLabel={t('states.error.retry')}
+        onAction={() => {
+          Promise.all([
+            similarArtists.refetch(),
+            recentlyPlayed.refetch(),
+            recentlyAdded.refetch(),
+          ]).catch(() => undefined)
+        }}
+      />
+    )
+  }
+
+  const hasAnyHomeContent =
+    (similarArtists.data?.list?.length ?? 0) > 0 ||
+    (recentlyPlayed.data?.list?.length ?? 0) > 0 ||
+    (recentlyAdded.data?.list?.length ?? 0) > 0 ||
+    genres.length > 0
+
+  const allLoaded =
+    !similarArtists.isLoading &&
+    !recentlyPlayed.isLoading &&
+    !recentlyAdded.isLoading &&
+    !isGenresLoading
+
+  if (allLoaded && !hasAnyHomeContent) {
+    return (
+      <PageState
+        title={t('states.empty.title')}
+        description={t('states.empty.homeDescription')}
+      />
+    )
+  }
 
   return (
     <div className="w-full px-4 py-4 sm:px-6 sm:py-5 lg:px-8">

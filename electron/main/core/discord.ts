@@ -77,7 +77,7 @@ function loginRPC() {
   const DISCORD_CLIENT_ID = import.meta.env.MAIN_VITE_DISCORD_CLIENT_ID
 
   if (!DISCORD_CLIENT_ID) {
-    console.log('Discord Client ID not found.')
+    console.warn('Discord Client ID not found.')
     return
   }
 

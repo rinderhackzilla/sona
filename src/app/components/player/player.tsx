@@ -1,12 +1,10 @@
 import { memo, useCallback, useEffect, useRef, useState } from 'react'
-import {
-  getCoverArtUrl,
-  getSongStreamUrl,
-} from '@/api/httpClient'
+import { getCoverArtUrl, getSongStreamUrl } from '@/api/httpClient'
 import { getProxyURL } from '@/api/podcastClient'
 import { SonaDjButton } from '@/app/components/fullscreen/sona-dj'
 import { RadioInfo } from '@/app/components/player/radio-info'
 import { TrackInfo } from '@/app/components/player/track-info'
+import { useRenderCounter } from '@/app/hooks/use-render-counter'
 import { podcasts } from '@/service/podcasts'
 import {
   getVolume,
@@ -23,7 +21,6 @@ import {
 import { LoopState } from '@/types/playerContext'
 import { logger } from '@/utils/logger'
 import { ReplayGainParams } from '@/utils/replayGain'
-import { useRenderCounter } from '@/app/hooks/use-render-counter'
 import { AudioPlayer } from './audio'
 import { PlayerClearQueueButton } from './clear-queue-button'
 import { PlayerControls } from './controls'
@@ -57,8 +54,12 @@ export function Player({ hideUi = false }: { hideUi?: boolean }) {
   const songDeckBRef = useRef<HTMLAudioElement>(null)
   const radioRef = useRef<HTMLAudioElement>(null)
   const podcastRef = useRef<HTMLAudioElement>(null)
-  const crossfadeIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
-  const crossfadeRetryTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const crossfadeIntervalRef = useRef<ReturnType<typeof setInterval> | null>(
+    null,
+  )
+  const crossfadeRetryTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  )
   const fadeOutStartedRef = useRef(false)
   const isCrossfadingRef = useRef(false)
   const crossfadeCommitRef = useRef(false)
@@ -382,7 +383,10 @@ export function Player({ hideUi = false }: { hideUi?: boolean }) {
 
       if (!crossfadeEnabled || !isSong) return
       if (isCrossfadingRef.current || fadeOutStartedRef.current) return
-      if (!Number.isFinite(audio.duration) || audio.duration <= CROSSFADE_DURATION_S * 2) {
+      if (
+        !Number.isFinite(audio.duration) ||
+        audio.duration <= CROSSFADE_DURATION_S * 2
+      ) {
         return
       }
 
@@ -613,7 +617,6 @@ export function Player({ hideUi = false }: { hideUi?: boolean }) {
                   audioRef={getAudioRef()}
                   disabled={!song && !radio && !podcast}
                 />
-
               </div>
             </div>
           </div>
@@ -624,3 +627,4 @@ export function Player({ hideUi = false }: { hideUi?: boolean }) {
     </>
   )
 }
+

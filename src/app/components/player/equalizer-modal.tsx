@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { Button } from '@/app/components/ui/button'
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from '@/app/components/ui/dialog'
-import { Button } from '@/app/components/ui/button'
 import {
   Select,
   SelectContent,
@@ -15,8 +15,12 @@ import {
   SelectValue,
 } from '@/app/components/ui/select'
 import { Switch } from '@/app/components/ui/switch'
+import {
+  getEqState,
+  setEqEnabled,
+  setEqGains,
+} from '@/app/hooks/use-audio-context'
 import { cn } from '@/lib/utils'
-import { setEqEnabled, setEqGains, getEqState } from '@/app/hooks/use-audio-context'
 
 interface EqualizerModalProps {
   open: boolean
@@ -56,9 +60,11 @@ export function EqualizerModal({ open, onOpenChange }: EqualizerModalProps) {
   const SVG_HEIGHT = 140
   const EQ_RANGE = 12
 
-  const clampGain = useCallback((value: number) =>
-    Math.max(-EQ_RANGE, Math.min(EQ_RANGE, Math.round(value)))
-  , [])
+  const clampGain = useCallback(
+    (value: number) =>
+      Math.max(-EQ_RANGE, Math.min(EQ_RANGE, Math.round(value))),
+    [],
+  )
 
   const normalizeGains = useCallback(
     (values: number[]) => values.map((value) => clampGain(value)),
@@ -105,7 +111,9 @@ export function EqualizerModal({ open, onOpenChange }: EqualizerModalProps) {
   const handlePresetChange = (preset: string) => {
     setSelectedPreset(preset)
     if (preset !== 'custom') {
-      const presetGains = normalizeGains(EQ_PRESETS[preset as keyof typeof EQ_PRESETS])
+      const presetGains = normalizeGains(
+        EQ_PRESETS[preset as keyof typeof EQ_PRESETS],
+      )
       setGains(presetGains)
       setEqGains(presetGains)
     }
@@ -288,7 +296,10 @@ export function EqualizerModal({ open, onOpenChange }: EqualizerModalProps) {
               {/* EQ Sliders */}
               <div className="grid grid-cols-8 gap-6 px-2">
                 {FREQUENCY_BANDS.map((band, index) => (
-                  <div key={band.hz} className="flex flex-col items-center gap-3">
+                  <div
+                    key={band.hz}
+                    className="flex flex-col items-center gap-3"
+                  >
                     <div className="text-xs font-medium text-muted-foreground text-center whitespace-nowrap">
                       {band.freq}
                     </div>
@@ -331,7 +342,6 @@ export function EqualizerModal({ open, onOpenChange }: EqualizerModalProps) {
               <div className="pointer-events-none absolute inset-0 rounded-xl bg-gradient-to-b from-background/20 via-background/10 to-background/40" />
             )}
           </div>
-
         </div>
       </DialogContent>
     </Dialog>

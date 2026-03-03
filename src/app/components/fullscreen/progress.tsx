@@ -30,10 +30,15 @@ export function FullscreenProgress() {
     ]
 
     const elements = fallbackCandidates
-      .map((selector) => document.querySelector(selector) as HTMLAudioElement | null)
+      .map(
+        (selector) =>
+          document.querySelector(selector) as HTMLAudioElement | null,
+      )
       .filter(Boolean) as HTMLAudioElement[]
 
-    const active = elements.find((audio) => !audio.paused && audio.readyState > 0)
+    const active = elements.find(
+      (audio) => !audio.paused && audio.readyState > 0,
+    )
     return active ?? elements[0] ?? null
   }, [audioPlayerRef])
 
@@ -121,7 +126,9 @@ export function FullscreenProgress() {
         className="min-w-[50px] max-w-[60px] text-left drop-shadow-lg cursor-pointer select-none"
         onClick={() => setShowRemaining((v) => !v)}
       >
-        {showRemaining ? remainingTime : convertSecondsToTime(currentDuration ?? 0)}
+        {showRemaining
+          ? remainingTime
+          : convertSecondsToTime(currentDuration ?? 0)}
       </div>
     </div>
   )

@@ -10,10 +10,7 @@ import { useAlbumsListModel } from './list.model'
 
 export default function AlbumsList() {
   const { isLoading, isEmpty, albums, albumsCount } = useAlbumsListModel()
-  const displayAlbums = useMemo(
-    () => dedupeAlbumsForDisplay(albums),
-    [albums],
-  )
+  const displayAlbums = useMemo(() => dedupeAlbumsForDisplay(albums), [albums])
   const displayAlbumsCount = displayAlbums.length
 
   if (isLoading) return <AlbumsFallback />

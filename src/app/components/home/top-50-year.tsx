@@ -1,10 +1,17 @@
-import { RefreshCw, Trophy, Play, Shuffle, Info } from 'lucide-react'
+import { Info, Play, RefreshCw, Shuffle, Trophy } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { Button } from '@/app/components/ui/button'
-import { Card, CardDescription, CardHeader, CardTitle } from '@/app/components/ui/card'
+import {
+  Card,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/app/components/ui/card'
 import { useTop50Year } from '@/app/hooks/use-top-50-year'
 import { usePlayerActions } from '@/store/player.store'
 
 export function Top50Year() {
+  const { t } = useTranslation()
   const {
     playlist,
     totalTracks,
@@ -25,12 +32,13 @@ export function Top50Year() {
               <Info className="h-5 w-5 mt-0.5 text-muted-foreground" />
               <div className="flex-1">
                 <CardTitle className="text-base mb-2">
-                  Your Top 50
+                  {t('top50.setupTitle')}
                 </CardTitle>
                 <CardDescription>
-                  Your top 50 most played tracks from the last 12 months based on your Last.fm listening history.
+                  {t('top50.setupDescription')}
                   <br />
-                  <strong>Setup:</strong> Configure your Last.fm username and API key in the sidebar settings (⚙️) → Integrations.
+                  <strong>{t('top50.setupPrefix')}</strong>{' '}
+                  {t('top50.setupInstructions')}
                 </CardDescription>
               </div>
             </div>
@@ -46,7 +54,7 @@ export function Top50Year() {
         <Card className="border-destructive">
           <CardHeader>
             <CardDescription className="text-destructive">
-              Error generating Your Top 50: {error}
+              {t('states.error.title')}: {error}
             </CardDescription>
           </CardHeader>
         </Card>
@@ -59,7 +67,7 @@ export function Top50Year() {
       <div className="mb-6">
         <div className="flex items-center gap-2 text-muted-foreground">
           <RefreshCw className="h-4 w-4 animate-spin" />
-          <span>Generating your Top 50 playlist...</span>
+          <span>{t('top50.generatingPlaylist')}</span>
         </div>
       </div>
     )
@@ -71,7 +79,7 @@ export function Top50Year() {
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-semibold flex items-center gap-2">
             <Trophy className="h-5 w-5" />
-            Your Top 50
+            {t('top50.headerTitle')}
           </h2>
           <Button
             variant="outline"
@@ -80,7 +88,7 @@ export function Top50Year() {
             disabled={isGenerating}
           >
             <RefreshCw className="h-4 w-4 mr-2" />
-            Generate Playlist
+            {t('top50.generatePlaylist')}
           </Button>
         </div>
       </div>
@@ -106,30 +114,22 @@ export function Top50Year() {
         <div>
           <h2 className="text-2xl font-semibold flex items-center gap-2">
             <Trophy className="h-5 w-5 text-yellow-500" />
-            Your Top 50
+            {t('top50.headerTitle')}
           </h2>
           {lastUpdated && (
             <p className="text-sm text-muted-foreground mt-1">
-              Last updated {lastUpdated}
+              {t('top50.updated', { date: lastUpdated })}
             </p>
           )}
         </div>
         <div className="flex gap-2">
-          <Button
-            variant="default"
-            size="sm"
-            onClick={handlePlayAll}
-          >
+          <Button variant="default" size="sm" onClick={handlePlayAll}>
             <Play className="h-4 w-4 mr-2" />
-            Play All
+            {t('generic.playAll')}
           </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handlePlayShuffle}
-          >
+          <Button variant="outline" size="sm" onClick={handlePlayShuffle}>
             <Shuffle className="h-4 w-4 mr-2" />
-            Shuffle
+            {t('generic.shuffle')}
           </Button>
           <Button
             variant="outline"
@@ -138,7 +138,7 @@ export function Top50Year() {
             disabled={isGenerating}
           >
             <RefreshCw className="h-4 w-4 mr-2" />
-            Refresh
+            {t('generic.refresh')}
           </Button>
         </div>
       </div>
@@ -146,13 +146,13 @@ export function Top50Year() {
       <Card>
         <div className="p-4">
           <p className="text-sm text-muted-foreground mb-4">
-            Your {totalTracks} most played tracks from the last 12 months
+            {t('playlist.songCount', { count: totalTracks })}
           </p>
           <div className="space-y-2">
             {playlist.slice(0, 10).map((song, index) => (
               <div
                 key={song.id}
-                className="flex items-center gap-3 p-2 rounded hover:bg-accent cursor-pointer"
+                className="flex cursor-pointer items-center gap-3 rounded p-2 transition-colors hover:bg-accent/70"
                 onClick={() => setSongList(playlist, index)}
               >
                 <div className="text-sm font-bold text-yellow-500 w-8">
@@ -172,7 +172,7 @@ export function Top50Year() {
           </div>
           {playlist.length > 10 && (
             <p className="text-sm text-muted-foreground text-center mt-4">
-              + {playlist.length - 10} more songs
+              + {t('generic.moreSongs', { count: playlist.length - 10 })}
             </p>
           )}
         </div>

@@ -1,4 +1,10 @@
-import { createContext, useContext, useState, useCallback, type ReactNode } from 'react'
+import {
+  createContext,
+  type ReactNode,
+  useCallback,
+  useContext,
+  useState,
+} from 'react'
 import { PlaylistSavedDialog } from '@/app/components/dialogs/playlist-saved-dialog'
 
 interface PlaylistDialogState {
@@ -11,7 +17,9 @@ interface PlaylistDialogContextValue {
   showPlaylistSaved: (playlistName: string, trackCount: number) => void
 }
 
-const PlaylistDialogContext = createContext<PlaylistDialogContextValue | null>(null)
+const PlaylistDialogContext = createContext<PlaylistDialogContextValue | null>(
+  null,
+)
 
 export function PlaylistDialogProvider({ children }: { children: ReactNode }) {
   const [dialog, setDialog] = useState<PlaylistDialogState>({
@@ -20,16 +28,19 @@ export function PlaylistDialogProvider({ children }: { children: ReactNode }) {
     trackCount: 0,
   })
 
-  const showPlaylistSaved = useCallback((playlistName: string, trackCount: number) => {
-    setDialog({
-      isOpen: true,
-      playlistName,
-      trackCount,
-    })
-  }, [])
+  const showPlaylistSaved = useCallback(
+    (playlistName: string, trackCount: number) => {
+      setDialog({
+        isOpen: true,
+        playlistName,
+        trackCount,
+      })
+    },
+    [],
+  )
 
   const handleClose = useCallback(() => {
-    setDialog(prev => ({ ...prev, isOpen: false }))
+    setDialog((prev) => ({ ...prev, isOpen: false }))
   }, [])
 
   return (
@@ -48,7 +59,9 @@ export function PlaylistDialogProvider({ children }: { children: ReactNode }) {
 export function usePlaylistDialog() {
   const context = useContext(PlaylistDialogContext)
   if (!context) {
-    throw new Error('usePlaylistDialog must be used within PlaylistDialogProvider')
+    throw new Error(
+      'usePlaylistDialog must be used within PlaylistDialogProvider',
+    )
   }
   return context
 }

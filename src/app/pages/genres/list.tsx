@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { AlbumsFallback } from '@/app/components/fallbacks/album-fallbacks'
 import ListWrapper from '@/app/components/list-wrapper'
 import { DataTable } from '@/app/components/ui/data-table'
+import { PageState } from '@/app/components/ui/page-state'
 import { genresColumns } from '@/app/tables/genres-columns'
 import { subsonic } from '@/service/subsonic'
 import { Genre } from '@/types/responses/genre'
@@ -58,7 +59,9 @@ export default function GenresList() {
       {/* Header */}
       <div className="w-full px-8 py-4 flex items-center justify-between border-b border-border/40">
         <div>
-          <h1 className="text-2xl font-bold">{t('sidebar.genres', 'Genres')}</h1>
+          <h1 className="text-2xl font-bold">
+            {t('sidebar.genres', 'Genres')}
+          </h1>
           <p className="text-sm text-muted-foreground mt-0.5">
             {t('genres.count', { count: merged.length })}
           </p>
@@ -66,15 +69,23 @@ export default function GenresList() {
       </div>
 
       <ListWrapper>
-        <MemoDataTable
-          columns={columns}
-          data={merged}
-          allowRowSelection={false}
-          showContextMenu={false}
-          showSearch={true}
-          searchColumn="value"
-          dataType="artist"
-        />
+        {merged.length === 0 ? (
+          <PageState
+            title={t('states.empty.title')}
+            description={t('states.empty.noResults')}
+            className="min-h-[260px]"
+          />
+        ) : (
+          <MemoDataTable
+            columns={columns}
+            data={merged}
+            allowRowSelection={false}
+            showContextMenu={false}
+            showSearch={true}
+            searchColumn="value"
+            dataType="artist"
+          />
+        )}
       </ListWrapper>
     </div>
   )

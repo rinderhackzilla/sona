@@ -33,8 +33,7 @@ export async function getAlbumColorPalette(
     const pixels = imageData.data
 
     // Collect color samples
-    const colors: Array<{ r: number; g: number; b: number; count: number }> =
-      []
+    const colors: Array<{ r: number; g: number; b: number; count: number }> = []
     const colorMap = new Map<string, number>()
 
     // Sample every 10th pixel for performance
@@ -84,7 +83,12 @@ export async function getAlbumColorPalette(
 
     // 1. Dominant: Most frequent color (but boosted saturation)
     const dominantColor = colors[0]
-    const dominant = boostSaturation(dominantColor.r, dominantColor.g, dominantColor.b, 1.2)
+    const dominant = boostSaturation(
+      dominantColor.r,
+      dominantColor.g,
+      dominantColor.b,
+      1.2,
+    )
 
     // 2. Vibrant: Highest saturation (boosted more)
     const vibrant = findMostVibrant(colors, 1.3)
@@ -95,8 +99,6 @@ export async function getAlbumColorPalette(
     // 4. Accent: Complementary to vibrant (not dominant)
     const vibrantRgb = hexToRgb(vibrant)
     const accent = getComplementaryColor(vibrantRgb)
-
-    console.log('🎨 Extracted colors:', { dominant, vibrant, muted, accent })
 
     return {
       dominant,
@@ -125,7 +127,11 @@ function rgbToHex(r: number, g: number, b: number): string {
   return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`
 }
 
-function rgbToHsl(r: number, g: number, b: number): {
+function rgbToHsl(
+  r: number,
+  g: number,
+  b: number,
+): {
   h: number
   s: number
   l: number

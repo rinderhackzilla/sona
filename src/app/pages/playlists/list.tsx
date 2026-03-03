@@ -10,6 +10,7 @@ import ListWrapper from '@/app/components/list-wrapper'
 import { EmptyPlaylistsPage } from '@/app/components/playlist/empty-page'
 import { Button } from '@/app/components/ui/button'
 import { DataTable } from '@/app/components/ui/data-table'
+import { PageState } from '@/app/components/ui/page-state'
 import { playlistsColumns } from '@/app/tables/playlists-columns'
 import { subsonic } from '@/service/subsonic'
 import { usePlayerActions } from '@/store/player.store'
@@ -21,7 +22,12 @@ export default function PlaylistsPage() {
   const { setSongList } = usePlayerActions()
   const { t } = useTranslation()
 
-  const { data: playlists, isLoading } = useQuery({
+  const {
+    data: playlists,
+    isLoading,
+    isError,
+    refetch,
+  } = useQuery({
     queryKey: [queryKeys.playlist.all],
     queryFn: subsonic.playlists.getAll,
   })
@@ -37,7 +43,30 @@ export default function PlaylistsPage() {
   }
 
   if (isLoading) return <SongListFallback />
-  if (!playlists) return null
+  if (isError) {
+    return (
+      <PageState
+        variant="error"
+        title={t('states.error.title')}
+        description={t('states.error.description', {
+          status: 500,
+          detail: t('generic.error'),
+        })}
+        actionLabel={t('states.error.retry')}
+        onAction={() => {
+          refetch().catch(() => undefined)
+        }}
+      />
+    )
+  }
+  if (!playlists) {
+    return (
+      <PageState
+        title={t('states.empty.title')}
+        description={t('states.empty.noResults')}
+      />
+    )
+  }
 
   const showTable = playlists.length > 0
 
@@ -54,7 +83,7 @@ export default function PlaylistsPage() {
         <Button
           size="sm"
           variant="default"
-          className="px-4"
+          className="h-9 px-3.5"
           onClick={() => setPlaylistDialogState(true)}
         >
           <PlusIcon className="w-5 h-5 -ml-[3px]" />

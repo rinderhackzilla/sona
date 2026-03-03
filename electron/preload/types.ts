@@ -31,6 +31,7 @@ export enum IpcChannels {
   UpdateDownloaded = 'update-downloaded',
   SetMiniPlayerMode = 'set-mini-player-mode',
   SetMiniPlayerPinned = 'set-mini-player-pinned',
+  ClearAppCache = 'clear-app-cache',
 }
 
 export type OverlayColors = {
@@ -105,4 +106,5 @@ export interface IAonsokuAPI {
   onUpdateDownloaded: (callback: (info: UpdateInfo) => void) => void
   setMiniPlayerMode: (enabled: boolean) => void
   setMiniPlayerPinned: (pinned: boolean) => void
+  clearAppCache: () => Promise<boolean>
 }

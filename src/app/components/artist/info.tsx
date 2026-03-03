@@ -12,7 +12,13 @@ export function ArtistInfo({ artist }: ArtistInfoProps) {
   const { data: artistInfo } = useGetArtistInfo(artist.id)
 
   const hasInfoToShow =
-    artistInfo !== undefined && artistInfo.biography !== undefined
+    artistInfo !== undefined &&
+    Boolean(
+      artistInfo.biography?.trim() ||
+        artistInfo.lastFmUrl?.trim() ||
+        artistInfo.musicBrainzId?.trim() ||
+        artistInfo.similarArtist?.length,
+    )
 
   const isArtistEmpty =
     artist.albumCount === undefined || artist.albumCount === 0

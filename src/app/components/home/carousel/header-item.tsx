@@ -104,31 +104,30 @@ export function HeaderItem({ song }: { song: ISong }) {
                   )}
                   <div className="mt-1 2xl:mt-2">
                     <div className="inline-flex items-center gap-2 rounded-md border border-foreground/15 bg-foreground/5 px-3 py-1.5 text-sm text-foreground/80 backdrop-blur-sm">
-                    {song.genre !== undefined && (
-                      <Link
-                        to={ROUTES.ALBUMS.GENRE(song.genre)}
-                        className="flex"
-                        data-testid="header-genre"
-                      >
-                        <span className="hover:text-foreground transition-colors">
-                          {song.genre}
-                        </span>
-                      </Link>
-                    )}
-                    {song.genre !== undefined && (song.year || song.duration) && (
-                      <span className="text-foreground/40">•</span>
-                    )}
-                    {song.year && (
-                      <span data-testid="header-year">
-                        {song.year}
+                      {song.genre !== undefined && (
+                        <Link
+                          to={ROUTES.ALBUMS.GENRE(song.genre)}
+                          className="flex"
+                          data-testid="header-genre"
+                        >
+                          <span className="hover:text-foreground transition-colors">
+                            {song.genre}
+                          </span>
+                        </Link>
+                      )}
+                      {song.genre !== undefined &&
+                        (song.year || song.duration) && (
+                          <span className="text-foreground/40">•</span>
+                        )}
+                      {song.year && (
+                        <span data-testid="header-year">{song.year}</span>
+                      )}
+                      {song.year && (
+                        <span className="text-foreground/40">•</span>
+                      )}
+                      <span data-testid="header-duration">
+                        {convertSecondsToTime(song.duration)}
                       </span>
-                    )}
-                    {song.year && (
-                      <span className="text-foreground/40">•</span>
-                    )}
-                    <span data-testid="header-duration">
-                      {convertSecondsToTime(song.duration)}
-                    </span>
                     </div>
                   </div>
                 </div>

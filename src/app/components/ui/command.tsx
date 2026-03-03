@@ -26,7 +26,7 @@ const CommandDialog = ({ children, ...props }: DialogProps) => {
     <Dialog {...props}>
       <DialogTitle className="sr-only">Search Dialog</DialogTitle>
       <DialogContent
-        className="overflow-hidden p-0 shadow-lg bg-transparent"
+        className="w-[min(96vw,56rem)] max-w-none max-h-[calc(100vh-2rem)] overflow-hidden rounded-2xl border border-border/60 bg-background/92 p-0 shadow-[0_20px_60px_hsl(var(--background)/0.85)] backdrop-blur-2xl"
         aria-describedby={undefined}
       >
         {children}
@@ -40,12 +40,15 @@ const CommandInput = React.forwardRef<
   React.ComponentPropsWithoutRef<typeof CommandPrimitive.Input>
 >(({ className, ...props }, ref) => (
   // eslint-disable-next-line react/no-unknown-property
-  <div className="flex items-center border-b px-3" cmdk-input-wrapper="">
-    <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
+  <div
+    className="flex items-center border-b border-border/70 bg-card/35 px-3.5"
+    cmdk-input-wrapper=""
+  >
+    <Search className="mr-2.5 h-4 w-4 shrink-0 opacity-70" />
     <CommandPrimitive.Input
       ref={ref}
       className={cn(
-        'flex h-11 w-full rounded-md bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50',
+        'flex h-13 w-full rounded-md bg-transparent py-3.5 text-[15px] font-medium outline-none placeholder:text-muted-foreground/85 disabled:cursor-not-allowed disabled:opacity-50',
         className,
       )}
       {...props}
@@ -61,7 +64,10 @@ const CommandList = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <CommandPrimitive.List
     ref={ref}
-    className={cn('max-h-[300px] overflow-y-auto overflow-x-hidden', className)}
+    className={cn(
+      'min-h-0 flex-1 overflow-y-auto overflow-x-hidden',
+      className,
+    )}
     {...props}
   />
 ))

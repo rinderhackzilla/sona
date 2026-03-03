@@ -1,10 +1,17 @@
-import { RefreshCw, Sparkles, Play, Shuffle, Info } from 'lucide-react'
+import { Info, Play, RefreshCw, Shuffle, Sparkles } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { Button } from '@/app/components/ui/button'
-import { Card, CardDescription, CardHeader, CardTitle } from '@/app/components/ui/card'
+import {
+  Card,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/app/components/ui/card'
 import { useDiscoverWeekly } from '@/app/hooks/use-discover-weekly'
 import { usePlayerActions } from '@/store/player.store'
 
 export function DiscoverWeekly() {
+  const { t } = useTranslation()
   const {
     playlist,
     isGenerating,
@@ -27,12 +34,13 @@ export function DiscoverWeekly() {
               <Info className="h-5 w-5 mt-0.5 text-muted-foreground" />
               <div className="flex-1">
                 <CardTitle className="text-base mb-2">
-                  Discover Weekly
+                  {t('discoverWeekly.setupTitle')}
                 </CardTitle>
                 <CardDescription>
-                  Get personalized song recommendations based on your Last.fm listening history.
+                  {t('discoverWeekly.setupDescription')}
                   <br />
-                  <strong>Setup:</strong> Configure your Last.fm username and API key in the sidebar settings (⚙️) → Integrations.
+                  <strong>{t('discoverWeekly.setupPrefix')}</strong>{' '}
+                  {t('discoverWeekly.setupInstructions')}
                 </CardDescription>
               </div>
             </div>
@@ -48,7 +56,7 @@ export function DiscoverWeekly() {
         <Card className="border-destructive">
           <CardHeader>
             <CardDescription className="text-destructive">
-              Error generating Discover Weekly: {error}
+              {t('states.error.title')}: {error}
             </CardDescription>
           </CardHeader>
         </Card>
@@ -61,7 +69,7 @@ export function DiscoverWeekly() {
       <div className="mb-6">
         <div className="flex items-center gap-2 text-muted-foreground">
           <RefreshCw className="h-4 w-4 animate-spin" />
-          <span>Generating your personalized playlist...</span>
+          <span>{t('discoverWeekly.generatingPlaylist')}</span>
         </div>
       </div>
     )
@@ -73,7 +81,7 @@ export function DiscoverWeekly() {
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-semibold flex items-center gap-2">
             <Sparkles className="h-5 w-5" />
-            Discover Weekly
+            {t('discoverWeekly.emptyTitle')}
           </h2>
           <Button
             variant="outline"
@@ -82,7 +90,7 @@ export function DiscoverWeekly() {
             disabled={isGenerating}
           >
             <RefreshCw className="h-4 w-4 mr-2" />
-            Generate Playlist
+            {t('discoverWeekly.generatePlaylist')}
           </Button>
         </div>
       </div>
@@ -108,31 +116,24 @@ export function DiscoverWeekly() {
         <div>
           <h2 className="text-2xl font-semibold flex items-center gap-2">
             <Sparkles className="h-5 w-5" />
-            Discover Weekly
+            {t('discoverWeekly.emptyTitle')}
           </h2>
           {lastUpdated && (
             <p className="text-sm text-muted-foreground mt-1">
-              Last updated {lastUpdated}
-              {artistsUsed.length > 0 && ` • ${artistsUsed.length} artists`}
+              {t('discoverWeekly.updated', { date: lastUpdated })}
+              {artistsUsed.length > 0 &&
+                ` • ${t('discoverWeekly.artistCount', { count: artistsUsed.length })}`}
             </p>
           )}
         </div>
         <div className="flex gap-2">
-          <Button
-            variant="default"
-            size="sm"
-            onClick={handlePlayAll}
-          >
+          <Button variant="default" size="sm" onClick={handlePlayAll}>
             <Play className="h-4 w-4 mr-2" />
-            Play All
+            {t('generic.playAll')}
           </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handlePlayShuffle}
-          >
+          <Button variant="outline" size="sm" onClick={handlePlayShuffle}>
             <Shuffle className="h-4 w-4 mr-2" />
-            Shuffle
+            {t('generic.shuffle')}
           </Button>
           <Button
             variant="outline"
@@ -141,7 +142,7 @@ export function DiscoverWeekly() {
             disabled={isGenerating}
           >
             <RefreshCw className="h-4 w-4 mr-2" />
-            Refresh
+            {t('generic.refresh')}
           </Button>
         </div>
       </div>
@@ -149,13 +150,13 @@ export function DiscoverWeekly() {
       <Card>
         <div className="p-4">
           <p className="text-sm text-muted-foreground mb-4">
-            {playlist.length} songs personalized for you
+            {t('playlist.songCount', { count: playlist.length })}
           </p>
           <div className="space-y-2">
             {playlist.slice(0, 10).map((song, index) => (
               <div
                 key={song.id}
-                className="flex items-center gap-3 p-2 rounded hover:bg-accent cursor-pointer"
+                className="flex cursor-pointer items-center gap-3 rounded p-2 transition-colors hover:bg-accent/70"
                 onClick={() => setSongList(playlist, index)}
               >
                 <div className="text-sm text-muted-foreground w-8">
@@ -175,7 +176,7 @@ export function DiscoverWeekly() {
           </div>
           {playlist.length > 10 && (
             <p className="text-sm text-muted-foreground text-center mt-4">
-              + {playlist.length - 10} more songs
+              + {t('generic.moreSongs', { count: playlist.length - 10 })}
             </p>
           )}
         </div>

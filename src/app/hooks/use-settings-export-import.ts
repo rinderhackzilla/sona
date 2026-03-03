@@ -97,7 +97,10 @@ export function useSettingsExportImport() {
           if (typeof p.hideRadiosSection === 'boolean') {
             pages.setHideRadiosSection(p.hideRadiosSection)
           }
-          if (p.artistsPageViewType === 'grid' || p.artistsPageViewType === 'table') {
+          if (
+            p.artistsPageViewType === 'grid' ||
+            p.artistsPageViewType === 'table'
+          ) {
             pages.setArtistsPageViewType(p.artistsPageViewType as PageViewType)
           }
           if (typeof p.imagesCacheLayerEnabled === 'boolean') {
@@ -115,13 +118,16 @@ export function useSettingsExportImport() {
         if (settings.integrations?.lidarr) {
           const l = settings.integrations.lidarr
           if (typeof l.url === 'string') integrations.lidarr.setUrl(l.url)
-          if (typeof l.apiKey === 'string') integrations.lidarr.setApiKey(l.apiKey)
+          if (typeof l.apiKey === 'string')
+            integrations.lidarr.setApiKey(l.apiKey)
         }
 
         if (settings.integrations?.lastfm) {
           const lf = settings.integrations.lastfm
-          if (typeof lf.username === 'string') integrations.lastfm.setUsername(lf.username)
-          if (typeof lf.apiKey === 'string') integrations.lastfm.setApiKey(lf.apiKey)
+          if (typeof lf.username === 'string')
+            integrations.lastfm.setUsername(lf.username)
+          if (typeof lf.apiKey === 'string')
+            integrations.lastfm.setApiKey(lf.apiKey)
           if (typeof lf.showThisIsArtist === 'boolean') {
             integrations.lastfm.setShowThisIsArtist(lf.showThisIsArtist)
           }
@@ -130,10 +136,14 @@ export function useSettingsExportImport() {
         if (settings.podcasts) {
           const pod = settings.podcasts
           if (typeof pod.active === 'boolean') podcasts.setActive(pod.active)
-          if (typeof pod.serviceUrl === 'string') podcasts.setServiceUrl(pod.serviceUrl)
-          if (typeof pod.useDefaultUser === 'boolean') podcasts.setUseDefaultUser(pod.useDefaultUser)
-          if (typeof pod.customUser === 'string') podcasts.setCustomUser(pod.customUser)
-          if (typeof pod.customUrl === 'string') podcasts.setCustomUrl(pod.customUrl)
+          if (typeof pod.serviceUrl === 'string')
+            podcasts.setServiceUrl(pod.serviceUrl)
+          if (typeof pod.useDefaultUser === 'boolean')
+            podcasts.setUseDefaultUser(pod.useDefaultUser)
+          if (typeof pod.customUser === 'string')
+            podcasts.setCustomUser(pod.customUser)
+          if (typeof pod.customUrl === 'string')
+            podcasts.setCustomUrl(pod.customUrl)
         }
 
         if (typeof settings.desktop?.minimizeToTray === 'boolean') {

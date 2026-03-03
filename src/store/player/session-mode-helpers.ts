@@ -1,12 +1,15 @@
-import { ISong } from '@/types/responses/song'
 import { SessionMode } from '@/types/playerContext'
+import { ISong } from '@/types/responses/song'
 import { isGenreUsable, normalizeGenreName } from '@/utils/genreNormalization'
 
 export const DEFAULT_FOCUS_GENRES = [
   'classical',
+  'soundtracks',
+  'soundtrack',
   'neo classical',
   'film score',
   'film scores',
+  'game soundtrack',
   'score',
   'films',
   'video game music',

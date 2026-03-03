@@ -1,7 +1,7 @@
 import { Rabbit } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import { useRabbitHole } from '@/app/hooks/use-rabbit-hole'
 import { ContextMenuItem } from '@/app/components/ui/context-menu'
+import { useRabbitHole } from '@/app/hooks/use-rabbit-hole'
 
 interface RabbitHoleMenuItemProps {
   type: 'artist' | 'album'

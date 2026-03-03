@@ -1,16 +1,16 @@
-import { useEffect, useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
 import { Play } from 'lucide-react'
+import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { ImageLoader } from '@/app/components/image-loader'
+import { Link } from 'react-router-dom'
 import { OnRepeatItem } from '@/app/components/home/carousel/on-repeat-item'
+import { ImageLoader } from '@/app/components/image-loader'
 import { Button } from '@/app/components/ui/button'
-import { ROUTES } from '@/routes/routesList'
-import { Albums } from '@/types/responses/album'
-import { subsonic } from '@/service/subsonic'
-import { usePlayerActions } from '@/store/player.store'
 import { useOnRepeat } from '@/app/hooks/use-on-repeat'
 import { cn } from '@/lib/utils'
+import { ROUTES } from '@/routes/routesList'
+import { subsonic } from '@/service/subsonic'
+import { usePlayerActions } from '@/store/player.store'
+import { Albums } from '@/types/responses/album'
 
 interface AlbumHeaderProps {
   albums: Albums[]
@@ -86,7 +86,10 @@ function AlbumHeaderItem({ album }: { album: Albums }) {
       {/* Content */}
       <div className="relative z-10 grid h-full grid-cols-[auto,minmax(0,1fr)] items-center gap-5 py-4 pl-7 pr-5 min-[1700px]:gap-6 min-[1700px]:py-5 min-[1700px]:pl-8 min-[1700px]:pr-6 min-[2600px]:gap-7 min-[2600px]:pl-9 min-[2600px]:pr-7">
         <div className="flex flex-col items-center justify-center gap-3">
-          <Link to={ROUTES.ALBUM.PAGE(album.id)} className="group relative block">
+          <Link
+            to={ROUTES.ALBUM.PAGE(album.id)}
+            className="group relative block"
+          >
             <ImageLoader id={album.coverArt} type="album">
               {(src) => (
                 <img
@@ -104,15 +107,11 @@ function AlbumHeaderItem({ album }: { album: Albums }) {
 
           <div className="w-[236px] min-[1700px]:w-[272px] min-[2600px]:w-[300px]">
             <div className="inline-flex w-full items-center justify-center gap-2 rounded-md border border-border/60 bg-background/70 px-3 py-1.5 text-center text-sm text-foreground/80 min-[2300px]:text-base">
-              {album.genre && (
-                <span className="truncate">{album.genre}</span>
-              )}
+              {album.genre && <span className="truncate">{album.genre}</span>}
               {album.genre && album.year && (
                 <span className="text-foreground/40">•</span>
               )}
-              {album.year && (
-                <span>{album.year}</span>
-              )}
+              {album.year && <span>{album.year}</span>}
             </div>
           </div>
         </div>
@@ -122,10 +121,7 @@ function AlbumHeaderItem({ album }: { album: Albums }) {
             <p className="text-sm text-muted-foreground/90 min-[1700px]:text-base">
               {t('home.recommendedAlbum')}
             </p>
-            <Link
-              to={ROUTES.ALBUM.PAGE(album.id)}
-              className="hover:underline"
-            >
+            <Link to={ROUTES.ALBUM.PAGE(album.id)} className="hover:underline">
               <h2 className="line-clamp-2 break-words text-[1.9rem] font-bold leading-tight min-[1700px]:text-[2.2rem] min-[2600px]:text-[2.45rem]">
                 {album.name}
               </h2>
@@ -201,9 +197,7 @@ export default function AlbumHeader({
       {title && (
         <div className="mb-4">
           <h2 className="text-3xl font-bold">{title}</h2>
-          {subtitle && (
-            <p className="text-muted-foreground mt-1">{subtitle}</p>
-          )}
+          {subtitle && <p className="text-muted-foreground mt-1">{subtitle}</p>}
         </div>
       )}
 
@@ -214,9 +208,15 @@ export default function AlbumHeader({
               key={`thumb-${item.type === 'onRepeat' ? 'on-repeat' : item.data.id}`}
               isActive={currentSlide === index}
               onClick={() => setCurrentSlide(index)}
-              coverArt={item.type === 'onRepeat' ? item.data.song.coverArt : item.data.coverArt}
+              coverArt={
+                item.type === 'onRepeat'
+                  ? item.data.song.coverArt
+                  : item.data.coverArt
+              }
               type="album"
-              alt={item.type === 'onRepeat' ? item.data.song.title : item.data.name}
+              alt={
+                item.type === 'onRepeat' ? item.data.song.title : item.data.name
+              }
             />
           ))}
         </div>

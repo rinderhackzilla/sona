@@ -2,9 +2,9 @@ import { Download } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { CommandGroup, CommandItem } from '@/app/components/ui/command'
-import { CommandItemProps } from './command-menu'
 import { lidarr } from '@/service/lidarr'
 import { useAppIntegrations } from '@/store/app.store'
+import { CommandItemProps } from './command-menu'
 
 interface CommandLidarrRequestProps extends CommandItemProps {
   searchQuery: string

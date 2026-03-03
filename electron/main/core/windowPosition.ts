@@ -205,7 +205,7 @@ export class StatefulBrowserWindow extends BrowserWindow {
 
       windowStore.set({ ...this.state })
     } catch (error) {
-      console.log('Unable to save window position to store.', error)
+      console.error('Unable to save window position to store.', error)
     }
   }
 }

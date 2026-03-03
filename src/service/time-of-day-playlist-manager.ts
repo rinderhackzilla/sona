@@ -34,7 +34,10 @@ export function shouldGenerateTimeOfDayPlaylist() {
     const { windowKey } = getCurrentDayPart()
     return metadata.windowKey !== windowKey
   } catch (error) {
-    console.error('[DayPartPlaylist] Failed to verify generation status:', error)
+    console.error(
+      '[DayPartPlaylist] Failed to verify generation status:',
+      error,
+    )
     return true
   }
 }
@@ -60,34 +63,28 @@ export async function generateAndSaveTimeOfDayPlaylist(force: boolean = false) {
 export async function generateAndSaveTimeOfDayPlaylistWithRetry(
   force: boolean = false,
 ) {
-  return runWithRetry(
-    () => generateAndSaveTimeOfDayPlaylist(force),
-    {
-      taskName: force ? 'daypart-generate-force' : 'daypart-generate',
-      policy: {
-        retries: 2,
-        baseDelayMs: 500,
-        maxDelayMs: 4000,
-      },
+  return runWithRetry(() => generateAndSaveTimeOfDayPlaylist(force), {
+    taskName: force ? 'daypart-generate-force' : 'daypart-generate',
+    policy: {
+      retries: 2,
+      baseDelayMs: 500,
+      maxDelayMs: 4000,
     },
-  )
+  })
 }
 
 export async function checkAndCatchUpTimeOfDayPlaylist() {
   if (!shouldGenerateTimeOfDayPlaylist()) return false
 
   try {
-    await runWithRetry(
-      () => generateAndSaveTimeOfDayPlaylist(false),
-      {
-        taskName: 'daypart-catchup',
-        policy: {
-          retries: 2,
-          baseDelayMs: 500,
-          maxDelayMs: 4000,
-        },
+    await runWithRetry(() => generateAndSaveTimeOfDayPlaylist(false), {
+      taskName: 'daypart-catchup',
+      policy: {
+        retries: 2,
+        baseDelayMs: 500,
+        maxDelayMs: 4000,
       },
-    )
+    })
     return true
   } catch (error) {
     console.error('[DayPartPlaylist] Catch-up generation failed:', error)
@@ -95,7 +92,9 @@ export async function checkAndCatchUpTimeOfDayPlaylist() {
   }
 }
 
-export function startTimeOfDayScheduler(onGenerate?: (success: boolean) => void) {
+export function startTimeOfDayScheduler(
+  onGenerate?: (success: boolean) => void,
+) {
   let timeoutId: NodeJS.Timeout | null = null
 
   const scheduleNext = () => {
@@ -103,22 +102,19 @@ export function startTimeOfDayScheduler(onGenerate?: (success: boolean) => void)
 
     timeoutId = setTimeout(async () => {
       try {
-        await runWithRetry(
-          () => generateAndSaveTimeOfDayPlaylist(true),
-          {
-            taskName: 'daypart-scheduled-generate',
-            policy: {
-              retries: 2,
-              baseDelayMs: 800,
-              maxDelayMs: 6000,
-            },
-            onRetry: ({ attempt, delayMs }) => {
-              console.warn(
-                `[DayPartPlaylist] Scheduled retry ${attempt} in ${delayMs}ms`,
-              )
-            },
+        await runWithRetry(() => generateAndSaveTimeOfDayPlaylist(true), {
+          taskName: 'daypart-scheduled-generate',
+          policy: {
+            retries: 2,
+            baseDelayMs: 800,
+            maxDelayMs: 6000,
           },
-        )
+          onRetry: ({ attempt, delayMs }) => {
+            console.warn(
+              `[DayPartPlaylist] Scheduled retry ${attempt} in ${delayMs}ms`,
+            )
+          },
+        })
         onGenerate?.(true)
       } catch (error) {
         console.error('[DayPartPlaylist] Scheduled generation failed:', error)

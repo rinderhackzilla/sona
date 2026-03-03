@@ -17,18 +17,17 @@ import {
   InfinitySongListFallback,
   SongListFallback,
 } from '@/app/components/fallbacks/song-fallbacks'
+// Direct imports (not lazy) to avoid suspense issues
+import BaseLayout from '@/app/layout/base'
+import DaypartPlaylistPage from '@/app/pages/daypart-playlist'
+import DiscoverWeekly from '@/app/pages/discover-weekly'
+import ErrorPage from '@/app/pages/error-page'
+import ThisIsArtistPage from '@/app/pages/this-is-artist'
+import Top50Year from '@/app/pages/top-50-year'
 import { albumsLoader } from '@/routes/loaders/albumsLoader'
 import { loginLoader } from '@/routes/loginLoader'
 import { podcastsLoader, protectedLoader } from '@/routes/protectedLoader'
 import { ROUTES } from '@/routes/routesList'
-
-// Direct imports (not lazy) to avoid suspense issues
-import BaseLayout from '@/app/layout/base'
-import DiscoverWeekly from '@/app/pages/discover-weekly'
-import DaypartPlaylistPage from '@/app/pages/daypart-playlist'
-import ErrorPage from '@/app/pages/error-page'
-import ThisIsArtistPage from '@/app/pages/this-is-artist'
-import Top50Year from '@/app/pages/top-50-year'
 
 const Album = lazy(() => import('@/app/pages/albums/album'))
 const AlbumsList = lazy(() => import('@/app/pages/albums/list'))

@@ -111,14 +111,20 @@ export function getSimpleCoverArtUrl(
   type: CoverArt = 'album',
   size = '300',
 ): string {
+  // everything except artists uses the same default cover art
+  const resolvedType = type === 'artist' ? 'artist' : 'album'
+  const baseUrl = import.meta.env.BASE_URL || '/'
+  const fallbackUrl = `${baseUrl}default_${resolvedType}_art.png`
+
   if (!id) {
-    // everything except artists uses the same default cover art
-    const resolvedType = type === 'artist' ? 'artist' : 'album'
-    const baseUrl = import.meta.env.BASE_URL || '/'
-    return `${baseUrl}default_${resolvedType}_art.png`
+    return fallbackUrl
   }
 
-  return getUrl('getCoverArt', { id, size })
+  try {
+    return getUrl('getCoverArt', { id, size })
+  } catch {
+    return fallbackUrl
+  }
 }
 
 export async function getCoverArtUrl(
@@ -159,7 +165,6 @@ export function getSongStreamUrl(
     id,
     maxBitRate,
     format,
-    estimateContentLength: 'true',
   })
 }
 

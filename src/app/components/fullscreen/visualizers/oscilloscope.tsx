@@ -65,8 +65,8 @@ export function Oscilloscope() {
 
     const NUM_H = 22
     const NUM_V = 16
-    const NUM_SEG = 8   // fewer segments = smoother grid appearance
-    const HORIZON = 0.50
+    const NUM_SEG = 8 // fewer segments = smoother grid appearance
+    const HORIZON = 0.5
 
     type FlyOrb = { tx: number; ty: number; t: number; speed: number }
     const orbs: FlyOrb[] = []
@@ -95,7 +95,7 @@ export function Oscilloscope() {
       const hy = h * HORIZON
       const palette = paletteRef.current
       const c1 = palette?.vibrant ?? null
-      const c2 = palette?.accent ?? null  // single accent color for orbs
+      const c2 = palette?.accent ?? null // single accent color for orbs
       let bassSum = 0
       let midSum = 0
       let highSum = 0
@@ -111,26 +111,33 @@ export function Oscilloscope() {
       for (let i = 0; i < 6; i++) bassRawSum += freqBuf[i]
       const bassRaw = bassRawSum / 6 / 255
 
-      scrollPhase = (scrollPhase + 0.014 + bassAvg * 0.10) % 1.0
+      scrollPhase = (scrollPhase + 0.014 + bassAvg * 0.1) % 1.0
       hueShift = (hueShift + 0.4 + midAvg * 1.8 + highAvg * 0.8) % 360
 
       // Grid intensity: mids and highs drive brightness, bass is subdued
-      const gridIntensity = 0.18 + bassAvg * 0.14 + midAvg * 0.52 + highAvg * 0.34
+      const gridIntensity =
+        0.18 + bassAvg * 0.14 + midAvg * 0.52 + highAvg * 0.34
 
       ctx.clearRect(0, 0, w, h)
       ctx.lineCap = 'round'
 
       // ── Convergence lines — flash when frequency is active ────────────────────────
-      const drawConvLines = (toX: (t: number) => number, toY: (t: number) => number) => {
+      const drawConvLines = (
+        toX: (t: number) => number,
+        toY: (t: number) => number,
+      ) => {
         for (let i = 0; i <= NUM_V; i++) {
           const t = i / NUM_V
           const freqIdx = Math.floor(t * 50)
           const fv = smoothed[freqIdx] / 255
           if (fv < 0.22) continue
 
-          const alpha = ((fv - 0.22) / 0.78 * 0.55 + bassAvg * 0.18) * gridIntensity
+          const alpha =
+            (((fv - 0.22) / 0.78) * 0.55 + bassAvg * 0.18) * gridIntensity
           const hue = (hueShift + t * 90) % 360
-          const col = c1 ? hexToRgba(c1, alpha) : `hsla(${hue}, 90%, 60%, ${alpha})`
+          const col = c1
+            ? hexToRgba(c1, alpha)
+            : `hsla(${hue}, 90%, 60%, ${alpha})`
 
           ctx.beginPath()
           ctx.moveTo(cx, hy)
@@ -138,29 +145,52 @@ export function Oscilloscope() {
           ctx.strokeStyle = col
           ctx.lineWidth = 0.5 + fv * 1.8
           ctx.shadowBlur = fv > 0.55 ? fv * 14 : 0
-          ctx.shadowColor = c2 ? hexToRgba(c2, fv * 0.5) : `hsla(${hue}, 100%, 65%, ${fv * 0.5})`
+          ctx.shadowColor = c2
+            ? hexToRgba(c2, fv * 0.5)
+            : `hsla(${hue}, 100%, 65%, ${fv * 0.5})`
           ctx.stroke()
         }
         ctx.shadowBlur = 0
       }
 
-      drawConvLines(t => t * w, _ => h)
-      drawConvLines(t => t * w, _ => 0)
-      drawConvLines(_ => 0, t => t * h)
-      drawConvLines(_ => w, t => t * h)
+      drawConvLines(
+        (t) => t * w,
+        (_) => h,
+      )
+      drawConvLines(
+        (t) => t * w,
+        (_) => 0,
+      )
+      drawConvLines(
+        (_) => 0,
+        (t) => t * h,
+      )
+      drawConvLines(
+        (_) => w,
+        (t) => t * h,
+      )
 
       // ── Depth lines — 4-wall square tunnel ───────────────────────────────────────
       type Side = 'floor' | 'ceil' | 'left' | 'right'
 
       // Frequency index 0 = bass (dark, muted), index 55 = highs (bright, vivid).
       // t0 is the segment position (0=left/bass, 1=right/highs on floor panel).
-      const segColor = (freqIdx: number, fv: number, alpha: number, side: Side) => {
-        const hue = (hueShift + (freqIdx / 55) * 80 + (side === 'ceil' || side === 'right' ? 55 : 0)) % 360
-        const isHighFreq = freqIdx > 28   // mids and above
-        const isMidFreq  = freqIdx > 10 && freqIdx <= 28
+      const segColor = (
+        freqIdx: number,
+        fv: number,
+        alpha: number,
+        side: Side,
+      ) => {
+        const hue =
+          (hueShift +
+            (freqIdx / 55) * 80 +
+            (side === 'ceil' || side === 'right' ? 55 : 0)) %
+          360
+        const isHighFreq = freqIdx > 28 // mids and above
+        const isMidFreq = freqIdx > 10 && freqIdx <= 28
         // Bass: darker, lower lightness even when active
         if (!isHighFreq && !isMidFreq) {
-          const l = 28 + fv * 18  // 28–46% lightness for bass
+          const l = 28 + fv * 18 // 28–46% lightness for bass
           return `hsla(${hue}, 65%, ${l}%, ${alpha * (0.5 + fv * 0.4)})`
         }
         // Mids: medium brightness
@@ -170,7 +200,8 @@ export function Oscilloscope() {
           return `hsla(${hue}, 85%, ${l}%, ${alpha * (0.55 + fv * 0.45)})`
         }
         // Highs: full brightness, accent color when hot
-        if (fv > 0.55) return c2 ? hexToRgba(c2, alpha) : `hsla(${hue}, 100%, 80%, ${alpha})`
+        if (fv > 0.55)
+          return c2 ? hexToRgba(c2, alpha) : `hsla(${hue}, 100%, 80%, ${alpha})`
         if (c1 && fv > 0.25) return hexToRgba(c1, alpha * (0.5 + fv * 0.5))
         const l = 60 + fv * 20
         return `hsla(${hue}, 95%, ${l}%, ${alpha})`
@@ -180,7 +211,7 @@ export function Oscilloscope() {
         const isHoriz = side === 'floor' || side === 'ceil'
 
         for (let i = 0; i < NUM_H + 2; i++) {
-          const rawPhase = ((i / NUM_H) + scrollPhase) % 1.0
+          const rawPhase = (i / NUM_H + scrollPhase) % 1.0
           const screenT = rawPhase * rawPhase
 
           let lx0: number
@@ -194,16 +225,20 @@ export function Oscilloscope() {
             const y = hy + dir * panelH * screenT
             if (side === 'floor' && y >= h + 2) continue
             if (side === 'ceil' && y <= -2) continue
-            lx0 = cx - cx * screenT;       ly0 = y
-            lx1 = cx + (w - cx) * screenT; ly1 = y
+            lx0 = cx - cx * screenT
+            ly0 = y
+            lx1 = cx + (w - cx) * screenT
+            ly1 = y
           } else {
             const dir = side === 'left' ? -1 : 1
             const panelW = side === 'left' ? cx : w - cx
             const x = cx + dir * panelW * screenT
             if (side === 'left' && x <= -2) continue
             if (side === 'right' && x >= w + 2) continue
-            lx0 = x; ly0 = hy - hy * screenT
-            lx1 = x; ly1 = hy + (h - hy) * screenT
+            lx0 = x
+            ly0 = hy - hy * screenT
+            lx1 = x
+            ly1 = hy + (h - hy) * screenT
           }
 
           for (let s = 0; s < NUM_SEG; s++) {
@@ -215,18 +250,29 @@ export function Oscilloscope() {
             let sx1: number
             let sy1: number
             if (isHoriz) {
-              sx0 = lx0 + (lx1 - lx0) * t0; sy0 = ly0
-              sx1 = lx0 + (lx1 - lx0) * t1; sy1 = ly1
+              sx0 = lx0 + (lx1 - lx0) * t0
+              sy0 = ly0
+              sx1 = lx0 + (lx1 - lx0) * t1
+              sy1 = ly1
             } else {
-              sx0 = lx0; sy0 = ly0 + (ly1 - ly0) * t0
-              sx1 = lx1; sy1 = ly0 + (ly1 - ly0) * t1
+              sx0 = lx0
+              sy0 = ly0 + (ly1 - ly0) * t0
+              sx1 = lx1
+              sy1 = ly0 + (ly1 - ly0) * t1
             }
 
             if (screenT > 0.45) {
-              const wobble = screenT * (bassAvg * 6 + midAvg * 3)
-                * Math.sin(scrollPhase * Math.PI * 10 + s * 0.9 + i * 0.5)
-              if (isHoriz) { sy0 += wobble; sy1 += wobble }
-              else { sx0 += wobble; sx1 += wobble }
+              const wobble =
+                screenT *
+                (bassAvg * 6 + midAvg * 3) *
+                Math.sin(scrollPhase * Math.PI * 10 + s * 0.9 + i * 0.5)
+              if (isHoriz) {
+                sy0 += wobble
+                sy1 += wobble
+              } else {
+                sx0 += wobble
+                sx1 += wobble
+              }
             }
 
             const freqIdx = Math.floor(t0 * 55)
@@ -246,10 +292,12 @@ export function Oscilloscope() {
             ctx.strokeStyle = col
             ctx.lineWidth = lineW
 
-            if (screenT > 0.65 && fv > 0.40) {
+            if (screenT > 0.65 && fv > 0.4) {
               const hue = (hueShift + t0 * 100) % 360
               ctx.shadowBlur = screenT * fv * 22
-              ctx.shadowColor = c1 ? hexToRgba(c1, fv * 0.85) : `hsla(${hue}, 100%, 65%, ${fv * 0.75})`
+              ctx.shadowColor = c1
+                ? hexToRgba(c1, fv * 0.85)
+                : `hsla(${hue}, 100%, 65%, ${fv * 0.75})`
             } else {
               ctx.shadowBlur = 0
             }
@@ -273,20 +321,33 @@ export function Oscilloscope() {
         const hHue = (hueShift + 30) % 360
         if (hcol) {
           grad.addColorStop(0, hexToRgba(hcol, 0))
-          grad.addColorStop(0.5, hexToRgba(hcol, (0.28 + bassAvg * 0.42) * gridIntensity))
+          grad.addColorStop(
+            0.5,
+            hexToRgba(hcol, (0.28 + bassAvg * 0.42) * gridIntensity),
+          )
           grad.addColorStop(1, hexToRgba(hcol, 0))
         } else {
           grad.addColorStop(0, `hsla(${hHue}, 100%, 65%, 0)`)
-          grad.addColorStop(0.5, `hsla(${hHue}, 100%, 65%, ${(0.25 + bassAvg * 0.38) * gridIntensity})`)
+          grad.addColorStop(
+            0.5,
+            `hsla(${hHue}, 100%, 65%, ${(0.25 + bassAvg * 0.38) * gridIntensity})`,
+          )
           grad.addColorStop(1, `hsla(${hHue}, 100%, 65%, 0)`)
         }
         ctx.beginPath()
-        if (horiz) { ctx.moveTo(0, hy); ctx.lineTo(w, hy) }
-        else { ctx.moveTo(cx, 0); ctx.lineTo(cx, h) }
+        if (horiz) {
+          ctx.moveTo(0, hy)
+          ctx.lineTo(w, hy)
+        } else {
+          ctx.moveTo(cx, 0)
+          ctx.lineTo(cx, h)
+        }
         ctx.strokeStyle = grad
         ctx.lineWidth = 1.5 + bassAvg * 2.5
         ctx.shadowBlur = 10 + bassAvg * 25
-        ctx.shadowColor = hcol ? hexToRgba(hcol, 0.8) : `hsla(${hHue}, 100%, 70%, 0.7)`
+        ctx.shadowColor = hcol
+          ? hexToRgba(hcol, 0.8)
+          : `hsla(${hHue}, 100%, 70%, 0.7)`
         ctx.stroke()
         ctx.shadowBlur = 0
       }
@@ -295,10 +356,15 @@ export function Oscilloscope() {
       // Derivative approach: fire when the raw bass *rises* sharply this frame.
       // prevBassSmooth lags behind bassRaw so any sudden rise produces a large delta.
       const beatDelta = Math.max(0, bassRaw - prevBassSmooth)
-      prevBassSmooth = prevBassSmooth * 0.80 + bassRaw * 0.20
+      prevBassSmooth = prevBassSmooth * 0.8 + bassRaw * 0.2
       if (beatCooldown > 0) beatCooldown--
 
-      if (beatDelta > 0.045 && bassRaw > 0.08 && beatCooldown === 0 && orbs.length < 10) {
+      if (
+        beatDelta > 0.045 &&
+        bassRaw > 0.08 &&
+        beatCooldown === 0 &&
+        orbs.length < 10
+      ) {
         const count = beatDelta > 0.14 ? 3 : beatDelta > 0.08 ? 2 : 1
         for (let i = 0; i < count; i++) {
           const angle = Math.random() * Math.PI * 2
@@ -306,20 +372,23 @@ export function Oscilloscope() {
             tx: 0.5 + Math.cos(angle) * (0.28 + Math.random() * 0.38),
             ty: 0.5 + Math.sin(angle) * (0.28 + Math.random() * 0.38),
             t: 0,
-            speed: 0.008 + Math.random() * 0.010,
+            speed: 0.008 + Math.random() * 0.01,
           })
         }
         beatCooldown = 12
       }
 
       // ── Flying orbs — hard edges, single accent color ─────────────────────────────
-      const orbColor = c2 ?? c1  // always accent color
+      const orbColor = c2 ?? c1 // always accent color
       const orbHue = (hueShift + 60) % 360
 
       for (let i = orbs.length - 1; i >= 0; i--) {
         const orb = orbs[i]
         orb.t += orb.speed * (1 + bassAvg * 2.0)
-        if (orb.t >= 1) { orbs.splice(i, 1); continue }
+        if (orb.t >= 1) {
+          orbs.splice(i, 1)
+          continue
+        }
 
         const sx = cx + (orb.tx * w - cx) * orb.t
         const sy = hy + (orb.ty * h - hy) * orb.t
@@ -333,7 +402,7 @@ export function Oscilloscope() {
         ctx.beginPath()
         ctx.arc(sx, sy, r, 0, Math.PI * 2)
         ctx.fillStyle = orbColor
-          ? hexToRgba(orbColor, alpha * 0.90)
+          ? hexToRgba(orbColor, alpha * 0.9)
           : `hsla(${orbHue}, 100%, 65%, ${alpha * 0.85})`
         ctx.shadowBlur = 18 + (1 - orb.t) * 16
         ctx.shadowColor = orbColor
@@ -363,5 +432,3 @@ export function Oscilloscope() {
 
   return <canvas ref={canvasRef} className="absolute inset-0 w-full h-full" />
 }
-
-

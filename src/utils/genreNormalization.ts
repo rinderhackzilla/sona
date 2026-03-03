@@ -53,14 +53,14 @@ export const GENRE_GROUPS: Record<string, string[]> = {
     'soul/r&b',
     'r&b/soul',
   ],
-  'Electronic': [
+  Electronic: [
     'electronic',
     'electronica',
     'electro',
     'elektronisch',
     'electronics',
   ],
-  'Classical': [
+  Classical: [
     'classical',
     'classique',
     'klassik',

@@ -4,14 +4,14 @@ import { immer } from 'zustand/middleware/immer'
 import { createWithEqualityFn } from 'zustand/traditional'
 import { IThemeContext, Theme } from '@/types/themeContext'
 import {
-  LAST_NON_SESSION_THEME_KEY,
-  SESSION_PREVIOUS_THEME_KEY,
-} from '@/utils/session-storage-keys'
-import {
   safeStorageGet,
   safeStorageRemove,
   safeStorageSet,
 } from '@/utils/safe-storage'
+import {
+  LAST_NON_SESSION_THEME_KEY,
+  SESSION_PREVIOUS_THEME_KEY,
+} from '@/utils/session-storage-keys'
 import { getValidThemeFromEnv } from '@/utils/theme'
 
 const appThemeFromEnv = getValidThemeFromEnv()
@@ -31,7 +31,8 @@ export const useThemeStore = createWithEqualityFn<IThemeContext>()(
             set((state) => {
               state.theme = theme
             })
-            if (!SESSION_THEMES.has(theme)) safeStorageSet(LAST_NON_SESSION_THEME_KEY, theme)
+            if (!SESSION_THEMES.has(theme))
+              safeStorageSet(LAST_NON_SESSION_THEME_KEY, theme)
           },
         })),
         {
@@ -64,7 +65,8 @@ export const useThemeStore = createWithEqualityFn<IThemeContext>()(
             }
           }
 
-          if (!SESSION_THEMES.has(resolvedTheme)) safeStorageSet(LAST_NON_SESSION_THEME_KEY, resolvedTheme)
+          if (!SESSION_THEMES.has(resolvedTheme))
+            safeStorageSet(LAST_NON_SESSION_THEME_KEY, resolvedTheme)
 
           return {
             ...merged,

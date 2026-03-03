@@ -2,8 +2,8 @@ import { useMutation } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'react-toastify'
 import { getRabbitHoleService } from '@/service/rabbit-hole'
-import { usePlayerActions } from '@/store/player.store'
 import { useAppIntegrations } from '@/store/app.store'
+import { usePlayerActions } from '@/store/player.store'
 import type { ISong } from '@/types/responses/song'
 
 interface RabbitHoleParams {
@@ -79,17 +79,15 @@ export function useRabbitHole() {
 
       // Set the queue and start playing
       setSongList(songs, 0, true) // Start at index 0, shuffle enabled
-      
-      toast.success(
-        t('rabbitHole.queueCreated', { count: songs.length }),
-      )
+
+      toast.success(t('rabbitHole.queueCreated', { count: songs.length }))
     },
     onError: (error) => {
       // Dismiss loading toast
       toast.dismiss('rabbit-hole')
 
       console.error('Rabbit Hole error:', error)
-      
+
       if (error instanceof Error) {
         if (error.message.includes('Last.fm API key')) {
           toast.error(t('rabbitHole.apiKeyMissing'))

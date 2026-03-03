@@ -17,9 +17,13 @@ const MemoFullscreenSongImage = memo(FullscreenSongImage)
 
 interface SongInfoProps {
   isChromeVisible: boolean
+  isPanelOpen?: boolean
 }
 
-export function SongInfo({ isChromeVisible }: SongInfoProps) {
+export function SongInfo({
+  isChromeVisible,
+  isPanelOpen = false,
+}: SongInfoProps) {
   const currentSong = usePlayerStore((state) => state.songlist.currentSong)
   const navigate = useNavigate()
   const closeButtonRef = useRef<HTMLButtonElement>(null)
@@ -55,22 +59,19 @@ export function SongInfo({ isChromeVisible }: SongInfoProps) {
   return (
     <ContextMenuProvider
       options={
-        <SongMenuOptions
-          variant="context"
-          song={currentSong}
-          index={0}
-        />
+        <SongMenuOptions variant="context" song={currentSong} index={0} />
       }
     >
       <div
         className={cn(
-          'flex items-center justify-start h-full min-h-full max-h-full gap-4 2xl:gap-6 flex-1 overflow-visible transition-all duration-700 [transition-timing-function:cubic-bezier(0.22,1,0.36,1)]',
+          'flex items-center justify-start h-full min-h-full max-h-full gap-4 2xl:gap-6 flex-1 overflow-visible transition-all duration-420 [transition-timing-function:cubic-bezier(0.22,1,0.36,1)]',
           isChromeVisible ? 'pt-2 translate-y-0' : 'pt-1 translate-y-0',
+          isPanelOpen && 'opacity-0 scale-[0.97] saturate-0',
         )}
       >
         {/* Hidden close button for programmatic closing */}
         <DrawerClose ref={closeButtonRef} className="hidden" />
-        
+
         <MemoFullscreenSongImage isChromeVisible={isChromeVisible} />
 
         <div
@@ -82,7 +83,7 @@ export function SongInfo({ isChromeVisible }: SongInfoProps) {
           )}
         >
           <MarqueeTitle gap="mr-6">
-            <h2 
+            <h2
               className="scroll-m-20 text-4xl 2xl:text-5xl font-bold tracking-tight py-2 2xl:py-3 text-shadow-md hover:underline cursor-pointer"
               onClick={handleTitleClick}
             >
@@ -90,7 +91,7 @@ export function SongInfo({ isChromeVisible }: SongInfoProps) {
             </h2>
           </MarqueeTitle>
           <div className="text-base 2xl:text-lg flex gap-1 text-foreground/70 truncate maskImage-marquee-fade-finished">
-            <p 
+            <p
               className="truncate text-shadow-lg text-foreground hover:underline cursor-pointer"
               onClick={handleAlbumClick}
             >
@@ -101,10 +102,18 @@ export function SongInfo({ isChromeVisible }: SongInfoProps) {
           </div>
           <div className="mt-2 2xl:mt-3 mb-[1px]">
             <div className="inline-flex items-center gap-2 rounded-md border border-primary/15 bg-primary/10 px-3 py-1.5 text-sm text-foreground/82 backdrop-blur-sm">
-              {currentSong.genre && <span className="truncate max-w-[220px]">{currentSong.genre}</span>}
-              {currentSong.genre && currentSong.year && <span className="text-foreground/40">•</span>}
+              {currentSong.genre && (
+                <span className="truncate max-w-[220px]">
+                  {currentSong.genre}
+                </span>
+              )}
+              {currentSong.genre && currentSong.year && (
+                <span className="text-foreground/40">•</span>
+              )}
               {currentSong.year && <span>{currentSong.year}</span>}
-              {(currentSong.genre || currentSong.year) && <span className="text-foreground/40">•</span>}
+              {(currentSong.genre || currentSong.year) && (
+                <span className="text-foreground/40">•</span>
+              )}
               <SongQualityBadge
                 song={currentSong}
                 display="text"
@@ -118,10 +127,10 @@ export function SongInfo({ isChromeVisible }: SongInfoProps) {
   )
 }
 
-function ArtistNames({ 
-  song, 
-  onArtistClick 
-}: { 
+function ArtistNames({
+  song,
+  onArtistClick,
+}: {
   song: ISong
   onArtistClick: (id?: string) => void
 }) {
@@ -134,10 +143,10 @@ function ArtistNames({
       <div className="flex items-center gap-1">
         {data.map(({ id, name }, index) => (
           <div key={id} className="flex">
-            <p 
+            <p
               className={cn(
                 'truncate text-shadow-lg',
-                id && 'hover:underline cursor-pointer hover:text-foreground'
+                id && 'hover:underline cursor-pointer hover:text-foreground',
               )}
               onClick={() => onArtistClick(id)}
             >
@@ -151,10 +160,10 @@ function ArtistNames({
   }
 
   return (
-    <p 
+    <p
       className={cn(
         'truncate text-shadow-lg',
-        artistId && 'hover:underline cursor-pointer hover:text-foreground'
+        artistId && 'hover:underline cursor-pointer hover:text-foreground',
       )}
       onClick={() => onArtistClick(artistId)}
     >
@@ -162,4 +171,3 @@ function ArtistNames({
     </p>
   )
 }
-

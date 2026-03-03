@@ -1,6 +1,5 @@
 import { Rabbit } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import { useRabbitHole } from '@/app/hooks/use-rabbit-hole'
 import { OptionsButtons } from '@/app/components/options/buttons'
 import { DownloadOptionHandler } from '@/app/components/options/download-handler'
 import { AddToPlaylistSubMenu } from '@/app/components/song/add-to-playlist'
@@ -10,6 +9,7 @@ import {
   DropdownMenuSeparator,
 } from '@/app/components/ui/dropdown-menu'
 import { useOptions } from '@/app/hooks/use-options'
+import { useRabbitHole } from '@/app/hooks/use-rabbit-hole'
 import { SingleAlbum } from '@/types/responses/album'
 
 interface AlbumOptionsProps {

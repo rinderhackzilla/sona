@@ -7,11 +7,7 @@ import { immer } from 'zustand/middleware/immer'
 import { shallow } from 'zustand/shallow'
 import { createWithEqualityFn } from 'zustand/traditional'
 import { subsonic } from '@/service/subsonic'
-import {
-  IPlayerContext,
-  ISongList,
-  LoopState,
-} from '@/types/playerContext'
+import { IPlayerContext, ISongList, LoopState } from '@/types/playerContext'
 import { ISong } from '@/types/responses/song'
 import { areSongListsEqual } from '@/utils/compareSongLists'
 import {
@@ -32,7 +28,10 @@ import {
 import { registerPlayerStoreSideEffects } from './player/store-side-effects'
 import { SonaDjMode } from './sona-dj.store'
 
-export { DEFAULT_FOCUS_GENRES, DEFAULT_NIGHT_GENRES } from './player/session-mode-helpers'
+export {
+  DEFAULT_FOCUS_GENRES,
+  DEFAULT_NIGHT_GENRES,
+} from './player/session-mode-helpers'
 
 const miniStores = {
   songlist: 'player_songlist',
@@ -357,7 +356,8 @@ export const usePlayerStore = createWithEqualityFn<IPlayerContext>()(
               await getPlaybackEngine().seedSonaDjTrack(mode as SonaDjMode)
             },
             startRuntimeShuffleAll: async () => {
-              const initialList = await getPlaybackEngine().startRuntimeShuffleAll()
+              const initialList =
+                await getPlaybackEngine().startRuntimeShuffleAll()
               if (initialList.length === 0) return
 
               get().actions.resetProgress()
@@ -1075,6 +1075,18 @@ export const usePlayerStore = createWithEqualityFn<IPlayerContext>()(
             const settings = (merged as IPlayerContext).settings
             if (settings?.sessionMode) {
               settings.sessionMode.mode = 'off'
+              if (
+                !Array.isArray(settings.sessionMode.focusGenres) ||
+                settings.sessionMode.focusGenres.length === 0
+              ) {
+                settings.sessionMode.focusGenres = [...DEFAULT_FOCUS_GENRES]
+              }
+              if (
+                !Array.isArray(settings.sessionMode.nightGenres) ||
+                settings.sessionMode.nightGenres.length === 0
+              ) {
+                settings.sessionMode.nightGenres = [...DEFAULT_NIGHT_GENRES]
+              }
             }
           }
 
@@ -1283,8 +1295,12 @@ export const useLyricsState = () =>
 
 export const useSongColor = () =>
   usePlayerStore((state) => {
-    const { currentSongColor, currentSongColorPalette, currentSongColorIntensity, queue } =
-      state.settings.colors
+    const {
+      currentSongColor,
+      currentSongColorPalette,
+      currentSongColorIntensity,
+      queue,
+    } = state.settings.colors
     const { useSongColor, blur } = state.settings.colors.bigPlayer
     const {
       setCurrentSongColor,
@@ -1313,4 +1329,3 @@ export const useSongColor = () =>
 
 export const usePlayerCurrentList = () =>
   usePlayerStore((state) => state.songlist.currentList)
-

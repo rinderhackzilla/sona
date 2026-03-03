@@ -10,7 +10,9 @@ function hexToRgba(hex: string, alpha: number): string {
 }
 
 function accentHSL() {
-  const v = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim()
+  const v = getComputedStyle(document.documentElement)
+    .getPropertyValue('--accent')
+    .trim()
   const [h, s, l] = v.split(' ')
   return { h: h ?? '220', s: s ?? '80%', l: l ?? '60%' }
 }
@@ -123,12 +125,20 @@ export function FrequencyCircle() {
           grad.addColorStop(0, hexToRgba(c1, 0.55 + norm * 0.2))
           grad.addColorStop(1, hexToRgba(c2, Math.min(1, norm * 1.3)))
         } else {
-          grad.addColorStop(0, `hsla(${ah}, ${as_}, ${al}, ${0.55 + norm * 0.2})`)
-          grad.addColorStop(1, `hsla(${ah}, 100%, 72%, ${Math.min(1, norm * 1.3)})`)
+          grad.addColorStop(
+            0,
+            `hsla(${ah}, ${as_}, ${al}, ${0.55 + norm * 0.2})`,
+          )
+          grad.addColorStop(
+            1,
+            `hsla(${ah}, 100%, 72%, ${Math.min(1, norm * 1.3)})`,
+          )
         }
 
         ctx.shadowBlur = 6 + barH * 0.22
-        ctx.shadowColor = c1 ? hexToRgba(c1, norm * 0.65) : `hsla(${ah}, 100%, 65%, ${norm * 0.65})`
+        ctx.shadowColor = c1
+          ? hexToRgba(c1, norm * 0.65)
+          : `hsla(${ah}, 100%, 65%, ${norm * 0.65})`
         ctx.strokeStyle = grad
         ctx.lineWidth = Math.max(1.5, barW)
         ctx.lineCap = 'round'
@@ -149,7 +159,10 @@ export function FrequencyCircle() {
         centerGrad.addColorStop(0.55, hexToRgba(dc, 0.14))
         centerGrad.addColorStop(1, hexToRgba(dc, 0))
       } else {
-        centerGrad.addColorStop(0, `hsla(${ah}, 60%, 55%, ${0.32 + bassAvg * 0.3})`)
+        centerGrad.addColorStop(
+          0,
+          `hsla(${ah}, 60%, 55%, ${0.32 + bassAvg * 0.3})`,
+        )
         centerGrad.addColorStop(1, `hsla(${ah}, 60%, 55%, 0)`)
       }
       ctx.beginPath()
@@ -160,7 +173,9 @@ export function FrequencyCircle() {
       // Inner ring stroke
       ctx.beginPath()
       ctx.arc(cx, cy, innerR, 0, TWO_PI)
-      ctx.strokeStyle = c1 ? hexToRgba(c1, 0.35 + bassAvg * 0.08) : `rgba(255,255,255,0.25)`
+      ctx.strokeStyle = c1
+        ? hexToRgba(c1, 0.35 + bassAvg * 0.08)
+        : `rgba(255,255,255,0.25)`
       ctx.lineWidth = 1.5
       ctx.stroke()
 
@@ -175,5 +190,3 @@ export function FrequencyCircle() {
 
   return <canvas ref={canvasRef} className="absolute inset-0 w-full h-full" />
 }
-
-

@@ -1,5 +1,6 @@
-import { playlists } from './playlists'
 import type { Song } from '@/types/responses/song'
+import { logger } from '@/utils/logger'
+import { playlists } from './playlists'
 
 interface ExportPlaylistParams {
   name: string
@@ -30,5 +31,7 @@ export async function exportPlaylist({
     songIdToAdd: songIds,
   })
 
-  console.log(`[ExportPlaylist] ✓ Exported "${name}" with ${songIds.length} songs`)
+  logger.info(
+    `[ExportPlaylist] Exported "${name}" with ${songIds.length} songs`,
+  )
 }

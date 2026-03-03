@@ -30,7 +30,6 @@ export function useAlbumColorExtractor() {
           const palette = await getAlbumColorPalette(img)
           if (palette) {
             setCurrentSongColorPalette(palette)
-            console.log('🎨 Album colors extracted:', palette)
           }
         }
 

@@ -58,8 +58,10 @@ export function NavLibrary() {
         </div>
         <MainSidebarMenu>
           {browseItems.map((item) => {
-            if (hideRadiosSection && item.id === SidebarItems.Radios) return null
-            if (!isPodcastsActive && item.id === SidebarItems.Podcasts) return null
+            if (hideRadiosSection && item.id === SidebarItems.Radios)
+              return null
+            if (!isPodcastsActive && item.id === SidebarItems.Podcasts)
+              return null
 
             if (item.id === SidebarItems.Podcasts) {
               return <SidebarPodcastItem key={item.id} item={item} />

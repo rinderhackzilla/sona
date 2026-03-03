@@ -1,16 +1,19 @@
-import { useMemo, useState } from 'react'
+import { FileText, Globe, Info, Music, Paintbrush } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Dialog, DialogContent, DialogTitle } from '@/app/components/ui/dialog'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/app/components/ui/tabs'
-import { Switch } from '@/app/components/ui/switch'
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from '@/app/components/ui/tabs'
 import { useAppSettings } from '@/store/app.store'
 import type { SettingsPage } from '@/types/settings'
-import { Paintbrush, Music, FileText, Globe, Info } from 'lucide-react'
-import { AppearancePage } from './pages/appearance'
-import { PlayerPage } from './pages/player'
-import { ContentPage } from './pages/content'
-import { ServicesPage } from './pages/services'
 import { AboutPage } from './pages/about'
+import { AppearancePage } from './pages/appearance'
+import { ContentPage } from './pages/content'
+import { PlayerPage } from './pages/player'
+import { ServicesPage } from './pages/services'
 
 const tabs = [
   { value: 'appearance', icon: Paintbrush, component: AppearancePage },
@@ -27,15 +30,8 @@ function isSettingsPage(value: string): value is SettingsPage {
 
 export function SettingsDialog() {
   const { t } = useTranslation()
-  const { openDialog, setOpenDialog, currentPage, setCurrentPage } = useAppSettings()
-  const [showAdvanced, setShowAdvanced] = useState(false)
-  const visibleTabs = useMemo(
-    () =>
-      tabs.filter(
-        ({ value }) => showAdvanced || ['appearance', 'player', 'content'].includes(value),
-      ),
-    [showAdvanced],
-  )
+  const { openDialog, setOpenDialog, currentPage, setCurrentPage } =
+    useAppSettings()
 
   return (
     <Dialog open={openDialog} onOpenChange={setOpenDialog}>
@@ -57,15 +53,15 @@ export function SettingsDialog() {
           {/* Header: title row + tab bar, with right padding to clear the X button */}
           <div className="flex-shrink-0 border-b bg-card/35 backdrop-blur-sm">
             <div className="px-6 pb-2 pr-12 pt-4 flex items-center justify-between gap-3">
-              <span className="text-base font-semibold text-foreground tracking-tight">{t('settings.label')}</span>
-              <label className="flex items-center gap-2 text-xs text-muted-foreground">
-                <span>{t('settings.view.advanced', 'Advanced')}</span>
-                <Switch checked={showAdvanced} onCheckedChange={setShowAdvanced} />
-              </label>
+              <div>
+                <span className="text-base font-semibold text-foreground tracking-tight">
+                  {t('settings.label')}
+                </span>
+              </div>
             </div>
 
             <TabsList className="h-auto w-full justify-start gap-1 rounded-none bg-transparent px-2 pb-2 pt-1">
-              {visibleTabs.map(({ value, icon: Icon }) => (
+              {tabs.map(({ value, icon: Icon }) => (
                 <TabsTrigger
                   key={value}
                   value={value}

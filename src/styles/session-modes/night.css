@@ -154,24 +154,24 @@
 }
 
 .session-mode-night .fullscreen-bg-kenburns {
-  animation-duration: 14s;
+  animation-duration: 56s;
 }
 
 .session-mode-night .hypnotic-layer-a {
   opacity: 0.3;
   filter: blur(6px) saturate(1.12);
-  animation-duration: 30s;
+  animation-duration: 86s;
 }
 
 .session-mode-night .hypnotic-layer-b {
   opacity: 0.24;
   filter: blur(18px) saturate(1.14);
-  animation-duration: 36s;
+  animation-duration: 98s;
 }
 
 .session-mode-night .hypnotic-layer-c {
   opacity: 0.16;
-  animation-duration: 12s;
+  animation-duration: 34s;
 }
 
 .session-mode-night .hypnotic-layer-a {

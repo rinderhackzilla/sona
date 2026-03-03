@@ -9,7 +9,10 @@ interface SongTableActionsProps {
   showHeart?: boolean
 }
 
-export function SongTableActions({ row, showHeart = true }: SongTableActionsProps) {
+export function SongTableActions({
+  row,
+  showHeart = true,
+}: SongTableActionsProps) {
   return (
     <div className="flex gap-1 items-center">
       <TableActionButton

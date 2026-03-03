@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
-import { useDebouncedCallback } from 'use-debounce'
 import type { FieldValues, UseFormWatch } from 'react-hook-form'
+import { useDebouncedCallback } from 'use-debounce'
 
 export function useDebouncedFormSync<TFieldValues extends FieldValues>(
   watch: UseFormWatch<TFieldValues>,

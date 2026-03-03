@@ -40,7 +40,9 @@ export function CommandAlbumResult({
         <span>{t('sidebar.albums')}</span>
         <CustomHeaderLink
           onClick={() =>
-            runCommand(() => navigateSafe(navigate, ROUTES.ALBUMS.SEARCH(query)))
+            runCommand(() =>
+              navigateSafe(navigate, ROUTES.ALBUMS.SEARCH(query)),
+            )
           }
         >
           {t('generic.seeMore')}
@@ -54,7 +56,9 @@ export function CommandAlbumResult({
               value={`album-${album.id}`}
               className="border mb-1"
               onSelect={() => {
-                runCommand(() => navigateSafe(navigate, ROUTES.ALBUM.PAGE(album.id)))
+                runCommand(() =>
+                  navigateSafe(navigate, ROUTES.ALBUM.PAGE(album.id)),
+                )
               }}
             >
               <ResultItem

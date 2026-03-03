@@ -155,7 +155,11 @@ const CarouselContent = React.forwardRef<
   const { carouselRef, orientation } = useCarousel()
 
   return (
-    <div ref={carouselRef} className="h-full overflow-hidden" style={props.style}>
+    <div
+      ref={carouselRef}
+      className="h-full overflow-hidden"
+      style={props.style}
+    >
       <div
         ref={ref}
         className={cn(

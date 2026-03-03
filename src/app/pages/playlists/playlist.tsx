@@ -9,6 +9,7 @@ import ListWrapper from '@/app/components/list-wrapper'
 import { PlaylistButtons } from '@/app/components/playlist/buttons'
 import { RemoveSongFromPlaylistDialog } from '@/app/components/playlist/remove-song-dialog'
 import { DataTable } from '@/app/components/ui/data-table'
+import { PageState } from '@/app/components/ui/page-state'
 import ErrorPage from '@/app/pages/error-page'
 import { songsColumns } from '@/app/tables/songs-columns'
 import { subsonic } from '@/service/subsonic'
@@ -125,11 +126,19 @@ export default function Playlist() {
           data={playlist.entry ?? []}
           handlePlaySong={(row) => setSongList(playlist.entry, row.index)}
           columnFilter={columnsToShow}
-          noRowsMessage={t('playlist.noSongList')}
+          noRowsMessage={t('states.empty.noTracks')}
           variant="modern"
           onReorder={handleReorder}
           enableSorting={true}
         />
+
+        {(!playlist.entry || playlist.entry.length === 0) && (
+          <PageState
+            title={t('states.empty.title')}
+            description={t('states.empty.playlistDescription')}
+            className="min-h-[160px] px-0 py-2"
+          />
+        )}
 
         <RemoveSongFromPlaylistDialog />
       </ListWrapper>

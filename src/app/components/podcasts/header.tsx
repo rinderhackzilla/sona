@@ -12,14 +12,19 @@ import { PodcastsFilters } from './podcasts-filters'
 export function PodcastsHeader() {
   const { t } = useTranslation()
   const [openFormDialog, setOpenFormDialog] = useState(false)
+  const [isRefreshing, setIsRefreshing] = useState(false)
 
   const queryClient = useQueryClient()
 
   function handleRefreshPodcasts() {
+    setIsRefreshing(true)
     queryClient.invalidateQueries(
       { queryKey: [queryKeys.podcast.all] },
       { cancelRefetch: true },
     )
+    window.setTimeout(() => {
+      setIsRefreshing(false)
+    }, 500)
   }
 
   return (
@@ -30,10 +35,13 @@ export function PodcastsHeader() {
           <Button
             variant="ghost"
             size="icon"
-            className="rounded-full"
+            className="rounded-full border border-border/60 bg-background/65"
             onClick={handleRefreshPodcasts}
+            title={t('generic.refresh')}
           >
-            <RefreshCwIcon className="w-4 h-4" />
+            <RefreshCwIcon
+              className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`}
+            />
           </Button>
         </div>
 
@@ -43,7 +51,7 @@ export function PodcastsHeader() {
           <Button
             size="sm"
             variant="default"
-            className="px-4"
+            className="h-9 px-3.5"
             onClick={() => setOpenFormDialog(true)}
           >
             <PlusIcon className="w-5 h-5 -ml-[3px]" />

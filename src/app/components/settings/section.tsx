@@ -10,7 +10,7 @@ export function Root({ children, className, ...props }: SectionComponent) {
   return (
     <div
       className={cn(
-        'w-full rounded-xl border border-border/60 bg-card/25 p-4 shadow-sm',
+        'w-full rounded-xl border border-border/60 bg-card/25 p-4 shadow-sm transition-colors',
         className,
       )}
       {...props}
@@ -22,7 +22,7 @@ export function Root({ children, className, ...props }: SectionComponent) {
 
 export function Header({ children, className, ...props }: SectionComponent) {
   return (
-    <div className={cn('mb-3 w-full space-y-1.5', className)} {...props}>
+    <div className={cn('mb-3.5 w-full space-y-1.5', className)} {...props}>
       {children}
     </div>
   )
@@ -30,7 +30,9 @@ export function Header({ children, className, ...props }: SectionComponent) {
 
 export function HeaderTitle({ children }: { children: ReactNode }) {
   return (
-    <h3 className="font-medium leading-none text-foreground">{children}</h3>
+    <h3 className="text-sm font-semibold leading-none tracking-tight text-foreground">
+      {children}
+    </h3>
   )
 }
 
@@ -40,7 +42,7 @@ export function HeaderDescription({ children }: { children: ReactNode }) {
 
 export function Content({ children, className, ...props }: SectionComponent) {
   return (
-    <div className={cn('space-y-2.5', className)} {...props}>
+    <div className={cn('space-y-2', className)} {...props}>
       {children}
     </div>
   )
@@ -53,7 +55,10 @@ export function ContentItem({
 }: SectionComponent) {
   return (
     <div
-      className={cn('flex min-h-9 items-center space-between', className)}
+      className={cn(
+        'flex min-h-9 items-center space-between rounded-md px-2 transition-colors hover:bg-muted/35',
+        className,
+      )}
       {...props}
     >
       {children}
@@ -93,7 +98,10 @@ export function ContentItemForm({
 }: SectionComponent) {
   return (
     <div
-      className={cn('flex w-[44%] max-w-56 items-center justify-end', className)}
+      className={cn(
+        'flex w-[44%] max-w-56 items-center justify-end',
+        className,
+      )}
       {...props}
     >
       {children}

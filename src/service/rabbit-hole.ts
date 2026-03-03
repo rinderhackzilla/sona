@@ -1,9 +1,9 @@
-import { subsonic } from './subsonic'
 import type { ISong } from '@/types/responses/song'
+import { subsonic } from './subsonic'
 
 /**
  * Rabbit Hole Service
- * 
+ *
  * Generates a discovery queue of ~50 similar songs based on Last.fm recommendations.
  * Uses Last.fm API to find similar artists, then searches for those artists in your
  * Subsonic library to build a queue of songs you'll probably love.
@@ -32,14 +32,17 @@ interface LastFmTrackResponse {
 class RabbitHoleService {
   constructor(private apiKey: string) {}
 
-  async generateForArtist(artistName: string, artistId?: string): Promise<ISong[]> {
+  async generateForArtist(
+    artistName: string,
+    artistId?: string,
+  ): Promise<ISong[]> {
     try {
       // Get similar artists from Last.fm
       const similarArtists = await this.getSimilarArtists(artistName)
-      
+
       // Search for songs from similar artists in Subsonic
       const allSongs: ISong[] = []
-      
+
       for (const artist of similarArtists.slice(0, 15)) {
         try {
           const searchResult = await subsonic.search.get({
@@ -48,7 +51,7 @@ class RabbitHoleService {
             albumCount: 0,
             songCount: 10,
           })
-          
+
           if (searchResult?.song && searchResult.song.length > 0) {
             allSongs.push(...searchResult.song)
           }
@@ -56,7 +59,7 @@ class RabbitHoleService {
           console.warn(`Could not fetch songs for ${artist.name}:`, error)
         }
       }
-      
+
       // If we have the artist ID, add some of their top songs too
       if (artistId && allSongs.length < 30) {
         try {
@@ -70,7 +73,7 @@ class RabbitHoleService {
                 albumCount: 0,
                 songCount: 5,
               })
-              
+
               if (searchResult?.song) {
                 allSongs.push(...searchResult.song)
               }
@@ -80,7 +83,7 @@ class RabbitHoleService {
           console.warn('Could not fetch additional artist songs:', error)
         }
       }
-      
+
       // Shuffle and return up to 50 songs
       return this.shuffleAndLimit(allSongs, 50)
     } catch (error) {
@@ -98,14 +101,17 @@ class RabbitHoleService {
     return this.generateForArtist(artistName)
   }
 
-  async generateForSong(artistName: string, trackName: string): Promise<ISong[]> {
+  async generateForSong(
+    artistName: string,
+    trackName: string,
+  ): Promise<ISong[]> {
     try {
       // Get similar tracks from Last.fm
       const similarTracks = await this.getSimilarTracks(artistName, trackName)
-      
+
       // Search for those tracks in Subsonic
       const allSongs: ISong[] = []
-      
+
       for (const track of similarTracks.slice(0, 50)) {
         try {
           const searchQuery = `${track.artist.name} ${track.name}`
@@ -115,7 +121,7 @@ class RabbitHoleService {
             albumCount: 0,
             songCount: 3,
           })
-          
+
           if (searchResult?.song && searchResult.song.length > 0) {
             allSongs.push(searchResult.song[0])
           }
@@ -123,7 +129,7 @@ class RabbitHoleService {
           console.warn(`Could not fetch track ${track.name}:`, error)
         }
       }
-      
+
       return this.shuffleAndLimit(allSongs, 50)
     } catch (error) {
       console.error('Rabbit Hole generation failed:', error)
@@ -131,14 +137,16 @@ class RabbitHoleService {
     }
   }
 
-  private async getSimilarArtists(artistName: string): Promise<Array<{ name: string; match: string }>> {
+  private async getSimilarArtists(
+    artistName: string,
+  ): Promise<Array<{ name: string; match: string }>> {
     const url = `https://ws.audioscrobbler.com/2.0/?method=artist.getsimilar&artist=${encodeURIComponent(artistName)}&api_key=${this.apiKey}&format=json&limit=15`
-    
+
     const response = await fetch(url)
     if (!response.ok) {
       throw new Error(`Last.fm API error: ${response.statusText}`)
     }
-    
+
     const data = (await response.json()) as LastFmArtistResponse
     return data.similarartists?.artist || []
   }
@@ -148,12 +156,12 @@ class RabbitHoleService {
     trackName: string,
   ): Promise<Array<{ name: string; artist: { name: string } }>> {
     const url = `https://ws.audioscrobbler.com/2.0/?method=track.getsimilar&artist=${encodeURIComponent(artistName)}&track=${encodeURIComponent(trackName)}&api_key=${this.apiKey}&format=json&limit=50`
-    
+
     const response = await fetch(url)
     if (!response.ok) {
       throw new Error(`Last.fm API error: ${response.statusText}`)
     }
-    
+
     const data = (await response.json()) as LastFmTrackResponse
     return data.similartracks?.track || []
   }
@@ -163,14 +171,14 @@ class RabbitHoleService {
     const uniqueSongs = Array.from(
       new Map(songs.map((song) => [song.id, song])).values(),
     )
-    
+
     // Fisher-Yates shuffle
     const shuffled = [...uniqueSongs]
     for (let i = shuffled.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1))
       ;[shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
     }
-    
+
     return shuffled.slice(0, limit)
   }
 }

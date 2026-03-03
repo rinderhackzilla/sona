@@ -1,12 +1,12 @@
 import { HomeIcon, SearchIcon } from 'lucide-react'
-import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { Link } from 'react-router-dom'
 import { Button } from '@/app/components/ui/button'
 import { useMainSidebar } from '@/app/components/ui/main-sidebar'
 import { SimpleTooltip } from '@/app/components/ui/simple-tooltip'
 import { useRouteIsActive } from '@/app/hooks/use-route-is-active'
-import { ROUTES } from '@/routes/routesList'
 import { cn } from '@/lib/utils'
+import { ROUTES } from '@/routes/routesList'
 import { useAppStore } from '@/store/app.store'
 
 export function MiniSidebarSearch({
@@ -36,7 +36,9 @@ export function MiniSidebarSearch({
           >
             <Link
               to={ROUTES.LIBRARY.HOME}
-              className={isActive(ROUTES.LIBRARY.HOME) ? 'pointer-events-none' : ''}
+              className={
+                isActive(ROUTES.LIBRARY.HOME) ? 'pointer-events-none' : ''
+              }
             >
               <HomeIcon className="w-4 h-4" />
             </Link>

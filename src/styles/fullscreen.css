@@ -18,19 +18,16 @@
 
 .fullscreen-bg-kenburns {
   transform-origin: center center;
-  animation: fullscreen-kenburns 28s ease-in-out infinite alternate;
+  animation: fullscreen-kenburns 72s ease-in-out infinite alternate;
   will-change: transform;
 }
 
 @keyframes fullscreen-kenburns {
   0% {
-    transform: scale(1.03) translate3d(-0.8%, -0.6%, 0);
-  }
-  50% {
-    transform: scale(1.08) translate3d(0.7%, 0.5%, 0);
+    transform: scale(1.02) translate3d(-0.18%, -0.14%, 0);
   }
   100% {
-    transform: scale(1.11) translate3d(-0.4%, 0.8%, 0);
+    transform: scale(1.04) translate3d(0.16%, 0.14%, 0);
   }
 }
 
@@ -56,7 +53,7 @@
       transparent 62%
     );
   filter: blur(8px) saturate(1.05);
-  animation: hypnotic-float-a 40s ease-in-out infinite alternate;
+  animation: hypnotic-float-a 110s ease-in-out infinite alternate;
 }
 
 .hypnotic-layer-b {
@@ -73,7 +70,7 @@
       transparent 60%
     );
   filter: blur(24px) saturate(1.08);
-  animation: hypnotic-float-b 48s ease-in-out infinite alternate;
+  animation: hypnotic-float-b 128s ease-in-out infinite alternate;
 }
 
 .hypnotic-layer-c {
@@ -96,44 +93,38 @@
       transparent 100%
     );
   filter: blur(12px);
-  animation: hypnotic-pulse 18s ease-in-out infinite;
+  animation: hypnotic-pulse 44s ease-in-out infinite;
 }
 
 @keyframes hypnotic-float-a {
   0% {
-    transform: translate3d(-2%, -1.5%, 0) scale(1) rotate(0deg);
-  }
-  50% {
-    transform: translate3d(2.2%, 1.6%, 0) scale(1.08) rotate(6deg);
+    transform: translate3d(-0.38%, -0.28%, 0) scale(1);
   }
   100% {
-    transform: translate3d(-1.4%, 2.1%, 0) scale(1.03) rotate(-4deg);
+    transform: translate3d(0.32%, 0.34%, 0) scale(1.02);
   }
 }
 
 @keyframes hypnotic-float-b {
   0% {
-    transform: translate3d(1.8%, 1.2%, 0) scale(1.02) rotate(0deg);
-  }
-  50% {
-    transform: translate3d(-2.4%, -1.9%, 0) scale(1.1) rotate(-7deg);
+    transform: translate3d(0.34%, 0.24%, 0) scale(1.005);
   }
   100% {
-    transform: translate3d(1.6%, -1.2%, 0) scale(1.01) rotate(5deg);
+    transform: translate3d(-0.36%, -0.3%, 0) scale(1.022);
   }
 }
 
 @keyframes hypnotic-pulse {
   0% {
-    transform: scale(0.98);
+    transform: scale(0.998);
     opacity: 0.1;
   }
   50% {
-    transform: scale(1.05);
-    opacity: 0.18;
+    transform: scale(1.016);
+    opacity: 0.13;
   }
   100% {
-    transform: scale(0.99);
+    transform: scale(1);
     opacity: 0.1;
   }
 }

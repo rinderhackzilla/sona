@@ -1,4 +1,7 @@
-import type { IAudioContext, IMediaElementAudioSourceNode } from 'standardized-audio-context'
+import type {
+  IAudioContext,
+  IMediaElementAudioSourceNode,
+} from 'standardized-audio-context'
 
 type IAudioSource = IMediaElementAudioSourceNode<IAudioContext>
 
@@ -26,6 +29,9 @@ export function getGlobalMediaSourceNode(audio: HTMLAudioElement) {
   return globalMediaSourceNodes.get(audio)
 }
 
-export function setGlobalMediaSourceNode(audio: HTMLAudioElement, node: IAudioSource) {
+export function setGlobalMediaSourceNode(
+  audio: HTMLAudioElement,
+  node: IAudioSource,
+) {
   globalMediaSourceNodes.set(audio, node)
 }

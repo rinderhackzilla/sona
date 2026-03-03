@@ -82,7 +82,8 @@ export function rememberSongPlayback(song: MemorySong | null | undefined) {
 
   const entries = loadEntries()
   const last = entries[entries.length - 1]
-  if (last && last.songId === entry.songId && now - last.playedAt < 45_000) return
+  if (last && last.songId === entry.songId && now - last.playedAt < 45_000)
+    return
 
   entries.push(entry)
   saveEntries(entries)

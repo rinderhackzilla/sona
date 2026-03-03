@@ -19,8 +19,7 @@
     "mostPlayedTrack": "Your most played track this week",
     "playsThisWeek_one": "{{count}} play this week",
     "playsThisWeek_other": "{{count}} plays this week",
-    "playNow": "Play Now"
-    ,
+    "playNow": "Play Now",
     "daypart": {
       "label": "Daypart Mix",
       "usedGenres": "Using: {{genres}}",
@@ -88,6 +87,23 @@
       "nightDisabled": "Night Mode disabled"
     }
   },
+  "onboarding": {
+    "label": "Quick Tour",
+    "steps": {
+      "dj": {
+        "title": "Sona DJ",
+        "text": "Use this to let Sona shape what comes next: wildcard, drift, or timekeeper."
+      },
+      "session": {
+        "title": "Session Mode",
+        "text": "Switch the whole player vibe in one click. Pick Focus or Night anytime."
+      },
+      "fullscreen": {
+        "title": "Fullscreen Player",
+        "text": "Click the album cover in the control bar to open the fullscreen player."
+      }
+    }
+  },
   "generic": {
     "seeMore": "See more",
     "showDetails": "Show details",
@@ -105,8 +121,30 @@
     "error": "Error",
     "shuffle": "Shuffle",
     "playAll": "Play All",
+    "refresh": "Refresh",
+    "moreSongs_one": "{{count}} more song",
+    "moreSongs_other": "{{count}} more songs",
     "saveAsPlaylist": "Save as Playlist",
     "saving": "Saving..."
+  },
+  "states": {
+    "empty": {
+      "title": "Nothing here yet",
+      "homeDescription": "Your library is reachable, but this section has no data right now.",
+      "artistDescription": "No tracks or albums are available for this artist yet.",
+      "albumDescription": "No tracks are available for this album yet.",
+      "playlistDescription": "This playlist is empty. Add songs to get started.",
+      "daypartDescription": "No songs are available for this time window yet.",
+      "noResults": "No results found.",
+      "noTracks": "No tracks available."
+    },
+    "error": {
+      "title": "Something went wrong",
+      "description": "Status {{status}}: {{detail}}",
+      "homeDescription": "Home data could not be loaded. Please try again.",
+      "retry": "Try again",
+      "backHome": "Back to home"
+    }
   },
   "theme": {
     "label": "Theme",
@@ -508,6 +546,26 @@
     "noSongPlaying": "No song playing",
     "noRadioPlaying": "No radio playing",
     "noPlayback": "No playback active.",
+    "equalizer": {
+      "title": "Equalizer",
+      "enabled": "Enabled",
+      "disabled": "Disabled",
+      "preset": "Preset",
+      "reset": "Reset",
+      "presets": {
+        "flat": "Flat",
+        "rock": "Rock",
+        "pop": "Pop",
+        "jazz": "Jazz",
+        "classical": "Classical",
+        "electronic": "Electronic",
+        "acoustic": "Acoustic",
+        "bass_boost": "Bass Boost",
+        "treble_boost": "Treble Boost",
+        "vocal": "Vocal",
+        "custom": "Custom"
+      }
+    },
     "tooltips": {
       "shuffle": {
         "enable": "Enable shuffle",
@@ -656,7 +714,11 @@
     "title": "Queue",
     "clear": "Clear queue",
     "close": "Close queue",
-    "open": "Open queue"
+    "open": "Open queue",
+    "source": {
+      "dj": "Added by DJ",
+      "session": "Added by Session Mode"
+    }
   },
   "shortcuts": {
     "modal": {
@@ -729,14 +791,16 @@
   "settings": {
     "label": "Settings",
     "tabs": {
-      "appearance": "Appearance",
-      "player": "Player",
-      "content": "Content",
-      "services": "Services",
+      "appearance": "Interface",
+      "player": "Playback",
+      "content": "Library",
+      "services": "Integrations",
       "about": "System"
     },
     "view": {
-      "advanced": "Advanced"
+      "advanced": "Advanced",
+      "normalDescription": "Playback, interface, library and integrations.",
+      "advancedDescription": "Includes system and maintenance options."
     },
     "options": {
       "appearance": "Appearance",
@@ -806,6 +870,7 @@
         "lrclib": {
           "info": "LRCLIB is used to find song lyrics.",
           "label": "LRCLIB",
+          "enabled": "Enable LRCLIB",
           "customUrl": {
             "toggle": "Use a custom URL",
             "info": "Use a custom URL for LRCLIB instead of the default one.",
@@ -894,20 +959,26 @@
         "group": "Lidarr",
         "description": "Connect to your Lidarr instance for album requests.",
         "url": {
-          "label": "Lidarr URL"
+          "label": "Lidarr URL",
+          "placeholder": "http://localhost:8686"
         },
         "apiKey": {
-          "label": "API Key"
+          "label": "API Key",
+          "placeholder": "Lidarr API key"
         }
       },
       "lastfm": {
         "group": "Last.fm",
         "description": "Connect your Last.fm account to enable personalized music recommendations.",
         "username": {
-          "label": "Username"
+          "label": "Username",
+          "placeholder": "Last.fm username"
         },
         "apiKey": {
-          "label": "API Key"
+          "label": "API Key",
+          "placeholder": "Last.fm API key",
+          "helpPrefix": "Get your API key from",
+          "helpLink": "Last.fm API"
         }
       }
     },
@@ -924,7 +995,26 @@
       },
       "toast": {
         "importSuccess": "Settings imported successfully",
-        "importError": "Failed to import: invalid or unsupported file"
+        "importError": "Failed to import: invalid or unsupported file",
+        "exportError": "Failed to export settings."
+      }
+    },
+    "system": {
+      "upToDate": "Up to date",
+      "cache": {
+        "label": "App Cache",
+        "info": "Clears artwork and network cache, then reloads the app.",
+        "button": "Clear Cache",
+        "cleared": "Cache cleared. Reloading...",
+        "partial": "Cache was only partially cleared. Reloading...",
+        "error": "Failed to clear cache."
+      },
+      "onboarding": {
+        "label": "Quick tour",
+        "info": "Show the onboarding coach marks again.",
+        "button": "Show again",
+        "resetDone": "Onboarding reset. The quick tour will appear again.",
+        "resetError": "Failed to reset onboarding."
       }
     },
     "player": {
@@ -963,6 +1053,14 @@
       },
       "tray": {
         "label": "Close to System Tray"
+      },
+      "density": {
+        "label": "List density",
+        "options": {
+          "compact": "Compact",
+          "default": "Default",
+          "cozy": "Cozy"
+        }
       }
     }
   },

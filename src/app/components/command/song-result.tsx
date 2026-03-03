@@ -47,7 +47,9 @@ export function CommandSongResult({
               value={`song-${song.id}`}
               className="border mb-1"
               onSelect={() => {
-                runCommand(() => navigateSafe(navigate, ROUTES.ALBUM.PAGE(song.albumId)))
+                runCommand(() =>
+                  navigateSafe(navigate, ROUTES.ALBUM.PAGE(song.albumId)),
+                )
               }}
             >
               <ResultItem

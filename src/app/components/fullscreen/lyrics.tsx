@@ -3,8 +3,8 @@ import clsx from 'clsx'
 import { ComponentPropsWithoutRef, useEffect, useRef, useState } from 'react'
 import { isSafari } from 'react-device-detect'
 import { useTranslation } from 'react-i18next'
-import { Link } from 'react-router-dom'
 import { Lrc } from 'react-lrc'
+import { Link } from 'react-router-dom'
 import { ImageLoader } from '@/app/components/image-loader'
 import { SongMenuOptions } from '@/app/components/song/menu-options'
 import {
@@ -29,7 +29,8 @@ export function LyricsTab() {
   const { currentSong } = usePlayerSonglist()
   const { t } = useTranslation()
 
-  const { id, artist, artistId, title, album, albumId, duration, coverArt } = currentSong
+  const { id, artist, artistId, title, album, albumId, duration, coverArt } =
+    currentSong
 
   const { data: lyrics, isLoading } = useQuery({
     queryKey: ['get-lyrics', artist, title, duration],
@@ -40,6 +41,10 @@ export function LyricsTab() {
         title,
         duration,
       }),
+    enabled: Boolean(id),
+    staleTime: 10 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
+    refetchOnWindowFocus: false,
   })
 
   const noLyricsFound = t('fullscreen.noLyrics')
@@ -71,11 +76,7 @@ export function LyricsTab() {
               </h2>
             </ContextMenuTrigger>
             <ContextMenuContent>
-              <SongMenuOptions
-                variant="context"
-                song={currentSong}
-                index={0}
-              />
+              <SongMenuOptions variant="context" song={currentSong} index={0} />
             </ContextMenuContent>
           </ContextMenu>
 
@@ -158,8 +159,8 @@ function SyncedLyrics({ lyrics }: LyricProps) {
             className={clsx(
               'my-5 cursor-pointer hover:opacity-100 duration-500',
               'transition-[opacity,transform,text-shadow] motion-reduce:transition-none',
-              active 
-                ? 'opacity-100 scale-125 drop-shadow-[0_0_12px_rgba(255,255,255,0.6)]' 
+              active
+                ? 'opacity-100 scale-125 drop-shadow-[0_0_12px_rgba(255,255,255,0.6)]'
                 : 'opacity-50',
             )}
           >

@@ -7,6 +7,7 @@ import { AlbumGridCard } from '@/app/components/albums/album-grid-card'
 import { AlbumsFallback } from '@/app/components/fallbacks/album-fallbacks'
 import { GridViewWrapper } from '@/app/components/grid-view-wrapper'
 import ListWrapper from '@/app/components/list-wrapper'
+import { PageState } from '@/app/components/ui/page-state'
 import { getAlbumList } from '@/queries/albums'
 import { subsonic } from '@/service/subsonic'
 import { usePlayerActions } from '@/store/player.store'
@@ -27,7 +28,12 @@ export default function Genre() {
   const [isShuffleLoading, setIsShuffleLoading] = useState(false)
 
   // Fetch the full genre list to find all server genres that map to this canonical name
-  const { data: allGenres, isLoading: isGenresLoading } = useQuery({
+  const {
+    data: allGenres,
+    isLoading: isGenresLoading,
+    isError: isGenresError,
+    refetch: refetchGenres,
+  } = useQuery({
     queryKey: [queryKeys.genre.all],
     queryFn: subsonic.genres.get,
   })
@@ -60,8 +66,8 @@ export default function Genre() {
     })),
   })
 
-  const isLoading =
-    isGenresLoading || albumQueries.some((q) => q.isLoading)
+  const isLoading = isGenresLoading || albumQueries.some((q) => q.isLoading)
+  const hasError = isGenresError || albumQueries.some((q) => q.isError)
 
   // Merge and deduplicate albums from all constituent genres
   const albums = useMemo(() => {
@@ -104,6 +110,25 @@ export default function Genre() {
   }
 
   if (isLoading) return <AlbumsFallback />
+  if (hasError) {
+    return (
+      <PageState
+        variant="error"
+        title={t('states.error.title')}
+        description={t('states.error.description', {
+          status: 500,
+          detail: t('generic.error'),
+        })}
+        actionLabel={t('states.error.retry')}
+        onAction={() => {
+          refetchGenres().catch(() => undefined)
+          Promise.all(albumQueries.map((query) => query.refetch())).catch(
+            () => undefined,
+          )
+        }}
+      />
+    )
+  }
 
   // Show the canonical name (normalized), with a subtitle listing merged genres if there are multiple
   const canonicalName = normalizeGenreName(genre)
@@ -155,6 +180,13 @@ export default function Genre() {
           <GridViewWrapper list={albums} type="genres">
             {(album) => <AlbumGridCard album={album} />}
           </GridViewWrapper>
+        )}
+        {albums.length === 0 && (
+          <PageState
+            title={t('states.empty.title')}
+            description={t('states.empty.noResults')}
+            className="min-h-[260px]"
+          />
         )}
       </ListWrapper>
     </div>

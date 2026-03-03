@@ -3,7 +3,6 @@ import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/app/components/ui/button'
 import { DialogTitle } from '@/app/components/ui/dialog'
-import { Separator } from '@/app/components/ui/separator'
 import {
   usePlayerActions,
   usePlayerCurrentList,
@@ -12,7 +11,13 @@ import {
 import { convertSecondsToHumanRead } from '@/utils/convertSecondsToTime'
 import { SortableQueueList } from './sortable-queue-list'
 
-export function QueueSongList() {
+interface QueueSongListProps {
+  inFullscreenOverlay?: boolean
+}
+
+export function QueueSongList({
+  inFullscreenOverlay = false,
+}: QueueSongListProps) {
   const { t } = useTranslation()
   const currentList = usePlayerCurrentList()
   const currentSongIndex = usePlayerCurrentSongIndex()
@@ -28,9 +33,9 @@ export function QueueSongList() {
   }, [currentList])
 
   return (
-    <div className="flex flex-1 flex-col h-full min-w-[300px]">
+    <div className="flex flex-1 flex-col h-full min-w-0">
       <DialogTitle className="sr-only">{t('queue.title')}</DialogTitle>
-      <div className="flex items-center justify-between h-8 mb-2">
+      <div className="flex items-center justify-between h-8 mb-2 pl-3 lg:pl-4">
         <div className="flex gap-2 h-6 items-center text-foreground/70">
           <p className="text-foreground">{t('queue.title')}</p>
           <p>{'•'}</p>
@@ -54,9 +59,11 @@ export function QueueSongList() {
           </Button>
         </div>
       </div>
-      <Separator className="bg-muted-foreground/20" />
-
-      <div className="w-full h-full overflow-auto">
+      <div
+        className={inFullscreenOverlay
+          ? 'w-full h-full overflow-auto pl-3 lg:pl-4 pr-2 lg:pr-3'
+          : 'w-full h-full overflow-auto pl-3 lg:pl-4'}
+      >
         <SortableQueueList
           songs={currentList}
           currentSongIndex={currentSongIndex}

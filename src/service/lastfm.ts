@@ -65,7 +65,13 @@ async function makeRequest<T>(
 async function getTopArtists(
   username: string,
   apiKey: string,
-  period: 'overall' | '7day' | '1month' | '3month' | '6month' | '12month' = 'overall',
+  period:
+    | 'overall'
+    | '7day'
+    | '1month'
+    | '3month'
+    | '6month'
+    | '12month' = 'overall',
   limit: number = 50,
 ): Promise<LastFmArtist[]> {
   const response = await makeRequest<TopArtistsResponse>(apiKey, {

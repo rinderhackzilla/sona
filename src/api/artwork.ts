@@ -16,6 +16,13 @@ export async function resolveArtwork({
   const fallbackUrl = getSimpleCoverArtUrl(undefined, type, normalizedSize)
 
   if (!id) return fallbackUrl
+  if (
+    /^(https?:)?\/\//i.test(id) ||
+    id.startsWith('data:') ||
+    id.startsWith('blob:')
+  ) {
+    return id
+  }
 
   try {
     const url = await getCoverArtUrl(id, type, normalizedSize)

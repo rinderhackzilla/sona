@@ -1,4 +1,7 @@
-import type { IAudioContext, IBiquadFilterNode } from 'standardized-audio-context'
+import type {
+  IAudioContext,
+  IBiquadFilterNode,
+} from 'standardized-audio-context'
 import { safeStorageGet, safeStorageSet } from '@/utils/safe-storage'
 
 export const EQ_BANDS = [

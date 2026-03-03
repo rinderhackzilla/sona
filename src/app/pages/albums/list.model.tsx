@@ -7,8 +7,8 @@ import {
   getAlbumList,
   getArtistDiscography,
 } from '@/queries/albums'
-import { dedupeAlbumsForDisplay } from '@/utils/albumDedup'
 import { AlbumListType } from '@/types/responses/album'
+import { dedupeAlbumsForDisplay } from '@/utils/albumDedup'
 import {
   AlbumsFilters,
   AlbumsSearchParams,
@@ -138,7 +138,8 @@ export function useAlbumsListModel() {
           continue
         }
 
-        const existingScore = (existing.songCount ?? 0) + (existing.duration ?? 0)
+        const existingScore =
+          (existing.songCount ?? 0) + (existing.duration ?? 0)
         const currentScore = (album.songCount ?? 0) + (album.duration ?? 0)
         if (currentScore > existingScore) {
           byName.set(key, album)

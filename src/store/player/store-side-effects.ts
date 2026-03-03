@@ -80,7 +80,13 @@ export function registerPlayerStoreSideEffects({
       state.settings.listeningMemory.enabled,
     ],
     ([songId, song, isPlaying, mediaType, listeningMemoryEnabled]) => {
-      if (!songId || mediaType !== 'song' || !isPlaying || !listeningMemoryEnabled) return
+      if (
+        !songId ||
+        mediaType !== 'song' ||
+        !isPlaying ||
+        !listeningMemoryEnabled
+      )
+        return
       rememberSongPlayback(song)
     },
     {
@@ -91,7 +97,8 @@ export function registerPlayerStoreSideEffects({
   function desktopStateListener() {
     if (!isDesktop()) return
 
-    const { togglePlayPause, playPrevSong, playNextSong } = store.getState().actions
+    const { togglePlayPause, playPrevSong, playNextSong } =
+      store.getState().actions
 
     window.api.playerStateListener((action) => {
       if (action === 'togglePlayPause') togglePlayPause()

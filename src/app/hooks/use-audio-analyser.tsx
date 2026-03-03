@@ -7,7 +7,9 @@ export function useAudioAnalyser() {
 
   const animationFrameRef = useRef<number | null>(null)
 
-  const [frequencyData, setFrequencyData] = useState<Uint8Array>(new Uint8Array(128))
+  const [frequencyData, setFrequencyData] = useState<Uint8Array>(
+    new Uint8Array(128),
+  )
   const [timeData, setTimeData] = useState<Uint8Array>(new Uint8Array(128))
 
   useEffect(() => {

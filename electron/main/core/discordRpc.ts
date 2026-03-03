@@ -7,15 +7,15 @@ export type RpcPayload = {
   startTime: number
   endTime: number
   duration: number
-  coverArtUrl?: string  // öffentliche Last.fm URL, optional
+  coverArtUrl?: string // öffentliche Last.fm URL, optional
 }
 
 export async function setDiscordRpcActivity(payload: RpcPayload) {
   try {
     RPC.init()
     RPC.set({
-      details: payload.trackName,   // Song
-      state: payload.artist,        // Artist
+      details: payload.trackName, // Song
+      state: payload.artist, // Artist
       timestamps: {
         start: payload.startTime,
         end: payload.endTime,
@@ -23,9 +23,9 @@ export async function setDiscordRpcActivity(payload: RpcPayload) {
       assets: {
         large_image: payload.coverArtUrl ?? DEFAULT_LARGE_IMAGE,
         small_image: DEFAULT_SMALL_IMAGE,
-        large_text: payload.albumName,  // Album (dritte Zeile)
-  },
-})
+        large_text: payload.albumName, // Album (dritte Zeile)
+      },
+    })
   } catch {}
 }
 

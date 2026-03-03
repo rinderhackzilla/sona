@@ -61,13 +61,13 @@ export const mainNavItems = [
 export const libraryItems = [
   {
     id: SidebarItems.DiscoverWeekly,
-    title: 'Discover Weekly',
+    title: 'sidebar.discoverWeekly',
     route: ROUTES.LIBRARY.DISCOVER_WEEKLY,
     icon: Sparkles,
   },
   {
     id: SidebarItems.Top50Year,
-    title: 'Your Top 50',
+    title: 'sidebar.yourTop50',
     route: ROUTES.LIBRARY.TOP_50_YEAR,
     icon: Trophy,
   },

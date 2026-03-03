@@ -31,7 +31,9 @@ export function CommandPlaylists({ runCommand }: CommandItemProps) {
           key={playlist.id}
           value={playlist.name}
           onSelect={() =>
-            runCommand(() => navigateSafe(navigate, ROUTES.PLAYLIST.PAGE(playlist.id)))
+            runCommand(() =>
+              navigateSafe(navigate, ROUTES.PLAYLIST.PAGE(playlist.id)),
+            )
           }
         >
           <PlaylistItem playlist={playlist} />

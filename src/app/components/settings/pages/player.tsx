@@ -10,7 +10,6 @@ import {
   HeaderTitle,
   Root,
 } from '@/app/components/settings/section'
-import { Switch } from '@/app/components/ui/switch'
 import { Button } from '@/app/components/ui/button'
 import { NumericInput } from '@/app/components/ui/numeric-input'
 import {
@@ -21,24 +20,34 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/app/components/ui/select'
+import { Switch } from '@/app/components/ui/switch'
+import {
+  useAppAccounts,
+  useAppDesktopActions,
+  useAppDesktopData,
+  useAppImagesCacheLayer,
+  useAppListDensity,
+  useAppPages,
+} from '@/store/app.store'
 import {
   useCrossfadeSettings,
   useListeningMemorySettings,
   useReplayGainActions,
   useReplayGainState,
 } from '@/store/player.store'
-import { useAppPages, useAppAccounts, useAppDesktopActions, useAppDesktopData, useAppImagesCacheLayer } from '@/store/app.store'
 import { ReplayGainType } from '@/types/playerContext'
+import { ListDensity } from '@/types/serverConfig'
 import { isDesktop } from '@/utils/desktop'
 
 const { HIDE_RADIOS_SECTION, DISABLE_IMAGE_CACHE_TOGGLE } = window
 
 const replayGainModes: ReplayGainType[] = ['track', 'album']
+const listDensityModes: ListDensity[] = ['compact', 'default', 'cozy']
 
 export function PlayerPage() {
   const { t } = useTranslation()
   const [equalizerOpen, setEqualizerOpen] = useState(false)
-  
+
   // Replay Gain
   const {
     replayGainEnabled,
@@ -56,9 +65,12 @@ export function PlayerPage() {
   } = useReplayGainActions()
 
   // Crossfade
-  const { enabled: crossfadeEnabled, setEnabled: setCrossfadeEnabled } = useCrossfadeSettings()
-  const { enabled: listeningMemoryEnabled, setEnabled: setListeningMemoryEnabled } =
-    useListeningMemorySettings()
+  const { enabled: crossfadeEnabled, setEnabled: setCrossfadeEnabled } =
+    useCrossfadeSettings()
+  const {
+    enabled: listeningMemoryEnabled,
+    setEnabled: setListeningMemoryEnabled,
+  } = useListeningMemorySettings()
 
   // Sidebar & Playlists
   const {
@@ -69,7 +81,9 @@ export function PlayerPage() {
   } = useAppPages()
 
   // Cache
-  const { imagesCacheLayerEnabled, setImagesCacheLayerEnabled } = useAppImagesCacheLayer()
+  const { imagesCacheLayerEnabled, setImagesCacheLayerEnabled } =
+    useAppImagesCacheLayer()
+  const { listDensity, setListDensity } = useAppListDensity()
 
   // Rich Presence
   const { discord } = useAppAccounts()
@@ -89,7 +103,9 @@ export function PlayerPage() {
       {/* Audio Processing */}
       <Root>
         <Header>
-          <HeaderTitle>{t('settings.player.audioProcessing.group', 'Audio Processing')}</HeaderTitle>
+          <HeaderTitle>
+            {t('settings.player.audioProcessing.group', 'Audio Processing')}
+          </HeaderTitle>
         </Header>
         <Content>
           <ContentItem>
@@ -149,12 +165,16 @@ export function PlayerPage() {
                 <ContentItemForm>
                   <Select
                     value={replayGainType}
-                    onValueChange={(value) => setReplayGainType(value as ReplayGainType)}
+                    onValueChange={(value) =>
+                      setReplayGainType(value as ReplayGainType)
+                    }
                   >
                     <SelectTrigger className="h-8">
                       <SelectValue>
                         <span className="text-sm">
-                          {t('settings.audio.replayGain.mode.' + replayGainType)}
+                          {t(
+                            'settings.audio.replayGain.mode.' + replayGainType,
+                          )}
                         </span>
                       </SelectValue>
                     </SelectTrigger>
@@ -186,8 +206,13 @@ export function PlayerPage() {
               </ContentItem>
 
               <ContentItem>
-                <ContentItemTitle info={t('settings.audio.replayGain.defaultGain.info')}>
-                  {t('settings.audio.replayGain.defaultGain.label', 'Default Gain')}
+                <ContentItemTitle
+                  info={t('settings.audio.replayGain.defaultGain.info')}
+                >
+                  {t(
+                    'settings.audio.replayGain.defaultGain.label',
+                    'Default Gain',
+                  )}
                 </ContentItemTitle>
                 <ContentItemForm>
                   <NumericInput
@@ -231,12 +256,17 @@ export function PlayerPage() {
       {/* Playlists */}
       <Root>
         <Header>
-          <HeaderTitle>{t('settings.player.playlists.group', 'Playlists')}</HeaderTitle>
+          <HeaderTitle>
+            {t('settings.player.playlists.group', 'Playlists')}
+          </HeaderTitle>
         </Header>
         <Content>
           <ContentItem>
             <ContentItemTitle>
-              {t('settings.player.playlists.autoImport.label', 'Automatic Playlist Import')}
+              {t(
+                'settings.player.playlists.autoImport.label',
+                'Automatic Playlist Import',
+              )}
             </ContentItemTitle>
             <ContentItemForm>
               <Switch
@@ -251,12 +281,17 @@ export function PlayerPage() {
       {/* Interface */}
       <Root>
         <Header>
-          <HeaderTitle>{t('settings.player.interface.group', 'Interface')}</HeaderTitle>
+          <HeaderTitle>
+            {t('settings.player.interface.group', 'Interface')}
+          </HeaderTitle>
         </Header>
         <Content>
           <ContentItem>
             <ContentItemTitle>
-              {t('settings.content.sidebar.radios.section', 'Hide Radios Section')}
+              {t(
+                'settings.content.sidebar.radios.section',
+                'Hide radios section',
+              )}
             </ContentItemTitle>
             <ContentItemForm>
               <Switch
@@ -268,7 +303,34 @@ export function PlayerPage() {
           </ContentItem>
 
           <ContentItem>
-            <ContentItemTitle info={t('settings.content.images.cacheLayer.info')}>
+            <ContentItemTitle>
+              {t('settings.player.density.label', 'List density')}
+            </ContentItemTitle>
+            <ContentItemForm>
+              <Select
+                value={listDensity}
+                onValueChange={(value) => setListDensity(value as ListDensity)}
+              >
+                <SelectTrigger className="h-8">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    {listDensityModes.map((mode) => (
+                      <SelectItem key={mode} value={mode}>
+                        {t(`settings.player.density.options.${mode}`)}
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+            </ContentItemForm>
+          </ContentItem>
+
+          <ContentItem>
+            <ContentItemTitle
+              info={t('settings.content.images.cacheLayer.info')}
+            >
               {t('settings.player.cache.label', 'Cache Album Artwork')}
             </ContentItemTitle>
             <ContentItemForm>
@@ -286,12 +348,17 @@ export function PlayerPage() {
       {isDesktop() && (
         <Root>
           <Header>
-            <HeaderTitle>{t('settings.player.desktop.group', 'Desktop')}</HeaderTitle>
+            <HeaderTitle>
+              {t('settings.player.desktop.group', 'Desktop')}
+            </HeaderTitle>
           </Header>
           <Content>
             <ContentItem>
               <ContentItemTitle>
-                {t('settings.accounts.discord.enabled.label', 'Discord Rich Presence')}
+                {t(
+                  'settings.accounts.discord.enabled.label',
+                  'Discord Rich Presence',
+                )}
               </ContentItemTitle>
               <ContentItemForm>
                 <Switch
@@ -312,7 +379,6 @@ export function PlayerPage() {
                 />
               </ContentItemForm>
             </ContentItem>
-
           </Content>
         </Root>
       )}

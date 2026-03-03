@@ -1,12 +1,16 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import clsx from 'clsx'
 import { useQuery } from '@tanstack/react-query'
-import { useMemo, useState } from 'react'
+import clsx from 'clsx'
+import {
+  ComponentPropsWithoutRef,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react'
 import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { z } from 'zod'
-import { Button } from '@/app/components/ui/button'
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/app/components/ui/dialog'
 import {
   Content,
   ContentItem,
@@ -16,27 +20,37 @@ import {
   HeaderTitle,
   Root,
 } from '@/app/components/settings/section'
-import { Switch } from '@/app/components/ui/switch'
+import { Button } from '@/app/components/ui/button'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/app/components/ui/dialog'
 import { Input } from '@/app/components/ui/input'
+import { Switch } from '@/app/components/ui/switch'
+import { useDebouncedFormSync } from '@/app/hooks/use-debounced-form-sync'
+import { cn } from '@/lib/utils'
 import { subsonic } from '@/service/subsonic'
+import { useAppIntegrations, useAppPodcasts } from '@/store/app.store'
 import {
   DEFAULT_FOCUS_GENRES,
   DEFAULT_NIGHT_GENRES,
   useLyricsSettings,
   useSessionModeSettings,
 } from '@/store/player.store'
-import { useAppPodcasts, useAppIntegrations } from '@/store/app.store'
-import { cn } from '@/lib/utils'
-import { ComponentPropsWithoutRef } from 'react'
 import { isGenreUsable, normalizeGenreName } from '@/utils/genreNormalization'
 import { queryKeys } from '@/utils/queryKeys'
-import { useDebouncedFormSync } from '@/app/hooks/use-debounced-form-sync'
 
 const podcastSchema = z
   .object({
     serviceUrl: z.string().url({ message: 'login.form.validations.url' }),
     customUser: z.string().optional(),
-    customUrl: z.string().url({ message: 'login.form.validations.url' }).optional(),
+    customUrl: z
+      .string()
+      .url({ message: 'login.form.validations.url' })
+      .optional(),
     useDefaultUser: z.boolean(),
     active: z.boolean(),
   })
@@ -54,7 +68,11 @@ const podcastSchema = z
 
 type PodcastSchemaType = z.infer<typeof podcastSchema>
 
-function ErrorMessage({ className, children, ...rest }: ComponentPropsWithoutRef<'p'>) {
+function ErrorMessage({
+  className,
+  children,
+  ...rest
+}: ComponentPropsWithoutRef<'p'>) {
   return (
     <p {...rest} className={cn('text-destructive text-xs mt-1', className)}>
       {children}
@@ -99,25 +117,28 @@ export function ContentPage() {
     },
   })
 
-  useDebouncedFormSync(watch, (data: Partial<PodcastSchemaType>) => {
-    if (data.active !== undefined) setActive(data.active)
-    if (data.serviceUrl !== undefined) setServiceUrl(data.serviceUrl)
-    if (data.useDefaultUser !== undefined) setUseDefaultUser(data.useDefaultUser)
-    if (data.customUser !== undefined) setCustomUser(data.customUser)
-    if (data.customUrl !== undefined) setCustomUrl(data.customUrl)
-  }, 500)
+  useDebouncedFormSync(
+    watch,
+    (data: Partial<PodcastSchemaType>) => {
+      if (data.active !== undefined) setActive(data.active)
+      if (data.serviceUrl !== undefined) setServiceUrl(data.serviceUrl)
+      if (data.useDefaultUser !== undefined)
+        setUseDefaultUser(data.useDefaultUser)
+      if (data.customUser !== undefined) setCustomUser(data.customUser)
+      if (data.customUrl !== undefined) setCustomUrl(data.customUrl)
+    },
+    500,
+  )
 
   // Homepage Playlists
   const { lastfm } = useAppIntegrations()
   const isLastfmConfigured = Boolean(lastfm.username && lastfm.apiKey)
-  const {
-    focusGenres,
-    nightGenres,
-    setFocusGenres,
-    setNightGenres,
-  } = useSessionModeSettings()
+  const { focusGenres, nightGenres, setFocusGenres, setNightGenres } =
+    useSessionModeSettings()
 
-  const [activeGenreMode, setActiveGenreMode] = useState<'focus' | 'night' | null>(null)
+  const [activeGenreMode, setActiveGenreMode] = useState<
+    'focus' | 'night' | null
+  >(null)
   const [draftGenres, setDraftGenres] = useState<string[]>([])
 
   const { data: genres = [], isLoading: genresLoading } = useQuery({
@@ -137,21 +158,76 @@ export function ContentPage() {
     return [...canonical].sort((a, b) => a.localeCompare(b))
   }, [genres])
 
-  const availableGenreSet = useMemo(() => new Set(availableGenres), [availableGenres])
+  const availableGenreSet = useMemo(
+    () => new Set(availableGenres),
+    [availableGenres],
+  )
 
-  const getDefaultsForMode = (mode: 'focus' | 'night') =>
-    (mode === 'focus' ? DEFAULT_FOCUS_GENRES : DEFAULT_NIGHT_GENRES)
-      .map((value) => value.trim().toLowerCase())
-      .filter((value) => value.length > 0)
-      .filter((value) => availableGenreSet.has(value))
+  const normalizeGenreForSelection = useCallback(
+    (value: string) => normalizeGenreName(value).trim().toLowerCase(),
+    [],
+  )
+
+  const resolveToAvailableGenre = useCallback(
+    (value: string) => {
+      const normalized = normalizeGenreForSelection(value)
+      if (!normalized) return null
+      if (availableGenreSet.has(normalized)) return normalized
+
+      const compatible = availableGenres.find(
+        (genre) =>
+          genre === normalized ||
+          genre.includes(normalized) ||
+          normalized.includes(genre),
+      )
+      return compatible ?? null
+    },
+    [availableGenreSet, availableGenres, normalizeGenreForSelection],
+  )
+
+  const getDefaultsForMode = useCallback(
+    (mode: 'focus' | 'night') => [
+      ...new Set(
+        (mode === 'focus' ? DEFAULT_FOCUS_GENRES : DEFAULT_NIGHT_GENRES)
+          .map((value) => resolveToAvailableGenre(value))
+          .filter((value): value is string => Boolean(value)),
+      ),
+    ],
+    [resolveToAvailableGenre],
+  )
 
   const getConfiguredForMode = (mode: 'focus' | 'night') => {
     const source = mode === 'focus' ? focusGenres : nightGenres
-    const cleaned = [...new Set(source.map((value) => value.trim().toLowerCase()))]
+    const cleaned = [
+      ...new Set(source.map((value) => resolveToAvailableGenre(value) ?? '')),
+    ]
       .filter((value) => value.length > 0)
-      .filter((value) => availableGenreSet.size === 0 || availableGenreSet.has(value))
+      .filter(
+        (value) => availableGenreSet.size === 0 || availableGenreSet.has(value),
+      )
     return cleaned
   }
+
+  useEffect(() => {
+    if (availableGenres.length === 0) return
+
+    if (!focusGenres || focusGenres.length === 0) {
+      const defaults = getDefaultsForMode('focus')
+      if (defaults.length > 0) setFocusGenres(defaults)
+    }
+
+    if (!nightGenres || nightGenres.length === 0) {
+      const defaults = getDefaultsForMode('night')
+      if (defaults.length > 0) setNightGenres(defaults)
+    }
+  }, [
+    availableGenres,
+    focusGenres,
+    getDefaultsForMode,
+    nightGenres,
+    setFocusGenres,
+    setNightGenres,
+  ])
 
   const openGenreModal = (mode: 'focus' | 'night') => {
     const configured = getConfiguredForMode(mode)
@@ -162,7 +238,9 @@ export function ContentPage() {
 
   const toggleDraftGenre = (value: string) => {
     setDraftGenres((prev) =>
-      prev.includes(value) ? prev.filter((genre) => genre !== value) : [...prev, value],
+      prev.includes(value)
+        ? prev.filter((genre) => genre !== value)
+        : [...prev, value],
     )
   }
 
@@ -175,9 +253,13 @@ export function ContentPage() {
   const handleGenreSave = () => {
     if (!activeGenreMode) return
 
-    const sanitized = [...new Set(draftGenres.map((value) => value.trim().toLowerCase()))]
+    const sanitized = [
+      ...new Set(draftGenres.map((value) => value.trim().toLowerCase())),
+    ]
       .filter((value) => value.length > 0)
-      .filter((value) => availableGenreSet.size === 0 || availableGenreSet.has(value))
+      .filter(
+        (value) => availableGenreSet.size === 0 || availableGenreSet.has(value),
+      )
 
     const fallbackDefaults = getDefaultsForMode(activeGenreMode)
     const nextValue = sanitized.length > 0 ? sanitized : fallbackDefaults
@@ -198,8 +280,13 @@ export function ContentPage() {
         <Root>
           <Content>
             <ContentItem>
-              <ContentItemTitle info={t('settings.audio.lyrics.preferSynced.info')}>
-                {t('settings.audio.lyrics.preferSynced.label', 'Prefer Synced Lyrics')}
+              <ContentItemTitle
+                info={t('settings.audio.lyrics.preferSynced.info')}
+              >
+                {t(
+                  'settings.audio.lyrics.preferSynced.label',
+                  'Prefer Synced Lyrics',
+                )}
               </ContentItemTitle>
               <ContentItemForm>
                 <Switch
@@ -214,7 +301,9 @@ export function ContentPage() {
         {/* Podcasts */}
         <Root>
           <Header>
-            <HeaderTitle>{t('settings.content.podcast.group', 'Podcasts')}</HeaderTitle>
+            <HeaderTitle>
+              {t('settings.content.podcast.group', 'Podcasts')}
+            </HeaderTitle>
           </Header>
           <Content>
             <ContentItem>
@@ -239,15 +328,22 @@ export function ContentPage() {
                   <ContentItemTitle>
                     {t('settings.content.podcast.service.url', 'Service URL')}
                     {errors.serviceUrl?.message && (
-                      <ErrorMessage>{t(errors.serviceUrl.message)}</ErrorMessage>
+                      <ErrorMessage>
+                        {t(errors.serviceUrl.message)}
+                      </ErrorMessage>
                     )}
                   </ContentItemTitle>
                   <ContentItemForm>
                     <Input
                       {...register('serviceUrl')}
-                      className={clsx('h-8', errors.serviceUrl && 'border-destructive')}
+                      className={clsx(
+                        'h-8',
+                        errors.serviceUrl && 'border-destructive',
+                      )}
                       onChange={(e) => {
-                        setValue('serviceUrl', e.target.value, { shouldValidate: true })
+                        setValue('serviceUrl', e.target.value, {
+                          shouldValidate: true,
+                        })
                       }}
                       autoCorrect="off"
                       autoCapitalize="off"
@@ -259,9 +355,14 @@ export function ContentPage() {
 
                 <ContentItem>
                   <ContentItemTitle>
-                    {t('settings.content.podcast.credentials.label', 'Use Default Credentials')}
+                    {t(
+                      'settings.content.podcast.credentials.label',
+                      'Use Default Credentials',
+                    )}
                     {errors.useDefaultUser?.message && (
-                      <ErrorMessage>{t(errors.useDefaultUser.message)}</ErrorMessage>
+                      <ErrorMessage>
+                        {t(errors.useDefaultUser.message)}
+                      </ErrorMessage>
                     )}
                   </ContentItemTitle>
                   <ContentItemForm>
@@ -280,14 +381,19 @@ export function ContentPage() {
                   <>
                     <ContentItem>
                       <ContentItemTitle>
-                        {t('settings.content.podcast.credentials.user', 'Username')}
+                        {t(
+                          'settings.content.podcast.credentials.user',
+                          'Username',
+                        )}
                       </ContentItemTitle>
                       <ContentItemForm>
                         <Input
                           {...register('customUser')}
                           className="h-8"
                           onChange={(e) => {
-                            setValue('customUser', e.target.value, { shouldValidate: true })
+                            setValue('customUser', e.target.value, {
+                              shouldValidate: true,
+                            })
                             trigger('useDefaultUser')
                           }}
                         />
@@ -295,14 +401,19 @@ export function ContentPage() {
                     </ContentItem>
                     <ContentItem>
                       <ContentItemTitle>
-                        {t('settings.content.podcast.credentials.url', 'Server URL')}
+                        {t(
+                          'settings.content.podcast.credentials.url',
+                          'Server URL',
+                        )}
                       </ContentItemTitle>
                       <ContentItemForm>
                         <Input
                           {...register('customUrl')}
                           className="h-8"
                           onChange={(e) => {
-                            setValue('customUrl', e.target.value, { shouldValidate: true })
+                            setValue('customUrl', e.target.value, {
+                              shouldValidate: true,
+                            })
                             trigger('useDefaultUser')
                           }}
                           autoCorrect="off"
@@ -322,12 +433,17 @@ export function ContentPage() {
         {/* Session mode genres */}
         <Root>
           <Header>
-            <HeaderTitle>{t('settings.content.sessionModes.group', 'Session Modes')}</HeaderTitle>
+            <HeaderTitle>
+              {t('settings.content.sessionModes.group', 'Session Modes')}
+            </HeaderTitle>
           </Header>
           <Content>
             <ContentItem>
               <ContentItemTitle>
-                {t('settings.content.sessionModes.focusGenres.label', 'Focus Mode Genres')}
+                {t(
+                  'settings.content.sessionModes.focusGenres.label',
+                  'Focus Mode Genres',
+                )}
               </ContentItemTitle>
               <ContentItemForm>
                 <Button
@@ -343,7 +459,10 @@ export function ContentPage() {
             </ContentItem>
             <ContentItem>
               <ContentItemTitle>
-                {t('settings.content.sessionModes.nightGenres.label', 'Night Mode Genres')}
+                {t(
+                  'settings.content.sessionModes.nightGenres.label',
+                  'Night Mode Genres',
+                )}
               </ContentItemTitle>
               <ContentItemForm>
                 <Button
@@ -363,12 +482,17 @@ export function ContentPage() {
         {/* Homepage Playlists */}
         <Root>
           <Header>
-            <HeaderTitle>{t('settings.content.homepage.group', 'Homepage Features')}</HeaderTitle>
+            <HeaderTitle>
+              {t('settings.content.homepage.group', 'Homepage Features')}
+            </HeaderTitle>
           </Header>
           <Content>
             <ContentItem>
               <ContentItemTitle>
-                {t('settings.content.homepage.thisIsArtist.label', 'Show "This is [Artist]" Playlist')}
+                {t(
+                  'settings.content.homepage.thisIsArtist.label',
+                  'Show "This is [Artist]" Playlist',
+                )}
               </ContentItemTitle>
               <ContentItemForm>
                 <Switch
@@ -380,7 +504,10 @@ export function ContentPage() {
             </ContentItem>
             {!isLastfmConfigured && (
               <p className="text-xs text-muted-foreground">
-                {t('settings.content.homepage.requiresLastfm', 'Configure Last.fm in Services to enable this feature')}
+                {t(
+                  'settings.content.homepage.requiresLastfm',
+                  'Configure Last.fm in Services to enable this feature',
+                )}
               </p>
             )}
           </Content>
@@ -400,8 +527,14 @@ export function ContentPage() {
           <DialogHeader className="border-b px-6 pb-3 pt-6 pr-12 text-left">
             <DialogTitle>
               {activeGenreMode === 'focus'
-                ? t('settings.content.sessionModes.focusGenres.modalTitle', 'Focus Mode Genres')
-                : t('settings.content.sessionModes.nightGenres.modalTitle', 'Night Mode Genres')}
+                ? t(
+                    'settings.content.sessionModes.focusGenres.modalTitle',
+                    'Focus Mode Genres',
+                  )
+                : t(
+                    'settings.content.sessionModes.nightGenres.modalTitle',
+                    'Night Mode Genres',
+                  )}
             </DialogTitle>
             <DialogDescription>
               {t(
