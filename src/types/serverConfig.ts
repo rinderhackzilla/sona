@@ -28,6 +28,8 @@ interface IAppPages {
   setImagesCacheLayerEnabled: (value: boolean) => void
   autoPlaylistImport: boolean
   setAutoPlaylistImport: (value: boolean) => void
+  autoPlaylistImportExceptions: string[]
+  toggleAutoPlaylistImportException: (playlistId: string) => void
   listDensity: ListDensity
   setListDensity: (value: ListDensity) => void
   playlistOrder: string[]

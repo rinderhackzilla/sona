@@ -1,10 +1,5 @@
 import { clsx } from 'clsx'
-import {
-  ComponentProps,
-  memo,
-  useCallback,
-  useEffect,
-} from 'react'
+import { ComponentProps, memo, useCallback, useEffect } from 'react'
 import { LyricsTab } from '@/app/components/fullscreen/lyrics'
 import { CurrentSongInfo } from '@/app/components/queue/current-song-info'
 import { QueueSongList } from '@/app/components/queue/song-list'
@@ -103,15 +98,13 @@ function FullscreenScene() {
 }
 
 function FullscreenIntegratedPanel({ isOpen }: { isOpen: boolean }) {
-  const { queueState, setQueueState } = useQueueState()
-  const { lyricsState, setLyricsState } = useLyricsState()
-  const { setMainDrawerState } = useMainDrawerState()
+  const { queueState } = useQueueState()
+  const { lyricsState } = useLyricsState()
+  const { setActiveDrawerPanel } = useMainDrawerState()
 
   const closePanel = useCallback(() => {
-    setMainDrawerState(false)
-    setQueueState(false)
-    setLyricsState(false)
-  }, [setLyricsState, setMainDrawerState, setQueueState])
+    setActiveDrawerPanel(null)
+  }, [setActiveDrawerPanel])
 
   useEffect(() => {
     if (!isOpen) return
@@ -130,13 +123,13 @@ function FullscreenIntegratedPanel({ isOpen }: { isOpen: boolean }) {
   return (
     <div
       className={clsx(
-        'absolute left-8 right-8 2xl:left-16 2xl:right-16 top-0 bottom-[170px] 2xl:bottom-[188px] z-30 transform-gpu transition-[transform,opacity] duration-560 [transition-timing-function:cubic-bezier(0.22,1,0.36,1)]',
+        'absolute left-8 right-8 2xl:left-16 2xl:right-16 top-0 bottom-[170px] 2xl:bottom-[188px] z-30 transform-gpu transition-[transform,opacity] duration-500 [transition-timing-function:cubic-bezier(0.22,1,0.36,1)]',
         isOpen
           ? 'opacity-100 translate-y-0 pointer-events-auto'
           : 'opacity-0 -translate-y-full pointer-events-none',
       )}
     >
-      <div className="relative w-full h-full rounded-b-xl border-x border-b border-border/68 bg-background/88 shadow-[0_30px_68px_rgba(0,0,0,0.56)] overflow-hidden">
+      <div className="relative w-full h-full rounded-b-2xl border-x border-b border-border/60 bg-background/90 shadow-[0_24px_56px_rgba(0,0,0,0.48)] overflow-hidden">
         <div className="absolute inset-0 pointer-events-none bg-gradient-to-b from-foreground/5 via-transparent to-background/8" />
         <div className="flex w-full h-full gap-6 px-5 pt-11 pb-4 2xl:pt-12">
           {queueState && (

@@ -45,20 +45,27 @@ function setPodcastMediaSession(episode: EpisodeWithPodcast) {
   })
 }
 
-async function setRadioMediaSession(label: string, radioName: string) {
+async function setRadioMediaSession(
+  label: string,
+  radioName: string,
+  nowPlayingTitle?: string | null,
+  coverUrl?: string | null,
+) {
   if (!navigator.mediaSession) return
 
   navigator.mediaSession.metadata = new MediaMetadata({
-    title: radioName,
-    artist: label,
-    album: '',
-    artwork: [
-      {
-        src: '',
-        sizes: '',
-        type: '',
-      },
-    ],
+    title: nowPlayingTitle || radioName,
+    artist: nowPlayingTitle ? radioName : label,
+    album: nowPlayingTitle ? label : '',
+    artwork: coverUrl
+      ? [
+          {
+            src: coverUrl,
+            sizes: '',
+            type: 'image/jpeg',
+          },
+        ]
+      : [],
   })
 }
 

@@ -17,7 +17,6 @@ export function EmptyRadiosInfo() {
       <h3 className="text-2xl font-semibold tracking-tight">
         {t('radios.empty.title')}
       </h3>
-      <p className="text-sm text-muted-foreground">{t('radios.empty.info')}</p>
 
       <Button
         size="sm"

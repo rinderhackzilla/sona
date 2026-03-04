@@ -21,6 +21,7 @@ import {
   PlaybackEngine,
   PlaybackEngineStoreApi,
 } from './player/runtime/engine'
+import { orchestrateSongEnded } from './player/runtime/playback-orchestrator'
 import {
   DEFAULT_FOCUS_GENRES,
   DEFAULT_NIGHT_GENRES,
@@ -172,6 +173,16 @@ export const usePlayerStore = createWithEqualityFn<IPlayerContext>()(
               setEnabled: (value) => {
                 set((state) => {
                   state.settings.crossfade.enabled = value
+                })
+              },
+              durationSeconds: 3,
+              setDurationSeconds: (value) => {
+                set((state) => {
+                  state.settings.crossfade.durationSeconds = clamp(
+                    Math.round(value),
+                    2,
+                    8,
+                  )
                 })
               },
             },
@@ -603,6 +614,22 @@ export const usePlayerStore = createWithEqualityFn<IPlayerContext>()(
                 })
               }
             },
+            advanceToNextSongWithoutReset: () => {
+              const { loopState } = get().playerState
+              const { hasNextSong, playFirstSongInQueue } = get().actions
+
+              if (hasNextSong()) {
+                set((state) => {
+                  state.songlist.currentSongIndex += 1
+                  state.playerState.isPlaying = true
+                })
+              } else if (loopState === LoopState.All) {
+                playFirstSongInQueue()
+                set((state) => {
+                  state.playerState.isPlaying = true
+                })
+              }
+            },
             playPrevSong: () => {
               if (get().actions.hasPrevSong()) {
                 get().actions.resetProgress()
@@ -876,62 +903,66 @@ export const usePlayerStore = createWithEqualityFn<IPlayerContext>()(
                 state.playerState.mainDrawerState = status
               })
             },
+            setActiveDrawerPanel: (panel) => {
+              set((state) => {
+                state.playerState.mainDrawerState = panel !== null
+                state.playerState.queueState = panel === 'queue'
+                state.playerState.lyricsState = panel === 'lyrics'
+              })
+            },
             setQueueState: (status) => {
+              const { setActiveDrawerPanel } = get().actions
+              if (status) {
+                setActiveDrawerPanel('queue')
+                return
+              }
+
               set((state) => {
                 state.playerState.queueState = status
+                if (!state.playerState.lyricsState) {
+                  state.playerState.mainDrawerState = false
+                }
               })
             },
             toggleQueueAction: () => {
-              const { mainDrawerState, lyricsState, queueState } =
-                get().playerState
-              const {
-                toggleQueueAndLyrics,
-                setQueueState,
-                setMainDrawerState,
-              } = get().actions
-
-              if (mainDrawerState && lyricsState) {
-                toggleQueueAndLyrics()
-              } else {
-                setQueueState(!queueState)
-                setMainDrawerState(!mainDrawerState)
-              }
+              const { queueState } = get().playerState
+              const { setActiveDrawerPanel } = get().actions
+              setActiveDrawerPanel(queueState ? null : 'queue')
             },
             setLyricsState: (status) => {
+              const { setActiveDrawerPanel } = get().actions
+              if (status) {
+                setActiveDrawerPanel('lyrics')
+                return
+              }
+
               set((state) => {
                 state.playerState.lyricsState = status
+                if (!state.playerState.queueState) {
+                  state.playerState.mainDrawerState = false
+                }
               })
             },
             toggleLyricsAction: () => {
-              const { mainDrawerState, lyricsState, queueState } =
-                get().playerState
-              const {
-                toggleQueueAndLyrics,
-                setLyricsState,
-                setMainDrawerState,
-              } = get().actions
-
-              if (mainDrawerState && queueState) {
-                toggleQueueAndLyrics()
-              } else {
-                setLyricsState(!lyricsState)
-                setMainDrawerState(!mainDrawerState)
-              }
+              const { lyricsState } = get().playerState
+              const { setActiveDrawerPanel } = get().actions
+              setActiveDrawerPanel(lyricsState ? null : 'lyrics')
             },
             toggleQueueAndLyrics: () => {
               const { queueState, lyricsState } = get().playerState
-
-              set((state) => {
-                state.playerState.queueState = !queueState
-                state.playerState.lyricsState = !lyricsState
-              })
+              const { setActiveDrawerPanel } = get().actions
+              if (queueState) {
+                setActiveDrawerPanel('lyrics')
+                return
+              }
+              if (lyricsState) {
+                setActiveDrawerPanel('queue')
+                return
+              }
+              setActiveDrawerPanel('queue')
             },
             closeDrawer: () => {
-              set((state) => {
-                state.playerState.mainDrawerState = false
-                state.playerState.queueState = false
-                state.playerState.lyricsState = false
-              })
+              get().actions.setActiveDrawerPanel(null)
             },
             playFirstSongInQueue: () => {
               set((state) => {
@@ -940,48 +971,33 @@ export const usePlayerStore = createWithEqualityFn<IPlayerContext>()(
             },
             handleSongEnded: async () => {
               const { loopState } = get().playerState
-              const {
-                hasNextSong,
-                playNextSong,
-                setPlayingState,
-                clearPlayerState,
-                resetProgress,
-              } = get().actions
-
-              // Handle single-track repeat explicitly instead of relying on native
-              // HTML audio looping to avoid rare silent re-loop states.
-              if (loopState === LoopState.One) {
-                const audio = get().playerState.audioPlayerRef
-                if (audio) {
-                  audio.currentTime = 0
-                  audio.volume = getVolume() / 100
-                  audio.play().catch(() => undefined)
-                }
-                resetProgress()
-                setPlayingState(true)
-                return
-              }
-
               const engine = getPlaybackEngine()
-              const mode = engine.getRuntimeMode()
-              const isSonaDjEnabled = mode !== SonaDjMode.Off
-              await engine.ensureSonaDjNextTrack()
-              await engine.ensureRuntimeShuffleNextTrack()
 
-              if (isSonaDjEnabled && !hasNextSong()) {
-                await engine.ensureSonaDjNextTrack()
-              }
-              if (engine.getRuntimeShuffleEnabled() && !hasNextSong()) {
-                await engine.ensureRuntimeShuffleNextTrack()
-              }
-
-              if (hasNextSong() || loopState === LoopState.All) {
-                playNextSong()
-                setPlayingState(true)
-              } else {
-                clearPlayerState()
-                setPlayingState(false)
-              }
+              await orchestrateSongEnded(
+                loopState,
+                {
+                  hasNextSong: get().actions.hasNextSong,
+                  playNextSong: get().actions.playNextSong,
+                  setPlayingState: get().actions.setPlayingState,
+                  clearPlayerState: get().actions.clearPlayerState,
+                  resetProgress: get().actions.resetProgress,
+                  restartCurrentTrack: () => {
+                    const audio = get().playerState.audioPlayerRef
+                    if (audio) {
+                      audio.currentTime = 0
+                      audio.volume = getVolume() / 100
+                      audio.play().catch(() => undefined)
+                    }
+                  },
+                },
+                {
+                  ensureSonaDjNextTrack: engine.ensureSonaDjNextTrack,
+                  ensureRuntimeShuffleNextTrack:
+                    engine.ensureRuntimeShuffleNextTrack,
+                  getRuntimeMode: engine.getRuntimeMode,
+                  getRuntimeShuffleEnabled: engine.getRuntimeShuffleEnabled,
+                },
+              )
             },
             getCurrentProgress: () => {
               return get().playerProgress.progress
@@ -1011,6 +1027,8 @@ export const usePlayerStore = createWithEqualityFn<IPlayerContext>()(
                   defaultGain: -6,
                 }
                 state.settings.listeningMemory.enabled = true
+                state.settings.crossfade.enabled = false
+                state.settings.crossfade.durationSeconds = 3
                 state.settings.sessionMode.mode = 'off'
                 state.settings.sessionMode.focusGenres = DEFAULT_FOCUS_GENRES
                 state.settings.sessionMode.nightGenres = DEFAULT_NIGHT_GENRES
@@ -1073,6 +1091,19 @@ export const usePlayerStore = createWithEqualityFn<IPlayerContext>()(
           // Session Mode should always boot in normal mode.
           if (merged && typeof merged === 'object' && 'settings' in merged) {
             const settings = (merged as IPlayerContext).settings
+            if (settings?.crossfade) {
+              if (
+                typeof settings.crossfade.durationSeconds !== 'number' ||
+                Number.isNaN(settings.crossfade.durationSeconds)
+              ) {
+                settings.crossfade.durationSeconds = 3
+              }
+              settings.crossfade.durationSeconds = clamp(
+                Math.round(settings.crossfade.durationSeconds),
+                2,
+                8,
+              )
+            }
             if (settings?.sessionMode) {
               settings.sessionMode.mode = 'off'
               if (
@@ -1275,6 +1306,7 @@ export const useMainDrawerState = () =>
   usePlayerStore((state) => ({
     mainDrawerState: state.playerState.mainDrawerState,
     setMainDrawerState: state.actions.setMainDrawerState,
+    setActiveDrawerPanel: state.actions.setActiveDrawerPanel,
     toggleQueueAndLyrics: state.actions.toggleQueueAndLyrics,
     closeDrawer: state.actions.closeDrawer,
   }))

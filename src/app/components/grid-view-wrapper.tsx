@@ -14,6 +14,7 @@ import {
   getGridClickedItem,
   saveGridClickedItem,
 } from '@/utils/gridTools'
+import { safeStorageGet, safeStorageRemove } from '@/utils/safe-storage'
 import { getMainScrollElement } from '@/utils/scrollPageToTop'
 
 type GridViewWrapperProps<T> = {
@@ -151,6 +152,16 @@ export function GridViewWrapper<T>({
   useLayoutEffect(() => {
     // Awaits initial measurement before restoring
     if (!initialMeasurementDone.current || initialScrollRestored.current) return
+
+    const forceTopOnce =
+      type === 'albums' && safeStorageGet('albums_force_top_once') === '1'
+    if (forceTopOnce) {
+      safeStorageRemove('albums_force_top_once')
+      rowVirtualizer.scrollToOffset(0)
+      initialScrollRestored.current = true
+      isScrollingSaved.current = false
+      return
+    }
 
     const savedRowPosition = getGridClickedItem({ name: type })
     if (!savedRowPosition) {

@@ -1,4 +1,3 @@
-import { useQuery } from '@tanstack/react-query'
 import { CommandItem } from 'cmdk'
 import { PlusIcon } from 'lucide-react'
 import { KeyboardEvent } from 'react'
@@ -14,8 +13,7 @@ import {
 import { ContextMenuItem } from '@/app/components/ui/context-menu'
 import { DropdownMenuItem } from '@/app/components/ui/dropdown-menu'
 import { ScrollArea } from '@/app/components/ui/scroll-area'
-import { subsonic } from '@/service/subsonic'
-import { queryKeys } from '@/utils/queryKeys'
+import { usePlaylistsQuery } from '@/app/hooks/use-playlists-query'
 
 interface AddToPlaylistSubMenuProps {
   newPlaylistFn: () => void
@@ -30,10 +28,7 @@ export function AddToPlaylistSubMenu({
 }: AddToPlaylistSubMenuProps) {
   const { t } = useTranslation()
 
-  const { data: playlists } = useQuery({
-    queryKey: [queryKeys.playlist.all],
-    queryFn: subsonic.playlists.getAll,
-  })
+  const { data: playlists } = usePlaylistsQuery()
 
   function avoidTypeAhead(e: KeyboardEvent<HTMLInputElement>) {
     const avoidKeys = ['ArrowLeft', 'ArrowRight', 'Escape']

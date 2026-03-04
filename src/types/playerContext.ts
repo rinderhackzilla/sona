@@ -74,6 +74,8 @@ interface IReplayGain {
 interface ICrossfade {
   enabled: boolean
   setEnabled: (value: boolean) => void
+  durationSeconds: number
+  setDurationSeconds: (value: number) => void
 }
 
 interface IListeningMemory {
@@ -175,6 +177,7 @@ export interface IPlayerActions {
   toggleShuffle: () => void
   checkActiveSong: (id: string) => boolean
   playNextSong: () => void
+  advanceToNextSongWithoutReset: () => void
   playPrevSong: () => void
   hasNextSong: () => boolean
   hasPrevSong: () => boolean
@@ -192,6 +195,7 @@ export interface IPlayerActions {
   removeSongFromQueue: (id: string) => void
   reorderQueue: (fromIndex: number, toIndex: number) => void
   setMainDrawerState: (state: boolean) => void
+  setActiveDrawerPanel: (panel: 'queue' | 'lyrics' | null) => void
   setQueueState: (state: boolean) => void
   toggleQueueAction: () => void
   setLyricsState: (state: boolean) => void

@@ -1,26 +1,21 @@
-import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { LazyLoadImage } from 'react-lazy-load-image-component'
 import { useNavigate } from 'react-router-dom'
 import { Dot } from '@/app/components/dot'
 import { ImageLoader } from '@/app/components/image-loader'
 import { CommandGroup, CommandItem } from '@/app/components/ui/command'
+import { usePlaylistsQuery } from '@/app/hooks/use-playlists-query'
 import { ROUTES } from '@/routes/routesList'
-import { subsonic } from '@/service/subsonic'
 import { Playlist } from '@/types/responses/playlist'
 import { convertSecondsToHumanRead } from '@/utils/convertSecondsToTime'
 import { navigateSafe } from '@/utils/navigateSafe'
-import { queryKeys } from '@/utils/queryKeys'
 import { CommandItemProps } from './command-menu'
 
 export function CommandPlaylists({ runCommand }: CommandItemProps) {
   const { t } = useTranslation()
   const navigate = useNavigate()
 
-  const { data: playlists } = useQuery({
-    queryKey: [queryKeys.playlist.all],
-    queryFn: subsonic.playlists.getAll,
-  })
+  const { data: playlists } = usePlaylistsQuery()
 
   if (!playlists || playlists.length === 0) return null
 

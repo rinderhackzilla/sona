@@ -1,7 +1,6 @@
 import { ReactNode, useEffect, useRef, useState } from 'react'
 import { resolveArtwork } from '@/api/artwork'
 import { CoverArt } from '@/types/coverArtType'
-import { logger } from '@/utils/logger'
 
 interface ImageLoaderProps {
   id?: string
@@ -16,13 +15,13 @@ export function ImageLoader({
   size = 300,
   children,
 }: ImageLoaderProps) {
-  const isDev = import.meta.env.DEV
   const [src, setSrc] = useState<string>('')
   const [isLoading, setIsLoading] = useState(true)
   const abortControllerRef = useRef<AbortController | null>(null)
+  const requestIdRef = useRef(0)
 
   useEffect(() => {
-    const startedAt = performance.now()
+    const requestId = ++requestIdRef.current
 
     if (abortControllerRef.current) {
       abortControllerRef.current.abort()
@@ -30,88 +29,32 @@ export function ImageLoader({
 
     setIsLoading(true)
 
-    if (!id) {
-      resolveArtwork({ id, type, size }).then((url) => {
-        if (isDev) {
-          logger.info('[CoverDebug] Resolved fallback artwork', {
-            id,
-            type,
-            size,
-            elapsedMs: Math.round(performance.now() - startedAt),
-            resolvedUrl: url,
-          })
-        }
-        if (isDev && type === 'artist') {
-          console.info('[ImageLoader][artist] fallback', {
-            id,
-            type,
-            size,
-            resolvedUrl: url,
-          })
-        }
-        setSrc(url)
-        setIsLoading(false)
-      })
-      return
-    }
-
     const abortController = new AbortController()
     abortControllerRef.current = abortController
 
+    const isRequestActive = () =>
+      !abortController.signal.aborted && requestIdRef.current === requestId
+
     const fetchImage = async () => {
       try {
-        if (isDev) {
-          logger.info('[CoverDebug] Resolving artwork started', {
-            id,
-            type,
-            size,
-          })
-        }
-        const finalUrl = await resolveArtwork({ id, type, size })
+        const resolvedUrl = await resolveArtwork({ id, type, size })
+        const finalUrl =
+          resolvedUrl && resolvedUrl.trim().length > 0
+            ? resolvedUrl
+            : await resolveArtwork({ type, size })
 
-        if (!abortController.signal.aborted) {
-          if (isDev) {
-            logger.info('[CoverDebug] Resolved artwork', {
-              id,
-              type,
-              size,
-              elapsedMs: Math.round(performance.now() - startedAt),
-              resolvedUrl: finalUrl,
-            })
-          }
-          if (isDev && type === 'artist') {
-            console.info('[ImageLoader][artist] resolved', {
-              id,
-              type,
-              size,
-              resolvedUrl: finalUrl,
-            })
-          }
+        if (isRequestActive()) {
           setSrc(finalUrl)
-          setIsLoading(false)
         }
-      } catch (error) {
-        if (!abortController.signal.aborted) {
-          if (isDev) {
-            logger.info('[CoverDebug] Resolve artwork failed, using fallback', {
-              id,
-              type,
-              size,
-              elapsedMs: Math.round(performance.now() - startedAt),
-            })
-          }
-          console.error('Error fetching image:', error)
+      } catch (_error) {
+        if (isRequestActive()) {
           const fallback = await resolveArtwork({ type, size })
-          if (isDev && type === 'artist') {
-            console.info('[ImageLoader][artist] error-fallback', {
-              id,
-              type,
-              size,
-              fallbackUrl: fallback,
-              error,
-            })
+          if (isRequestActive()) {
+            setSrc(fallback)
           }
-          setSrc(fallback)
+        }
+      } finally {
+        if (isRequestActive()) {
           setIsLoading(false)
         }
       }

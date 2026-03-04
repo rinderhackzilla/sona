@@ -20,6 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/app/components/ui/select'
+import { Slider } from '@/app/components/ui/slider'
 import { Switch } from '@/app/components/ui/switch'
 import {
   useAppAccounts,
@@ -65,8 +66,20 @@ export function PlayerPage() {
   } = useReplayGainActions()
 
   // Crossfade
-  const { enabled: crossfadeEnabled, setEnabled: setCrossfadeEnabled } =
-    useCrossfadeSettings()
+  const {
+    enabled: crossfadeEnabled,
+    setEnabled: setCrossfadeEnabled,
+    durationSeconds: crossfadeDurationSeconds,
+    setDurationSeconds: setCrossfadeDurationSeconds,
+  } = useCrossfadeSettings()
+  const crossfadePoints = [0, 2, 3, 4, 5, 6, 7, 8]
+  const resolvedCrossfadeDurationSeconds = Math.min(
+    8,
+    Math.max(2, crossfadeDurationSeconds || 3),
+  )
+  const crossfadeSliderValue = crossfadeEnabled
+    ? crossfadePoints.indexOf(resolvedCrossfadeDurationSeconds)
+    : 0
   const {
     enabled: listeningMemoryEnabled,
     setEnabled: setListeningMemoryEnabled,
@@ -226,16 +239,84 @@ export function PlayerPage() {
             </>
           )}
 
-          {/* Crossfade toggle */}
+          {/* Crossfade point slider */}
           <ContentItem>
             <ContentItemTitle info={t('settings.player.crossfade.info')}>
               {t('settings.player.crossfade.label', 'Crossfade')}
             </ContentItemTitle>
             <ContentItemForm>
-              <Switch
-                checked={crossfadeEnabled}
-                onCheckedChange={setCrossfadeEnabled}
-              />
+              <div className="flex items-center gap-3 min-w-[13rem]">
+                <div className="relative w-44">
+                  <Slider
+                    min={0}
+                    max={7}
+                    step={1}
+                    value={[crossfadeSliderValue]}
+                    onValueChange={(values) => {
+                      const nextIndex = values[0]
+                      if (typeof nextIndex !== 'number') return
+
+                      const roundedIndex = Math.max(
+                        0,
+                        Math.min(7, Math.round(nextIndex)),
+                      )
+                      const nextPoint = crossfadePoints[roundedIndex]
+
+                      if (nextPoint === 0) {
+                        if (crossfadeEnabled) {
+                          setCrossfadeEnabled(false)
+                        }
+                        return
+                      }
+
+                      setCrossfadeDurationSeconds(nextPoint)
+                      if (!crossfadeEnabled) {
+                        setCrossfadeEnabled(true)
+                      }
+                    }}
+                    className={`
+                      h-5
+                      [&_.slider-track]:h-0 [&_.slider-track]:bg-transparent
+                      [&_.slider-range]:h-0 [&_.slider-range]:bg-transparent
+                      [&_[role=slider]]:!h-0 [&_[role=slider]]:!w-0
+                      [&_[role=slider]]:!opacity-0 [&_[role=slider]]:!bg-transparent
+                      [&_[role=slider]]:!border-0 [&_[role=slider]]:!shadow-none
+                      [&_[role=slider]]:!pointer-events-none
+                    `}
+                    aria-label={t(
+                      'settings.player.crossfade.label',
+                      'Crossfade',
+                    )}
+                  />
+                  <div className="pointer-events-none absolute inset-0 grid grid-cols-8 place-items-center">
+                    {crossfadePoints.map((point) => {
+                      const isActivePoint =
+                        point === 0
+                          ? !crossfadeEnabled
+                          : crossfadeEnabled &&
+                            point <= resolvedCrossfadeDurationSeconds
+                      return (
+                        <span
+                          key={point}
+                          className={`h-[0.65rem] w-[0.65rem] rounded-full transition-colors ${
+                            isActivePoint
+                              ? 'bg-primary'
+                              : 'bg-muted-foreground/50'
+                          }`}
+                        />
+                      )
+                    })}
+                  </div>
+                </div>
+                <span className="text-xs text-muted-foreground tabular-nums min-w-[3.5rem] text-right">
+                  {crossfadeEnabled
+                    ? t('settings.player.crossfade.status', {
+                        seconds: resolvedCrossfadeDurationSeconds,
+                        defaultValue: '{{seconds}} s',
+                      })
+                    : t('settings.player.crossfade.off', 'Off')}
+                </span>
+              </div>
             </ContentItemForm>
           </ContentItem>
 
@@ -265,7 +346,7 @@ export function PlayerPage() {
             <ContentItemTitle>
               {t(
                 'settings.player.playlists.autoImport.label',
-                'Automatic Playlist Import',
+                'Show server-imported M3U playlists',
               )}
             </ContentItemTitle>
             <ContentItemForm>

@@ -63,9 +63,15 @@ export function Player({ hideUi = false }: { hideUi?: boolean }) {
   const fadeOutStartedRef = useRef(false)
   const isCrossfadingRef = useRef(false)
   const crossfadeCommitRef = useRef(false)
+  const crossfadeCommitTargetRef = useRef<{
+    deck: DeckId
+    index: number
+  } | null>(null)
   const incomingDeckRef = useRef<DeckId | null>(null)
+  const incomingSongIndexRef = useRef<number | null>(null)
   const crossfadeStateRef = useRef<CrossfadeState>('idle')
   const crossfadeRetryRef = useRef(0)
+  const activeDeckRef = useRef<DeckId>('a')
   const [activeDeck, setActiveDeck] = useState<DeckId>('a')
   const [incomingDeck, setIncomingDeck] = useState<DeckId | null>(null)
   const [deckAIndex, setDeckAIndex] = useState<number | null>(null)
@@ -79,7 +85,7 @@ export function Player({ hideUi = false }: { hideUi?: boolean }) {
     handleSongEnded,
     getCurrentProgress,
     getCurrentPodcastProgress,
-    playNextSong,
+    advanceToNextSongWithoutReset,
   } = usePlayerActions()
   const { currentList, currentSongIndex, radioList, podcastList } =
     usePlayerSonglist()
@@ -90,9 +96,15 @@ export function Player({ hideUi = false }: { hideUi?: boolean }) {
   const currentPlaybackRate = usePlayerStore().playerState.currentPlaybackRate
   const { replayGainType, replayGainPreAmp, replayGainDefaultGain } =
     useReplayGainState()
-  const { enabled: crossfadeEnabled } = useCrossfadeSettings()
+  const {
+    enabled: crossfadeEnabled,
+    durationSeconds: crossfadeDurationSetting,
+  } = useCrossfadeSettings()
+  const crossfadeDurationSeconds = Math.min(
+    8,
+    Math.max(2, crossfadeDurationSetting || 3),
+  )
 
-  const CROSSFADE_DURATION_S = 3
   const MAX_CROSSFADE_RETRIES = 2
   const CROSSFADE_RETRY_DELAY_MS = 150
 
@@ -111,6 +123,10 @@ export function Player({ hideUi = false }: { hideUi?: boolean }) {
     () => (activeDeck === 'a' ? songDeckARef : songDeckBRef),
     [activeDeck],
   )
+
+  useEffect(() => {
+    activeDeckRef.current = activeDeck
+  }, [activeDeck])
 
   const clearFade = useCallback(() => {
     if (crossfadeIntervalRef.current !== null) {
@@ -142,6 +158,8 @@ export function Player({ hideUi = false }: { hideUi?: boolean }) {
       setDeckBIndex(null)
       isCrossfadingRef.current = false
       incomingDeckRef.current = null
+      incomingSongIndexRef.current = null
+      crossfadeCommitTargetRef.current = null
       setIncomingDeck(null)
       fadeOutStartedRef.current = false
       crossfadeStateRef.current = 'idle'
@@ -150,8 +168,15 @@ export function Player({ hideUi = false }: { hideUi?: boolean }) {
       return
     }
 
-    if (crossfadeCommitRef.current) {
+    const pendingCommitTarget = crossfadeCommitTargetRef.current
+    if (pendingCommitTarget) {
+      const commitReached =
+        activeDeck === pendingCommitTarget.deck &&
+        currentSongIndex === pendingCommitTarget.index
+      if (!commitReached) return
       crossfadeCommitRef.current = false
+      crossfadeCommitTargetRef.current = null
+      incomingSongIndexRef.current = null
       return
     }
 
@@ -163,6 +188,8 @@ export function Player({ hideUi = false }: { hideUi?: boolean }) {
 
     isCrossfadingRef.current = false
     incomingDeckRef.current = null
+    incomingSongIndexRef.current = null
+    crossfadeCommitTargetRef.current = null
     setIncomingDeck(null)
     fadeOutStartedRef.current = false
     crossfadeStateRef.current = 'idle'
@@ -189,6 +216,8 @@ export function Player({ hideUi = false }: { hideUi?: boolean }) {
     if (crossfadeEnabled || !isSong) return
     clearFade()
     incomingDeckRef.current = null
+    incomingSongIndexRef.current = null
+    crossfadeCommitTargetRef.current = null
     setIncomingDeck(null)
     isCrossfadingRef.current = false
     fadeOutStartedRef.current = false
@@ -199,18 +228,27 @@ export function Player({ hideUi = false }: { hideUi?: boolean }) {
   }, [activeDeck, clearFade, crossfadeEnabled, isSong])
 
   useEffect(() => {
-    if (!isSong || !isCrossfadingRef.current || !incomingDeckRef.current) return
+    if (!isSong || !isCrossfadingRef.current || !incomingDeck) return
     if (crossfadeIntervalRef.current !== null) return
 
     const outgoingDeck = activeDeck
-    const incomingDeck = incomingDeckRef.current
+    const nextDeck = incomingDeck
     const outgoingAudio = getDeckRef(outgoingDeck).current
-    const incomingAudio = getDeckRef(incomingDeck).current
+    const incomingAudio = getDeckRef(nextDeck).current
 
     if (!outgoingAudio || !incomingAudio) return
 
-    const targetVolume = getVolume() / 100
-    const durationMs = CROSSFADE_DURATION_S * 1000
+    const storeTargetVolume = getVolume() / 100
+    const targetVolume = Math.max(
+      0,
+      Math.min(
+        1,
+        Number.isFinite(outgoingAudio.volume) && outgoingAudio.volume > 0
+          ? outgoingAudio.volume
+          : storeTargetVolume,
+      ),
+    )
+    const durationMs = crossfadeDurationSeconds * 1000
     const steps = Math.max(20, Math.floor(durationMs / 30))
     const stepMs = Math.max(16, Math.floor(durationMs / steps))
     let step = 0
@@ -222,66 +260,95 @@ export function Player({ hideUi = false }: { hideUi?: boolean }) {
       if (aborted) return
       clearFade()
       incomingDeckRef.current = null
+      incomingSongIndexRef.current = null
+      crossfadeCommitTargetRef.current = null
       setIncomingDeck(null)
       isCrossfadingRef.current = false
       fadeOutStartedRef.current = false
       crossfadeStateRef.current = 'failed'
       crossfadeRetryRef.current = 0
-      playNextSong()
+      advanceToNextSongWithoutReset()
+    }
+
+    const startCrossfadeInterval = () => {
+      if (crossfadeIntervalRef.current !== null) return
+
+      crossfadeIntervalRef.current = setInterval(() => {
+        if (aborted) return
+        step += 1
+        const progress = Math.min(1, step / steps)
+
+        outgoingAudio.volume = Math.max(0, targetVolume * (1 - progress))
+        incomingAudio.volume = Math.min(targetVolume, targetVolume * progress)
+
+        if (progress >= 1) {
+          clearFade()
+          crossfadeStateRef.current = 'committing'
+
+          outgoingAudio.pause()
+          outgoingAudio.currentTime = 0
+          outgoingAudio.volume = targetVolume
+
+          const committedIndex = incomingSongIndexRef.current
+          if (committedIndex !== null) {
+            crossfadeCommitRef.current = true
+            crossfadeCommitTargetRef.current = {
+              deck: nextDeck,
+              index: committedIndex,
+            }
+          }
+          activeDeckRef.current = nextDeck
+          setActiveDeck(nextDeck)
+          if (nextDeck === 'a') setDeckBIndex(null)
+          if (nextDeck === 'b') setDeckAIndex(null)
+
+          incomingDeckRef.current = null
+          incomingSongIndexRef.current = null
+          setIncomingDeck(null)
+          isCrossfadingRef.current = false
+          fadeOutStartedRef.current = false
+          crossfadeStateRef.current = 'idle'
+          crossfadeRetryRef.current = 0
+
+          advanceToNextSongWithoutReset()
+          setAudioPlayerRef(incomingAudio)
+          setPlayingState(true)
+          if (incomingAudio.paused) {
+            incomingAudio.play().catch(() => undefined)
+          }
+          if (Number.isFinite(incomingAudio.duration)) {
+            setCurrentDuration(Math.floor(incomingAudio.duration))
+          }
+          setProgress(Math.floor(incomingAudio.currentTime))
+        }
+      }, stepMs)
     }
 
     const attemptPlayIncoming = () => {
-      incomingAudio.play().catch(() => {
-        if (aborted) return
-        if (crossfadeRetryRef.current < MAX_CROSSFADE_RETRIES) {
-          crossfadeRetryRef.current += 1
-          crossfadeRetryTimeoutRef.current = setTimeout(
-            attemptPlayIncoming,
-            CROSSFADE_RETRY_DELAY_MS * (crossfadeRetryRef.current + 1),
-          )
-          return
-        }
-        finalizeFallback()
-      })
+      incomingAudio
+        .play()
+        .then(() => {
+          if (aborted) return
+          startCrossfadeInterval()
+        })
+        .catch(() => {
+          if (aborted) return
+          if (crossfadeRetryRef.current < MAX_CROSSFADE_RETRIES) {
+            crossfadeRetryRef.current += 1
+            crossfadeRetryTimeoutRef.current = setTimeout(
+              attemptPlayIncoming,
+              CROSSFADE_RETRY_DELAY_MS * (crossfadeRetryRef.current + 1),
+            )
+            return
+          }
+          finalizeFallback()
+        })
     }
-    if (isPlaying) attemptPlayIncoming()
-
-    crossfadeIntervalRef.current = setInterval(() => {
-      if (aborted) return
-      step += 1
-      const progress = Math.min(1, step / steps)
-
-      outgoingAudio.volume = Math.max(0, targetVolume * (1 - progress))
-      incomingAudio.volume = Math.min(targetVolume, targetVolume * progress)
-
-      if (progress >= 1) {
-        clearFade()
-        crossfadeStateRef.current = 'committing'
-
-        outgoingAudio.pause()
-        outgoingAudio.currentTime = 0
-        outgoingAudio.volume = targetVolume
-
-        crossfadeCommitRef.current = true
-        setActiveDeck(incomingDeck)
-        if (incomingDeck === 'a') setDeckBIndex(null)
-        if (incomingDeck === 'b') setDeckAIndex(null)
-
-        incomingDeckRef.current = null
-        setIncomingDeck(null)
-        isCrossfadingRef.current = false
-        fadeOutStartedRef.current = false
-        crossfadeStateRef.current = 'idle'
-        crossfadeRetryRef.current = 0
-
-        playNextSong()
-        setAudioPlayerRef(incomingAudio)
-        if (Number.isFinite(incomingAudio.duration)) {
-          setCurrentDuration(Math.floor(incomingAudio.duration))
-        }
-        setProgress(Math.floor(incomingAudio.currentTime))
-      }
-    }, stepMs)
+    if (isPlaying) {
+      attemptPlayIncoming()
+    } else {
+      finalizeFallback()
+    }
 
     return () => {
       aborted = true
@@ -290,12 +357,15 @@ export function Player({ hideUi = false }: { hideUi?: boolean }) {
     activeDeck,
     clearFade,
     getDeckRef,
+    incomingDeck,
     isPlaying,
     isSong,
-    playNextSong,
+    crossfadeDurationSeconds,
+    advanceToNextSongWithoutReset,
     setAudioPlayerRef,
     setCurrentDuration,
     setProgress,
+    setPlayingState,
   ])
 
   // Get album cover URL for background
@@ -329,7 +399,7 @@ export function Player({ hideUi = false }: { hideUi?: boolean }) {
       const infinityDuration = audioDuration === Infinity
 
       if (!infinityDuration) {
-        if (!isSong || !deck || deck === activeDeck) {
+        if (!isSong || !deck || deck === activeDeckRef.current) {
           setCurrentDuration(audioDuration)
         }
       }
@@ -348,7 +418,17 @@ export function Player({ hideUi = false }: { hideUi?: boolean }) {
         setProgress(podcastProgress)
         audio.currentTime = podcastProgress
       } else {
-        if (isSong && deck && deck !== activeDeck) {
+        if (isSong && crossfadeEnabled) {
+          if (isSong && deck && deck !== activeDeckRef.current) {
+            audio.currentTime = 0
+          }
+          if (!Number.isFinite(audio.currentTime) || audio.currentTime < 0) {
+            audio.currentTime = 0
+          }
+          return
+        }
+
+        if (isSong && deck && deck !== activeDeckRef.current) {
           audio.currentTime = 0
         } else {
           const progress = getCurrentProgress()
@@ -363,8 +443,8 @@ export function Player({ hideUi = false }: { hideUi?: boolean }) {
       getDeckRef,
       isPodcast,
       isSong,
+      crossfadeEnabled,
       podcast,
-      activeDeck,
       setCurrentDuration,
       setProgress,
     ],
@@ -376,7 +456,7 @@ export function Player({ hideUi = false }: { hideUi?: boolean }) {
         isSong && deck ? getDeckRef(deck).current : getAudioRef().current
       if (!audio) return
 
-      if (isSong && deck && deck !== activeDeck) return
+      if (isSong && deck && deck !== activeDeckRef.current) return
 
       const currentProgress = Math.floor(audio.currentTime)
       setProgress(currentProgress)
@@ -385,7 +465,7 @@ export function Player({ hideUi = false }: { hideUi?: boolean }) {
       if (isCrossfadingRef.current || fadeOutStartedRef.current) return
       if (
         !Number.isFinite(audio.duration) ||
-        audio.duration <= CROSSFADE_DURATION_S * 2
+        audio.duration <= crossfadeDurationSeconds * 2
       ) {
         return
       }
@@ -395,13 +475,14 @@ export function Player({ hideUi = false }: { hideUi?: boolean }) {
       if (!currentList[nextSongIndex]) return
 
       const timeLeft = audio.duration - audio.currentTime
-      if (timeLeft > 0 && timeLeft <= CROSSFADE_DURATION_S) {
+      if (timeLeft > 0 && timeLeft <= crossfadeDurationSeconds) {
         const incomingDeck: DeckId = activeDeck === 'a' ? 'b' : 'a'
 
         crossfadeStateRef.current = 'arming'
         fadeOutStartedRef.current = true
         isCrossfadingRef.current = true
         incomingDeckRef.current = incomingDeck
+        incomingSongIndexRef.current = nextSongIndex
         setIncomingDeck(incomingDeck)
 
         if (incomingDeck === 'a') setDeckAIndex(nextSongIndex)
@@ -411,6 +492,7 @@ export function Player({ hideUi = false }: { hideUi?: boolean }) {
     [
       activeDeck,
       crossfadeEnabled,
+      crossfadeDurationSeconds,
       currentList,
       getAudioRef,
       getDeckRef,
@@ -427,13 +509,13 @@ export function Player({ hideUi = false }: { hideUi?: boolean }) {
       if (!audio) return
 
       const targetVolume = getVolume() / 100
-      if (isSong && deck && deck !== activeDeck) {
+      if (isSong && deck && deck !== activeDeckRef.current) {
         audio.volume = 0
         return
       }
       audio.volume = targetVolume
     },
-    [activeDeck, getAudioRef, getDeckRef, isSong],
+    [getAudioRef, getDeckRef, isSong],
   )
 
   const sendFinishProgress = useCallback(() => {
@@ -471,6 +553,12 @@ export function Player({ hideUi = false }: { hideUi?: boolean }) {
     return { gain: trackGain, peak: trackPeak, preAmp }
   }
 
+  const shouldHandleDeckTransportEvent = useCallback((deck: DeckId) => {
+    return (
+      activeDeckRef.current === deck && crossfadeStateRef.current === 'idle'
+    )
+  }, [])
+
   const audioNodes = (
     <>
       {isSong && deckASong && (
@@ -483,15 +571,24 @@ export function Player({ hideUi = false }: { hideUi?: boolean }) {
           ignoreErrors={activeDeck !== 'a' && incomingDeck !== 'a'}
           audioRef={songDeckARef}
           onPlay={() => {
-            if (activeDeck === 'a') setPlayingState(true)
+            if (shouldHandleDeckTransportEvent('a')) {
+              setPlayingState(true)
+            }
           }}
           onPause={() => {
-            if (activeDeck === 'a') setPlayingState(false)
+            if (shouldHandleDeckTransportEvent('a')) {
+              setPlayingState(false)
+            }
           }}
           onLoadedMetadata={() => setupDuration('a')}
           onTimeUpdate={() => setupProgress('a')}
           onEnded={() => {
-            if (activeDeck === 'a') handleSongEnded()
+            if (
+              activeDeckRef.current === 'a' &&
+              crossfadeStateRef.current === 'idle'
+            ) {
+              handleSongEnded()
+            }
           }}
           onLoadStart={() => setupInitialVolume('a')}
           data-testid="player-song-audio-a"
@@ -508,15 +605,24 @@ export function Player({ hideUi = false }: { hideUi?: boolean }) {
           ignoreErrors={activeDeck !== 'b' && incomingDeck !== 'b'}
           audioRef={songDeckBRef}
           onPlay={() => {
-            if (activeDeck === 'b') setPlayingState(true)
+            if (shouldHandleDeckTransportEvent('b')) {
+              setPlayingState(true)
+            }
           }}
           onPause={() => {
-            if (activeDeck === 'b') setPlayingState(false)
+            if (shouldHandleDeckTransportEvent('b')) {
+              setPlayingState(false)
+            }
           }}
           onLoadedMetadata={() => setupDuration('b')}
           onTimeUpdate={() => setupProgress('b')}
           onEnded={() => {
-            if (activeDeck === 'b') handleSongEnded()
+            if (
+              activeDeckRef.current === 'b' &&
+              crossfadeStateRef.current === 'idle'
+            ) {
+              handleSongEnded()
+            }
           }}
           onLoadStart={() => setupInitialVolume('b')}
           data-testid="player-song-audio-b"
@@ -627,4 +733,3 @@ export function Player({ hideUi = false }: { hideUi?: boolean }) {
     </>
   )
 }
-

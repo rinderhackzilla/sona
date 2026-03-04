@@ -32,6 +32,8 @@ export enum IpcChannels {
   SetMiniPlayerMode = 'set-mini-player-mode',
   SetMiniPlayerPinned = 'set-mini-player-pinned',
   ClearAppCache = 'clear-app-cache',
+  FetchExternalText = 'fetch-external-text',
+  FetchIcyMetadata = 'fetch-icy-metadata',
 }
 
 export type OverlayColors = {
@@ -107,4 +109,10 @@ export interface IAonsokuAPI {
   setMiniPlayerMode: (enabled: boolean) => void
   setMiniPlayerPinned: (pinned: boolean) => void
   clearAppCache: () => Promise<boolean>
+  fetchExternalText: (
+    url: string,
+  ) => Promise<{ ok: boolean; status: number; text: string; finalUrl: string }>
+  fetchIcyMetadata: (
+    url: string,
+  ) => Promise<{ ok: boolean; status: number; title: string | null }>
 }

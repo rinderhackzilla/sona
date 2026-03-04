@@ -24,7 +24,7 @@ import {
   setEqFilters,
   setEqGainsState,
 } from '@/app/audio/eq-state'
-import { usePlayerMediaType, useReplayGainState } from '@/store/player.store'
+import { usePlayerMediaType } from '@/store/player.store'
 import { logger } from '@/utils/logger'
 import { ReplayGainParams } from '@/utils/replayGain'
 
@@ -32,7 +32,6 @@ type IAudioSource = IMediaElementAudioSourceNode<IAudioContext>
 
 export function useAudioContext(audio: HTMLAudioElement | null) {
   const { isSong } = usePlayerMediaType()
-  const { replayGainEnabled } = useReplayGainState()
 
   const audioContextRef = useRef<IAudioContext | null>(null)
   const sourceNodeRef = useRef<IAudioSource | null>(null)
@@ -149,8 +148,6 @@ export function useAudioContext(audio: HTMLAudioElement | null) {
     const audioContext = audioContextRef.current
     if (!audioContext || !isSong) return
 
-    logger.info('AudioContext State', { state: audioContext.state })
-
     if (audioContext.state === 'suspended') {
       await audioContext.resume()
     }
@@ -164,17 +161,11 @@ export function useAudioContext(audio: HTMLAudioElement | null) {
       if (audioContextRef.current && gainNodeRef.current) {
         const currentTime = audioContextRef.current.currentTime
 
-        logger.info('Replay Gain Status', {
-          enabled: replayGainEnabled,
-          gainValue,
-          ...replayGain,
-        })
-
         // Only update master gain, NOT visualizer gain
         gainNodeRef.current.gain.setValueAtTime(gainValue, currentTime)
       }
     },
-    [replayGainEnabled],
+    [],
   )
 
   const resetRefs = useCallback(() => {

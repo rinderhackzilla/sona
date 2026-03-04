@@ -164,6 +164,22 @@ export const useAppStore = createWithEqualityFn<IAppContext>()(
                 state.pages.autoPlaylistImport = value
               })
             },
+            autoPlaylistImportExceptions: [],
+            toggleAutoPlaylistImportException: (playlistId) => {
+              set((state) => {
+                const current = state.pages.autoPlaylistImportExceptions
+                if (current.includes(playlistId)) {
+                  state.pages.autoPlaylistImportExceptions = current.filter(
+                    (id) => id !== playlistId,
+                  )
+                  return
+                }
+                state.pages.autoPlaylistImportExceptions = [
+                  ...current,
+                  playlistId,
+                ]
+              })
+            },
             listDensity: 'default',
             setListDensity: (value) => {
               set((state) => {

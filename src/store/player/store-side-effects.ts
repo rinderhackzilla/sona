@@ -1,4 +1,5 @@
 import { shallow } from 'zustand/shallow'
+import { useRadioNowPlayingStore } from '@/store/radio-now-playing.store'
 import { IPlayerContext } from '@/types/playerContext'
 import { isDesktop } from '@/utils/desktop'
 import { discordRpc } from '@/utils/discordRpc'
@@ -40,6 +41,11 @@ export function registerPlayerStoreSideEffects({
       equalityFn: shallow,
     },
   )
+
+  useRadioNowPlayingStore.subscribe((state, prevState) => {
+    if (state.current === prevState.current) return
+    discordRpc.sendCurrentSong()
+  })
 
   store.subscribe(
     (state) => [

@@ -61,23 +61,15 @@ export function MainDrawerPage() {
           <div className="relative w-full h-full transition-colors duration-1000 bg-black/0">
             {/* Blurred background image */}
             <div
-              className="absolute -inset-10 bg-cover bg-center z-0 transition-[background-image,filter] duration-1000"
+              className="absolute -inset-10 bg-cover bg-center z-0 transition-[background-image,filter] duration-700"
               style={{
                 backgroundImage: `url(${coverArtUrl})`,
                 filter: `blur(${bigPlayerBlur.value}px)`,
               }}
             />
-            {/* Animated gradient overlay */}
-            <div
-              className="absolute inset-0 w-full h-full z-[1] opacity-30 animate-gradient-shift"
-              style={{
-                background:
-                  'linear-gradient(45deg, hsl(var(--background)), hsl(var(--accent)), hsl(var(--primary)), hsl(var(--background)))',
-                backgroundSize: '400% 400%',
-              }}
-            />
             {/* Base overlay */}
-            <div className="bg-background/50 absolute inset-0 w-full h-full z-[2] transition-colors duration-1000" />
+            <div className="bg-background/62 absolute inset-0 w-full h-full z-[1] transition-colors duration-700" />
+            <div className="absolute inset-0 w-full h-full z-[2] bg-gradient-to-b from-black/18 via-black/8 to-black/26" />
           </div>
         </div>
 
@@ -96,7 +88,7 @@ export function MainDrawerPage() {
             <QueueSettings />
             <Button
               variant="ghost"
-              className="w-10 h-10 rounded-full p-0 hover:bg-foreground/20"
+              className="w-10 h-10 rounded-md p-0 hover:bg-foreground/20"
               onClick={closeDrawer}
             >
               <ChevronDownIcon />

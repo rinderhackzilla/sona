@@ -1,12 +1,48 @@
 import { httpClient } from '@/api/httpClient'
 import {
   CreateParams,
+  Playlist,
   PlaylistsResponse,
   PlaylistWithEntriesResponse,
   SinglePlaylistResponse,
   UpdateParams,
 } from '@/types/responses/playlist'
 import { SubsonicResponse } from '@/types/responses/subsonicResponse'
+
+export function isLikelyAutoImportedM3uPlaylist(playlist: Playlist): boolean {
+  const text = `${playlist.name} ${playlist.comment ?? ''}`.toLowerCase()
+  if (text.includes('.m3u') || text.includes('.m3u8')) return true
+  if (text.includes('imported from')) return true
+  if (
+    text.includes('m3u') &&
+    (text.includes('import') || text.includes('auto'))
+  ) {
+    return true
+  }
+  return false
+}
+
+type AutoImportFilterParams = {
+  isNavidrome: boolean
+  autoPlaylistImport: boolean
+  autoPlaylistImportExceptions: string[]
+}
+
+export function filterPlaylistsByAutoImportPreference(
+  playlists: Playlist[],
+  params: AutoImportFilterParams,
+) {
+  const { isNavidrome, autoPlaylistImport, autoPlaylistImportExceptions } =
+    params
+
+  if (!isNavidrome || autoPlaylistImport) return playlists
+
+  const exceptions = new Set(autoPlaylistImportExceptions)
+  return playlists.filter((playlist) => {
+    if (exceptions.has(playlist.id)) return true
+    return !isLikelyAutoImportedM3uPlaylist(playlist)
+  })
+}
 
 async function getAll() {
   const response = await httpClient<PlaylistsResponse>('/getPlaylists', {

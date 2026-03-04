@@ -89,6 +89,10 @@ const api: IAonsokuAPI = {
     ipcRenderer.send(IpcChannels.SetMiniPlayerPinned, pinned)
   },
   clearAppCache: () => ipcRenderer.invoke(IpcChannels.ClearAppCache),
+  fetchExternalText: (url) =>
+    ipcRenderer.invoke(IpcChannels.FetchExternalText, url),
+  fetchIcyMetadata: (url) =>
+    ipcRenderer.invoke(IpcChannels.FetchIcyMetadata, url),
 }
 
 // Use `contextBridge` APIs to expose Electron APIs to

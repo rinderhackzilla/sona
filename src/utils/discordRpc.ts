@@ -1,5 +1,7 @@
 import { useAppStore } from '@/store/app.store'
 import { usePlayerStore } from '@/store/player.store'
+import { useRadioNowPlayingStore } from '@/store/radio-now-playing.store'
+import { Radio } from '@/types/responses/radios'
 import { ISong } from '@/types/responses/song'
 import { isDesktop } from './desktop'
 
@@ -76,12 +78,132 @@ function clear() {
   window.api.clearDiscordRpcActivity()
 }
 
+function isLikelyStationFallbackCover(url: string) {
+  return /\/favicon\.ico($|\?)/i.test(url)
+}
+
+function isPrivateHost(hostname: string) {
+  const host = hostname.toLowerCase()
+  if (host === 'localhost' || host.endsWith('.local')) return true
+  if (/^\d{1,3}(\.\d{1,3}){3}$/.test(host)) {
+    if (host.startsWith('10.')) return true
+    if (host.startsWith('192.168.')) return true
+    if (/^172\.(1[6-9]|2\d|3[0-1])\./.test(host)) return true
+    if (host.startsWith('127.')) return true
+  }
+  return false
+}
+
+function isRpcSafeCoverUrl(urlLike: string | null | undefined) {
+  if (!urlLike) return false
+  if (isLikelyStationFallbackCover(urlLike)) return false
+  try {
+    const parsed = new URL(urlLike)
+    if (!['http:', 'https:'].includes(parsed.protocol)) return false
+    if (isPrivateHost(parsed.hostname)) return false
+    return true
+  } catch {
+    return false
+  }
+}
+
+function normalizeForCompare(value: string) {
+  return value
+    .toLowerCase()
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim()
+}
+
+function looksLikeTrackMetadata(
+  radio: Radio,
+  nowPlaying?: {
+    artist: string | null
+    track: string | null
+    rawTitle: string
+    coverUrl: string | null
+  },
+) {
+  if (!nowPlaying) return false
+  if (nowPlaying.artist && nowPlaying.track) return true
+  if (!nowPlaying.rawTitle) return false
+
+  const raw = normalizeForCompare(nowPlaying.rawTitle)
+  const station = normalizeForCompare(radio.name)
+  if (!raw) return false
+  if (station && (raw === station || raw.includes(station))) return false
+  if (!/.+\s[-–—|~]\s.+/.test(nowPlaying.rawTitle)) return false
+  return true
+}
+
+function sendRadio(
+  radio: Radio,
+  nowPlaying?: {
+    artist: string | null
+    track: string | null
+    rawTitle: string
+    coverUrl: string | null
+  },
+) {
+  if (!isDesktop()) return
+
+  const { rpcEnabled } = useAppStore.getState().accounts.discord
+  if (!rpcEnabled) return
+
+  const hasTrackMetadata = looksLikeTrackMetadata(radio, nowPlaying)
+  const trackName = hasTrackMetadata
+    ? nowPlaying?.track || nowPlaying?.rawTitle || `${radio.name} Live`
+    : `${radio.name} Live`
+  const artist = hasTrackMetadata
+    ? nowPlaying?.artist || radio.name
+    : radio.name
+  const coverArtUrl = isRpcSafeCoverUrl(nowPlaying?.coverUrl)
+    ? nowPlaying?.coverUrl
+    : undefined
+  const now = Date.now()
+  const duration = 3600
+
+  window.api.setDiscordRpcActivity({
+    trackName,
+    albumName: radio.name,
+    artist,
+    startTime: Math.floor(now),
+    endTime: Math.floor(now + duration * 1000),
+    duration,
+    coverArtUrl,
+  })
+}
+
 function sendCurrentSong() {
   if (!isDesktop()) return
 
   const { playerState, songlist, actions } = usePlayerStore.getState()
+  const radioNowPlaying = useRadioNowPlayingStore.getState().current
 
   const { mediaType } = playerState
+  if (mediaType === 'radio') {
+    const radio = songlist.radioList[songlist.currentSongIndex]
+    const { isPlaying } = playerState
+    if (!radio || !isPlaying) {
+      discordRpc.clear()
+      return
+    }
+
+    const nowPlayingForRadio =
+      radioNowPlaying?.radioId === radio.id
+        ? {
+            artist: radioNowPlaying.artist,
+            track: radioNowPlaying.track,
+            rawTitle: radioNowPlaying.rawTitle,
+            coverUrl: radioNowPlaying.coverUrl,
+          }
+        : undefined
+
+    sendRadio(radio, nowPlayingForRadio)
+    return
+  }
+
   if (mediaType !== 'song') return
 
   const { currentSong } = songlist
@@ -98,6 +220,7 @@ function sendCurrentSong() {
 
 export const discordRpc = {
   send,
+  sendRadio,
   clear,
   sendCurrentSong,
 }

@@ -1,8 +1,13 @@
+import { Pin, PinOff } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { OptionsButtons } from '@/app/components/options/buttons'
 import { DownloadOptionHandler } from '@/app/components/options/download-handler'
+import { MenuItemFactory } from '@/app/components/options/menu-item-factory'
 import { DropdownMenuSeparator } from '@/app/components/ui/dropdown-menu'
 import { useOptions } from '@/app/hooks/use-options'
+import { isLikelyAutoImportedM3uPlaylist } from '@/service/playlists'
 import { subsonic } from '@/service/subsonic'
+import { useAppPages } from '@/store/app.store'
 import { usePlaylists, useRemovePlaylist } from '@/store/playlists.store'
 import { Playlist, PlaylistWithEntries } from '@/types/responses/playlist'
 import { ISong } from '@/types/responses/song'
@@ -28,9 +33,15 @@ export function PlaylistOptions({
   disableEdit = false,
   disableDelete = false,
 }: PlaylistOptionsProps) {
+  const { t } = useTranslation()
   const { setPlaylistDialogState, setData } = usePlaylists()
   const { play, playNext, playLast, startDownload } = useOptions()
   const { setPlaylistId, setConfirmDialogState } = useRemovePlaylist()
+  const { autoPlaylistImportExceptions, toggleAutoPlaylistImportException } =
+    useAppPages()
+
+  const isAutoImportedM3u = isLikelyAutoImportedM3uPlaylist(playlist)
+  const isException = autoPlaylistImportExceptions.includes(playlist.id)
 
   function handleEdit() {
     setData({
@@ -142,6 +153,30 @@ export function PlaylistOptions({
         }}
         disabled={disableDelete}
       />
+      {isAutoImportedM3u && (
+        <>
+          <DropdownMenuSeparator />
+          <MenuItemFactory
+            variant={variant}
+            icon={
+              isException ? (
+                <PinOff className="mr-2 h-4 w-4" />
+              ) : (
+                <Pin className="mr-2 h-4 w-4" />
+              )
+            }
+            label={
+              isException
+                ? t('options.playlist.hide')
+                : t('options.playlist.show')
+            }
+            onClick={(e) => {
+              e.stopPropagation()
+              toggleAutoPlaylistImportException(playlist.id)
+            }}
+          />
+        </>
+      )}
     </>
   )
 }

@@ -42,7 +42,6 @@ export function DiscoverWeeklyObserver() {
         )
         return
       }
-
       // Only handle 'monday-trigger' events, skip 'check' events
       // The hook handles catch-up on mount to avoid conflicts
       if (data.event === 'check') {

@@ -9,7 +9,6 @@ import {
   useSensors,
 } from '@dnd-kit/core'
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
-import { useQuery } from '@tanstack/react-query'
 import clsx from 'clsx'
 import { ListMusic } from 'lucide-react'
 import { useMemo, useState } from 'react'
@@ -23,10 +22,9 @@ import {
   MainSidebarMenuItem,
   useMainSidebar,
 } from '@/app/components/ui/main-sidebar'
-import { subsonic } from '@/service/subsonic'
+import { usePlaylistsQuery } from '@/app/hooks/use-playlists-query'
 import { usePlaylistOrder } from '@/store/app.store'
 import { Playlist } from '@/types/responses/playlist'
-import { queryKeys } from '@/utils/queryKeys'
 import { SidebarPlaylistItem } from './playlist-item'
 
 /** Sort playlists by the saved ID order; unordered ones go to the end. */
@@ -47,10 +45,7 @@ export function NavPlaylists() {
   const [activePlaylist, setActivePlaylist] = useState<Playlist | null>(null)
   const isCollapsed = state === 'collapsed' && !isMobile
 
-  const { data: playlists } = useQuery({
-    queryKey: [queryKeys.playlist.all],
-    queryFn: subsonic.playlists.getAll,
-  })
+  const { data: playlists } = usePlaylistsQuery()
 
   const sortedPlaylists = useMemo(
     () => (playlists ? applySavedOrder(playlists, playlistOrder) : []),

@@ -38,7 +38,7 @@ export function radiosColumns(): ColumnDefType<Radio>[] {
       sortingFn: 'customSortFn',
       style: {
         flex: 1,
-        minWidth: 250,
+        minWidth: 320,
       },
       header: ({ column, table }) => (
         <DataTableColumnHeader column={column} table={table}>
@@ -46,50 +46,6 @@ export function radiosColumns(): ColumnDefType<Radio>[] {
         </DataTableColumnHeader>
       ),
       cell: ({ row }) => <TableRadioTitle name={row.original.name} />,
-    },
-    {
-      id: 'homePageUrl',
-      accessorKey: 'homePageUrl',
-      style: {
-        width: '25%',
-        maxWidth: '25%',
-      },
-      header: i18n.t('radios.table.homepage'),
-      cell: ({ row }) => {
-        const { homePageUrl } = row.original
-
-        if (!homePageUrl) return ''
-
-        return (
-          <div className="truncate">
-            <p className="truncate text-primary">
-              <a
-                href={homePageUrl}
-                target="_blank"
-                rel="nofollow noreferrer"
-                className="hover:underline"
-              >
-                {homePageUrl}
-              </a>
-            </p>
-          </div>
-        )
-      },
-    },
-    {
-      id: 'streamUrl',
-      accessorKey: 'streamUrl',
-      style: {
-        width: '25%',
-        maxWidth: '25%',
-        marginRight: '1rem',
-      },
-      header: i18n.t('radios.table.stream'),
-      cell: ({ row }) => (
-        <div className="truncate">
-          <p className="truncate">{row.original.streamUrl}</p>
-        </div>
-      ),
     },
     {
       id: 'actions',

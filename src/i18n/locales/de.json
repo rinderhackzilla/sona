@@ -94,6 +94,19 @@
       "shuffle": "{{name}} im Zufallsmodus abspielen",
       "options": "Weitere Optionen für {{name}}"
     },
+    "drop": {
+      "hint": "Ziehe MP3/FLAC-Dateien hierher, um sie dieser Wiedergabeliste hinzuzufügen",
+      "emptyTitle": "Dateien ablegen, um Songs hinzuzufügen",
+      "noSupportedFiles": "Keine unterstützten Audiodateien abgelegt.",
+      "noneMatched": "Keine abgelegten Dateien konnten deiner Bibliothek zugeordnet werden.",
+      "alreadyInPlaylist": "Die zugeordneten Songs sind bereits in dieser Wiedergabeliste.",
+      "added": "{{count}} Lied(er) hinzugefügt ({{matched}} zugeordnet).",
+      "failed": "Dateien konnten nicht zur Wiedergabeliste hinzugefügt werden."
+    },
+    "emptyState": {
+      "title": "Füge Songs zu dieser Wiedergabeliste hinzu",
+      "description": "Ziehe MP3/FLAC-Dateien hierher, um diese Wiedergabeliste zu füllen."
+    },
     "noSongList": "Diese Wiedergabeliste enthält keine Lieder!"
   },
   "album": {
@@ -581,20 +594,20 @@
       "title": "Equalizer",
       "enabled": "Aktiviert",
       "disabled": "Deaktiviert",
-      "preset": "Preset",
+      "preset": "Voreinstellung",
       "reset": "Zurücksetzen",
       "presets": {
-        "flat": "Flat",
+        "flat": "Neutral",
         "rock": "Rock",
         "pop": "Pop",
         "jazz": "Jazz",
-        "classical": "Classical",
-        "electronic": "Electronic",
-        "acoustic": "Acoustic",
-        "bass_boost": "Bass Boost",
-        "treble_boost": "Treble Boost",
-        "vocal": "Vocal",
-        "custom": "Custom"
+        "classical": "Klassik",
+        "electronic": "Elektronisch",
+        "acoustic": "Akustisch",
+        "bass_boost": "Bassverstärkung",
+        "treble_boost": "Höhenverstärkung",
+        "vocal": "Stimme",
+        "custom": "Benutzerdefiniert"
       }
     },
     "tooltips": {
@@ -631,12 +644,18 @@
   },
   "options": {
     "play": "Abspielen",
+    "playing": "Läuft",
     "playNext": "Als nächstes abspielen",
     "addLast": "Als letztes spielen",
     "download": "Herunterladen",
     "playlist": {
       "add": "Zur Playlist hinzufügen",
       "edit": "Playlist bearbeiten",
+      "show": "Playlist einblenden",
+      "hide": "Playlist ausblenden",
+      "alwaysShow": "Immer anzeigen (M3U-Filter ignorieren)",
+      "keepVisibleWhenM3uOff": "Sichtbar halten, wenn der M3U-Filter aus ist",
+      "hideWithM3uFilter": "Mit M3U-Filter ausblenden",
       "search": "Eine Playlist suchen",
       "create": "Neue Playlist",
       "delete": "Playlist löschen",
@@ -710,6 +729,9 @@
     },
     "navigation": {
       "label": "Navigation"
+    },
+    "sidebar": {
+      "toggle": "Seitenleiste ein-/ausblenden"
     }
   },
   "songInfo": {
@@ -841,12 +863,21 @@
           "customUrl": {
             "toggle": "Benutzerdefinierte URL verwenden",
             "info": "Verwendet statt der Standard-URL eine eigene LRCLIB-URL.",
-            "label": "Benutzerdefinierte Server-URL"
+            "label": "Benutzerdefinierte Server-URL",
+            "example": "Beispiel: https://meine-lrclib.de"
           }
         }
       }
     },
     "content": {
+      "images": {
+        "group": "Bilder",
+        "description": "Bildeinstellungen anpassen.",
+        "cacheLayer": {
+          "info": "Wenn aktiviert, werden Bilder lokal zwischengespeichert, um die Leistung zu verbessern.",
+          "label": "Bild-Cache aktivieren"
+        }
+      },
       "sidebar": {
         "group": "Seitenleiste",
         "radios": {
@@ -871,30 +902,31 @@
         }
       },
       "homepage": {
-        "group": "Homepage Features",
+        "group": "Startseiten-Funktionen",
         "thisIsArtist": {
-          "label": "Show \"This is [Artist]\" Playlist"
+          "label": "\"This is [Artist]\"-Playlist anzeigen"
         },
-        "requiresLastfm": "Configure Last.fm in Services to enable this feature"
+        "requiresLastfm": "Konfiguriere Last.fm unter Dienste, um diese Funktion zu aktivieren"
       },
       "sessionModes": {
-        "group": "Session Modes",
+        "group": "Session-Modi",
         "genresButton": "Genres",
-        "modalDescription": "Wähle die Genres aus, die in diesem Session Mode erlaubt sind.",
+        "modalDescription": "Wähle die Genres aus, die in diesem Session-Modus erlaubt sind.",
         "reset": "Zurücksetzen",
         "save": "Speichern",
         "focusGenres": {
-          "label": "Focus Mode Genres",
-          "modalTitle": "Focus Mode Genres"
+          "label": "Focus-Mode-Genres",
+          "modalTitle": "Focus-Mode-Genres"
         },
         "nightGenres": {
-          "label": "Night Mode Genres",
-          "modalTitle": "Night Mode Genres"
+          "label": "Night-Mode-Genres",
+          "modalTitle": "Night-Mode-Genres"
         }
       }
     },
     "accounts": {
       "discord": {
+        "group": "Discord Rich Presence",
         "description": "Teile das aktuell abgespielte Lied mit Freunden auf Discord.",
         "enabled": {
           "label": "Discord Rich Presence"
@@ -984,17 +1016,19 @@
       },
       "crossfade": {
         "label": "Überblendung",
-        "info": "Lieder während der Wiedergabe weich ineinander überblenden"
+        "info": "Lieder während der Wiedergabe weich ineinander überblenden",
+        "status": "{{seconds}} Sek.",
+        "off": "Aus"
       },
       "listeningMemory": {
-        "label": "Listening Memory",
-        "info": "Verringert Wiederholungen, indem kürzlich gehörte Songs, Artists und Alben seltener gewählt werden."
+        "label": "Hörverlauf-Speicher",
+        "info": "Verringert Wiederholungen, indem kürzlich gehörte Songs, Künstler und Alben seltener gewählt werden."
       },
       "playlists": {
         "group": "Wiedergabelisten",
-        "description": "Automatischen Import von Wiedergabelisten verwalten",
+        "description": "Sichtbarkeit von serverseitig importierten Playlist-Dateien steuern",
         "autoImport": {
-          "label": "Automatischer Playlist-Import"
+          "label": "Serverseitig importierte M3U-Playlists anzeigen"
         }
       },
       "interface": {
@@ -1025,6 +1059,7 @@
     "header": {
       "episodeCount_one": "{{count}} Episode",
       "episodeCount_other": "{{count}} Episoden",
+      "episodeCount_many": "{{count}} Episoden",
       "feed": "Feed",
       "website": "Offizielle Website",
       "unfollow": {

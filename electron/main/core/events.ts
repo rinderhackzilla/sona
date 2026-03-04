@@ -146,6 +146,206 @@ export function setupIpcEvents(window: BrowserWindow | null) {
     }
   })
 
+  ipcMain.removeHandler(IpcChannels.FetchExternalText)
+  ipcMain.handle(IpcChannels.FetchExternalText, async (_, rawUrl: string) => {
+    try {
+      const url = String(rawUrl ?? '').trim()
+      if (!url) {
+        return { ok: false, status: 400, text: '', finalUrl: '' }
+      }
+
+      const controller = new AbortController()
+      const timeout = setTimeout(() => controller.abort(), 6000)
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'User-Agent': 'Sona/RadioMetadata',
+          'Icy-MetaData': '1',
+          Accept: 'application/json,text/plain,text/html,*/*',
+        },
+        redirect: 'follow',
+        signal: controller.signal,
+      })
+      clearTimeout(timeout)
+
+      const text = await response.text()
+      const capped = text.length > 250_000 ? text.slice(0, 250_000) : text
+
+      return {
+        ok: response.ok,
+        status: response.status,
+        text: capped,
+        finalUrl: response.url,
+      }
+    } catch {
+      return { ok: false, status: 0, text: '', finalUrl: '' }
+    }
+  })
+
+  ipcMain.removeHandler(IpcChannels.FetchIcyMetadata)
+  ipcMain.handle(IpcChannels.FetchIcyMetadata, async (_, rawUrl: string) => {
+    const extractTitle = (text: string) => {
+      const match = text.match(/StreamTitle='([^']*)'|StreamTitle="([^"]*)"/i)
+      const title = match?.[1]?.trim() ?? match?.[2]?.trim() ?? ''
+      return title || null
+    }
+
+    const titleQualityScore = (title: string) => {
+      const t = title.trim()
+      if (!t) return -1000
+      const replacementCount = (t.match(/�/g) ?? []).length
+      const alnumCount = (t.match(/[A-Za-zÀ-ÖØ-öø-ÿ0-9]/g) ?? []).length
+      let controlCount = 0
+      for (let i = 0; i < t.length; i++) {
+        const code = t.charCodeAt(i)
+        if (
+          (code >= 0 && code <= 8) ||
+          (code >= 11 && code <= 31) ||
+          code === 127
+        )
+          controlCount += 1
+      }
+      return alnumCount * 4 - replacementCount * 15 - controlCount * 10
+    }
+
+    const decodeTitle = (bytes: Uint8Array) => {
+      const utf8Text = new TextDecoder('utf-8', { fatal: false }).decode(bytes)
+      const latin1Text = new TextDecoder('latin1', { fatal: false }).decode(
+        bytes,
+      )
+
+      const utf8Title = extractTitle(utf8Text)
+      const latin1Title = extractTitle(latin1Text)
+
+      if (utf8Title && latin1Title) {
+        return titleQualityScore(utf8Title) >= titleQualityScore(latin1Title)
+          ? utf8Title
+          : latin1Title
+      }
+      return utf8Title ?? latin1Title ?? null
+    }
+
+    const concatChunks = (chunks: Uint8Array[], total: number) => {
+      const out = new Uint8Array(total)
+      let offset = 0
+      for (const chunk of chunks) {
+        out.set(chunk, offset)
+        offset += chunk.length
+      }
+      return out
+    }
+
+    try {
+      const url = String(rawUrl ?? '').trim()
+      if (!url) return { ok: false, status: 400, title: null }
+
+      const controller = new AbortController()
+      const timeout = setTimeout(() => controller.abort(), 7000)
+
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'User-Agent': 'Sona/RadioMetadata',
+          'Icy-MetaData': '1',
+          Accept: '*/*',
+        },
+        redirect: 'follow',
+        signal: controller.signal,
+      })
+
+      if (!response.ok || !response.body) {
+        clearTimeout(timeout)
+        return { ok: false, status: response.status, title: null }
+      }
+
+      const metaIntRaw = response.headers.get('icy-metaint')
+      const metaInt = Number.parseInt(metaIntRaw ?? '', 10)
+      if (!Number.isFinite(metaInt) || metaInt <= 0) {
+        clearTimeout(timeout)
+        return { ok: true, status: response.status, title: null }
+      }
+
+      const reader = response.body.getReader()
+      const maxMetadataBlocks = 10
+      const maxBytes = Math.max(
+        metaInt * maxMetadataBlocks + 64 * 1024,
+        1024 * 1024,
+      )
+
+      let totalBytes = 0
+      let blocksSeen = 0
+      let mode: 'audio' | 'meta_length' | 'meta' = 'audio'
+      let audioRemaining = metaInt
+      let metadataRemaining = 0
+      let metadataChunks: Uint8Array[] = []
+      let metadataTotal = 0
+
+      while (totalBytes < maxBytes && blocksSeen < maxMetadataBlocks) {
+        const { done, value } = await reader.read()
+        if (done || !value) break
+
+        totalBytes += value.length
+        let offset = 0
+
+        while (offset < value.length) {
+          if (mode === 'audio') {
+            const consume = Math.min(audioRemaining, value.length - offset)
+            offset += consume
+            audioRemaining -= consume
+            if (audioRemaining === 0) mode = 'meta_length'
+            continue
+          }
+
+          if (mode === 'meta_length') {
+            const lengthByte = value[offset] ?? 0
+            offset += 1
+            blocksSeen += 1
+            metadataRemaining = lengthByte * 16
+
+            if (metadataRemaining <= 0) {
+              mode = 'audio'
+              audioRemaining = metaInt
+              continue
+            }
+
+            metadataChunks = []
+            metadataTotal = 0
+            mode = 'meta'
+            continue
+          }
+
+          const consume = Math.min(metadataRemaining, value.length - offset)
+          if (consume > 0) {
+            const piece = value.slice(offset, offset + consume)
+            metadataChunks.push(piece)
+            metadataTotal += consume
+            offset += consume
+            metadataRemaining -= consume
+          }
+
+          if (metadataRemaining === 0) {
+            const metadata = concatChunks(metadataChunks, metadataTotal)
+            const title = decodeTitle(metadata)
+            if (title?.trim()) {
+              clearTimeout(timeout)
+              reader.cancel().catch(() => undefined)
+              return { ok: true, status: response.status, title: title.trim() }
+            }
+
+            mode = 'audio'
+            audioRemaining = metaInt
+          }
+        }
+      }
+
+      clearTimeout(timeout)
+      reader.cancel().catch(() => undefined)
+      return { ok: true, status: response.status, title: null }
+    } catch {
+      return { ok: false, status: 0, title: null }
+    }
+  })
+
   ipcMain.on(IpcChannels.ToggleMaximize, (_, isMaximized: boolean) => {
     if (isMaximized) {
       window.unmaximize()

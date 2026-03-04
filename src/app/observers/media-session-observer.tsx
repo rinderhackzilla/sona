@@ -1,10 +1,12 @@
 import { useCallback, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
+import { getRadioStationImageFallback } from '@/service/radio-now-playing'
 import {
   usePlayerIsPlaying,
   usePlayerMediaType,
   usePlayerSonglist,
 } from '@/store/player.store'
+import { useRadioNowPlaying } from '@/store/radio-now-playing.store'
 import { appName } from '@/utils/appName'
 import { manageMediaSession } from '@/utils/setMediaSession'
 
@@ -14,6 +16,7 @@ export function MediaSessionObserver() {
   const { isRadio, isSong, isPodcast } = usePlayerMediaType()
   const { currentList, radioList, currentSongIndex, podcastList } =
     usePlayerSonglist()
+  const radioNowPlaying = useRadioNowPlaying()
   const radioLabel = t('radios.label')
 
   const song = currentList[currentSongIndex] ?? null
@@ -44,8 +47,27 @@ export function MediaSessionObserver() {
     let title = ''
 
     if (isRadio && radio) {
-      title = `${radioLabel} - ${radio.name}`
-      manageMediaSession.setRadioMediaSession(radioLabel, radio.name)
+      const stationCoverUrl = getRadioStationImageFallback({
+        homePageUrl: radio.homePageUrl,
+        streamUrl: radio.streamUrl,
+      })
+      const nowPlayingTitle =
+        radioNowPlaying?.radioId === radio.id
+          ? radioNowPlaying.artist && radioNowPlaying.track
+            ? `${radioNowPlaying.artist} - ${radioNowPlaying.track}`
+            : radioNowPlaying.rawTitle
+          : ''
+      title = nowPlayingTitle
+        ? `${radio.name} - ${nowPlayingTitle}`
+        : `${radioLabel} - ${radio.name}`
+      manageMediaSession.setRadioMediaSession(
+        radioLabel,
+        radio.name,
+        nowPlayingTitle || null,
+        radioNowPlaying?.radioId === radio.id
+          ? radioNowPlaying.coverUrl
+          : stationCoverUrl,
+      )
     }
     if (isSong && song) {
       title = `${song.artist} - ${song.title}`
@@ -65,6 +87,7 @@ export function MediaSessionObserver() {
     isRadio,
     isSong,
     radio,
+    radioNowPlaying,
     radioLabel,
     song,
     resetAppTitle,

@@ -1,4 +1,3 @@
-import { useQuery } from '@tanstack/react-query'
 import clsx from 'clsx'
 import { PlusIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
@@ -11,26 +10,18 @@ import { EmptyPlaylistsPage } from '@/app/components/playlist/empty-page'
 import { Button } from '@/app/components/ui/button'
 import { DataTable } from '@/app/components/ui/data-table'
 import { PageState } from '@/app/components/ui/page-state'
+import { usePlaylistsQuery } from '@/app/hooks/use-playlists-query'
 import { playlistsColumns } from '@/app/tables/playlists-columns'
 import { subsonic } from '@/service/subsonic'
 import { usePlayerActions } from '@/store/player.store'
 import { usePlaylists } from '@/store/playlists.store'
-import { queryKeys } from '@/utils/queryKeys'
 
 export default function PlaylistsPage() {
   const { setPlaylistDialogState } = usePlaylists()
   const { setSongList } = usePlayerActions()
   const { t } = useTranslation()
 
-  const {
-    data: playlists,
-    isLoading,
-    isError,
-    refetch,
-  } = useQuery({
-    queryKey: [queryKeys.playlist.all],
-    queryFn: subsonic.playlists.getAll,
-  })
+  const { data: playlists, isLoading, isError, refetch } = usePlaylistsQuery()
 
   const columns = playlistsColumns()
 

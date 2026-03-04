@@ -177,6 +177,19 @@
       "shuffle": "Play {{name}} in shuffle mode",
       "options": "More options for {{name}}"
     },
+    "drop": {
+      "hint": "Drop MP3/FLAC files here to add them to this playlist",
+      "emptyTitle": "Drop files to add songs",
+      "noSupportedFiles": "No supported audio files were dropped.",
+      "noneMatched": "No dropped files could be matched to your library.",
+      "alreadyInPlaylist": "Matched songs are already in this playlist.",
+      "added": "{{count}} song(s) added ({{matched}} matched).",
+      "failed": "Could not add dropped files to this playlist."
+    },
+    "emptyState": {
+      "title": "Add songs to this playlist",
+      "description": "Drag and drop MP3/FLAC files here to fill this playlist."
+    },
     "noSongList": "This playlist does not have any songs!",
     "form": {
       "labels": {
@@ -600,13 +613,19 @@
   },
   "options": {
     "play": "Play",
+    "playing": "Playing",
     "playNext": "Play next",
     "addLast": "Add last",
     "download": "Download",
     "playlist": {
       "add": "Add to playlist",
       "edit": "Edit playlist",
+      "show": "Show playlist",
+      "hide": "Hide playlist",
       "delete": "Delete playlist",
+      "alwaysShow": "Always show (ignore M3U filter)",
+      "keepVisibleWhenM3uOff": "Keep visible when M3U filter is off",
+      "hideWithM3uFilter": "Hide with M3U filter",
       "search": "Find a playlist",
       "create": "New playlist",
       "notFound": "No playlist found",
@@ -1027,7 +1046,9 @@
       },
       "crossfade": {
         "label": "Crossfade",
-        "info": "Smoothly fade between songs during playback"
+        "info": "Smoothly fade between songs during playback",
+        "status": "{{seconds}} s",
+        "off": "Off"
       },
       "listeningMemory": {
         "label": "Listening Memory",
@@ -1035,9 +1056,9 @@
       },
       "playlists": {
         "group": "Playlists",
-        "description": "Manage playlist import behavior",
+        "description": "Control visibility of server-imported playlist files",
         "autoImport": {
-          "label": "Automatic Playlist Import"
+          "label": "Show server-imported M3U playlists"
         }
       },
       "interface": {

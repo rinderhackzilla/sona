@@ -1,6 +1,6 @@
 import { clsx } from 'clsx'
 import { ListVideo, MicVocalIcon } from 'lucide-react'
-import { useEffect, useRef } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
 import { Button } from '@/app/components/ui/button'
 import {
   useLyricsState,
@@ -24,57 +24,47 @@ type SwitchPhase = 'idle' | 'closing_for_switch'
 const PANEL_SWITCH_DELAY_MS = 420
 
 export function FullscreenPlayer({ isChromeVisible }: FullscreenPlayerProps) {
-  const { queueState, setQueueState } = useQueueState()
-  const { lyricsState, setLyricsState } = useLyricsState()
-  const { setMainDrawerState } = useMainDrawerState()
+  const { queueState } = useQueueState()
+  const { lyricsState } = useLyricsState()
+  const { setActiveDrawerPanel } = useMainDrawerState()
   const panelSwitchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const switchPhaseRef = useRef<SwitchPhase>('idle')
 
-  const clearSwitchTimer = () => {
+  const clearSwitchTimer = useCallback(() => {
     if (panelSwitchTimerRef.current) {
       clearTimeout(panelSwitchTimerRef.current)
       panelSwitchTimerRef.current = null
     }
     switchPhaseRef.current = 'idle'
-  }
+  }, [])
 
   const switchPanel = (target: PanelTarget) => {
-    setMainDrawerState(false)
     clearSwitchTimer()
     switchPhaseRef.current = 'idle'
 
     if (target === 'queue' && queueState) {
-      setQueueState(false)
+      setActiveDrawerPanel(null)
       return
     }
 
     if (target === 'lyrics' && lyricsState) {
-      setLyricsState(false)
+      setActiveDrawerPanel(null)
       return
     }
 
     // If no panel is open yet, open immediately so slide-in animation stays snappy.
     if (!queueState && !lyricsState) {
-      if (target === 'queue') {
-        setQueueState(true)
-      } else {
-        setLyricsState(true)
-      }
+      setActiveDrawerPanel(target)
       return
     }
 
     // Close current panel first, then open target to avoid visual jumping.
     switchPhaseRef.current = 'closing_for_switch'
-    setQueueState(false)
-    setLyricsState(false)
+    setActiveDrawerPanel(null)
 
     panelSwitchTimerRef.current = setTimeout(() => {
       if (switchPhaseRef.current !== 'closing_for_switch') return
-      if (target === 'queue') {
-        setQueueState(true)
-      } else {
-        setLyricsState(true)
-      }
+      setActiveDrawerPanel(target)
       switchPhaseRef.current = 'idle'
       panelSwitchTimerRef.current = null
     }, PANEL_SWITCH_DELAY_MS)
@@ -82,7 +72,7 @@ export function FullscreenPlayer({ isChromeVisible }: FullscreenPlayerProps) {
 
   useEffect(() => {
     return () => clearSwitchTimer()
-  }, [])
+  }, [clearSwitchTimer])
 
   const toggleQueueInFullscreen = () => {
     switchPanel('queue')
