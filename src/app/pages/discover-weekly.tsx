@@ -23,7 +23,7 @@ export default function DiscoverWeeklyPage() {
     error,
     lastGenerated,
     artistsUsed,
-    weekKey,
+    dayKey,
     generate,
     isConfigured,
   } = useDiscoverWeekly()
@@ -113,7 +113,7 @@ export default function DiscoverWeeklyPage() {
   const handleSaveAsPlaylist = async () => {
     setIsSaving(true)
     try {
-      const playlistName = `Discover Weekly ${weekKey || new Date().toISOString().split('T')[0]}`
+      const playlistName = `Discover Daily ${dayKey || new Date().toISOString().split('T')[0]}`
       await exportPlaylist({
         name: playlistName,
         songs: playlist,
@@ -122,7 +122,7 @@ export default function DiscoverWeeklyPage() {
       })
       toast.success(t('discoverWeekly.savedSuccess', { name: playlistName }))
     } catch (error) {
-      console.error('[Discover Weekly] Save failed:', error)
+      console.error('[Discover Daily] Save failed:', error)
       toast.error(
         t('discoverWeekly.saveError', {
           message: error instanceof Error ? error.message : 'Unknown error',

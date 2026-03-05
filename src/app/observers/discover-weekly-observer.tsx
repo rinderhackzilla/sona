@@ -24,15 +24,15 @@ export function DiscoverWeeklyObserver() {
     const handleScheduleEvent = async (
       _event: unknown,
       data: {
-        event: 'check' | 'monday-trigger'
+        event: 'check' | 'daily-trigger'
         timestamp: string
-        weekKey: string
+        dayKey: string
       },
     ) => {
       logger.info(
         '[DiscoverWeekly Observer] Received event:',
         data.event,
-        data.weekKey,
+        data.dayKey,
       )
 
       // Check if Last.fm is configured
@@ -42,7 +42,7 @@ export function DiscoverWeeklyObserver() {
         )
         return
       }
-      // Only handle 'monday-trigger' events, skip 'check' events
+      // Only handle scheduled trigger events, skip 'check' events
       // The hook handles catch-up on mount to avoid conflicts
       if (data.event === 'check') {
         logger.info(
@@ -81,7 +81,7 @@ export function DiscoverWeeklyObserver() {
           )
 
           // Show modal instead of system notification
-          showPlaylistSaved('Discover Weekly', 50)
+          showPlaylistSaved('Discover Daily', 50)
         } else {
           logger.info('[DiscoverWeekly Observer] No generation needed')
         }

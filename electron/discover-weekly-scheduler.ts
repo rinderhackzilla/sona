@@ -1,9 +1,9 @@
 /**
- * Discover Weekly Background Scheduler
+ * Discover Daily Background Scheduler
  * Runs in Electron Main Process
  *
  * This scheduler runs independently of the renderer process.
- * It checks every Monday at 00:00 if a new playlist needs to be generated.
+ * It checks daily at 00:00 if a new playlist needs to be generated.
  *
  * Usage in main.ts:
  * import { startDiscoverWeeklyScheduler } from './discover-weekly-scheduler'
@@ -22,48 +22,33 @@ function schedulerLog(message: string) {
 }
 
 /**
- * Get ISO week number and year (format: "2026-W07")
+ * Get current local date key (format: "2026-03-04")
  */
-function getISOWeek(date: Date): string {
-  const target = new Date(date.valueOf())
-  const dayNumber = (date.getDay() + 6) % 7
-  target.setDate(target.getDate() - dayNumber + 3)
-  const firstThursday = target.valueOf()
-  target.setMonth(0, 1)
-  if (target.getDay() !== 4) {
-    target.setMonth(0, 1 + ((4 - target.getDay() + 7) % 7))
-  }
-  const weekNumber =
-    1 + Math.ceil((firstThursday - target.valueOf()) / 604800000)
-  return `${target.getFullYear()}-W${String(weekNumber).padStart(2, '0')}`
+function getDateKey(date: Date): string {
+  const y = date.getFullYear()
+  const m = String(date.getMonth() + 1).padStart(2, '0')
+  const d = String(date.getDate()).padStart(2, '0')
+  return `${y}-${m}-${d}`
 }
 
 /**
- * Calculate milliseconds until next Monday 00:00
+ * Calculate milliseconds until next local midnight
  */
-function getMillisecondsUntilNextMonday(): number {
+function getMillisecondsUntilNextMidnight(): number {
   const now = new Date()
-  const nextMonday = new Date(now)
+  const nextMidnight = new Date(now)
 
-  const daysUntilMonday = (8 - now.getDay()) % 7 || 7
-  nextMonday.setDate(now.getDate() + daysUntilMonday)
-  nextMonday.setHours(0, 0, 0, 0)
+  nextMidnight.setDate(now.getDate() + 1)
+  nextMidnight.setHours(0, 0, 0, 0)
 
-  return nextMonday.getTime() - now.getTime()
-}
-
-/**
- * Check if it's Monday
- */
-function isMonday(date: Date = new Date()): boolean {
-  return date.getDay() === 1
+  return nextMidnight.getTime() - now.getTime()
 }
 
 /**
  * Notify renderer process to generate playlist
  * The renderer will handle the actual generation since it has access to localStorage
  */
-function notifyRenderer(event: 'check' | 'monday-trigger') {
+function notifyRenderer(event: 'check' | 'daily-trigger') {
   const windows = require('electron').BrowserWindow.getAllWindows()
 
   if (windows.length > 0) {
@@ -71,36 +56,30 @@ function notifyRenderer(event: 'check' | 'monday-trigger') {
     mainWindow.webContents.send('discover-weekly:schedule-event', {
       event,
       timestamp: new Date().toISOString(),
-      weekKey: getISOWeek(new Date()),
+      dayKey: getDateKey(new Date()),
     })
     schedulerLog(`[Electron Scheduler] Sent ${event} event to renderer`)
   }
 }
 
 /**
- * Schedule the next Monday check
+ * Schedule the next midnight check
  */
 function scheduleNextCheck() {
   if (!isRunning) return
 
-  const msUntilMonday = getMillisecondsUntilNextMonday()
-  const hoursUntilMonday = (msUntilMonday / (1000 * 60 * 60)).toFixed(1)
+  const msUntilMidnight = getMillisecondsUntilNextMidnight()
+  const hoursUntilMidnight = (msUntilMidnight / (1000 * 60 * 60)).toFixed(1)
 
-  schedulerLog(`[Electron Scheduler] Next check in ${hoursUntilMonday} hours`)
+  schedulerLog(`[Electron Scheduler] Next check in ${hoursUntilMidnight} hours`)
 
   schedulerTimeout = setTimeout(() => {
-    if (isMonday()) {
-      schedulerLog(
-        '[Electron Scheduler] Monday detected! Notifying renderer...',
-      )
-      notifyRenderer('monday-trigger')
-    } else {
-      schedulerLog('[Electron Scheduler] Not Monday yet, rescheduling...')
-    }
+    schedulerLog('[Electron Scheduler] Midnight trigger reached')
+    notifyRenderer('daily-trigger')
 
     // Schedule next check
     scheduleNextCheck()
-  }, msUntilMonday)
+  }, msUntilMidnight)
 }
 
 /**
@@ -113,7 +92,7 @@ export function startDiscoverWeeklyScheduler() {
   }
 
   isRunning = true
-  schedulerLog('[Electron Scheduler] Started Discover Weekly scheduler')
+  schedulerLog('[Electron Scheduler] Started Discover Daily scheduler')
 
   // Initial check on startup (after 5 seconds delay)
   setTimeout(() => {
@@ -121,7 +100,7 @@ export function startDiscoverWeeklyScheduler() {
     notifyRenderer('check')
   }, 5000)
 
-  // Schedule first Monday check
+  // Schedule first daily midnight check
   scheduleNextCheck()
 
   // Clean up on app quit

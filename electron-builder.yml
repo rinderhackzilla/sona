@@ -1,4 +1,4 @@
-appId: com.sgtspeerock.sona
+appId: com.rinderhackzilla.sona
 productName: Sona
 copyright: Copyright © 2026 rinderhack
 artifactName: '${productName}-v${version}-${os}-${arch}.${ext}'
@@ -51,7 +51,7 @@ linux:
     - AppImage
     - deb
     - tar.gz
-  maintainer: sgtspeerock
+  maintainer: rinderhackzilla
   category: AudioVideo
   synopsis: 'A modern desktop music client for Navidrome and OpenSubsonic servers.'
 
@@ -60,5 +60,5 @@ nativeRebuilder: legacy
 
 publish:
   provider: github
-  owner: sgtspeerock
+  owner: rinderhackzilla
   repo: sona

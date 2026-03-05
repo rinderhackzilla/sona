@@ -73,7 +73,7 @@ export const router = createHashRouter(
           element: <Top50Year />,
         },
         {
-          id: 'discover-weekly',
+          id: 'discover-daily',
           path: ROUTES.LIBRARY.DISCOVER_WEEKLY,
           errorElement: <ErrorPage />,
           element: <DiscoverWeekly />,

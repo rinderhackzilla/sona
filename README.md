@@ -2,7 +2,7 @@
 
 <br />
 <div align="center">
-  <a href="https://github.com/sgtspeerock/sona">
+  <a href="https://github.com/rinderhackzilla/sona">
     <img src="./resources/sona_header.png" alt="Sona">
   </a>
 
@@ -97,11 +97,11 @@ Sona is a fork of Aonsoku, customized and enhanced for Windows desktop use. This
 
 ## Screenshots
 
-<a href="https://raw.githubusercontent.com/sgtspeerock/sona/refs/heads/main/public/screenshots/start.jpg"><img src="https://raw.githubusercontent.com/sgtspeerock/sona/refs/heads/main/public/screenshots/start.jpg" width="49.5%"/></a> <a href="https://raw.githubusercontent.com/sgtspeerock/sona/refs/heads/main/public/screenshots/top50.jpg"><img src="https://raw.githubusercontent.com/sgtspeerock/sona/refs/heads/main/public/screenshots/top50.jpg" width="49.5%"/></a>
+<a href="https://raw.githubusercontent.com/rinderhackzilla/sona/refs/heads/main/public/screenshots/start.jpg"><img src="https://raw.githubusercontent.com/rinderhackzilla/sona/refs/heads/main/public/screenshots/start.jpg" width="49.5%"/></a> <a href="https://raw.githubusercontent.com/rinderhackzilla/sona/refs/heads/main/public/screenshots/top50.jpg"><img src="https://raw.githubusercontent.com/rinderhackzilla/sona/refs/heads/main/public/screenshots/top50.jpg" width="49.5%"/></a>
 
-<a href="https://raw.githubusercontent.com/sgtspeerock/sona/refs/heads/main/public/screenshots/discover.jpg"><img src="https://raw.githubusercontent.com/sgtspeerock/sona/refs/heads/main/public/screenshots/discover.jpg" width="49.5%"/></a> <a href="https://raw.githubusercontent.com/sgtspeerock/sona/refs/heads/main/public/screenshots/lyrics.jpg"><img src="https://raw.githubusercontent.com/sgtspeerock/sona/refs/heads/main/public/screenshots/lyrics.jpg" width="49.5%"/></a>
+<a href="https://raw.githubusercontent.com/rinderhackzilla/sona/refs/heads/main/public/screenshots/discover.jpg"><img src="https://raw.githubusercontent.com/rinderhackzilla/sona/refs/heads/main/public/screenshots/discover.jpg" width="49.5%"/></a> <a href="https://raw.githubusercontent.com/rinderhackzilla/sona/refs/heads/main/public/screenshots/lyrics.jpg"><img src="https://raw.githubusercontent.com/rinderhackzilla/sona/refs/heads/main/public/screenshots/lyrics.jpg" width="49.5%"/></a>
 
-<a href="https://raw.githubusercontent.com/sgtspeerock/sona/refs/heads/main/public/screenshots/visualizer.jpg"><img src="https://raw.githubusercontent.com/sgtspeerock/sona/refs/heads/main/public/screenshots/visualizer.jpg" width="49.5%"/></a> <a href="https://raw.githubusercontent.com/sgtspeerock/sona/refs/heads/main/public/screenshots/eq.jpg"><img src="https://raw.githubusercontent.com/sgtspeerock/sona/refs/heads/main/public/screenshots/eq.jpg" width="49.5%"/></a>
+<a href="https://raw.githubusercontent.com/rinderhackzilla/sona/refs/heads/main/public/screenshots/visualizer.jpg"><img src="https://raw.githubusercontent.com/rinderhackzilla/sona/refs/heads/main/public/screenshots/visualizer.jpg" width="49.5%"/></a> <a href="https://raw.githubusercontent.com/rinderhackzilla/sona/refs/heads/main/public/screenshots/eq.jpg"><img src="https://raw.githubusercontent.com/rinderhackzilla/sona/refs/heads/main/public/screenshots/eq.jpg" width="49.5%"/></a>
 
 
 ## Planned Features
@@ -122,7 +122,7 @@ Sona will continue to evolve with new features on the go. Right now, the roadmap
 
 1. Clone the repo
 ```sh
-git clone https://github.com/sgtspeerock/sona.git
+git clone https://github.com/rinderhackzilla/sona.git
 ```
 2. Install NPM packages
 ```sh

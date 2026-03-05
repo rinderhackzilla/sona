@@ -13,7 +13,7 @@
     "emptyPlaylist": "Noch keine Wiedergabelisten erstellt",
     "podcasts": "Podcasts",
     "genres": "Genres",
-    "discoverWeekly": "Discover Weekly",
+    "discoverWeekly": "Discover Daily",
     "yourTop50": "Your Top 50"
   },
   "theme": {
@@ -314,12 +314,12 @@
     "apiKeyMissing": "Last.fm API-Schlüssel nicht in den Einstellungen konfiguriert"
   },
   "discoverWeekly": {
-    "setupTitle": "Discover Weekly einrichten",
+    "setupTitle": "Discover Daily einrichten",
     "setupDescription": "Erhalte personalisierte Songempfehlungen basierend auf deiner Last.fm-Hörhistorie.",
     "setupPrefix": "Setup:",
     "setupInstructions": "Konfiguriere deinen Last.fm-Benutzernamen und API-Schlüssel in den Seitenleisten-Einstellungen (⚙️) → Integrationen.",
     "generatingPlaylist": "Deine personalisierte Playlist wird erstellt...",
-    "emptyTitle": "Discover Weekly",
+    "emptyTitle": "Discover Daily",
     "emptyDescription": "Deine personalisierte Playlist wurde noch nicht erstellt.",
     "generatePlaylist": "Playlist erstellen",
     "headerType": "Personalisierte Playlist",
@@ -327,7 +327,7 @@
     "updated": "Aktualisiert am {{date}}",
     "artistCount_one": "{{count}} Künstler",
     "artistCount_other": "{{count}} Künstler",
-    "noSongs": "Noch keine Songs in deiner Discover Weekly",
+    "noSongs": "Noch keine Songs in deiner Discover Daily",
     "savedSuccess": "Playlist \"{{name}}\" wurde in deiner Bibliothek gespeichert!",
     "saveError": "Playlist konnte nicht gespeichert werden: {{message}}"
   },
@@ -370,12 +370,12 @@
     "recentlyPlayed": "Zuletzt gespielt",
     "mostPlayed": "Am häufigsten gespielt",
     "explore": "Entdecken",
-    "discoverWeekly": "Discover Weekly",
+    "discoverWeekly": "Discover Daily",
     "topGenre": "Top-Genre",
     "thisIsArtist": "This is Artist",
     "thisIsPrefix": "This is...",
-    "weeklyMix": "Dein wöchentlicher Mix",
-    "weeklyMixSoon": "Deine wöchentliche Playlist wird bald erstellt",
+    "weeklyMix": "Dein täglicher Mix",
+    "weeklyMixSoon": "Deine tägliche Playlist wird bald erstellt",
     "recommendedAlbum": "Empfohlenes Album",
     "browse": "Durchsuchen →",
     "generating": "Wird generiert...",

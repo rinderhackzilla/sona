@@ -83,7 +83,7 @@ export function Integrations() {
           <CardTitle>Last.fm</CardTitle>
           <CardDescription>
             Connect your Last.fm account to enable personalized music
-            recommendations, Discover Weekly playlists, and the daily "This is
+            recommendations, Discover Daily playlists, and the daily "This is
             [Artist]" feature.
           </CardDescription>
         </CardHeader>

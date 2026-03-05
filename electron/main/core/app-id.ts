@@ -1,1 +1,1 @@
-export const APP_ID = 'com.sgtspeerock.sona'
+export const APP_ID = 'com.rinderhackzilla.sona'

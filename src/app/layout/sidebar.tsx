@@ -45,7 +45,7 @@ export enum SidebarItems {
   Radios = 'radios',
   PodcastAll = 'podcast-all',
   PodcastLatest = 'podcast-latest',
-  DiscoverWeekly = 'discover-weekly',
+  DiscoverWeekly = 'discover-daily',
   Top50Year = 'top-50-year',
 }
 

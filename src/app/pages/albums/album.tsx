@@ -1,7 +1,6 @@
 import { startTransition } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useParams } from 'react-router-dom'
-import { AlbumComment } from '@/app/components/album/comment'
 import ImageHeader from '@/app/components/album/image-header'
 import { AlbumInfo } from '@/app/components/album/info'
 import { RecordLabelsInfo } from '@/app/components/album/record-labels'
@@ -115,7 +114,6 @@ export default function Album() {
       ? removeCurrentAlbumFromList(randomAlbums.list)
       : null
 
-  const albumComment = album.song.length > 0 ? album.song[0].comment : null
   const albumSongs = album.song.map((song) => ({
     ...song,
     coverArt: song.coverArt || album.coverArt,
@@ -162,8 +160,6 @@ export default function Album() {
             className="min-h-[160px] px-0 py-2"
           />
         )}
-
-        {albumComment && <AlbumComment comment={albumComment} />}
 
         <RecordLabelsInfo album={album} />
 

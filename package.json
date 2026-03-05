@@ -1,7 +1,7 @@
 {
   "name": "Sona",
   "private": true,
-  "version": "0.17.4",
+  "version": "0.17.5",
   "description": "A modern desktop client for Navidrome/Subsonic servers.",
   "author": {
     "name": "rinderhack"
@@ -34,7 +34,7 @@
     "prepare": "husky"
   },
   "repository": {
-    "url": "https://github.com/sgtspeerock/sona"
+    "url": "https://github.com/rinderhackzilla/sona"
   },
   "dependencies": {
     "@chriscodesthings/random-css-hex-color": "^1.1.0",

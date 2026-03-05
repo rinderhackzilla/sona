@@ -72,4 +72,4 @@ Existing playlists automatically gain `weekKey` on next generation. No user acti
 
 ## Previous Releases
 
-See [GitHub Releases](https://github.com/sgtspeerock/sona/releases) for full release history.
+See [GitHub Releases](https://github.com/rinderhackzilla/sona/releases) for full release history.

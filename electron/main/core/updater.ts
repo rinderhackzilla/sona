@@ -109,7 +109,7 @@ export function setupUpdater(window: BrowserWindow | null) {
       return {
         files: [
           {
-            url: 'https://github.com/victoralvesf/aonsoku/releases/download/v0.11.0/Aonsoku-v0.11.0-linux-x86_64.AppImage',
+            url: 'https://github.com/rinderhackzilla/sona/releases/download/v0.17.5/Sona-v0.17.5-linux-x86_64.AppImage',
             sha512:
               'QRsm6JGcGxiFzngU5VK9LhN7AJlO1mTjXpZBpUFIb7CmmNyWtH7nmT+YjaaeHVdBLCQJRGZna6U9ZCVfag8CiA==',
             size: 126846979,
@@ -117,7 +117,7 @@ export function setupUpdater(window: BrowserWindow | null) {
           },
         ],
         version: '9.99.9',
-        updateUrl: 'https://github.com/victoralvesf/aonsoku/releases',
+        updateUrl: 'https://github.com/rinderhackzilla/sona/releases',
         releaseDate: '2025-11-30T02:45:24.024Z',
         releaseNotes:
           '## New version available\n\n- New feature 1\n- New feature 2\n\n### Fixes\n\n- Fix 1\n- Fix 2',

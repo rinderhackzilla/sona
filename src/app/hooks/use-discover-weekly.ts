@@ -13,7 +13,7 @@ interface PlaylistMetadata {
   generatedAt: string
   artistsUsed: string[]
   totalSongs: number
-  weekKey: string
+  dayKey: string
 }
 
 export function useDiscoverWeekly() {
@@ -137,7 +137,7 @@ export function useDiscoverWeekly() {
     error,
     lastGenerated: metadata?.generatedAt || null,
     artistsUsed: metadata?.artistsUsed || [],
-    weekKey: metadata?.weekKey || null,
+    dayKey: metadata?.dayKey || null,
     generate,
     isConfigured,
   }
