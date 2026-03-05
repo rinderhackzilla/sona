@@ -2,12 +2,14 @@ import { AonsokuStore } from './store'
 
 export interface ISettingPayload {
   minimizeToTray: boolean
+  disableGpu: boolean
 }
 
 const settingsStore = new AonsokuStore<ISettingPayload>({
   name: 'settings',
   defaults: {
     minimizeToTray: false,
+    disableGpu: false,
   },
 })
 

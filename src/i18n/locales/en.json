@@ -952,6 +952,30 @@
           "label": "Night Mode Genres",
           "modalTitle": "Night Mode Genres"
         }
+      },
+      "genreHygiene": {
+        "group": "Genre Hygiene",
+        "hidden": {
+          "label": "Hidden Genres",
+          "button": "Manage hidden genres",
+          "modalTitle": "Hidden Genres",
+          "description": "Hidden genres are removed from genre navigation and genre-based lists.",
+          "previewCount": "{{count}} genres will be hidden",
+          "search": "Search genres…"
+        },
+        "aliases": {
+          "label": "Merge Genres",
+          "button": "Manage merges",
+          "modalTitle": "Merge Genres",
+          "description": "Merge noisy genres into a main genre used across the app.",
+          "noMerge": "No merge",
+          "source": "Source genre",
+          "target": "Main genre",
+          "add": "Add",
+          "remove": "Remove",
+          "preview": "Will be shown as: {{genre}}",
+          "previewCount": "{{count}} genre merges configured"
+        }
       }
     },
     "accounts": {
@@ -970,6 +994,10 @@
         "tray": {
           "label": "Minimize to Tray",
           "info": "When enabled, the app will minimize to the system tray instead of closing when you click the close button."
+        },
+        "gpu": {
+          "label": "Disable GPU Acceleration",
+          "info": "Disables hardware acceleration to improve stability on some systems. Restart Sona after changing this setting."
         }
       }
     },
@@ -1074,6 +1102,9 @@
       },
       "tray": {
         "label": "Close to System Tray"
+      },
+      "gpu": {
+        "label": "Disable GPU Acceleration"
       },
       "density": {
         "label": "List density",

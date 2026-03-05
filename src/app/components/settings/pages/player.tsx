@@ -102,8 +102,8 @@ export function PlayerPage() {
   const { discord } = useAppAccounts()
 
   // Tray
-  const { minimizeToTray } = useAppDesktopData()
-  const { setMinimizeToTray } = useAppDesktopActions()
+  const { minimizeToTray, disableGpu } = useAppDesktopData()
+  const { setMinimizeToTray, setDisableGpu } = useAppDesktopActions()
 
   const handleResetError = () => {
     setReplayGainError(false)
@@ -458,6 +458,15 @@ export function PlayerPage() {
                   checked={minimizeToTray}
                   onCheckedChange={setMinimizeToTray}
                 />
+              </ContentItemForm>
+            </ContentItem>
+
+            <ContentItem>
+              <ContentItemTitle info={t('settings.desktop.general.gpu.info')}>
+                {t('settings.player.gpu.label', 'Disable GPU Acceleration')}
+              </ContentItemTitle>
+              <ContentItemForm>
+                <Switch checked={disableGpu} onCheckedChange={setDisableGpu} />
               </ContentItemForm>
             </ContentItem>
           </Content>

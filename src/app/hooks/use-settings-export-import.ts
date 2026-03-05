@@ -54,6 +54,7 @@ export function useSettingsExportImport() {
         },
         desktop: {
           minimizeToTray: desktopData.minimizeToTray,
+          disableGpu: desktopData.disableGpu,
         },
       },
     }
@@ -148,6 +149,9 @@ export function useSettingsExportImport() {
 
         if (typeof settings.desktop?.minimizeToTray === 'boolean') {
           desktopActions.setMinimizeToTray(settings.desktop.minimizeToTray)
+        }
+        if (typeof settings.desktop?.disableGpu === 'boolean') {
+          desktopActions.setDisableGpu(settings.desktop.disableGpu)
         }
 
         toast.success(t('settings.io.toast.importSuccess'))

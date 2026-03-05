@@ -922,6 +922,30 @@
           "label": "Night-Mode-Genres",
           "modalTitle": "Night-Mode-Genres"
         }
+      },
+      "genreHygiene": {
+        "group": "Genre-Bereinigung",
+        "hidden": {
+          "label": "Ausgeblendete Genres",
+          "button": "Ausgeblendete Genres verwalten",
+          "modalTitle": "Ausgeblendete Genres",
+          "description": "Ausgeblendete Genres werden in Genre-Navigation und genrebasierten Listen nicht mehr angezeigt.",
+          "previewCount": "{{count}} Genres werden ausgeblendet",
+          "search": "Genres suchen…"
+        },
+        "aliases": {
+          "label": "Genres zusammenführen",
+          "button": "Zusammenführungen verwalten",
+          "modalTitle": "Genres zusammenführen",
+          "description": "Fasse uneinheitliche Genres zu einem Hauptgenre zusammen, das appweit verwendet wird.",
+          "noMerge": "Keine Zusammenführung",
+          "source": "Quell-Genre",
+          "target": "Hauptgenre",
+          "add": "Hinzufügen",
+          "remove": "Entfernen",
+          "preview": "Wird angezeigt als: {{genre}}",
+          "previewCount": "{{count}} Genre-Zusammenführungen konfiguriert"
+        }
       }
     },
     "accounts": {
@@ -940,6 +964,10 @@
         "tray": {
           "label": "In die Taskleiste minimieren",
           "info": "Wenn diese Option aktiviert ist, wird die Anwendung beim Klicken auf die Schaltfläche „Schließen“ nicht geschlossen, sondern in die Taskleiste minimiert."
+        },
+        "gpu": {
+          "label": "GPU-Beschleunigung deaktivieren",
+          "info": "Deaktiviert Hardwarebeschleunigung für mehr Stabilität auf manchen Systemen. Starte Sona nach der Änderung neu."
         }
       }
     },
@@ -1044,6 +1072,9 @@
       },
       "tray": {
         "label": "In Systemtray minimieren"
+      },
+      "gpu": {
+        "label": "GPU-Beschleunigung deaktivieren"
       },
       "density": {
         "label": "Listendichte",

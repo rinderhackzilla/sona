@@ -192,15 +192,63 @@ export const useAppStore = createWithEqualityFn<IAppContext>()(
                 state.pages.playlistOrder = order
               })
             },
+            hiddenGenres: [],
+            setHiddenGenres: (genres) => {
+              set((state) => {
+                state.pages.hiddenGenres = [...new Set(genres)]
+              })
+            },
+            toggleHiddenGenre: (genre) => {
+              set((state) => {
+                const key = genre.trim().toLowerCase()
+                if (!key) return
+                const current = state.pages.hiddenGenres
+                if (current.includes(key)) {
+                  state.pages.hiddenGenres = current.filter((g) => g !== key)
+                  return
+                }
+                state.pages.hiddenGenres = [...current, key]
+              })
+            },
+            genreAliases: {},
+            setGenreAliases: (aliases) => {
+              set((state) => {
+                state.pages.genreAliases = aliases
+              })
+            },
+            setGenreAlias: (source, target) => {
+              set((state) => {
+                const key = source.trim().toLowerCase()
+                if (!key) return
+
+                if (!target || key === target.trim().toLowerCase()) {
+                  const next = { ...state.pages.genreAliases }
+                  delete next[key]
+                  state.pages.genreAliases = next
+                  return
+                }
+
+                state.pages.genreAliases = {
+                  ...state.pages.genreAliases,
+                  [key]: target.trim().toLowerCase(),
+                }
+              })
+            },
           },
           desktop: {
             data: {
               minimizeToTray: false,
+              disableGpu: false,
             },
             actions: {
               setMinimizeToTray: (value) => {
                 set((state) => {
                   state.desktop.data.minimizeToTray = value
+                })
+              },
+              setDisableGpu: (value) => {
+                set((state) => {
+                  state.desktop.data.disableGpu = value
                 })
               },
             },
@@ -315,6 +363,8 @@ export const useAppStore = createWithEqualityFn<IAppContext>()(
                 state.pages.hideRadiosSection = HIDE_RADIOS_SECTION ?? false
                 state.pages.artistsPageViewType = 'table'
                 state.pages.listDensity = 'default'
+                state.pages.hiddenGenres = []
+                state.pages.genreAliases = {}
                 state.podcasts.active = false
                 state.podcasts.serviceUrl = ''
                 state.podcasts.useDefaultUser = true

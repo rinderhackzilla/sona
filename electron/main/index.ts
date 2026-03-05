@@ -3,9 +3,16 @@ import { app, globalShortcut, session } from 'electron'
 import { startDiscoverWeeklyScheduler } from '../discover-weekly-scheduler'
 import { APP_ID } from './core/app-id'
 import { createAppMenu } from './core/menu'
+import { getAppSetting } from './core/settings'
 import { createWindow, mainWindow } from './window'
 
 const currentDesktop = process.env.XDG_CURRENT_DESKTOP ?? ''
+const disableGpu = getAppSetting('disableGpu')
+
+if (disableGpu) {
+  app.disableHardwareAcceleration()
+  app.commandLine.appendSwitch('disable-gpu')
+}
 
 if (platform.isLinux && currentDesktop.toLowerCase().includes('gnome')) {
   process.env.XDG_CURRENT_DESKTOP = 'Unity'

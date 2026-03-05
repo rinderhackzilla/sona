@@ -34,6 +34,12 @@ interface IAppPages {
   setListDensity: (value: ListDensity) => void
   playlistOrder: string[]
   setPlaylistOrder: (order: string[]) => void
+  hiddenGenres: string[]
+  setHiddenGenres: (genres: string[]) => void
+  toggleHiddenGenre: (genre: string) => void
+  genreAliases: Record<string, string>
+  setGenreAliases: (aliases: Record<string, string>) => void
+  setGenreAlias: (source: string, target: string | null) => void
 }
 
 export interface IAppData extends IServerConfig {
@@ -120,9 +126,11 @@ interface IIntegrations {
 interface IDesktop {
   data: {
     minimizeToTray: boolean
+    disableGpu: boolean
   }
   actions: {
     setMinimizeToTray: (value: boolean) => void
+    setDisableGpu: (value: boolean) => void
   }
 }
 
