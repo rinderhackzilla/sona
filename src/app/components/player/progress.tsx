@@ -57,6 +57,17 @@ export function PlayerProgress({ audioRef }: PlayerProgressProps) {
     setVisualProgress(amount)
   }, [])
 
+  // Fallback for cases where pointer-up/commit is not fired by the slider.
+  useEffect(() => {
+    if (!isSeekingRef.current) return
+
+    const timeoutId = setTimeout(() => {
+      isSeekingRef.current = false
+    }, 1800)
+
+    return () => clearTimeout(timeoutId)
+  }, [localProgress])
+
   const handleSeeked = useCallback(
     (amount: number) => {
       updateAudioCurrentTime(amount)
@@ -127,8 +138,13 @@ export function PlayerProgress({ audioRef }: PlayerProgressProps) {
             progressTicks.current >= 60 * 4) &&
           !isScrobbleSentRef.current
         ) {
-          sendScrobble(currentSong.id)
-          isScrobbleSentRef.current = true
+          void sendScrobble(currentSong.id)
+            .then(() => {
+              isScrobbleSentRef.current = true
+            })
+            .catch((error) => {
+              logger.warn('Scrobble request failed', error)
+            })
         }
       }
     }
