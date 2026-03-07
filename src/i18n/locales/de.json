@@ -996,6 +996,14 @@
           "placeholder": "Last.fm API Key",
           "helpPrefix": "API-Key abrufen unter",
           "helpLink": "Last.fm API"
+        },
+        "scrobbleStatus": {
+          "label": "Scrobble-Status",
+          "notConfigured": "Nicht konfiguriert",
+          "idle": "Inaktiv",
+          "sending": "Sende...",
+          "ok": "OK",
+          "failed": "Fehlgeschlagen"
         }
       }
     },

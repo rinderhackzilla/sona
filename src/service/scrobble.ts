@@ -16,6 +16,21 @@ async function send(id: string) {
   }
 }
 
+async function sendNowPlaying(id: string) {
+  const response = await httpClient<SubsonicResponse>('/scrobble', {
+    method: 'GET',
+    query: {
+      id,
+      submission: 'false',
+    },
+  })
+
+  if (!response || response.data?.status !== 'ok') {
+    throw new Error('Now playing request failed')
+  }
+}
+
 export const scrobble = {
   send,
+  sendNowPlaying,
 }

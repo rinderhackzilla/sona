@@ -18,6 +18,7 @@ import {
   usePlayerProgress,
   usePlayerSonglist,
 } from '@/store/player.store'
+import { useScrobbleStatusStore } from '@/store/scrobble.store'
 import { convertSecondsToTime } from '@/utils/convertSecondsToTime'
 import { logger } from '@/utils/logger'
 
@@ -38,6 +39,9 @@ export function PlayerProgress({ audioRef }: PlayerProgressProps) {
     usePlayerActions()
   const isScrobbleSentRef = useRef(false)
   const isSeekingRef = useRef(false)
+  const scrobbleStatus = useScrobbleStatusStore((state) => state.status)
+  const scrobbleTrackId = useScrobbleStatusStore((state) => state.trackId)
+  const setScrobbleStatus = useScrobbleStatusStore((state) => state.setStatus)
 
   const isEmpty = isSong && currentList.length === 0
 
@@ -118,7 +122,40 @@ export function PlayerProgress({ audioRef }: PlayerProgressProps) {
     await subsonic.scrobble.send(songId)
   }, [])
 
+  const sendNowPlaying = useCallback(async (songId: string) => {
+    await subsonic.scrobble.sendNowPlaying(songId)
+  }, [])
+
   const progressTicks = useRef(0)
+
+  useEffect(() => {
+    if (!isSong || !isPlaying || !currentSong.id) return
+    if (
+      scrobbleTrackId === currentSong.id &&
+      (scrobbleStatus === 'sending-now' || scrobbleStatus === 'now-ok')
+    ) {
+      return
+    }
+
+    setScrobbleStatus('sending-now', currentSong.id)
+
+    void sendNowPlaying(currentSong.id)
+      .then(() => {
+        setScrobbleStatus('now-ok', currentSong.id)
+      })
+      .catch((error) => {
+        setScrobbleStatus('now-failed', currentSong.id)
+        logger.warn('Now playing request failed', error)
+      })
+  }, [
+    currentSong.id,
+    isPlaying,
+    isSong,
+    scrobbleStatus,
+    scrobbleTrackId,
+    sendNowPlaying,
+    setScrobbleStatus,
+  ])
 
   useEffect(() => {
     if (isSeekingRef.current || !isPlaying) {
@@ -138,11 +175,14 @@ export function PlayerProgress({ audioRef }: PlayerProgressProps) {
             progressTicks.current >= 60 * 4) &&
           !isScrobbleSentRef.current
         ) {
+          setScrobbleStatus('sending', currentSong.id)
           void sendScrobble(currentSong.id)
             .then(() => {
               isScrobbleSentRef.current = true
+              setScrobbleStatus('ok', currentSong.id)
             })
             .catch((error) => {
+              setScrobbleStatus('failed', currentSong.id)
               logger.warn('Scrobble request failed', error)
             })
         }
@@ -155,6 +195,7 @@ export function PlayerProgress({ audioRef }: PlayerProgressProps) {
     sendScrobble,
     currentSong.id,
     isPlaying,
+    setScrobbleStatus,
   ])
 
   // Used to save listening progress to backend every 30 seconds

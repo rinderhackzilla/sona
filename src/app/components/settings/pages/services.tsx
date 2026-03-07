@@ -17,6 +17,10 @@ import { Switch } from '@/app/components/ui/switch'
 import { useDebouncedFormSync } from '@/app/hooks/use-debounced-form-sync'
 import { useAppIntegrations } from '@/store/app.store'
 import { useLrcLibSettings } from '@/store/player.store'
+import {
+  ScrobbleStatus,
+  useScrobbleStatus,
+} from '@/store/scrobble.store'
 
 const { DISABLE_LRCLIB } = window
 
@@ -68,6 +72,9 @@ export function ServicesPage() {
   )
 
   const isLrclibEnabled = DISABLE_LRCLIB ? false : enabled
+  const { status } = useScrobbleStatus()
+  const isLastFmConfigured = Boolean(lastfm.username.trim() && lastfm.apiKey.trim())
+  const scrobbleIndicator = getScrobbleIndicator(t, status, isLastFmConfigured)
 
   return (
     <div className="space-y-4">
@@ -117,6 +124,31 @@ export function ServicesPage() {
                 onChange={(e) => lastfm.setApiKey(e.target.value)}
                 className="h-8"
               />
+            </ContentItemForm>
+          </ContentItem>
+          <ContentItem>
+            <ContentItemTitle>
+              {t(
+                'settings.integrations.lastfm.scrobbleStatus.label',
+                'Scrobbling Status',
+              )}
+            </ContentItemTitle>
+            <ContentItemForm>
+              <div
+                className={clsx(
+                  'inline-flex items-center gap-2 rounded-full border px-2.5 py-1 text-xs',
+                  scrobbleIndicator.textClass,
+                  scrobbleIndicator.borderClass,
+                )}
+              >
+                <span
+                  className={clsx(
+                    'h-2 w-2 rounded-full',
+                    scrobbleIndicator.dotClass,
+                  )}
+                />
+                <span>{scrobbleIndicator.label}</span>
+              </div>
             </ContentItemForm>
           </ContentItem>
           <p className="text-xs text-muted-foreground">
@@ -268,4 +300,62 @@ export function ServicesPage() {
       </Root>
     </div>
   )
+}
+
+function getScrobbleIndicator(
+  t: (key: string, defaultValue: string) => string,
+  status: ScrobbleStatus,
+  configured: boolean,
+) {
+  if (!configured) {
+    return {
+      label: t(
+        'settings.integrations.lastfm.scrobbleStatus.notConfigured',
+        'Not configured',
+      ),
+      dotClass: 'bg-muted-foreground',
+      textClass: 'text-muted-foreground',
+      borderClass: 'border-border/60',
+    }
+  }
+
+  if (status === 'now-ok' || status === 'ok') {
+    return {
+      label: t('settings.integrations.lastfm.scrobbleStatus.ok', 'OK'),
+      dotClass: 'bg-emerald-500',
+      textClass: 'text-emerald-500',
+      borderClass: 'border-emerald-500/40',
+    }
+  }
+
+  if (status === 'sending-now' || status === 'sending') {
+    return {
+      label: t(
+        'settings.integrations.lastfm.scrobbleStatus.sending',
+        'Sending...',
+      ),
+      dotClass: 'bg-amber-500',
+      textClass: 'text-amber-500',
+      borderClass: 'border-amber-500/40',
+    }
+  }
+
+  if (status === 'now-failed' || status === 'failed') {
+    return {
+      label: t(
+        'settings.integrations.lastfm.scrobbleStatus.failed',
+        'Failed',
+      ),
+      dotClass: 'bg-red-500',
+      textClass: 'text-red-500',
+      borderClass: 'border-red-500/40',
+    }
+  }
+
+  return {
+    label: t('settings.integrations.lastfm.scrobbleStatus.idle', 'Idle'),
+    dotClass: 'bg-sky-500',
+    textClass: 'text-sky-500',
+    borderClass: 'border-sky-500/40',
+  }
 }

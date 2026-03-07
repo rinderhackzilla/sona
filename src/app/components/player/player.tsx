@@ -18,9 +18,11 @@ import {
   usePlayerStore,
   useReplayGainState,
 } from '@/store/player.store'
+import { useScrobbleStatusStore } from '@/store/scrobble.store'
 import { LoopState } from '@/types/playerContext'
 import { logger } from '@/utils/logger'
 import { ReplayGainParams } from '@/utils/replayGain'
+import { subsonic } from '@/service/subsonic'
 import { AudioPlayer } from './audio'
 import { PlayerClearQueueButton } from './clear-queue-button'
 import { PlayerControls } from './controls'
@@ -87,6 +89,7 @@ export function Player({ hideUi = false }: { hideUi?: boolean }) {
     getCurrentPodcastProgress,
     advanceToNextSongWithoutReset,
   } = usePlayerActions()
+  const setScrobbleStatus = useScrobbleStatusStore((state) => state.setStatus)
   const { currentList, currentSongIndex, radioList, podcastList } =
     usePlayerSonglist()
   const isPlaying = usePlayerIsPlaying()
@@ -477,6 +480,20 @@ export function Player({ hideUi = false }: { hideUi?: boolean }) {
       const timeLeft = audio.duration - audio.currentTime
       if (timeLeft > 0 && timeLeft <= crossfadeDurationSeconds) {
         const incomingDeck: DeckId = activeDeck === 'a' ? 'b' : 'a'
+        const incomingSong = currentList[nextSongIndex]
+
+        if (incomingSong?.id) {
+          setScrobbleStatus('sending-now', incomingSong.id)
+          void subsonic.scrobble
+            .sendNowPlaying(incomingSong.id)
+            .then(() => {
+              setScrobbleStatus('now-ok', incomingSong.id)
+            })
+            .catch((error) => {
+              setScrobbleStatus('now-failed', incomingSong.id)
+              logger.warn('Now playing request failed (crossfade)', error)
+            })
+        }
 
         crossfadeStateRef.current = 'arming'
         fadeOutStartedRef.current = true
@@ -498,6 +515,7 @@ export function Player({ hideUi = false }: { hideUi?: boolean }) {
       getDeckRef,
       getNextSongIndex,
       isSong,
+      setScrobbleStatus,
       setProgress,
     ],
   )
