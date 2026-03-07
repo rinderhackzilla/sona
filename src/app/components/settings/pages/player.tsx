@@ -80,6 +80,7 @@ export function PlayerPage() {
   const crossfadeSliderValue = crossfadeEnabled
     ? crossfadePoints.indexOf(resolvedCrossfadeDurationSeconds)
     : 0
+
   const {
     enabled: listeningMemoryEnabled,
     setEnabled: setListeningMemoryEnabled,

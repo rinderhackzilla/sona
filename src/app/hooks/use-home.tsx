@@ -1,9 +1,10 @@
 import { useQueries, useQuery } from '@tanstack/react-query'
-import { useMemo } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import { subsonic } from '@/service/subsonic'
 import { AlbumsListData } from '@/types/responses/album'
 import { Genres } from '@/types/responses/genre'
 import { convertMinutesToMs } from '@/utils/convertSecondsToTime'
+import { logger } from '@/utils/logger'
 import { queryKeys } from '@/utils/queryKeys'
 
 const HOME_QUERY_BASE = {
@@ -140,11 +141,52 @@ export const useHomeFeedData = () => {
 export const useHomeDashboardData = () => {
   const feed = useHomeFeedData()
   const genresQuery = useGetGenres()
+  const homeLoadStartRef = useRef<number | null>(null)
 
   const genres = useMemo(
     () => deriveGenreDiscoveryItems(genresQuery.data, feed.mostPlayed.data),
     [feed.mostPlayed.data, genresQuery.data],
   )
+
+  const homeLoading =
+    feed.similarArtists.isLoading ||
+    feed.recentlyAdded.isLoading ||
+    feed.recentlyPlayed.isLoading ||
+    feed.mostPlayed.isLoading ||
+    genresQuery.isLoading
+
+  useEffect(() => {
+    if (homeLoading) {
+      if (homeLoadStartRef.current === null) {
+        homeLoadStartRef.current = performance.now()
+      }
+      return
+    }
+
+    if (homeLoadStartRef.current === null) return
+
+    const elapsedMs = performance.now() - homeLoadStartRef.current
+    homeLoadStartRef.current = null
+
+    logger.info('[Perf][Home] Dashboard loaded', {
+      elapsedMs: Math.round(elapsedMs),
+      similarArtists: feed.similarArtists.data?.list?.length ?? 0,
+      recentlyAdded: feed.recentlyAdded.data?.list?.length ?? 0,
+      recentlyPlayed: feed.recentlyPlayed.data?.list?.length ?? 0,
+      genres: genres.length,
+    })
+  }, [
+    feed.recentlyAdded.data?.list?.length,
+    feed.recentlyAdded.isLoading,
+    feed.recentlyPlayed.data?.list?.length,
+    feed.recentlyPlayed.isLoading,
+    feed.similarArtists.data?.list?.length,
+    feed.similarArtists.isLoading,
+    feed.mostPlayed.isLoading,
+    genres.length,
+    genresQuery.isLoading,
+    homeLoading,
+  ])
 
   return {
     ...feed,

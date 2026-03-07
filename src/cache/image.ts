@@ -9,20 +9,89 @@ const objectUrlTimestamps = new Map<string, number>()
 const cacheMetadata = new Map<string, number>()
 const inFlightRequests = new Map<string, Promise<string>>()
 const MAX_OBJECT_URL_CACHE_SIZE = 400
-const PREFETCH_STEP_DELAY_MS = 150
+const DEFAULT_PREFETCH_STEP_DELAY_MS = 60
 const DEFAULT_RATE_LIMIT_COOLDOWN_MS = 15_000
-const MAX_CONCURRENT_IMAGE_FETCHES = 1
+const DEFAULT_MAX_CONCURRENT_IMAGE_FETCHES = 3
 let metadataWriteTimer: ReturnType<typeof setTimeout> | null = null
 let rateLimitedUntil = 0
 let activeImageFetches = 0
+let maxConcurrentImageFetches = DEFAULT_MAX_CONCURRENT_IMAGE_FETCHES
+let prefetchStepDelayMs = DEFAULT_PREFETCH_STEP_DELAY_MS
 const imageFetchQueue: Array<() => void> = []
+
+type NetworkInformationLike = {
+  effectiveType?: string
+  downlink?: number
+  saveData?: boolean
+  addEventListener?: (type: 'change', listener: () => void) => void
+  removeEventListener?: (type: 'change', listener: () => void) => void
+}
+
+function getConnectionInfo(): NetworkInformationLike | null {
+  if (typeof navigator === 'undefined') return null
+  const connection = (
+    navigator as Navigator & {
+      connection?: NetworkInformationLike
+      mozConnection?: NetworkInformationLike
+      webkitConnection?: NetworkInformationLike
+    }
+  ).connection
+  return (
+    connection ||
+    (navigator as Navigator & { mozConnection?: NetworkInformationLike })
+      .mozConnection ||
+    (navigator as Navigator & { webkitConnection?: NetworkInformationLike })
+      .webkitConnection ||
+    null
+  )
+}
+
+function applyAdaptivePrefetchProfile() {
+  const connection = getConnectionInfo()
+  if (!connection) {
+    maxConcurrentImageFetches = DEFAULT_MAX_CONCURRENT_IMAGE_FETCHES
+    prefetchStepDelayMs = DEFAULT_PREFETCH_STEP_DELAY_MS
+    return
+  }
+
+  const effectiveType = (connection.effectiveType ?? '').toLowerCase()
+  const downlink = Number(connection.downlink ?? 0)
+  const saveData = Boolean(connection.saveData)
+
+  if (saveData || effectiveType === 'slow-2g' || effectiveType === '2g') {
+    maxConcurrentImageFetches = 1
+    prefetchStepDelayMs = 180
+    return
+  }
+
+  if (effectiveType === '3g') {
+    maxConcurrentImageFetches = 2
+    prefetchStepDelayMs = 100
+    return
+  }
+
+  if (effectiveType === '4g' && downlink >= 10) {
+    maxConcurrentImageFetches = 4
+    prefetchStepDelayMs = 35
+    return
+  }
+
+  maxConcurrentImageFetches = DEFAULT_MAX_CONCURRENT_IMAGE_FETCHES
+  prefetchStepDelayMs = DEFAULT_PREFETCH_STEP_DELAY_MS
+}
+
+function subscribeToNetworkChanges() {
+  const connection = getConnectionInfo()
+  if (!connection || !connection.addEventListener) return
+  connection.addEventListener('change', applyAdaptivePrefetchProfile)
+}
 
 function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
 async function withImageFetchSlot<T>(task: () => Promise<T>): Promise<T> {
-  if (activeImageFetches >= MAX_CONCURRENT_IMAGE_FETCHES) {
+  if (activeImageFetches >= maxConcurrentImageFetches) {
     await new Promise<void>((resolve) => {
       imageFetchQueue.push(resolve)
     })
@@ -207,8 +276,10 @@ export async function prefetchCachedImages(urls: string[]) {
       break
     }
     await getCachedImage(url).catch(() => url)
-    await sleep(PREFETCH_STEP_DELAY_MS)
+    await sleep(prefetchStepDelayMs)
   }
 }
 
 loadMetadata()
+applyAdaptivePrefetchProfile()
+subscribeToNetworkChanges()

@@ -34,6 +34,7 @@ export function useDiscoverWeekly() {
 
     // Use setTimeout to make this async
     setTimeout(() => {
+      const startedAt = performance.now()
       try {
         const { playlist: storedPlaylist, metadata: storedMetadata } =
           loadPlaylist()
@@ -42,6 +43,10 @@ export function useDiscoverWeekly() {
           setPlaylist(storedPlaylist)
           setMetadata(storedMetadata)
         }
+        logger.info('[Perf][DiscoverDaily] Loaded from storage', {
+          elapsedMs: Math.round(performance.now() - startedAt),
+          songs: storedPlaylist.length,
+        })
       } catch (error) {
         console.error('[DiscoverWeekly Hook] Failed to load playlist:', error)
       }
@@ -67,6 +72,7 @@ export function useDiscoverWeekly() {
       logger.info('[DiscoverWeekly Hook] Performing catch-up generation...')
       setIsGenerating(true)
       setError(null)
+      const startedAt = performance.now()
 
       try {
         const success = await checkAndCatchUp({
@@ -83,6 +89,10 @@ export function useDiscoverWeekly() {
           setPlaylist(newPlaylist)
           setMetadata(newMetadata)
         }
+        logger.info('[Perf][DiscoverDaily] Catch-up finished', {
+          elapsedMs: Math.round(performance.now() - startedAt),
+          generated: success,
+        })
       } catch (error) {
         const message =
           error instanceof Error ? error.message : 'Catch-up failed'
@@ -107,6 +117,7 @@ export function useDiscoverWeekly() {
 
     setIsGenerating(true)
     setError(null)
+    const startedAt = performance.now()
 
     try {
       const result = await generateAndSavePlaylist(
@@ -121,6 +132,11 @@ export function useDiscoverWeekly() {
 
       setPlaylist(result.playlist)
       setMetadata(result.metadata)
+      logger.info('[Perf][DiscoverDaily] Manual generation finished', {
+        elapsedMs: Math.round(performance.now() - startedAt),
+        songs: result.playlist.length,
+        artists: result.metadata.artistsUsed.length,
+      })
     } catch (error) {
       const message =
         error instanceof Error ? error.message : 'Generation failed'

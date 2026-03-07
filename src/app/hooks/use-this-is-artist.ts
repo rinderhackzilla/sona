@@ -34,6 +34,7 @@ export function useThisIsArtist(): UseThisIsArtistReturn {
 
   // Load playlist from storage
   const loadFromStorage = useCallback(() => {
+    const startedAt = performance.now()
     const { playlist: storedPlaylist, metadata } = loadPlaylist()
     if (metadata) {
       setPlaylist(storedPlaylist)
@@ -41,6 +42,11 @@ export function useThisIsArtist(): UseThisIsArtistReturn {
       setLastGenerated(metadata.generatedAt)
       setDateKey(metadata.dateKey)
     }
+    logger.info('[Perf][ThisIsArtist] Loaded from storage', {
+      elapsedMs: Math.round(performance.now() - startedAt),
+      songs: storedPlaylist.length,
+      hasMetadata: Boolean(metadata),
+    })
   }, [])
 
   // Generate playlist
@@ -52,6 +58,7 @@ export function useThisIsArtist(): UseThisIsArtistReturn {
 
     setIsGenerating(true)
     setError(null)
+    const startedAt = performance.now()
 
     try {
       const result = await generateAndSavePlaylist(
@@ -71,6 +78,10 @@ export function useThisIsArtist(): UseThisIsArtistReturn {
       logger.info(
         `[ThisIsArtist Hook] Generated: This is ${result.metadata.artist.name}`,
       )
+      logger.info('[Perf][ThisIsArtist] Manual generation finished', {
+        elapsedMs: Math.round(performance.now() - startedAt),
+        songs: result.playlist.length,
+      })
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Unknown error'
       setError(message)
@@ -89,6 +100,7 @@ export function useThisIsArtist(): UseThisIsArtistReturn {
 
     // Check if catch-up is needed
     const runCatchUp = async () => {
+      const startedAt = performance.now()
       try {
         const generated = await checkAndCatchUp({
           username: lastfmConfig.username,
@@ -99,6 +111,10 @@ export function useThisIsArtist(): UseThisIsArtistReturn {
           // Reload after catch-up generation
           loadFromStorage()
         }
+        logger.info('[Perf][ThisIsArtist] Catch-up finished', {
+          elapsedMs: Math.round(performance.now() - startedAt),
+          generated,
+        })
       } catch (err) {
         console.error('[ThisIsArtist Hook] Catch-up failed:', err)
       }

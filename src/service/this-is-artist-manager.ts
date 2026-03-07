@@ -26,6 +26,11 @@ interface ThisIsArtistConfig {
   apiKey: string
 }
 
+let generationInFlight: Promise<{
+  playlist: Song[]
+  metadata: PlaylistMetadata
+}> | null = null
+
 /**
  * Get date key (format: "2026-02-15")
  */
@@ -130,6 +135,11 @@ export async function generateAndSavePlaylist(
   playlist: Song[]
   metadata: PlaylistMetadata
 }> {
+  if (generationInFlight) {
+    return generationInFlight
+  }
+
+  generationInFlight = (async () => {
   const today = getDateKey()
 
   // Check if generation is needed (unless forced)
@@ -175,6 +185,13 @@ export async function generateAndSavePlaylist(
   return {
     playlist: result.playlist,
     metadata,
+  }
+  })()
+
+  try {
+    return await generationInFlight
+  } finally {
+    generationInFlight = null
   }
 }
 

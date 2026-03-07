@@ -27,6 +27,11 @@ interface DiscoverWeeklyConfig {
   songsPerArtist?: number
 }
 
+let generationInFlight: Promise<{
+  playlist: Song[]
+  metadata: PlaylistMetadata
+}> | null = null
+
 function getDateKey(date: Date): string {
   const y = date.getFullYear()
   const m = String(date.getMonth() + 1).padStart(2, '0')
@@ -107,6 +112,11 @@ export async function generateAndSavePlaylist(
   playlist: Song[]
   metadata: PlaylistMetadata
 }> {
+  if (generationInFlight) {
+    return generationInFlight
+  }
+
+  generationInFlight = (async () => {
   const currentDay = getDateKey(new Date())
 
   if (!force && !shouldGeneratePlaylist()) {
@@ -148,6 +158,13 @@ export async function generateAndSavePlaylist(
   return {
     playlist: result.playlist,
     metadata,
+  }
+  })()
+
+  try {
+    return await generationInFlight
+  } finally {
+    generationInFlight = null
   }
 }
 

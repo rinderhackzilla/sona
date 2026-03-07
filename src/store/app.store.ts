@@ -152,7 +152,7 @@ export const useAppStore = createWithEqualityFn<IAppContext>()(
                 state.pages.artistsPageViewType = type
               })
             },
-            imagesCacheLayerEnabled: IMAGE_CACHE_ENABLED ?? false,
+            imagesCacheLayerEnabled: IMAGE_CACHE_ENABLED ?? true,
             setImagesCacheLayerEnabled: (value) => {
               set((state) => {
                 state.pages.imagesCacheLayerEnabled = value
@@ -362,6 +362,7 @@ export const useAppStore = createWithEqualityFn<IAppContext>()(
                 state.pages.showInfoPanel = true
                 state.pages.hideRadiosSection = HIDE_RADIOS_SECTION ?? false
                 state.pages.artistsPageViewType = 'table'
+                state.pages.imagesCacheLayerEnabled = IMAGE_CACHE_ENABLED ?? true
                 state.pages.listDensity = 'default'
                 state.pages.hiddenGenres = []
                 state.pages.genreAliases = {}
@@ -391,12 +392,12 @@ export const useAppStore = createWithEqualityFn<IAppContext>()(
             const persisted = persistedState as Partial<IAppContext> | undefined
 
             let hideRadiosSection = false
-            let enableImageCache = false
+            let enableImageCache = true
 
             if (persisted && persisted.pages) {
               hideRadiosSection = persisted.pages.hideRadiosSection ?? false
               enableImageCache =
-                persisted.pages.imagesCacheLayerEnabled ?? false
+                persisted.pages.imagesCacheLayerEnabled ?? true
             }
             if (HIDE_RADIOS_SECTION !== undefined) {
               hideRadiosSection = HIDE_RADIOS_SECTION
