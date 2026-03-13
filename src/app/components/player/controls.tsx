@@ -23,6 +23,7 @@ import { usePlayerHotkeys } from '@/app/hooks/use-audio-hotkeys'
 import { cn } from '@/lib/utils'
 import {
   usePlayerActions,
+  useCrossfadeSettings,
   usePlayerIsPlaying,
   usePlayerLoop,
   usePlayerMediaType,
@@ -54,6 +55,7 @@ export function PlayerControls({
   const { hasPrev, hasNext } = usePlayerPrevAndNext()
   const loopState = usePlayerLoop()
   const isPlaying = usePlayerIsPlaying()
+  const { enabled: crossfadeEnabled } = useCrossfadeSettings()
   const {
     isPlayingOneSong,
     toggleShuffle,
@@ -81,6 +83,11 @@ export function PlayerControls({
   )
 
   const handleNextWithSoftCut = useCallback(async () => {
+    if (crossfadeEnabled) {
+      playNextSong()
+      return
+    }
+
     if (!isSong || !isPlaying) {
       playNextSong()
       return
@@ -113,7 +120,7 @@ export function PlayerControls({
 
     audio.volume = startVolume
     playNextSong()
-  }, [audioRef, isPlaying, isSong, playNextSong])
+  }, [audioRef, crossfadeEnabled, isPlaying, isSong, playNextSong])
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: isPlaying needed to trigger
   useEffect(() => {
