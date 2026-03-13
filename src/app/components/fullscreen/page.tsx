@@ -52,7 +52,7 @@ function FullscreenScene() {
       <FullscreenDragHandler />
       <div
         className={clsx(
-          'absolute inset-0 flex flex-col p-0 2xl:p-8 w-full h-full bg-black/0 z-10 transition-all duration-700 [transition-timing-function:cubic-bezier(0.22,1,0.36,1)]',
+          'absolute inset-0 flex flex-col p-0 2xl:p-8 w-full h-full bg-black/0 z-10 transition-[padding-top,gap] duration-700 [transition-timing-function:cubic-bezier(0.22,1,0.36,1)]',
           isChromeVisible ? 'pt-6 2xl:pt-8 gap-4' : 'pt-6 2xl:pt-7 gap-2',
         )}
         onMouseMove={revealChrome}
@@ -61,7 +61,7 @@ function FullscreenScene() {
       >
         <div
           className={clsx(
-            'w-full flex-1 min-h-0 px-8 2xl:px-16 transition-all duration-700 [transition-timing-function:cubic-bezier(0.22,1,0.36,1)]',
+            'w-full flex-1 min-h-0 px-8 2xl:px-16 transition-[padding-top] duration-700 [transition-timing-function:cubic-bezier(0.22,1,0.36,1)]',
             isChromeVisible ? 'pt-1 2xl:pt-2' : 'pt-1',
           )}
         >
@@ -73,11 +73,14 @@ function FullscreenScene() {
           </div>
         </div>
 
-        <FullscreenIntegratedPanel isOpen={isPanelOpen} />
+        <FullscreenIntegratedPanel
+          isOpen={isPanelOpen}
+          isChromeVisible={isChromeVisible}
+        />
 
         <div
           className={clsx(
-            'px-8 2xl:px-16 transition-all duration-700 [transition-timing-function:cubic-bezier(0.22,1,0.36,1)]',
+            'px-8 2xl:px-16 transition-[height,min-height,padding] duration-700 [transition-timing-function:cubic-bezier(0.22,1,0.36,1)]',
             isChromeVisible
               ? 'h-[154px] min-h-[154px] py-2'
               : 'h-[102px] min-h-[102px] pt-0 pb-0',
@@ -85,7 +88,7 @@ function FullscreenScene() {
         >
           <div
             className={clsx(
-              'flex h-full transition-all duration-700 [transition-timing-function:cubic-bezier(0.22,1,0.36,1)]',
+              'flex h-full',
               isChromeVisible ? 'items-start' : 'items-end',
             )}
           >
@@ -97,7 +100,13 @@ function FullscreenScene() {
   )
 }
 
-function FullscreenIntegratedPanel({ isOpen }: { isOpen: boolean }) {
+function FullscreenIntegratedPanel({
+  isOpen,
+  isChromeVisible,
+}: {
+  isOpen: boolean
+  isChromeVisible: boolean
+}) {
   const { queueState } = useQueueState()
   const { lyricsState } = useLyricsState()
   const { setActiveDrawerPanel } = useMainDrawerState()
@@ -123,13 +132,14 @@ function FullscreenIntegratedPanel({ isOpen }: { isOpen: boolean }) {
   return (
     <div
       className={clsx(
-        'absolute left-8 right-8 2xl:left-16 2xl:right-16 top-0 bottom-[170px] 2xl:bottom-[188px] z-30 transform-gpu transition-[transform,opacity] duration-500 [transition-timing-function:cubic-bezier(0.22,1,0.36,1)]',
+        'absolute left-8 right-8 2xl:left-16 2xl:right-16 top-0 z-30 transform-gpu transition-[transform,opacity,bottom] duration-500 [transition-timing-function:cubic-bezier(0.22,1,0.36,1)]',
+        isChromeVisible ? 'bottom-[170px] 2xl:bottom-[188px]' : 'bottom-[110px]',
         isOpen
           ? 'opacity-100 translate-y-0 pointer-events-auto'
           : 'opacity-0 -translate-y-full pointer-events-none',
       )}
     >
-      <div className="relative w-full h-full rounded-b-2xl border-x border-b border-border/60 bg-background/90 shadow-[0_24px_56px_rgba(0,0,0,0.48)] overflow-hidden">
+      <div className="relative w-full h-full rounded-b-2xl border-x border-b border-border/55 bg-background/90 shadow-[0_24px_56px_rgba(0,0,0,0.48)] overflow-hidden">
         <div className="absolute inset-0 pointer-events-none bg-gradient-to-b from-foreground/5 via-transparent to-background/8" />
         <div className="flex w-full h-full gap-6 px-5 pt-11 pb-4 2xl:pt-12">
           {queueState && (

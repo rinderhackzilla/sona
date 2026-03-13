@@ -181,13 +181,16 @@ export default function ImageHeader({
                   'w-full px-8 py-6 flex gap-4 absolute inset-0 z-10',
                 )}
               >
-                <div
+                <button
+                  type="button"
+                  onClick={() => setOpen(true)}
                   className={cn(
                     'w-[200px] h-[200px] min-w-[200px] min-h-[200px]',
                     '2xl:w-[250px] 2xl:h-[250px] 2xl:min-w-[250px] 2xl:min-h-[250px]',
-                    'bg-skeleton aspect-square bg-cover bg-center rounded',
+                    'bg-skeleton aspect-square bg-cover bg-center rounded-[var(--radius-surface-lg)]',
                     'shadow-header-image overflow-hidden',
-                    'hover:scale-[1.02] ease-linear duration-100',
+                    'transition-transform duration-150 ease-out hover:scale-[1.02]',
+                    'focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:outline-none',
                   )}
                 >
                   <LazyLoadImage
@@ -199,17 +202,16 @@ export default function ImageHeader({
                     id="cover-art-image"
                     src={resolvedDisplaySrc}
                     alt={coverArtAlt}
-                    className="aspect-square object-cover w-full h-full cursor-pointer"
+                    className="aspect-square object-cover w-full h-full"
                     width="100%"
                     height="100%"
                     onError={handleError}
                     onLoad={handleImageLoad}
-                    onClick={() => setOpen(true)}
                   />
-                </div>
+                </button>
 
                 <div className="flex w-full max-w-[calc(100%-216px)] 2xl:max-w-[calc(100%-266px)] flex-col justify-end z-10">
-                  <p className="text-xs 2xl:text-sm font-medium text-shadow-md">
+                  <p className="text-sm text-muted-foreground text-shadow-md">
                     {type}
                   </p>
                   <h1
@@ -236,7 +238,7 @@ export default function ImageHeader({
                           <HeaderInfoGenerator badges={badges} />
                         </div>
                       ) : (
-                        <p className="opacity-80 text-sm font-medium">
+                        <p className="text-sm text-muted-foreground text-shadow-md">
                           {subtitle}
                         </p>
                       )}
@@ -245,7 +247,7 @@ export default function ImageHeader({
 
                   {isPlaylist && subtitle && (
                     <>
-                      <p className="text-sm opacity-80 text-shadow-md line-clamp-2 mt-1 mb-2">
+                      <p className="text-sm text-muted-foreground text-shadow-md line-clamp-2 mt-1 mb-2">
                         {subtitle}
                       </p>
                       <HeaderInfoGenerator

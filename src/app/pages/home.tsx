@@ -62,6 +62,15 @@ export default function Home() {
     !recentlyPlayed.isLoading &&
     !recentlyAdded.isLoading &&
     !isGenresLoading
+  const showHeaderFallback =
+    (similarArtists.isLoading || similarArtists.isFetching) &&
+    !(similarArtists.data?.list?.length ?? 0)
+  const showRecentlyPlayedFallback =
+    (recentlyPlayed.isLoading || recentlyPlayed.isFetching) &&
+    !(recentlyPlayed.data?.list?.length ?? 0)
+  const showRecentlyAddedFallback =
+    (recentlyAdded.isLoading || recentlyAdded.isFetching) &&
+    !(recentlyAdded.data?.list?.length ?? 0)
 
   if (allLoaded && !hasAnyHomeContent) {
     return (
@@ -77,15 +86,15 @@ export default function Home() {
       <div className="mx-auto w-full max-w-[3400px] space-y-5 sm:space-y-6 xl:space-y-7">
         {showThisIsArtist ? (
           <section className="-mt-1 grid grid-cols-12 gap-4 min-[2100px]:gap-5">
-            <div className="col-span-8 h-[424px] min-[1700px]:h-[468px] min-[2600px]:h-[520px]">
-              {similarArtists.isFetching || similarArtists.isLoading ? (
+            <div className="col-span-8 h-[min(52vh,424px)] min-[1700px]:h-[min(56vh,468px)] min-[2600px]:h-[min(60vh,520px)]">
+              {showHeaderFallback ? (
                 <HeaderFallback />
               ) : (
                 <AlbumHeader albums={similarArtists.data?.list || []} />
               )}
             </div>
 
-            <div className="col-span-4 grid h-[424px] grid-rows-2 gap-4 min-[1700px]:h-[468px] min-[2600px]:h-[520px] min-[2100px]:gap-5">
+            <div className="col-span-4 grid h-[min(52vh,424px)] grid-rows-2 gap-4 min-[1700px]:h-[min(56vh,468px)] min-[2600px]:h-[min(60vh,520px)] min-[2100px]:gap-5">
               <div className="h-full">
                 <DiscoverWeeklyCard />
               </div>
@@ -96,7 +105,7 @@ export default function Home() {
           </section>
         ) : (
           <section>
-            {similarArtists.isFetching || similarArtists.isLoading ? (
+            {showHeaderFallback ? (
               <HeaderFallback />
             ) : (
               <AlbumHeader albums={similarArtists.data?.list || []} />
@@ -111,7 +120,7 @@ export default function Home() {
 
         {/* Recently Played */}
         <section>
-          {recentlyPlayed.isLoading && <PreviewListFallback />}
+          {showRecentlyPlayedFallback && <PreviewListFallback />}
           {recentlyPlayed.data?.list && (
             <PreviewList
               title={t('home.recentlyPlayed')}
@@ -124,7 +133,7 @@ export default function Home() {
 
         {/* Recently Added */}
         <section>
-          {recentlyAdded.isLoading && <PreviewListFallback />}
+          {showRecentlyAddedFallback && <PreviewListFallback />}
           {recentlyAdded.data?.list && (
             <PreviewList
               title={t('home.recentlyAdded')}

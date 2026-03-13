@@ -44,6 +44,29 @@ const blurSettings = {
   step: 10,
 }
 
+const EQ_BAND_COUNT = 8
+const EQ_MIN_GAIN = -12
+const EQ_MAX_GAIN = 12
+const DEFAULT_EQ_GAINS = Array.from({ length: EQ_BAND_COUNT }, () => 0)
+
+function normalizeEqualizerGains(gains: unknown): number[] {
+  if (!Array.isArray(gains)) return [...DEFAULT_EQ_GAINS]
+
+  const normalized = gains
+    .map((value) =>
+      typeof value === 'number'
+        ? clamp(Math.round(value), EQ_MIN_GAIN, EQ_MAX_GAIN)
+        : 0,
+    )
+    .slice(0, EQ_BAND_COUNT)
+
+  while (normalized.length < EQ_BAND_COUNT) {
+    normalized.push(0)
+  }
+
+  return normalized
+}
+
 let playbackEngine: PlaybackEngine | null = null
 
 function getPlaybackEngine() {
@@ -129,6 +152,20 @@ export const usePlayerStore = createWithEqualityFn<IPlayerContext>()(
               setPreferSyncedLyrics: (value) => {
                 set((state) => {
                   state.settings.lyrics.preferSyncedLyrics = value
+                })
+              },
+            },
+            equalizer: {
+              enabled: false,
+              setEnabled: (value) => {
+                set((state) => {
+                  state.settings.equalizer.enabled = value
+                })
+              },
+              gains: [...DEFAULT_EQ_GAINS],
+              setGains: (value) => {
+                set((state) => {
+                  state.settings.equalizer.gains = normalizeEqualizerGains(value)
                 })
               },
             },
@@ -232,13 +269,17 @@ export const usePlayerStore = createWithEqualityFn<IPlayerContext>()(
               bigPlayer: {
                 useSongColor: false,
                 blur: {
-                  value: 40,
+                  value: 34,
                   settings: blurSettings,
                 },
               },
               queue: {
                 useSongColor: false,
               },
+            },
+            visualizer: {
+              preset: 'frequency-circle',
+              autoQualityEnabled: true,
             },
           },
           actions: {
@@ -567,9 +608,8 @@ export const usePlayerStore = createWithEqualityFn<IPlayerContext>()(
 
               const listLength = currentList.length
               const isPlayingOneOrLess = listLength <= 1
-              const isPlayingLastSong = currentSongIndex === listLength - 1
 
-              if (isPlayingOneOrLess || isPlayingLastSong) return
+              if (isPlayingOneOrLess) return
 
               if (isShuffleActive) {
                 const currentSongId = get().songlist.currentSong.id
@@ -584,8 +624,10 @@ export const usePlayerStore = createWithEqualityFn<IPlayerContext>()(
                 })
               } else {
                 const { currentList, currentSongIndex } = get().songlist
-                const songListToShuffle = currentList.slice(currentSongIndex)
-                const shuffledList = shuffleSongList(songListToShuffle, 0)
+                const shuffledList = shuffleSongList(
+                  currentList,
+                  currentSongIndex,
+                )
 
                 set((state) => {
                   state.songlist.shuffledList = shuffledList
@@ -1014,7 +1056,7 @@ export const usePlayerStore = createWithEqualityFn<IPlayerContext>()(
               set((state) => {
                 state.settings.colors.queue.useSongColor = false
                 state.settings.colors.bigPlayer.useSongColor = false
-                state.settings.colors.bigPlayer.blur.value = 40
+                state.settings.colors.bigPlayer.blur.value = 34
                 state.settings.colors.bigPlayer.blur.settings = blurSettings
                 state.settings.colors.currentSongColorIntensity = 0.65
                 state.settings.fullscreen.autoFullscreenEnabled = false
@@ -1026,9 +1068,13 @@ export const usePlayerStore = createWithEqualityFn<IPlayerContext>()(
                   error: false,
                   defaultGain: -6,
                 }
+                state.settings.equalizer.enabled = false
+                state.settings.equalizer.gains = [...DEFAULT_EQ_GAINS]
                 state.settings.listeningMemory.enabled = true
                 state.settings.crossfade.enabled = false
                 state.settings.crossfade.durationSeconds = 3
+                state.settings.visualizer.preset = 'frequency-circle'
+                state.settings.visualizer.autoQualityEnabled = true
                 state.settings.sessionMode.mode = 'off'
                 state.settings.sessionMode.focusGenres = DEFAULT_FOCUS_GENRES
                 state.settings.sessionMode.nightGenres = DEFAULT_NIGHT_GENRES
@@ -1065,6 +1111,16 @@ export const usePlayerStore = createWithEqualityFn<IPlayerContext>()(
                 state.settings.colors.bigPlayer.blur.value = value
               })
             },
+            setVisualizerPreset: (value) => {
+              set((state) => {
+                state.settings.visualizer.preset = value
+              })
+            },
+            setVisualizerAutoQualityEnabled: (value) => {
+              set((state) => {
+                state.settings.visualizer.autoQualityEnabled = value
+              })
+            },
             setRuntimeSonaDjMode: (mode) => {
               getPlaybackEngine().setRuntimeMode(mode as SonaDjMode)
             },
@@ -1076,17 +1132,7 @@ export const usePlayerStore = createWithEqualityFn<IPlayerContext>()(
         name: 'player_store',
         version: 1,
         merge: (persistedState, currentState) => {
-          let merged = merge(currentState, persistedState)
-
-          idbStorage.getItem<ISongList>(miniStores.songlist, (value) => {
-            if (!value) return
-
-            const newState = {
-              songlist: value,
-            }
-
-            merged = merge(merged, newState)
-          })
+          const merged = merge(currentState, persistedState)
 
           // Session Mode should always boot in normal mode.
           if (merged && typeof merged === 'object' && 'settings' in merged) {
@@ -1104,6 +1150,12 @@ export const usePlayerStore = createWithEqualityFn<IPlayerContext>()(
                 8,
               )
             }
+            if (settings?.equalizer) {
+              settings.equalizer.enabled = Boolean(settings.equalizer.enabled)
+              settings.equalizer.gains = normalizeEqualizerGains(
+                settings.equalizer.gains,
+              )
+            }
             if (settings?.sessionMode) {
               settings.sessionMode.mode = 'off'
               if (
@@ -1117,6 +1169,12 @@ export const usePlayerStore = createWithEqualityFn<IPlayerContext>()(
                 settings.sessionMode.nightGenres.length === 0
               ) {
                 settings.sessionMode.nightGenres = [...DEFAULT_NIGHT_GENRES]
+              }
+            }
+            if (settings && !settings.visualizer) {
+              settings.visualizer = {
+                preset: 'frequency-circle',
+                autoQualityEnabled: true,
               }
             }
           }
@@ -1146,6 +1204,13 @@ export const usePlayerStore = createWithEqualityFn<IPlayerContext>()(
 playbackEngine = createPlaybackEngine({
   getState: usePlayerStore.getState,
   setState: usePlayerStore.setState as PlaybackEngineStoreApi['setState'],
+})
+
+// Restore songlist from IDB after store initializes (merge() is synchronous
+// and cannot await the IDB read; we apply it here once the value resolves).
+idbStorage.getItem<ISongList>(miniStores.songlist, (value) => {
+  if (!value) return
+  usePlayerStore.setState((state) => ({ ...state, songlist: value }))
 })
 
 usePlayerStore.subscribe(
@@ -1261,6 +1326,9 @@ export const useLrcLibSettings = () =>
 export const useLyricsSettings = () =>
   usePlayerStore((state) => state.settings.lyrics)
 
+export const useEqualizerSettings = () =>
+  usePlayerStore((state) => state.settings.equalizer)
+
 export const usePlayerSettings = () => usePlayerStore((state) => state.settings)
 
 export const usePlayerMediaType = () => {
@@ -1358,6 +1426,14 @@ export const useSongColor = () =>
       setBigPlayerBlurValue,
     }
   })
+
+export const useVisualizerSettingsStore = () =>
+  usePlayerStore((state) => ({
+    preset: state.settings.visualizer.preset,
+    autoQualityEnabled: state.settings.visualizer.autoQualityEnabled,
+    setVisualizerPreset: state.actions.setVisualizerPreset,
+    setVisualizerAutoQualityEnabled: state.actions.setVisualizerAutoQualityEnabled,
+  }))
 
 export const usePlayerCurrentList = () =>
   usePlayerStore((state) => state.songlist.currentList)

@@ -92,8 +92,8 @@ export function NavPlaylists() {
           'group-data-[collapsible=icon]:pointer-events-none',
         )}
       >
-        <div className="flex min-w-0 flex-1 items-center gap-2 px-1">
-          <MainSidebarGroupLabel className="h-6 px-0 text-[10px] uppercase tracking-[0.14em] text-foreground/55">
+        <div className="flex min-w-0 flex-1 items-center gap-2 px-0">
+          <MainSidebarGroupLabel className="h-6 px-2.5 uppercase tracking-[0.14em] text-foreground/55">
             {t('sidebar.playlists')}
           </MainSidebarGroupLabel>
           <div className="h-px flex-1 bg-border/55" />

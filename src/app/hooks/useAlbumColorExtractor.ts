@@ -19,6 +19,7 @@ export function useAlbumColorExtractor() {
     }
 
     lastCoverArtRef.current = coverArt
+    let cancelled = false
 
     const extractColors = async () => {
       try {
@@ -27,24 +28,31 @@ export function useAlbumColorExtractor() {
         img.crossOrigin = 'Anonymous'
 
         img.onload = async () => {
+          if (cancelled) return
           const palette = await getAlbumColorPalette(img)
-          if (palette) {
+          if (!cancelled && palette) {
             setCurrentSongColorPalette(palette)
           }
         }
 
         img.onerror = () => {
+          if (cancelled) return
           console.error('Failed to load album cover for color extraction')
           setCurrentSongColorPalette(null)
         }
 
         img.src = coverArtUrl
       } catch (error) {
+        if (cancelled) return
         console.error('Color extraction error:', error)
         setCurrentSongColorPalette(null)
       }
     }
 
     extractColors()
+
+    return () => {
+      cancelled = true
+    }
   }, [coverArt, setCurrentSongColorPalette])
 }

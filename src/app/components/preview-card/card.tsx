@@ -31,7 +31,7 @@ interface ImageWrapperProps extends Children {
 
 function ImageWrapper({ children, link }: ImageWrapperProps) {
   return (
-    <div className="group relative aspect-square flex-1 overflow-hidden rounded-lg border border-border/55 bg-border/40 shadow-sm transition-all duration-200 group-hover/card:border-primary/35">
+    <div className="group relative aspect-square flex-1 overflow-hidden rounded-lg border border-border/40 bg-border/40 shadow-sm transition-all duration-200 group-hover/card:border-primary/35">
       <Link
         to={link}
         data-testid="card-image-link"
@@ -64,14 +64,16 @@ function Image({ src, alt }: ImageProps) {
 
 interface PlayButtonProps {
   onClick: () => void
+  disabled?: boolean
 }
 
-function PlayButton({ onClick }: PlayButtonProps) {
+function PlayButton({ onClick, disabled = false }: PlayButtonProps) {
   return (
-    <div className="absolute inset-0 z-10 flex h-full w-full items-center justify-center rounded bg-black/0 transition-all duration-300 group-hover:bg-black/45">
+    <div className="absolute inset-0 z-10 flex h-full w-full items-center justify-center rounded bg-black/0 transition-opacity duration-150 group-hover:bg-black/45">
       <Button
-        className="z-20 h-12 w-12 rounded-full border border-white/25 bg-background/85 opacity-0 transition-all duration-300 group-hover:opacity-100"
+        className="z-20 h-12 w-12 rounded-full border border-white/25 bg-background/85 opacity-0 transition-opacity duration-150 group-hover:opacity-100"
         variant="outline"
+        disabled={disabled}
         onClick={(e) => {
           e.stopPropagation()
           e.preventDefault()
@@ -79,7 +81,7 @@ function PlayButton({ onClick }: PlayButtonProps) {
         }}
         data-testid="card-play-button"
       >
-        <Play className="h-7 w-7 fill-foreground stroke-none" />
+        <Play className="h-5 w-5 fill-foreground stroke-none" />
       </Button>
     </div>
   )

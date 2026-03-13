@@ -1,5 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import clsx from 'clsx'
+import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { z } from 'zod'
@@ -72,9 +73,39 @@ export function ServicesPage() {
   )
 
   const isLrclibEnabled = DISABLE_LRCLIB ? false : enabled
-  const { status } = useScrobbleStatus()
-  const isLastFmConfigured = Boolean(lastfm.username.trim() && lastfm.apiKey.trim())
-  const scrobbleIndicator = getScrobbleIndicator(t, status, isLastFmConfigured)
+  const { status, hasPendingScrobbleFailure } = useScrobbleStatus()
+  const [lastfmUsernameInput, setLastfmUsernameInput] = useState(lastfm.username)
+  const [lastfmApiKeyInput, setLastfmApiKeyInput] = useState(lastfm.apiKey)
+
+  useEffect(() => {
+    setLastfmUsernameInput(lastfm.username)
+  }, [lastfm.username])
+
+  useEffect(() => {
+    setLastfmApiKeyInput(lastfm.apiKey)
+  }, [lastfm.apiKey])
+
+  const commitLastfmUsername = () => {
+    if (lastfmUsernameInput !== lastfm.username) {
+      lastfm.setUsername(lastfmUsernameInput)
+    }
+  }
+
+  const commitLastfmApiKey = () => {
+    if (lastfmApiKeyInput !== lastfm.apiKey) {
+      lastfm.setApiKey(lastfmApiKeyInput)
+    }
+  }
+
+  const isLastFmConfigured = Boolean(
+    lastfmUsernameInput.trim() && lastfmApiKeyInput.trim(),
+  )
+  const scrobbleIndicator = getScrobbleIndicator(
+    t,
+    status,
+    isLastFmConfigured,
+    hasPendingScrobbleFailure,
+  )
 
   return (
     <div className="space-y-4">
@@ -103,8 +134,14 @@ export function ServicesPage() {
                   'settings.integrations.lastfm.username.placeholder',
                   'Last.fm username',
                 )}
-                value={lastfm.username}
-                onChange={(e) => lastfm.setUsername(e.target.value)}
+                value={lastfmUsernameInput}
+                onChange={(e) => setLastfmUsernameInput(e.target.value)}
+                onBlur={commitLastfmUsername}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.currentTarget.blur()
+                  }
+                }}
                 className="h-8"
               />
             </ContentItemForm>
@@ -120,8 +157,14 @@ export function ServicesPage() {
                   'settings.integrations.lastfm.apiKey.placeholder',
                   'Last.fm API key',
                 )}
-                value={lastfm.apiKey}
-                onChange={(e) => lastfm.setApiKey(e.target.value)}
+                value={lastfmApiKeyInput}
+                onChange={(e) => setLastfmApiKeyInput(e.target.value)}
+                onBlur={commitLastfmApiKey}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.currentTarget.blur()
+                  }
+                }}
                 className="h-8"
               />
             </ContentItemForm>
@@ -306,6 +349,7 @@ function getScrobbleIndicator(
   t: (key: string, defaultValue: string) => string,
   status: ScrobbleStatus,
   configured: boolean,
+  hasPendingScrobbleFailure: boolean,
 ) {
   if (!configured) {
     return {
@@ -316,6 +360,18 @@ function getScrobbleIndicator(
       dotClass: 'bg-muted-foreground',
       textClass: 'text-muted-foreground',
       borderClass: 'border-border/60',
+    }
+  }
+
+  if (hasPendingScrobbleFailure) {
+    return {
+      label: t(
+        'settings.integrations.lastfm.scrobbleStatus.lastFailed',
+        'Last scrobble failed',
+      ),
+      dotClass: 'bg-red-500',
+      textClass: 'text-red-500',
+      borderClass: 'border-red-500/40',
     }
   }
 

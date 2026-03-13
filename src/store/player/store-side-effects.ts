@@ -22,6 +22,8 @@ type PlayerSideEffectDeps = {
   ensureRuntimeShuffleNextTrack: () => Promise<void>
 }
 
+let desktopPlayerStateListenerRegistered = false
+
 export function registerPlayerStoreSideEffects({
   store,
   ensureSonaDjNextTrack,
@@ -102,6 +104,7 @@ export function registerPlayerStoreSideEffects({
 
   function desktopStateListener() {
     if (!isDesktop()) return
+    if (desktopPlayerStateListenerRegistered) return
 
     const { togglePlayPause, playPrevSong, playNextSong } =
       store.getState().actions
@@ -111,6 +114,7 @@ export function registerPlayerStoreSideEffects({
       if (action === 'skipBackwards') playPrevSong()
       if (action === 'skipForward') playNextSong()
     })
+    desktopPlayerStateListenerRegistered = true
   }
 
   function updateDesktopState() {

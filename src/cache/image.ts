@@ -8,7 +8,8 @@ const objectUrlCache = new Map<string, string>()
 const objectUrlTimestamps = new Map<string, number>()
 const cacheMetadata = new Map<string, number>()
 const inFlightRequests = new Map<string, Promise<string>>()
-const MAX_OBJECT_URL_CACHE_SIZE = 400
+const MAX_OBJECT_URL_CACHE_SIZE = 150
+const MAX_FAILED_FETCHES_SIZE = 500
 const DEFAULT_PREFETCH_STEP_DELAY_MS = 60
 const DEFAULT_RATE_LIMIT_COOLDOWN_MS = 15_000
 const DEFAULT_MAX_CONCURRENT_IMAGE_FETCHES = 3
@@ -90,6 +91,14 @@ function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
+function setFailedFetch(url: string, timestamp: number) {
+  if (failedFetches.size >= MAX_FAILED_FETCHES_SIZE) {
+    const oldest = failedFetches.keys().next().value as string | undefined
+    if (oldest) failedFetches.delete(oldest)
+  }
+  failedFetches.set(url, timestamp)
+}
+
 async function withImageFetchSlot<T>(task: () => Promise<T>): Promise<T> {
   if (activeImageFetches >= maxConcurrentImageFetches) {
     await new Promise<void>((resolve) => {
@@ -165,11 +174,13 @@ function setObjectUrl(url: string, objectUrl: string) {
   if (oldest) URL.revokeObjectURL(oldest)
   objectUrlCache.delete(oldestKey)
   objectUrlTimestamps.delete(oldestKey)
+  cacheMetadata.delete(oldestKey)
+  scheduleMetadataPersist()
 }
 
 async function fetchAndCacheImage(url: string, cache: Cache, now: number) {
   if (Date.now() < rateLimitedUntil) {
-    failedFetches.set(url, now)
+    setFailedFetch(url, now)
     return url
   }
 
@@ -186,13 +197,13 @@ async function fetchAndCacheImage(url: string, cache: Cache, now: number) {
         : DEFAULT_RATE_LIMIT_COOLDOWN_MS
       rateLimitedUntil = Date.now() + cooldownMs
     }
-    failedFetches.set(url, now)
+    setFailedFetch(url, now)
     return url
   }
 
   const contentType = networkResponse.headers.get('content-type') ?? ''
   if (!contentType.startsWith('image/')) {
-    failedFetches.set(url, now)
+    setFailedFetch(url, now)
     return url
   }
 
@@ -257,7 +268,7 @@ export async function getCachedImage(url: string): Promise<string> {
       return await fetchAndCacheImage(url, cache, now)
     } catch (error) {
       console.error('Error fetching image:', error)
-      failedFetches.set(url, now)
+      setFailedFetch(url, now)
 
       return url
     } finally {
@@ -280,6 +291,29 @@ export async function prefetchCachedImages(urls: string[]) {
   }
 }
 
+async function trimServiceWorkerCache(maxEntries = 600) {
+  if (typeof caches === 'undefined') return
+
+  try {
+    const cache = await caches.open('images')
+    const keys = await cache.keys()
+    if (keys.length <= maxEntries) return
+
+    const sorted = keys
+      .map((request) => ({
+        request,
+        ts: cacheMetadata.get(getImageIdentityKey(request.url)) ?? 0,
+      }))
+      .sort((a, b) => a.ts - b.ts)
+
+    const toDelete = sorted.slice(0, keys.length - maxEntries)
+    await Promise.all(toDelete.map(({ request }) => cache.delete(request)))
+  } catch {
+    // Ignore cache access errors
+  }
+}
+
 loadMetadata()
 applyAdaptivePrefetchProfile()
 subscribeToNetworkChanges()
+trimServiceWorkerCache()

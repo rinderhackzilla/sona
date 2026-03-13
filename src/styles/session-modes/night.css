@@ -159,13 +159,13 @@
 
 .session-mode-night .hypnotic-layer-a {
   opacity: 0.3;
-  filter: blur(6px) saturate(1.12);
+  filter: saturate(1.12);
   animation-duration: 86s;
 }
 
 .session-mode-night .hypnotic-layer-b {
   opacity: 0.24;
-  filter: blur(18px) saturate(1.14);
+  filter: saturate(1.14);
   animation-duration: 98s;
 }
 
@@ -510,7 +510,7 @@
       hsl(var(--accent) / 0.26) 0%,
       transparent 74%
     );
-  filter: blur(8px);
+  filter: none;
   transition:
     opacity 75ms linear,
     transform 75ms linear;

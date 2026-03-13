@@ -1,8 +1,6 @@
 import clsx from 'clsx'
 import {
   ComponentPropsWithoutRef,
-  RefObject,
-  useEffect,
   useRef,
   WheelEvent,
 } from 'react'
@@ -18,22 +16,15 @@ import { PopoverVolume } from './popover-volume'
 
 interface PlayerVolumeProps {
   disabled: boolean
-  audioRef: RefObject<HTMLAudioElement>
 }
 
-export function PlayerVolume({ disabled, audioRef }: PlayerVolumeProps) {
+export function PlayerVolume({ disabled }: PlayerVolumeProps) {
   const { t } = useTranslation()
   const { volume, handleVolumeWheel } = usePlayerVolume()
   const { useAudioHotkeys } = usePlayerHotkeys()
 
   useAudioHotkeys('mod+up', () => handleVolumeWheel(false))
   useAudioHotkeys('mod+down', () => handleVolumeWheel(true))
-
-  useEffect(() => {
-    if (!audioRef.current) return
-
-    audioRef.current.volume = volume / 100
-  }, [audioRef, volume])
 
   const tooltipText =
     volume === 0
@@ -42,13 +33,13 @@ export function PlayerVolume({ disabled, audioRef }: PlayerVolumeProps) {
 
   return (
     <div className={clsx(disabled && 'opacity-50')}>
-      <div className="flex 2xl:hidden">
+      <div className="flex xl:hidden">
         <PopoverVolume>
           <VolumeIcon volume={volume} size={18} />
         </PopoverVolume>
       </div>
 
-      <div className="hidden 2xl:flex gap-2 pr-2 items-center">
+      <div className="hidden xl:flex gap-2 pr-2 items-center">
         <SimpleTooltip text={tooltipText} disabled={disabled}>
           <div className="h-10 flex items-center">
             <MuteButton disabled={disabled}>

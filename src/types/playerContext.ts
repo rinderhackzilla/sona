@@ -1,6 +1,7 @@
 import { EpisodeWithPodcast } from './responses/podcasts'
 import { Radio } from './responses/radios'
 import { ISong } from './responses/song'
+import type { VisualizerPreset } from './visualizer'
 
 export enum LoopState {
   Off = 0,
@@ -106,6 +107,13 @@ interface ILyrics {
   setPreferSyncedLyrics: (value: boolean) => void
 }
 
+interface IEqualizer {
+  enabled: boolean
+  setEnabled: (value: boolean) => void
+  gains: number[]
+  setGains: (value: number[]) => void
+}
+
 interface LrcLib {
   enabled: boolean
   setEnabled: (value: boolean) => void
@@ -152,16 +160,23 @@ interface IColorsSettings {
   queue: IQueueSettings
 }
 
+interface IVisualizerSettings {
+  preset: VisualizerPreset
+  autoQualityEnabled: boolean
+}
+
 export interface IPlayerSettings {
   volume: IVolumeSettings
   fullscreen: IFullscreen
   lyrics: ILyrics
+  equalizer: IEqualizer
   replayGain: IReplayGain
   crossfade: ICrossfade
   listeningMemory: IListeningMemory
   sessionMode: ISessionModeSettings
   privacy: IPrivacySettings
   colors: IColorsSettings
+  visualizer: IVisualizerSettings
 }
 
 export interface IPlayerActions {
@@ -223,6 +238,8 @@ export interface IPlayerActions {
   setUseSongColorOnQueue: (value: boolean) => void
   setUseSongColorOnBigPlayer: (value: boolean) => void
   setBigPlayerBlurValue: (value: number) => void
+  setVisualizerPreset: (value: VisualizerPreset) => void
+  setVisualizerAutoQualityEnabled: (value: boolean) => void
   seedSonaDjTrack: (
     mode?: 'off' | 'adventure' | 'drift' | 'era',
   ) => Promise<void>

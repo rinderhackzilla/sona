@@ -1,3 +1,5 @@
+import { toast } from 'react-toastify'
+import i18n from '@/i18n'
 import { subsonic } from '@/service/subsonic'
 import { getSonaDjMode, SonaDjMode } from '@/store/sona-dj.store'
 import { SessionMode } from '@/types/playerContext'
@@ -471,8 +473,11 @@ export function createPlaybackEngine(store: PlaybackEngineStoreApi) {
       }
 
       if (appendedSongs.length === 0) {
-        if (strictSessionFilter) appendedSongs.push(asSessionSong(activeSong))
-        else return
+        if (strictSessionFilter) {
+          setRuntimeShuffleEnabled(false)
+          toast.warn(i18n.t('player.runtimeShuffle.noSessionMatches'))
+        }
+        return
       }
 
       const newCurrentList = addNextSongList(

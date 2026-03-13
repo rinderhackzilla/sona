@@ -62,7 +62,7 @@ export function FullscreenTabs({
             size="sm"
             variant="outline"
             onClick={exitFocusMode}
-            className="rounded-full border-primary/35 bg-background/30 px-3 backdrop-blur-md hover:bg-background/45"
+            className="rounded-full border-primary/35 bg-background/35 px-3 hover:bg-background/45"
           >
             <Minimize2 className="mr-1 h-4 w-4" />
             {t('sessionMode.focus.exit', 'Exit Focus Mode')}

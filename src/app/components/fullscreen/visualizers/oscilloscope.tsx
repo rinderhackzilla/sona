@@ -24,7 +24,7 @@ export function Oscilloscope() {
     const ctx = canvas.getContext('2d')
     if (!ctx) return
 
-    const dpr = window.devicePixelRatio || 1
+    const dpr = Math.min(window.devicePixelRatio || 1, 1.25)
     let pendingWidth = 0
     let pendingHeight = 0
     let stableFrames = 0

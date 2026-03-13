@@ -28,7 +28,7 @@ export function AppSidebar({
   return (
     <MainSidebar collapsible="icon" {...props}>
       <MobileCloseButton />
-      <MainSidebarHeader className="border-b border-border/45 pb-3">
+      <MainSidebarHeader className="border-b border-border/55 pb-3">
         <div className="flex items-center gap-2.5">
           <SimpleTooltip text={t('sidebar.home')} side="right" delay={50}>
             <Button

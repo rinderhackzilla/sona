@@ -7,7 +7,6 @@ import { TrackInfo } from '@/app/components/player/track-info'
 import { useRenderCounter } from '@/app/hooks/use-render-counter'
 import { podcasts } from '@/service/podcasts'
 import {
-  getVolume,
   useCrossfadeSettings,
   usePlayerActions,
   usePlayerIsPlaying,
@@ -17,12 +16,14 @@ import {
   usePlayerSonglist,
   usePlayerStore,
   useReplayGainState,
+  useSongColor,
 } from '@/store/player.store'
 import { useScrobbleStatusStore } from '@/store/scrobble.store'
 import { LoopState } from '@/types/playerContext'
 import { logger } from '@/utils/logger'
 import { ReplayGainParams } from '@/utils/replayGain'
 import { subsonic } from '@/service/subsonic'
+import { getAverageColor } from '@/utils/getAverageColor'
 import { AudioPlayer } from './audio'
 import { PlayerClearQueueButton } from './clear-queue-button'
 import { PlayerControls } from './controls'
@@ -49,6 +50,15 @@ const MemoAudioPlayer = memo(AudioPlayer)
 
 type DeckId = 'a' | 'b'
 type CrossfadeState = 'idle' | 'arming' | 'fading' | 'committing' | 'failed'
+
+function cappedMapSet<K, V>(map: Map<K, V>, key: K, value: V, maxSize = 50) {
+  if (map.has(key)) map.delete(key)
+  map.set(key, value)
+  if (map.size > maxSize) {
+    const oldestKey = map.keys().next().value as K | undefined
+    if (oldestKey !== undefined) map.delete(oldestKey)
+  }
+}
 
 export function Player({ hideUi = false }: { hideUi?: boolean }) {
   useRenderCounter('Player')
@@ -78,6 +88,12 @@ export function Player({ hideUi = false }: { hideUi?: boolean }) {
   const [incomingDeck, setIncomingDeck] = useState<DeckId | null>(null)
   const [deckAIndex, setDeckAIndex] = useState<number | null>(null)
   const [deckBIndex, setDeckBIndex] = useState<number | null>(null)
+  const [deckVolumeMultipliers, setDeckVolumeMultipliers] = useState<{
+    a: number
+    b: number
+  }>({ a: 1, b: 0 })
+  const coverImageCacheRef = useRef<Map<string, string>>(new Map())
+  const coverColorCacheRef = useRef<Map<string, string>>(new Map())
 
   const {
     setAudioPlayerRef,
@@ -96,6 +112,7 @@ export function Player({ hideUi = false }: { hideUi?: boolean }) {
   const { isSong, isRadio, isPodcast } = usePlayerMediaType()
   const loopState = usePlayerLoop()
   const { hasNext } = usePlayerPrevAndNext()
+  const { setCurrentSongColor } = useSongColor()
   const currentPlaybackRate = usePlayerStore().playerState.currentPlaybackRate
   const { replayGainType, replayGainPreAmp, replayGainDefaultGain } =
     useReplayGainState()
@@ -117,6 +134,18 @@ export function Player({ hideUi = false }: { hideUi?: boolean }) {
   const deckASong = deckAIndex !== null ? currentList[deckAIndex] : undefined
   const deckBSong = deckBIndex !== null ? currentList[deckBIndex] : undefined
 
+  const setDeckLevels = useCallback((nextA: number, nextB: number) => {
+    setDeckVolumeMultipliers((prev) => {
+      if (
+        Math.abs(prev.a - nextA) < 0.001 &&
+        Math.abs(prev.b - nextB) < 0.001
+      ) {
+        return prev
+      }
+      return { a: nextA, b: nextB }
+    })
+  }, [])
+
   const getDeckRef = useCallback(
     (deck: DeckId) => (deck === 'a' ? songDeckARef : songDeckBRef),
     [],
@@ -130,6 +159,15 @@ export function Player({ hideUi = false }: { hideUi?: boolean }) {
   useEffect(() => {
     activeDeckRef.current = activeDeck
   }, [activeDeck])
+
+  useEffect(() => {
+    if (!isSong || isCrossfadingRef.current) return
+    if (activeDeck === 'a') {
+      setDeckLevels(1, 0)
+      return
+    }
+    setDeckLevels(0, 1)
+  }, [activeDeck, isSong, setDeckLevels])
 
   const clearFade = useCallback(() => {
     if (crossfadeIntervalRef.current !== null) {
@@ -159,6 +197,7 @@ export function Player({ hideUi = false }: { hideUi?: boolean }) {
     if (!isSong) {
       setDeckAIndex(null)
       setDeckBIndex(null)
+      setDeckLevels(1, 0)
       isCrossfadingRef.current = false
       incomingDeckRef.current = null
       incomingSongIndexRef.current = null
@@ -198,7 +237,7 @@ export function Player({ hideUi = false }: { hideUi?: boolean }) {
     crossfadeStateRef.current = 'idle'
     crossfadeRetryRef.current = 0
     clearFade()
-  }, [activeDeck, clearFade, currentSongIndex, isSong])
+  }, [activeDeck, clearFade, currentSongIndex, isSong, setDeckLevels])
 
   // Keep active song deck as the source for progress/volume/visualizer.
   useEffect(() => {
@@ -226,9 +265,11 @@ export function Player({ hideUi = false }: { hideUi?: boolean }) {
     fadeOutStartedRef.current = false
     crossfadeStateRef.current = 'idle'
     crossfadeRetryRef.current = 0
+    if (activeDeck === 'a') setDeckLevels(1, 0)
+    if (activeDeck === 'b') setDeckLevels(0, 1)
     if (activeDeck === 'a') setDeckBIndex(null)
     if (activeDeck === 'b') setDeckAIndex(null)
-  }, [activeDeck, clearFade, crossfadeEnabled, isSong])
+  }, [activeDeck, clearFade, crossfadeEnabled, isSong, setDeckLevels])
 
   useEffect(() => {
     if (!isSong || !isCrossfadingRef.current || !incomingDeck) return
@@ -241,23 +282,13 @@ export function Player({ hideUi = false }: { hideUi?: boolean }) {
 
     if (!outgoingAudio || !incomingAudio) return
 
-    const storeTargetVolume = getVolume() / 100
-    const targetVolume = Math.max(
-      0,
-      Math.min(
-        1,
-        Number.isFinite(outgoingAudio.volume) && outgoingAudio.volume > 0
-          ? outgoingAudio.volume
-          : storeTargetVolume,
-      ),
-    )
     const durationMs = crossfadeDurationSeconds * 1000
     const steps = Math.max(20, Math.floor(durationMs / 30))
     const stepMs = Math.max(16, Math.floor(durationMs / steps))
     let step = 0
     crossfadeStateRef.current = 'fading'
 
-    incomingAudio.volume = 0
+    setDeckLevels(outgoingDeck === 'a' ? 1 : 0, outgoingDeck === 'b' ? 1 : 0)
     let aborted = false
     const finalizeFallback = () => {
       if (aborted) return
@@ -268,8 +299,10 @@ export function Player({ hideUi = false }: { hideUi?: boolean }) {
       setIncomingDeck(null)
       isCrossfadingRef.current = false
       fadeOutStartedRef.current = false
-      crossfadeStateRef.current = 'failed'
+      crossfadeStateRef.current = 'idle'
       crossfadeRetryRef.current = 0
+      if (activeDeckRef.current === 'a') setDeckLevels(1, 0)
+      if (activeDeckRef.current === 'b') setDeckLevels(0, 1)
       advanceToNextSongWithoutReset()
     }
 
@@ -280,9 +313,13 @@ export function Player({ hideUi = false }: { hideUi?: boolean }) {
         if (aborted) return
         step += 1
         const progress = Math.min(1, step / steps)
-
-        outgoingAudio.volume = Math.max(0, targetVolume * (1 - progress))
-        incomingAudio.volume = Math.min(targetVolume, targetVolume * progress)
+        const angle = progress * (Math.PI / 2)
+        const outgoingLevel = Math.cos(angle)
+        const incomingLevel = Math.sin(angle)
+        setDeckLevels(
+          outgoingDeck === 'a' ? outgoingLevel : incomingLevel,
+          outgoingDeck === 'b' ? outgoingLevel : incomingLevel,
+        )
 
         if (progress >= 1) {
           clearFade()
@@ -290,7 +327,6 @@ export function Player({ hideUi = false }: { hideUi?: boolean }) {
 
           outgoingAudio.pause()
           outgoingAudio.currentTime = 0
-          outgoingAudio.volume = targetVolume
 
           const committedIndex = incomingSongIndexRef.current
           if (committedIndex !== null) {
@@ -312,6 +348,7 @@ export function Player({ hideUi = false }: { hideUi?: boolean }) {
           fadeOutStartedRef.current = false
           crossfadeStateRef.current = 'idle'
           crossfadeRetryRef.current = 0
+          setDeckLevels(nextDeck === 'a' ? 1 : 0, nextDeck === 'b' ? 1 : 0)
 
           advanceToNextSongWithoutReset()
           setAudioPlayerRef(incomingAudio)
@@ -367,6 +404,7 @@ export function Player({ hideUi = false }: { hideUi?: boolean }) {
     advanceToNextSongWithoutReset,
     setAudioPlayerRef,
     setCurrentDuration,
+    setDeckLevels,
     setProgress,
     setPlayingState,
   ])
@@ -374,12 +412,57 @@ export function Player({ hideUi = false }: { hideUi?: boolean }) {
   // Get album cover URL for background
   const [backgroundImage, setBackgroundImage] = useState<string | null>(null)
 
+  const prefetchSongVisuals = useCallback(
+    async (coverArt?: string, songId?: string) => {
+      if (!coverArt || !songId) return
+      if (
+        coverImageCacheRef.current.has(songId) &&
+        coverColorCacheRef.current.has(songId)
+      ) {
+        return
+      }
+
+      try {
+        const imageUrl =
+          coverImageCacheRef.current.get(songId) ??
+          (await getCoverArtUrl(coverArt, 'song', '400'))
+        cappedMapSet(coverImageCacheRef.current, songId, imageUrl)
+
+        if (coverColorCacheRef.current.has(songId)) return
+
+        const img = new Image()
+        img.crossOrigin = 'anonymous'
+        await new Promise<void>((resolve, reject) => {
+          img.onload = () => resolve()
+          img.onerror = () => reject(new Error('image-load-failed'))
+          img.src = imageUrl
+        })
+        const average = await getAverageColor(img)
+        cappedMapSet(coverColorCacheRef.current, songId, average.hex)
+      } catch (error) {
+        logger.debug('[Player] - Failed to prefetch song visuals', {
+          songId,
+          error,
+        })
+      }
+    },
+    [],
+  )
+
   useEffect(() => {
     const loadBackgroundImage = async () => {
-      if (isSong && song?.coverArt) {
+      if (isSong && song?.coverArt && song?.id) {
         try {
-          const imageUrl = await getCoverArtUrl(song.coverArt, 'song', '400')
+          const cached = coverImageCacheRef.current.get(song.id)
+          const imageUrl =
+            cached ?? (await getCoverArtUrl(song.coverArt, 'song', '400'))
+          cappedMapSet(coverImageCacheRef.current, song.id, imageUrl)
           setBackgroundImage(imageUrl)
+
+          const cachedColor = coverColorCacheRef.current.get(song.id)
+          if (cachedColor) {
+            setCurrentSongColor(cachedColor)
+          }
         } catch (error) {
           console.error('Error loading background image:', error)
           setBackgroundImage(null)
@@ -390,7 +473,25 @@ export function Player({ hideUi = false }: { hideUi?: boolean }) {
     }
 
     loadBackgroundImage()
-  }, [isSong, song?.coverArt])
+  }, [isSong, setCurrentSongColor, song?.coverArt, song?.id])
+
+  useEffect(() => {
+    if (!isSong || !crossfadeEnabled) return
+    const nextSongIndex = getNextSongIndex()
+    if (nextSongIndex === null) return
+
+    const nextSong = currentList[nextSongIndex]
+    if (!nextSong?.coverArt || !nextSong?.id) return
+
+    void prefetchSongVisuals(nextSong.coverArt, nextSong.id)
+  }, [
+    crossfadeEnabled,
+    currentList,
+    currentSongIndex,
+    getNextSongIndex,
+    isSong,
+    prefetchSongVisuals,
+  ])
 
   const setupDuration = useCallback(
     (deck?: DeckId) => {
@@ -482,6 +583,10 @@ export function Player({ hideUi = false }: { hideUi?: boolean }) {
         const incomingDeck: DeckId = activeDeck === 'a' ? 'b' : 'a'
         const incomingSong = currentList[nextSongIndex]
 
+        if (incomingSong?.coverArt && incomingSong?.id) {
+          void prefetchSongVisuals(incomingSong.coverArt, incomingSong.id)
+        }
+
         if (incomingSong?.id) {
           setScrobbleStatus('sending-now', incomingSong.id)
           void subsonic.scrobble
@@ -515,6 +620,7 @@ export function Player({ hideUi = false }: { hideUi?: boolean }) {
       getDeckRef,
       getNextSongIndex,
       isSong,
+      prefetchSongVisuals,
       setScrobbleStatus,
       setProgress,
     ],
@@ -522,18 +628,20 @@ export function Player({ hideUi = false }: { hideUi?: boolean }) {
 
   const setupInitialVolume = useCallback(
     (deck?: DeckId) => {
-      const audio =
-        isSong && deck ? getDeckRef(deck).current : getAudioRef().current
-      if (!audio) return
-
-      const targetVolume = getVolume() / 100
-      if (isSong && deck && deck !== activeDeckRef.current) {
-        audio.volume = 0
+      if (!isSong || !deck) return
+      if (deck === 'a') {
+        setDeckLevels(
+          activeDeckRef.current === 'a' && !isCrossfadingRef.current ? 1 : 0,
+          deckVolumeMultipliers.b,
+        )
         return
       }
-      audio.volume = targetVolume
+      setDeckLevels(
+        deckVolumeMultipliers.a,
+        activeDeckRef.current === 'b' && !isCrossfadingRef.current ? 1 : 0,
+      )
     },
-    [getAudioRef, getDeckRef, isSong],
+    [deckVolumeMultipliers.a, deckVolumeMultipliers.b, isSong, setDeckLevels],
   )
 
   const sendFinishProgress = useCallback(() => {
@@ -583,6 +691,7 @@ export function Player({ hideUi = false }: { hideUi?: boolean }) {
         <MemoAudioPlayer
           key="song-deck-a"
           replayGain={getTrackReplayGain(deckASong)}
+          volumeMultiplier={deckVolumeMultipliers.a}
           src={getSongStreamUrl(deckASong.id)}
           autoPlay={isPlaying}
           shouldPlay={isPlaying && (activeDeck === 'a' || incomingDeck === 'a')}
@@ -617,6 +726,7 @@ export function Player({ hideUi = false }: { hideUi?: boolean }) {
         <MemoAudioPlayer
           key="song-deck-b"
           replayGain={getTrackReplayGain(deckBSong)}
+          volumeMultiplier={deckVolumeMultipliers.b}
           src={getSongStreamUrl(deckBSong.id)}
           autoPlay={isPlaying}
           shouldPlay={isPlaying && (activeDeck === 'b' || incomingDeck === 'b')}
@@ -649,6 +759,7 @@ export function Player({ hideUi = false }: { hideUi?: boolean }) {
 
       {isRadio && radio && (
         <MemoAudioPlayer
+          volumeMultiplier={1}
           src={radio.streamUrl}
           autoPlay={isPlaying}
           audioRef={radioRef}
@@ -661,6 +772,7 @@ export function Player({ hideUi = false }: { hideUi?: boolean }) {
 
       {isPodcast && podcast && (
         <MemoAudioPlayer
+          volumeMultiplier={1}
           src={getProxyURL(podcast.audio_url)}
           autoPlay={isPlaying}
           audioRef={podcastRef}
@@ -683,7 +795,7 @@ export function Player({ hideUi = false }: { hideUi?: boolean }) {
   return (
     <>
       {!hideUi && (
-        <footer className="border-t h-[--player-height] w-full flex items-center fixed bottom-0 left-0 right-0 z-40 bg-background overflow-hidden">
+        <footer className="border-t border-border/55 h-[--player-height] w-full flex items-center fixed bottom-0 left-0 right-0 z-40 bg-background overflow-hidden">
           {backgroundImage && (
             <div
               className="absolute inset-0 pointer-events-none"
@@ -738,7 +850,6 @@ export function Player({ hideUi = false }: { hideUi?: boolean }) {
                 )}
 
                 <MemoPlayerVolume
-                  audioRef={getAudioRef()}
                   disabled={!song && !radio && !podcast}
                 />
               </div>

@@ -25,18 +25,20 @@ import { Separator } from '@/app/components/ui/separator'
 import { Slider } from '@/app/components/ui/slider'
 import { Switch } from '@/app/components/ui/switch'
 import { cn } from '@/lib/utils'
-import { useSongColor } from '@/store/player.store'
+import { useSongColor, useVisualizerSettingsStore } from '@/store/player.store'
 import type { VisualizerPreset } from '@/types/visualizer'
-import { safeStorageGetBoolean, safeStorageSet } from '@/utils/safe-storage'
-import { FULLSCREEN_HYPNOTIC_BACKDROP_KEY } from '@/utils/session-storage-keys'
 import { buttonsStyle } from './controls'
 
 // Context for visualizer state (POC - will move to store)
 type VisualizerContextType = {
   preset: VisualizerPreset
   setPreset: (preset: VisualizerPreset) => void
-  hypnoticBackdropEnabled: boolean
-  setHypnoticBackdropEnabled: (enabled: boolean) => void
+  renderQuality: 'high' | 'lite'
+  setRenderQuality: (quality: 'high' | 'lite') => void
+  autoQualityEnabled: boolean
+  setAutoQualityEnabled: (enabled: boolean) => void
+  visualizerActive: boolean
+  setVisualizerActive: (active: boolean) => void
 }
 
 const VisualizerContext = createContext<VisualizerContextType | null>(null)
@@ -44,20 +46,21 @@ const VisualizerContext = createContext<VisualizerContextType | null>(null)
 export function useVisualizerContext() {
   const context = useContext(VisualizerContext)
   if (!context) {
-    throw new Error(
-      'useVisualizerContext must be used within VisualizerProvider',
-    )
+    if (import.meta.env.DEV) {
+      console.warn('useVisualizerContext called outside VisualizerProvider')
+    }
+    throw new Error('useVisualizerContext must be used within VisualizerProvider')
   }
   return context
 }
 
 // Hook for visualizer settings (colors, etc.)
 export function useVisualizerSettings() {
-  const { currentSongColor } = useSongColor()
+  const { currentSongColor, currentSongColorPalette } = useSongColor()
 
   return {
     primaryColor: currentSongColor || '#3b82f6',
-    secondaryColor: '#8b5cf6',
+    secondaryColor: currentSongColorPalette?.muted || '#8b5cf6',
   }
 }
 
@@ -66,23 +69,26 @@ export function VisualizerProvider({
 }: {
   children: React.ReactNode
 }) {
-  const [preset, setPreset] = useState<VisualizerPreset>('geometric-mandala')
-  const [hypnoticBackdropEnabled, setHypnoticBackdropEnabled] = useState(() =>
-    safeStorageGetBoolean(FULLSCREEN_HYPNOTIC_BACKDROP_KEY, true),
-  )
-
-  const setHypnoticBackdropEnabledWithPersistence = (enabled: boolean) => {
-    setHypnoticBackdropEnabled(enabled)
-    safeStorageSet(FULLSCREEN_HYPNOTIC_BACKDROP_KEY, String(enabled))
-  }
+  const {
+    preset,
+    autoQualityEnabled,
+    setVisualizerPreset,
+    setVisualizerAutoQualityEnabled,
+  } = useVisualizerSettingsStore()
+  const [renderQuality, setRenderQuality] = useState<'high' | 'lite'>('high')
+  const [visualizerActive, setVisualizerActive] = useState(false)
 
   return (
     <VisualizerContext.Provider
       value={{
         preset,
-        setPreset,
-        hypnoticBackdropEnabled,
-        setHypnoticBackdropEnabled: setHypnoticBackdropEnabledWithPersistence,
+        setPreset: setVisualizerPreset,
+        renderQuality,
+        setRenderQuality,
+        autoQualityEnabled,
+        setAutoQualityEnabled: setVisualizerAutoQualityEnabled,
+        visualizerActive,
+        setVisualizerActive,
       }}
     >
       {children}
@@ -91,8 +97,6 @@ export function VisualizerProvider({
 }
 
 export function FullscreenSettings() {
-  const { useSongColorOnBigPlayer } = useSongColor()
-
   return (
     <Popover>
       <PopoverTrigger asChild>
@@ -113,9 +117,7 @@ export function FullscreenSettings() {
       <PopoverContent className="w-80 p-0" align="start" side="top">
         <div className="flex flex-col">
           <DynamicColorOption showSeparator={false} />
-          <HypnoticBackdropOption />
-          {useSongColorOnBigPlayer && <ColorIntensityOption />}
-          {!useSongColorOnBigPlayer && <ImageBlurSizeOption />}
+          <ColorIntensityOption />
           <VisualizerPresetOption />
         </div>
       </PopoverContent>
@@ -191,7 +193,7 @@ function ColorIntensityOption(props: OptionProps) {
       {...props}
     >
       <Slider
-        defaultValue={[currentSongColorIntensity]}
+        value={[currentSongColorIntensity]}
         min={0.3}
         max={1.0}
         step={0.05}
@@ -202,56 +204,15 @@ function ColorIntensityOption(props: OptionProps) {
   )
 }
 
-function HypnoticBackdropOption(props: OptionProps) {
-  const { t } = useTranslation()
-  const { hypnoticBackdropEnabled, setHypnoticBackdropEnabled } =
-    useVisualizerContext()
-
-  return (
-    <SettingWrapper text={t('fullscreen.hypnoticBackdrop')} {...props}>
-      <Switch
-        checked={hypnoticBackdropEnabled}
-        onCheckedChange={setHypnoticBackdropEnabled}
-      />
-    </SettingWrapper>
-  )
-}
-
-function ImageBlurSizeOption(props: OptionProps) {
-  const { t } = useTranslation()
-  const { bigPlayerBlur, setBigPlayerBlurValue } = useSongColor()
-
-  return (
-    <SettingWrapper
-      text={t('settings.appearance.colors.bigPlayer.blurSize')}
-      {...props}
-    >
-      <Slider
-        defaultValue={[bigPlayerBlur.value]}
-        min={bigPlayerBlur.settings.min}
-        max={bigPlayerBlur.settings.max}
-        step={bigPlayerBlur.settings.step}
-        tooltipValue={`${bigPlayerBlur.value}px`}
-        onValueChange={([value]) => setBigPlayerBlurValue(value)}
-      />
-    </SettingWrapper>
-  )
-}
-
 function VisualizerPresetOption({ showSeparator = true }: OptionProps) {
-  const context = useContext(VisualizerContext)
-
-  if (!context) {
-    return null
-  }
-
-  const { preset, setPreset } = context
+  const { t } = useTranslation()
+  const { preset, setPreset } = useVisualizerContext()
 
   return (
     <>
       {showSeparator && <Separator />}
       <div className="flex items-center gap-3 p-3">
-        <span className="text-sm shrink-0">Visualizer</span>
+        <span className="text-sm shrink-0">{t('fullscreen.visualizerLabel')}</span>
         <Select
           value={preset}
           onValueChange={(value) => setPreset(value as VisualizerPreset)}

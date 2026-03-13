@@ -62,7 +62,7 @@ export function FullscreenControls() {
       </Button>
       <Button
         size="icon"
-        variant="link"
+        variant="ghost"
         className={clsx(buttonsStyle.main, 'night-control-main-pulse')}
         style={{ ...buttonsStyle.style }}
         onClick={() => togglePlayPause()}
@@ -96,13 +96,13 @@ export function FullscreenControls() {
         style={{ ...buttonsStyle.style }}
       >
         {loopState === LoopState.Off && (
-          <Repeat className={buttonsStyle.secondaryIcon} />
+          <Repeat className={clsx(buttonsStyle.secondaryIcon, 'text-foreground/55')} />
         )}
         {loopState === LoopState.All && (
-          <Repeat className={buttonsStyle.secondaryIcon} />
+          <Repeat className={clsx(buttonsStyle.secondaryIcon, 'text-primary')} />
         )}
         {loopState === LoopState.One && (
-          <RepeatOne className={buttonsStyle.secondaryIcon} />
+          <RepeatOne className={clsx(buttonsStyle.secondaryIcon, 'text-primary')} />
         )}
       </Button>
     </Fragment>
@@ -111,7 +111,7 @@ export function FullscreenControls() {
 
 export const buttonsStyle = {
   main: 'w-14 h-14 rounded-full shadow-lg border border-primary/35 bg-primary/25 text-foreground hover:bg-primary/35 hover:scale-105 transition-transform will-change-transform',
-  mainIcon: 'w-6 h-6 text-foreground fill-foreground',
+  mainIcon: 'w-7 h-7 text-foreground fill-foreground',
   secondary:
     'relative w-12 h-12 rounded-full border border-primary/20 bg-primary/10 text-foreground/88 hover:text-foreground data-[state=active]:text-foreground data-[state=active]:bg-primary/18 hover:bg-primary/14 hover:scale-110 transition-transform will-change-transform',
   utility:

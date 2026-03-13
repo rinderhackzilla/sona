@@ -13,6 +13,7 @@ import { usePlayerActions } from '@/store/player.store'
 import { ColumnFilter } from '@/types/columnFilter'
 import { convertSecondsToHumanRead } from '@/utils/convertSecondsToTime'
 import { getDaypartMoodKey, getDaypartNameKey } from '@/utils/daypart'
+import { shuffleSongList } from '@/utils/songListFunctions'
 
 export default function DaypartPlaylistPage() {
   const { t } = useTranslation()
@@ -94,7 +95,7 @@ export default function DaypartPlaylistPage() {
   }
 
   const handlePlayShuffle = () => {
-    const shuffled = [...playlist].sort(() => Math.random() - 0.5)
+    const shuffled = shuffleSongList(playlist, 0, true)
     startTransition(() => {
       setSongList(shuffled, 0)
     })

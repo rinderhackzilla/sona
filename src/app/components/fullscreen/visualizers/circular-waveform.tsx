@@ -9,12 +9,8 @@ function hexToRgba(hex: string, alpha: number): string {
   return `rgba(${r}, ${g}, ${b}, ${alpha})`
 }
 
-function accentHSL() {
-  const v = getComputedStyle(document.documentElement)
-    .getPropertyValue('--accent')
-    .trim()
-  const [h, s, l] = v.split(' ')
-  return { h: h ?? '220', s: s ?? '80%', l: l ?? '60%' }
+function clamp01(value: number) {
+  return Math.max(0, Math.min(1, value))
 }
 
 // Psychedelic zoom vortex: frequency-distorted rings continuously fly toward the viewer.
@@ -34,7 +30,7 @@ export function CircularWaveform() {
     const ctx = canvas.getContext('2d')
     if (!ctx) return
 
-    const dpr = window.devicePixelRatio || 1
+    const dpr = Math.min(window.devicePixelRatio || 1, 1.25)
     let pendingWidth = 0
     let pendingHeight = 0
     let stableFrames = 0
@@ -79,6 +75,14 @@ export function CircularWaveform() {
     const TWO_PI = Math.PI * 2
     const POINTS = 72
     let animId: number
+    let energyFloor = 0.06
+    let energyPeak = 0.42
+    let highPresence = 0
+    let metricsReady = false
+    let warmup = 0
+    let startFrames = 0
+    const FALLBACK_PRIMARY = '#7cc6ff'
+    const FALLBACK_SECONDARY = '#9ff5ce'
 
     const draw = () => {
       const analyser = getGlobalAnalyser()
@@ -95,34 +99,84 @@ export function CircularWaveform() {
       const h = canvas.offsetHeight
       const cx = w / 2
       const cy = h / 2
-      const maxR = Math.min(w, h) * 0.54
+      const maxR = Math.min(w, h) * 0.42
       const palette = paletteRef.current
-      const c1 = palette?.vibrant ?? null
-      const c2 = palette?.accent ?? null
-      const c3 = palette?.dominant ?? null
-      const { h: ah, s: as_, l: al } = accentHSL()
-
+      const c1 = palette?.vibrant ?? palette?.dominant ?? FALLBACK_PRIMARY
+      const coverSecondary =
+        palette?.muted ?? palette?.accent ?? palette?.dominant ?? null
+      const c2 =
+        coverSecondary &&
+        coverSecondary.toLowerCase() !== c1.toLowerCase()
+          ? coverSecondary
+          : FALLBACK_SECONDARY
+      const c3 = palette?.dominant ?? c1
       // Bass & mid energy
       let bassSum = 0
-      for (let i = 0; i < 8; i++) bassSum += smoothed[i]
-      const bassAvg = bassSum / 8 / 255
+      for (let i = 8; i < 28; i++) bassSum += smoothed[i]
+      const bassAvg = bassSum / 20 / 255
 
       let midSum = 0
-      for (let i = 15; i < 50; i++) midSum += smoothed[i]
-      const midAvg = midSum / 35 / 255
+      for (let i = 32; i < 72; i++) midSum += smoothed[i]
+      const midAvg = midSum / 40 / 255
 
       ctx.clearRect(0, 0, w, h)
 
       // Speed: base + heavy bass kick
-      const speed = 0.006 + bassAvg * 0.022 + midAvg * 0.008
+      const speed = 0.006 + bassAvg * 0.012 + midAvg * 0.01
       // Rotation: also bass-driven
-      baseRotation += 0.012 + bassAvg * 0.035
+      baseRotation += 0.01 + bassAvg * 0.02
 
       // Advance all rings
       for (let i = 0; i < N; i++) {
         progress[i] += speed
         if (progress[i] > 1) progress[i] -= 1
       }
+
+      const maxFreqBin = Math.max(1, analyser?.frequencyBinCount ?? BUF / 2)
+      const rangeStart = Math.min(3, maxFreqBin - 1)
+      const rangeEnd = Math.max(rangeStart + 1, Math.min(88, maxFreqBin - 1))
+
+      let energySum = 0
+      let energyCount = 0
+      for (let i = rangeStart; i <= rangeEnd; i++) {
+        energySum += smoothed[i] / 255
+        energyCount += 1
+      }
+      const globalEnergy = energyCount > 0 ? energySum / energyCount : 0
+
+      let highSum = 0
+      let highCount = 0
+      const highStart = Math.min(64, maxFreqBin - 1)
+      const highEnd = Math.max(highStart, Math.min(88, maxFreqBin - 1))
+      for (let i = highStart; i <= highEnd; i++) {
+        highSum += smoothed[i] / 255
+        highCount += 1
+      }
+      const highEnergy = highCount > 0 ? highSum / highCount : 0
+
+      if (!metricsReady) {
+        energyFloor = globalEnergy * 0.74
+        energyPeak = Math.max(energyFloor + 0.18, globalEnergy * 1.34)
+        highPresence = highEnergy
+        metricsReady = true
+      }
+
+      energyFloor = energyFloor * 0.97 + globalEnergy * 0.03
+      energyPeak = Math.max(
+        energyFloor + 0.16,
+        energyPeak * 0.965 + globalEnergy * 0.035,
+      )
+      highPresence = highPresence * 0.9 + highEnergy * 0.1
+      warmup = Math.min(1, warmup + 0.065)
+      startFrames += 1
+      const startLimiter = Math.pow(Math.min(1, startFrames / 50), 1.9)
+
+      let activeBins = 0
+      for (let i = rangeStart; i <= rangeEnd; i++) {
+        if (smoothed[i] / 255 > energyFloor + 0.03) activeBins += 1
+      }
+      const activeDensity = energyCount > 0 ? activeBins / energyCount : 0
+      const densityLimiter = 0.55 + Math.min(0.45, activeDensity * 1.2)
 
       // Draw order: smallest (farthest) first
       const order = Array.from({ length: N }, (_, i) => i).sort(
@@ -134,22 +188,31 @@ export function CircularWaveform() {
 
         // Dramatic perspective ease — rings accelerate as they approach
         const scale = Math.pow(p, 1.6)
-        const baseR = maxR * scale
+        const baseR = maxR * scale * (0.35 + 0.65 * startLimiter)
         if (baseR < 1.5) continue
 
         // Each ring rotates proportionally to how close it is (parallax)
         const angleOffset = baseRotation * (0.5 + p * 1.8)
 
         // Distortion amount grows with proximity
-        const distMult = 0.28 + p * 0.22
+        const distMult = 0.12 + p * 0.09
 
         // Build distorted ring path
         ctx.beginPath()
         for (let i = 0; i <= POINTS; i++) {
           const angle = (i / POINTS) * TWO_PI + angleOffset
-          // Map angle position to a frequency bin
-          const freqIdx = Math.floor((i / POINTS) * 0.55 * (BUF / 2))
-          const fv = smoothed[Math.min(freqIdx, BUF / 2 - 1)] / 255
+          const t = i / POINTS
+          const curved = Math.pow(t, 0.9)
+          const freqIdx = Math.round(rangeStart + curved * (rangeEnd - rangeStart))
+          const raw = smoothed[freqIdx] / 255
+          const lowWeight = freqIdx < 16 ? 0.68 : freqIdx < 32 ? 0.84 : 1
+          const highWeight = freqIdx > 80 ? 0.65 + highPresence * 0.65 : 1
+          const weighted = clamp01(raw * lowWeight * highWeight)
+          const gate = energyFloor * 0.55 + 0.04
+          const range = Math.max(0.18, energyPeak - gate)
+          const normalized = clamp01((weighted - gate) / range)
+          const fv =
+            Math.pow(normalized, 1.24) * warmup * densityLimiter * startLimiter
           const r = baseR * (1 + fv * distMult)
           const x = cx + Math.cos(angle) * r
           const y = cy + Math.sin(angle) * r
@@ -163,7 +226,7 @@ export function CircularWaveform() {
 
         // Color: cycle through palette based on ring position
         // Creates a color depth illusion (far = one color, close = another)
-        let color: string | null
+        let color: string
         const band = Math.floor(p * 3)
         if (band === 0) color = c3 ?? c2 ?? c1
         else if (band === 1) color = c2 ?? c1
@@ -171,12 +234,8 @@ export function CircularWaveform() {
 
         const glowStrength = p * (0.4 + bassAvg * 0.6)
         ctx.shadowBlur = 6 + glowStrength * 18
-        ctx.shadowColor = color
-          ? hexToRgba(color, glowStrength * 0.75)
-          : `hsla(${ah}, ${as_}, ${al}, ${glowStrength * 0.65})`
-        ctx.strokeStyle = color
-          ? hexToRgba(color, alpha)
-          : `hsla(${ah}, ${as_}, ${al}, ${alpha})`
+        ctx.shadowColor = hexToRgba(color, glowStrength * 0.75)
+        ctx.strokeStyle = hexToRgba(color, alpha)
         ctx.lineWidth = 0.5 + p * 2.8
         ctx.stroke()
       }
@@ -185,17 +244,9 @@ export function CircularWaveform() {
 
       // Vanishing point glow at center (draws the eye in)
       const vpGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, maxR * 0.18)
-      if (c1) {
-        vpGrad.addColorStop(0, hexToRgba(c1, 0.25 + bassAvg * 0.35))
-        vpGrad.addColorStop(0.5, hexToRgba(c1, 0.06))
-        vpGrad.addColorStop(1, hexToRgba(c1, 0))
-      } else {
-        vpGrad.addColorStop(
-          0,
-          `hsla(${ah}, ${as_}, ${al}, ${0.2 + bassAvg * 0.3})`,
-        )
-        vpGrad.addColorStop(1, `hsla(${ah}, ${as_}, ${al}, 0)`)
-      }
+      vpGrad.addColorStop(0, hexToRgba(c1, 0.25 + bassAvg * 0.35))
+      vpGrad.addColorStop(0.5, hexToRgba(c1, 0.06))
+      vpGrad.addColorStop(1, hexToRgba(c1, 0))
       ctx.beginPath()
       ctx.arc(cx, cy, maxR * 0.18, 0, TWO_PI)
       ctx.fillStyle = vpGrad

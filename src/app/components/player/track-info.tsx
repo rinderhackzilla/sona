@@ -1,5 +1,5 @@
 import randomCSSHexColor from '@chriscodesthings/random-css-hex-color'
-import { AudioLines } from 'lucide-react'
+import { AudioLines, Maximize2 } from 'lucide-react'
 import { useCallback } from 'react'
 import { Fragment } from 'react/jsx-runtime'
 import { useTranslation } from 'react-i18next'
@@ -10,6 +10,7 @@ import { FullscreenMode } from '@/app/components/fullscreen/page'
 import { ImageLoader } from '@/app/components/image-loader'
 import { SongMenuOptions } from '@/app/components/song/menu-options'
 import { ContextMenuProvider } from '@/app/components/table/context-menu'
+import { SimpleTooltip } from '@/app/components/ui/simple-tooltip'
 import { cn } from '@/lib/utils'
 import { ROUTES } from '@/routes/routesList'
 import { useSongColor } from '@/store/player.store'
@@ -53,7 +54,7 @@ export function TrackInfo({ song }: { song: ISong | undefined }) {
   if (!song) {
     return (
       <Fragment>
-        <div className="w-[70px] h-[70px] flex justify-center items-center bg-muted rounded">
+        <div className="w-[70px] h-[70px] flex justify-center items-center bg-muted rounded-lg">
           <AudioLines data-testid="song-no-playing-icon" />
         </div>
         <div className="flex flex-col justify-center">
@@ -73,38 +74,43 @@ export function TrackInfo({ song }: { song: ISong | undefined }) {
       options={<SongMenuOptions variant="context" song={song} index={0} />}
     >
       <div className="flex items-center gap-2 w-full">
-        <FullscreenMode>
-          <div
-            className="group relative cursor-pointer"
-            data-coach-id="fullscreen-cover"
-          >
-            <div className="min-w-[70px] max-w-[70px] aspect-square bg-cover bg-center bg-skeleton rounded overflow-hidden shadow-md transition-transform hover:scale-105">
-              <ImageLoader id={song.coverArt} type="song" size={400}>
-                {(src) => (
-                  <LazyLoadImage
-                    key={song.id}
-                    id="track-song-image"
-                    src={src}
-                    width="100%"
-                    height="100%"
-                    crossOrigin="anonymous"
-                    effect="opacity"
-                    className="aspect-square object-cover w-full h-full bg-skeleton text-transparent"
-                    data-testid="track-image"
-                    alt={`${song.artist} - ${song.title}`}
-                    onLoad={getImageColor}
-                    onError={handleError}
-                  />
-                )}
-              </ImageLoader>
+        <SimpleTooltip text={t('fullscreen.switchButton')}>
+          <FullscreenMode>
+            <div
+              className="group relative cursor-pointer"
+              data-coach-id="fullscreen-cover"
+            >
+              <div className="min-w-[70px] max-w-[70px] aspect-square bg-cover bg-center bg-skeleton rounded-lg overflow-hidden shadow-md transition-transform hover:scale-105">
+                <ImageLoader id={song.coverArt} type="song" size={400}>
+                  {(src) => (
+                    <LazyLoadImage
+                      key={song.id}
+                      id="track-song-image"
+                      src={src}
+                      width="100%"
+                      height="100%"
+                      crossOrigin="anonymous"
+                      effect="opacity"
+                      className="aspect-square object-cover w-full h-full bg-skeleton text-transparent"
+                      data-testid="track-image"
+                      alt={`${song.artist} - ${song.title}`}
+                      onLoad={getImageColor}
+                      onError={handleError}
+                    />
+                  )}
+                </ImageLoader>
+              </div>
+              <div className="pointer-events-none absolute inset-0 flex items-center justify-center rounded-lg bg-black/0 transition-opacity duration-150 group-hover:bg-black/35">
+                <Maximize2 className="h-4 w-4 text-white/80 opacity-0 transition-opacity duration-150 group-hover:opacity-100" />
+              </div>
             </div>
-          </div>
-        </FullscreenMode>
+          </FullscreenMode>
+        </SimpleTooltip>
         <div className="flex flex-col justify-center w-full overflow-hidden">
           <MarqueeTitle gap="mr-2">
             <Link to={ROUTES.ALBUM.PAGE(song.albumId)} tabIndex={-1}>
               <span
-                className="text-sm font-medium hover:underline cursor-pointer"
+                className="text-[15px] font-semibold hover:underline cursor-pointer"
                 data-testid="track-title"
               >
                 {song.title}

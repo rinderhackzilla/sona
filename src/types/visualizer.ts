@@ -2,7 +2,6 @@ export type VisualizerPreset =
   | 'frequency-circle'
   | 'waveform-tunnel'
   | 'oscilloscope'
-  | 'geometric-mandala'
   | 'audio-landscape'
   | 'circular-waveform'
 

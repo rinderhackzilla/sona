@@ -91,17 +91,19 @@ function SortableQueueRow({
     <div ref={isOverlay ? undefined : setNodeRef} style={outerStyle}>
       <div
         className={clsx(
-          'group/tablerow w-full flex flex-row items-center rounded-md h-14 transition-colors select-none',
+          'group/tablerow relative w-full flex flex-row items-center rounded-md h-14 transition-colors select-none',
           isDragging && !isOverlay
             ? 'opacity-20 bg-foreground/5'
             : 'hover:bg-foreground/20',
           isOverlay &&
             'shadow-xl border border-foreground/20 bg-popover cursor-grabbing',
-          isActive && !isDragging && 'row-active bg-foreground/20',
+          isActive &&
+            !isDragging &&
+            'row-active bg-foreground/20 before:content-[\'\'] before:absolute before:left-0 before:inset-y-1 before:w-0.5 before:rounded-r before:bg-primary',
         )}
       >
         {/* Drag handle */}
-        <div className="w-6 shrink-0 ml-1 relative flex items-center justify-center">
+        <div className="w-8 shrink-0 ml-1 relative flex items-center justify-center">
           {!isOverlay && song.queueSource === 'dj' && (
             <SparklesIcon
               className="absolute w-3.5 h-3.5 text-foreground/60 transition-opacity group-hover/tablerow:opacity-0"

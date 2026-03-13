@@ -1,7 +1,7 @@
 {
   "name": "Sona",
   "private": true,
-  "version": "0.17.8",
+  "version": "0.17.9",
   "description": "A modern desktop client for Navidrome/Subsonic servers.",
   "author": {
     "name": "rinderhack"
@@ -157,7 +157,7 @@
   },
   "electron": {
     "window": {
-      "defaultWidth": 1100,
+      "defaultWidth": 1300,
       "defaultHeight": 600,
       "defaultBgColor": "#060e23"
     }

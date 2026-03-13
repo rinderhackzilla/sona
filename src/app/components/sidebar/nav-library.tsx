@@ -33,8 +33,8 @@ export function NavLibrary() {
     <>
       {/* Curated section */}
       <MainSidebarGroup className="px-4 pt-2 pb-0">
-        <div className="mb-1.5 flex items-center gap-2 px-1">
-          <MainSidebarGroupLabel className="h-6 px-0 text-[10px] uppercase tracking-[0.14em] text-foreground/55">
+        <div className="mb-1.5 flex items-center gap-2 px-0">
+          <MainSidebarGroupLabel className="h-6 px-2.5 uppercase tracking-[0.14em] text-foreground/55">
             {t('home.explore')}
           </MainSidebarGroupLabel>
           <div className="h-px flex-1 bg-border/55" />
@@ -50,8 +50,8 @@ export function NavLibrary() {
 
       {/* Standard library section */}
       <MainSidebarGroup className="px-4 pt-2 pb-0">
-        <div className="mb-1.5 flex items-center gap-2 px-1">
-          <MainSidebarGroupLabel className="h-6 px-0 text-[10px] uppercase tracking-[0.14em] text-foreground/55">
+        <div className="mb-1.5 flex items-center gap-2 px-0">
+          <MainSidebarGroupLabel className="h-6 px-2.5 uppercase tracking-[0.14em] text-foreground/55">
             {t('sidebar.library')}
           </MainSidebarGroupLabel>
           <div className="h-px flex-1 bg-border/55" />

@@ -46,7 +46,7 @@ export function TableFallback({
           key={index}
           className={clsx(
             'grid grid-cols-table-fallback p-2 items-center',
-            isClassic && 'border-t',
+            isClassic && 'border-b',
           )}
         >
           <Skeleton className="w-5 h-5 ml-2" />

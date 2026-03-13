@@ -541,6 +541,7 @@
     "queue": "Warteschlange",
     "playing": "Jetzt läuft",
     "lyrics": "Songtexte",
+    "visualizerLabel": "Visualizer",
     "hypnoticBackdrop": "Animierter Hintergrund",
     "switchButton": "Zum großen Player wechseln",
     "sonaDj": {
@@ -640,6 +641,9 @@
         "closeWindow": "App schließen"
       },
       "rewind": "Spule {{amount}} Sekunden zurück"
+    },
+    "runtimeShuffle": {
+      "noSessionMatches": "Keine weiteren Songs entsprechen dem aktuellen Session-Filter."
     }
   },
   "options": {
@@ -1003,7 +1007,8 @@
           "idle": "Inaktiv",
           "sending": "Sende...",
           "ok": "OK",
-          "failed": "Fehlgeschlagen"
+          "failed": "Fehlgeschlagen",
+          "lastFailed": "Letzter Scrobble fehlgeschlagen"
         }
       }
     },

@@ -26,6 +26,7 @@ type AudioPlayerProps = ComponentPropsWithoutRef<'audio'> & {
   replayGain?: ReplayGainParams
   shouldPlay?: boolean
   ignoreErrors?: boolean
+  volumeMultiplier?: number
 }
 
 export function AudioPlayer({
@@ -33,6 +34,7 @@ export function AudioPlayer({
   replayGain,
   shouldPlay = true,
   ignoreErrors = false,
+  volumeMultiplier = 1,
   src,
   ...props
 }: AudioPlayerProps) {
@@ -48,7 +50,10 @@ export function AudioPlayer({
   )
 
   const gainValue = useMemo(() => {
-    const audioVolume = volume / 100
+    const audioVolume = Math.max(
+      0,
+      Math.min(1, (volume / 100) * volumeMultiplier),
+    )
 
     if (!replayGain || !replayGainEnabled) {
       return audioVolume * 1
@@ -56,12 +61,13 @@ export function AudioPlayer({
     const gain = calculateReplayGain(replayGain)
 
     return audioVolume * gain
-  }, [replayGain, replayGainEnabled, volume])
+  }, [replayGain, replayGainEnabled, volume, volumeMultiplier])
 
-  const { resumeContext, setupGain } = useAudioContext(audioElement)
+  const { resumeContext, setupGain } = useAudioContext(audioElement, shouldPlay)
   const fadeIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const fadeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const pausedByFadeRef = useRef(false)
+  const replayGainRecoveryTriedRef = useRef(false)
   const handleAudioRef = useCallback(
     (node: HTMLAudioElement | null) => {
       audioRef.current = node
@@ -71,6 +77,10 @@ export function AudioPlayer({
   )
 
   const ignoreGain = !isSong || replayGainError
+
+  useEffect(() => {
+    replayGainRecoveryTriedRef.current = false
+  }, [src])
 
   const clearPauseFade = useCallback(() => {
     if (fadeIntervalRef.current) {
@@ -83,6 +93,14 @@ export function AudioPlayer({
     }
   }, [])
 
+  const getElementVolumeTarget = useCallback(() => {
+    const directVolume = Math.max(
+      0,
+      Math.min(1, (volume / 100) * volumeMultiplier),
+    )
+    return ignoreGain ? directVolume : 1
+  }, [ignoreGain, volume, volumeMultiplier])
+
   const pauseWithFade = useCallback(
     (audio: HTMLAudioElement) => {
       clearPauseFade()
@@ -90,7 +108,8 @@ export function AudioPlayer({
       const fadeDurationMs = 500
       const fadeSteps = 20
       const tickMs = Math.max(12, Math.floor(fadeDurationMs / fadeSteps))
-      const startVolume = Math.max(audio.volume, Math.min(1, volume / 100))
+      const currentTargetVolume = getElementVolumeTarget()
+      const startVolume = Math.max(audio.volume, currentTargetVolume)
       let step = 0
 
       pausedByFadeRef.current = true
@@ -107,7 +126,7 @@ export function AudioPlayer({
         audio.volume = 0
       }, fadeDurationMs + tickMs)
     },
-    [clearPauseFade, volume],
+    [clearPauseFade, getElementVolumeTarget],
   )
 
   useEffect(() => {
@@ -129,19 +148,27 @@ export function AudioPlayer({
       error: audio.error,
     })
 
-    toast.error(t('warnings.songError'))
+    const shouldTryReplayGainRecovery =
+      !replayGainRecoveryTriedRef.current && (replayGainEnabled || !replayGainError)
 
-    if (replayGainEnabled || !replayGainError) {
+    if (shouldTryReplayGainRecovery) {
+      replayGainRecoveryTriedRef.current = true
       setReplayGainEnabled(false)
       setReplayGainError(true)
-      window.location.reload()
+      toast.warn(t('settings.audio.replayGain.error.message'))
+      setPlayingState(false)
+      return
     }
+
+    toast.error(t('warnings.songError'))
+    setPlayingState(false)
   }, [
     audioRef,
     replayGainEnabled,
     replayGainError,
     setReplayGainEnabled,
     setReplayGainError,
+    setPlayingState,
     t,
   ])
 
@@ -165,6 +192,13 @@ export function AudioPlayer({
   }, [audioRef, setPlayingState, t])
 
   useEffect(() => {
+    const audio = audioRef.current
+    if (!audio) return
+
+    audio.volume = getElementVolumeTarget()
+  }, [audioRef, getElementVolumeTarget])
+
+  useEffect(() => {
     async function handleSong() {
       const audio = audioRef.current
       if (!audio) return
@@ -172,8 +206,11 @@ export function AudioPlayer({
       try {
         if (isPlaying && shouldPlay) {
           clearPauseFade()
+          const elementVolumeTarget = getElementVolumeTarget()
+          if (audio.volume !== elementVolumeTarget) {
+            audio.volume = elementVolumeTarget
+          }
           if (pausedByFadeRef.current) {
-            audio.volume = Math.min(1, volume / 100)
             pausedByFadeRef.current = false
           }
           if (isSong) await resumeContext()
@@ -214,10 +251,10 @@ export function AudioPlayer({
     isPlaying,
     isSong,
     isPodcast,
+    getElementVolumeTarget,
     pauseWithFade,
     resumeContext,
     shouldPlay,
-    volume,
   ])
 
   useEffect(() => {

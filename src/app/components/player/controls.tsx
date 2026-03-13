@@ -111,14 +111,8 @@ export function PlayerControls({
       requestAnimationFrame(step)
     })
 
+    audio.volume = startVolume
     playNextSong()
-
-    // Ensure the active deck returns to its original loudness right after switching.
-    window.setTimeout(() => {
-      if (audioRef.current) {
-        audioRef.current.volume = startVolume
-      }
-    }, 120)
   }, [audioRef, isPlaying, isSong, playNextSong])
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: isPlaying needed to trigger
@@ -162,7 +156,7 @@ export function PlayerControls({
             'night-player-side-button',
             isShuffleActive && 'player-button-active',
           )}
-          disabled={!song || isPlayingOneSong() || !hasNext}
+          disabled={!song || isPlayingOneSong()}
           onClick={toggleShuffle}
           data-testid="player-button-shuffle"
           tooltip={shuffleTooltip}

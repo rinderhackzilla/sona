@@ -7,8 +7,8 @@ import { Skeleton } from '@/app/components/ui/skeleton'
 
 export function AlbumHeaderFallback() {
   return (
-    <div className="w-full px-8 py-6 bg-muted-foreground flex gap-4 bg-gradient-to-b from-background/50 to-background/50">
-      <Skeleton className="rounded shadow-lg w-[200px] h-[200px] min-w-[200px] min-h-[200px] 2xl:w-[250px] 2xl:h-[250px] 2xl:min-w-[250px] 2xl:min-h-[250px] aspect-square" />
+    <div className="w-full px-8 py-6 bg-muted/40 flex gap-4">
+      <Skeleton className="rounded-[var(--radius-surface-lg)] shadow-lg w-[200px] h-[200px] min-w-[200px] min-h-[200px] 2xl:w-[250px] 2xl:h-[250px] 2xl:min-w-[250px] 2xl:min-h-[250px] aspect-square" />
       <div className="flex flex-col justify-end">
         <Skeleton className="h-[20px] w-16 mb-4" />
         <Skeleton className="h-12 w-[260px] mb-4" />
@@ -29,10 +29,10 @@ export function PlayButtonsFallback() {
     <div className="mb-6 flex gap-1 items-center">
       <Skeleton className="rounded-full w-14 h-14 mr-2" />
       <div className="flex items-center justify-center w-14 h-14">
-        <Skeleton className="rounded-full w-7 h-7" />
+        <Skeleton className="rounded-full w-14 h-14" />
       </div>
       <div className="flex items-center justify-center w-14 h-14">
-        <Skeleton className="rounded-full w-7 h-7" />
+        <Skeleton className="rounded-full w-14 h-14" />
       </div>
     </div>
   )

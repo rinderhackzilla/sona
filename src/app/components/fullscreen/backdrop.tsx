@@ -6,6 +6,7 @@ import { getSimpleCoverArtUrl } from '@/api/httpClient'
 import { useVisualizerContext } from '@/app/components/fullscreen/settings'
 import { ImageLoader } from '@/app/components/image-loader'
 import { useReducedMotion } from '@/app/hooks/use-reduced-motion'
+import { useRenderCounter } from '@/app/hooks/use-render-counter'
 import {
   usePlayerCurrentSong,
   useSessionModeSettings,
@@ -87,42 +88,86 @@ function useBackdropLuminance(coverUrl: string) {
 }
 
 export function FullscreenBackdrop() {
+  useRenderCounter('FullscreenBackdrop')
   const { useSongColorOnBigPlayer } = useSongColor()
-  const { hypnoticBackdropEnabled } = useVisualizerContext()
+  const { visualizerActive } = useVisualizerContext()
   const reduceMotion = useReducedMotion()
+  const enableKenBurns = !reduceMotion
+  const PERSISTENT_FULLSCREEN_BLUR_PX = 26
 
   return (
     <>
-      {useSongColorOnBigPlayer ? <DynamicColorBackdrop /> : <ImageBackdrop />}
-      {hypnoticBackdropEnabled && !reduceMotion && <HypnoticMotionLayer />}
+      {useSongColorOnBigPlayer ? (
+        <DynamicColorBackdrop
+          enableKenBurns={enableKenBurns}
+          blurPx={PERSISTENT_FULLSCREEN_BLUR_PX}
+          compactBlurSurface={false}
+        />
+      ) : (
+        <ImageBackdrop
+          enableKenBurns={enableKenBurns}
+          blurPx={PERSISTENT_FULLSCREEN_BLUR_PX}
+          compactBlurSurface={false}
+        />
+      )}
     </>
   )
 }
 
-export function ImageBackdrop() {
+export function ImageBackdrop({
+  enableKenBurns,
+  blurPx,
+  compactBlurSurface,
+}: {
+  enableKenBurns: boolean
+  blurPx: number
+  compactBlurSurface: boolean
+}) {
   return (
     <div className="absolute inset-0 w-full h-full z-0 overflow-hidden">
-      {isSafari ? <MacBackdrop /> : <OtherBackdrop />}
+      {isSafari ? (
+        <MacBackdrop
+          enableKenBurns={enableKenBurns}
+          blurPx={blurPx}
+          compactBlurSurface={compactBlurSurface}
+        />
+      ) : (
+        <OtherBackdrop
+          enableKenBurns={enableKenBurns}
+          blurPx={blurPx}
+          compactBlurSurface={compactBlurSurface}
+        />
+      )}
     </div>
   )
 }
 
-function OtherBackdrop() {
+function OtherBackdrop({
+  enableKenBurns,
+  blurPx,
+  compactBlurSurface,
+}: {
+  enableKenBurns: boolean
+  blurPx: number
+  compactBlurSurface: boolean
+}) {
   const { coverArt } = usePlayerCurrentSong()
   const { mode } = useSessionModeSettings()
-  const coverArtUrl = getSimpleCoverArtUrl(coverArt, 'song', '300')
+  const coverArtUrl = getSimpleCoverArtUrl(coverArt, 'song', '150')
   const luminance = useBackdropLuminance(coverArtUrl)
   const [backgroundImage, setBackgroundImage] = useState(coverArtUrl)
-  const { bigPlayerBlur } = useSongColor()
-  const reduceMotion = useReducedMotion()
 
   const newBackgroundImage = useMemo(() => coverArtUrl, [coverArtUrl])
 
   useEffect(() => {
+    let cancelled = false
     const img = new Image()
     img.src = newBackgroundImage
     img.onload = () => {
-      setBackgroundImage(newBackgroundImage)
+      if (!cancelled) setBackgroundImage(newBackgroundImage)
+    }
+    return () => {
+      cancelled = true
     }
   }, [newBackgroundImage])
 
@@ -135,15 +180,18 @@ function OtherBackdrop() {
   const adaptiveDimOpacity = getAdaptiveDimOverlay(luminance, mode)
 
   return (
-    <div className="relative w-full h-full transition-colors duration-1000 bg-black/0">
+    <div className="relative w-full h-full bg-black/0">
       <div
         className={clsx(
-          'absolute -inset-10 bg-cover bg-center z-0 transition-[background-image,filter] duration-1000',
-          !reduceMotion && 'fullscreen-bg-kenburns',
+          'absolute bg-cover bg-center z-0',
+          compactBlurSurface ? '-inset-2' : '-inset-10',
+          enableKenBurns && 'fullscreen-backdrop-kenburns',
         )}
         style={{
           backgroundImage: `url(${backgroundImage})`,
-          filter: `blur(${bigPlayerBlur.value}px) ${modeFilter}`,
+          filter: `blur(${blurPx}px) ${modeFilter}`,
+          willChange: 'transform',
+          transform: 'translateZ(0)',
         }}
       />
       <div
@@ -151,7 +199,7 @@ function OtherBackdrop() {
         style={{ backgroundColor: `rgba(0,0,0,${adaptiveDimOpacity})` }}
       />
       <div
-        className="absolute inset-0 w-full h-full z-[2] transition-colors duration-1000"
+        className="absolute inset-0 w-full h-full z-[2]"
         style={{
           backgroundColor:
             mode === 'focus'
@@ -162,7 +210,7 @@ function OtherBackdrop() {
         }}
       />
       <div
-        className="absolute inset-0 w-full h-full z-[3] transition-colors duration-1000"
+        className="absolute inset-0 w-full h-full z-[3]"
         style={{
           backgroundColor:
             mode === 'focus'
@@ -176,14 +224,20 @@ function OtherBackdrop() {
   )
 }
 
-function MacBackdrop() {
+function MacBackdrop({
+  enableKenBurns,
+  blurPx,
+  compactBlurSurface,
+}: {
+  enableKenBurns: boolean
+  blurPx: number
+  compactBlurSurface: boolean
+}) {
   const { coverArt, title } = usePlayerCurrentSong()
   const { mode } = useSessionModeSettings()
-  const coverArtUrl = getSimpleCoverArtUrl(coverArt, 'song', '300')
+  const coverArtUrl = getSimpleCoverArtUrl(coverArt, 'song', '150')
   const luminance = useBackdropLuminance(coverArtUrl)
-  const { bigPlayerBlur } = useSongColor()
   const { currentSongColor, currentSongColorIntensity } = useSongColor()
-  const reduceMotion = useReducedMotion()
 
   const backgroundColor = useMemo(() => {
     if (!currentSongColor) return undefined
@@ -200,10 +254,7 @@ function MacBackdrop() {
   const adaptiveDimOpacity = getAdaptiveDimOverlay(luminance, mode)
 
   return (
-    <div
-      className="relative w-full h-full flex items-center transition-colors duration-1000"
-      style={{ backgroundColor }}
-    >
+    <div className="relative w-full h-full flex items-center" style={{ backgroundColor }}>
       <ImageLoader id={coverArt} type="song">
         {(src) => (
           <LazyLoadImage
@@ -213,10 +264,15 @@ function MacBackdrop() {
             effect="opacity"
             width="100%"
             className={clsx(
-              'w-full bg-contain',
-              !reduceMotion && 'fullscreen-bg-kenburns',
+              'bg-contain',
+              compactBlurSurface ? 'w-[104%] h-[104%] object-cover' : 'w-full',
+              enableKenBurns && 'fullscreen-backdrop-kenburns',
             )}
-            style={{ filter: modeFilter }}
+            style={{
+              filter: `blur(${blurPx}px) ${modeFilter}`,
+              willChange: 'transform',
+              transform: 'translateZ(0)',
+            }}
           />
         )}
       </ImageLoader>
@@ -225,7 +281,7 @@ function MacBackdrop() {
         style={{ backgroundColor: `rgba(0,0,0,${adaptiveDimOpacity})` }}
       />
       <div
-        className="absolute inset-0 z-[9] transition-colors duration-1000"
+        className="absolute inset-0 z-[9]"
         style={{
           backgroundColor:
             mode === 'focus'
@@ -236,7 +292,7 @@ function MacBackdrop() {
         }}
       />
       <div
-        className="absolute inset-0 z-10 transition-all duration-1000"
+        className="absolute inset-0 z-10"
         style={{
           backgroundColor:
             mode === 'focus'
@@ -244,30 +300,39 @@ function MacBackdrop() {
               : mode === 'night'
                 ? 'hsl(var(--background) / 0.56)'
                 : 'hsl(var(--background) / 0.45)',
-          WebkitBackdropFilter: `blur(${bigPlayerBlur.value}px)`,
-          backdropFilter: `blur(${bigPlayerBlur.value}px)`,
         }}
       />
     </div>
   )
 }
 
-function DynamicColorBackdrop() {
+function DynamicColorBackdrop({
+  enableKenBurns,
+  blurPx,
+  compactBlurSurface,
+}: {
+  enableKenBurns: boolean
+  blurPx: number
+  compactBlurSurface: boolean
+}) {
   const { coverArt } = usePlayerCurrentSong()
   const { mode } = useSessionModeSettings()
-  const coverArtUrl = getSimpleCoverArtUrl(coverArt, 'song', '300')
+  const coverArtUrl = getSimpleCoverArtUrl(coverArt, 'song', '150')
   const luminance = useBackdropLuminance(coverArtUrl)
   const [backgroundImage, setBackgroundImage] = useState(coverArtUrl)
-  const { currentSongColorIntensity, bigPlayerBlur } = useSongColor()
-  const reduceMotion = useReducedMotion()
+  const { currentSongColorIntensity } = useSongColor()
 
   const newBackgroundImage = useMemo(() => coverArtUrl, [coverArtUrl])
 
   useEffect(() => {
+    let cancelled = false
     const img = new Image()
     img.src = newBackgroundImage
     img.onload = () => {
-      setBackgroundImage(newBackgroundImage)
+      if (!cancelled) setBackgroundImage(newBackgroundImage)
+    }
+    return () => {
+      cancelled = true
     }
   }, [newBackgroundImage])
 
@@ -290,18 +355,21 @@ function DynamicColorBackdrop() {
         {/* Blurred background image */}
         <div
           className={clsx(
-            'absolute -inset-10 bg-cover bg-center z-0 transition-[background-image,filter] duration-1000',
-            !reduceMotion && 'fullscreen-bg-kenburns',
+            'absolute bg-cover bg-center z-0',
+            compactBlurSurface ? '-inset-2' : '-inset-10',
+            enableKenBurns && 'fullscreen-backdrop-kenburns',
           )}
           style={{
             backgroundImage: `url(${backgroundImage})`,
-            filter: `blur(${bigPlayerBlur.value}px) ${modeFilter}`,
+            filter: `blur(${blurPx}px) ${modeFilter}`,
+            willChange: 'transform',
+            transform: 'translateZ(0)',
           }}
         />
 
         {/* Color overlay using theme colors - slider controls opacity */}
         <div
-          className="absolute inset-0 w-full h-full z-[1] transition-opacity duration-1000"
+          className="absolute inset-0 w-full h-full z-[1]"
           style={{
             backgroundColor: 'hsl(var(--primary))',
             opacity:
@@ -322,20 +390,10 @@ function DynamicColorBackdrop() {
         <div
           className={clsx(
             'absolute inset-0 w-full h-full z-[3]',
-            'transition-[background-image] duration-1000 default-gradient',
+            'default-gradient',
           )}
         />
       </div>
-    </div>
-  )
-}
-
-function HypnoticMotionLayer() {
-  return (
-    <div className="absolute inset-0 z-[5] overflow-hidden pointer-events-none">
-      <div className="hypnotic-layer-a" />
-      <div className="hypnotic-layer-b" />
-      <div className="hypnotic-layer-c" />
     </div>
   )
 }

@@ -22,6 +22,8 @@ export function MarqueeTitle({ children, gap }: MarqueeTitleProps) {
   const [marqueeKey, setMarqueeKey] = useState('')
   const [containerKey, setContainerKey] = useState('')
 
+  const MARQUEE_OVERFLOW_THRESHOLD_PX = 40
+
   // biome-ignore lint/correctness/useExhaustiveDependencies: needed to calculate properly
   const calculateOverflow = useCallback(() => {
     if (!containerRef.current || !textRef.current) return
@@ -29,7 +31,8 @@ export function MarqueeTitle({ children, gap }: MarqueeTitleProps) {
     const containerWidth = containerRef.current.offsetWidth
     const textWidth = textRef.current.offsetWidth
 
-    const isOversizing = textWidth > containerWidth
+    const isOversizing =
+      textWidth > containerWidth + MARQUEE_OVERFLOW_THRESHOLD_PX
 
     if (isOverflowing && !isOversizing) {
       setMarqueeKey(Math.random().toString())
@@ -80,10 +83,10 @@ export function MarqueeTitle({ children, gap }: MarqueeTitleProps) {
             isOverflowing && !isFinished && 'maskImage-marquee-fade',
             isFinished && 'maskImage-marquee-fade-finished',
           )}
-          speed={30}
+          speed={26}
           play={isOverflowing}
-          loop={2}
-          delay={3}
+          loop={0}
+          delay={4}
           pauseOnHover={true}
           onFinish={() => {
             setIsFinished(true)

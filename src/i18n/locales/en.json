@@ -481,6 +481,7 @@
     "queue": "Queue",
     "playing": "Playing now",
     "lyrics": "Lyrics",
+    "visualizerLabel": "Visualizer",
     "hypnoticBackdrop": "Animated Background",
     "switchButton": "Switch to Big Player",
     "sonaDj": {
@@ -609,6 +610,9 @@
         "mute": "Mute",
         "unmute": "Unmute"
       }
+    },
+    "runtimeShuffle": {
+      "noSessionMatches": "No more songs match the current session filter."
     }
   },
   "options": {
@@ -1033,7 +1037,8 @@
           "idle": "Idle",
           "sending": "Sending...",
           "ok": "OK",
-          "failed": "Failed"
+          "failed": "Failed",
+          "lastFailed": "Last scrobble failed"
         }
       }
     },

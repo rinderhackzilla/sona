@@ -64,7 +64,7 @@ export function SongInfo({
     >
       <div
         className={cn(
-          'flex items-center justify-start h-full min-h-full max-h-full gap-4 2xl:gap-6 flex-1 overflow-visible transition-all duration-420 [transition-timing-function:cubic-bezier(0.22,1,0.36,1)]',
+          'flex items-center justify-start h-full min-h-full max-h-full gap-4 2xl:gap-6 flex-1 overflow-visible transition-[opacity,transform,filter] duration-420 [transition-timing-function:cubic-bezier(0.22,1,0.36,1)]',
           isChromeVisible ? 'pt-2 translate-y-0' : 'pt-1 translate-y-0',
           isPanelOpen && 'opacity-0 scale-[0.97] saturate-0',
         )}
@@ -76,7 +76,7 @@ export function SongInfo({
 
         <div
           className={cn(
-            'flex flex-col flex-1 min-w-0 h-full min-h-0 text-left overflow-hidden transition-all duration-500 ease-in-out',
+            'flex flex-col flex-1 min-w-0 h-full min-h-0 text-left overflow-hidden transition-[max-height] duration-500 ease-in-out',
             isChromeVisible
               ? 'max-h-[520px] 2xl:max-h-[640px] justify-end pb-1'
               : 'max-h-[595px] 2xl:max-h-[720px] justify-end pb-2',
@@ -90,7 +90,7 @@ export function SongInfo({
               {currentSong.title}
             </h2>
           </MarqueeTitle>
-          <div className="text-base 2xl:text-lg flex gap-1 text-foreground/70 truncate maskImage-marquee-fade-finished">
+          <div className="text-xl 2xl:text-2xl flex gap-1 text-foreground/70 truncate maskImage-marquee-fade-finished">
             <p
               className="truncate text-shadow-lg text-foreground hover:underline cursor-pointer"
               onClick={handleAlbumClick}
@@ -101,7 +101,7 @@ export function SongInfo({
             <ArtistNames song={currentSong} onArtistClick={handleArtistClick} />
           </div>
           <div className="mt-2 2xl:mt-3 mb-[1px]">
-            <div className="inline-flex items-center gap-2 rounded-md border border-primary/15 bg-primary/10 px-3 py-1.5 text-sm text-foreground/82 backdrop-blur-sm">
+            <div className="inline-flex items-center gap-2 rounded-md border border-primary/15 bg-background/20 px-3 py-1.5 text-sm text-foreground/82">
               {currentSong.genre && (
                 <span className="truncate max-w-[220px]">
                   {currentSong.genre}

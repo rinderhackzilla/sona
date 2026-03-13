@@ -9,15 +9,10 @@ function hexToRgba(hex: string, alpha: number): string {
   return `rgba(${r}, ${g}, ${b}, ${alpha})`
 }
 
-function accentHSL() {
-  const v = getComputedStyle(document.documentElement)
-    .getPropertyValue('--accent')
-    .trim()
-  const [h, s, l] = v.split(' ')
-  return { h: h ?? '220', s: s ?? '80%', l: l ?? '60%' }
+function clamp01(value: number) {
+  return Math.max(0, Math.min(1, value))
 }
 
-const GAIN = 14 // extreme tanh saturation — waveform violently fills the canvas
 const DRAW_PTS = 60
 const TRACES = 36
 
@@ -36,7 +31,7 @@ export function AudioLandscape() {
     const ctx = canvas.getContext('2d')
     if (!ctx) return
 
-    const dpr = window.devicePixelRatio || 1
+    const dpr = Math.min(window.devicePixelRatio || 1, 1.25)
     let pendingWidth = 0
     let pendingHeight = 0
     let stableFrames = 0
@@ -76,6 +71,10 @@ export function AudioLandscape() {
 
     const history: Float32Array[] = []
     let frameCount = 0
+    let warmup = 0
+    let startFrames = 0
+    const FALLBACK_PRIMARY = '#7cc6ff'
+    const FALLBACK_SECONDARY = '#9ff5ce'
     let animId: number
 
     const buildPath = (
@@ -127,21 +126,39 @@ export function AudioLandscape() {
       const w = canvas.offsetWidth
       const h = canvas.offsetHeight
       const cy = h / 2
-      const maxAmp = h * 0.5 // use every pixel of vertical space
       const palette = paletteRef.current
-      const c1 = palette?.vibrant ?? null
-      const { h: ah, s: as_, l: al } = accentHSL()
-
+      const c1 = palette?.vibrant ?? palette?.dominant ?? FALLBACK_PRIMARY
+      const coverSecondary =
+        palette?.muted ?? palette?.accent ?? palette?.dominant ?? null
+      const c2 =
+        coverSecondary &&
+        coverSecondary.toLowerCase() !== c1.toLowerCase()
+          ? coverSecondary
+          : FALLBACK_SECONDARY
       let bassSum = 0
-      for (let i = 0; i < 8; i++) bassSum += smoothedFreq[i]
-      const bassAvg = bassSum / 8 / 255
+      for (let i = 8; i < 24; i++) bassSum += smoothedFreq[i]
+      const bassAvg = bassSum / 16 / 255
+      let midSum = 0
+      for (let i = 24; i < 72; i++) midSum += smoothedFreq[i]
+      const midAvg = midSum / 48 / 255
+      let highSum = 0
+      for (let i = 72; i < 112; i++) highSum += smoothedFreq[i]
+      const highAvg = highSum / 40 / 255
+      const motionEnergy = bassAvg * 0.3 + midAvg * 0.5 + highAvg * 0.2
+      const gatedMotion = clamp01((motionEnergy - 0.08) / 0.44)
+      warmup = Math.min(1, warmup + 0.07)
+      startFrames += 1
+      const startLimiter = Math.pow(Math.min(1, startFrames / 45), 1.8)
+      const reactiveMotion = gatedMotion * warmup * startLimiter
+      const dynamicGain = 6 + reactiveMotion * 5
+      const maxAmp = h * (0.14 + reactiveMotion * 0.12)
 
       ctx.clearRect(0, 0, w, h)
       ctx.lineCap = 'round'
       ctx.lineJoin = 'round'
 
       const toY = (sample: number) =>
-        cy + Math.tanh(((sample - 128) / 128) * GAIN) * maxAmp
+        cy + Math.tanh(((sample - 128) / 128) * dynamicGain) * maxAmp
 
       const total = history.length
       if (total >= 2) {
@@ -153,12 +170,8 @@ export function AudioLandscape() {
           buildPath(history[t], toY, w)
 
           ctx.shadowBlur = age > 0.5 ? ((age - 0.5) / 0.5) * 12 : 0
-          ctx.shadowColor = c1
-            ? hexToRgba(c1, 0.6)
-            : `hsla(${ah}, ${as_}, ${al}, 0.55)`
-          ctx.strokeStyle = c1
-            ? hexToRgba(c1, alpha)
-            : `hsla(${ah}, ${as_}, ${al}, ${alpha})`
+          ctx.shadowColor = hexToRgba(c1, 0.6)
+          ctx.strokeStyle = hexToRgba(c1, alpha)
           ctx.lineWidth = lineW
           ctx.stroke()
         }
@@ -168,26 +181,18 @@ export function AudioLandscape() {
 
       // Live: massive outer glow
       buildPath(smoothedTime, toY, w)
-      ctx.shadowBlur = 38 + bassAvg * 30
-      ctx.shadowColor = c1
-        ? hexToRgba(c1, 0.8)
-        : `hsla(${ah}, ${as_}, ${al}, 0.75)`
-      ctx.strokeStyle = c1
-        ? hexToRgba(c1, 0.6)
-        : `hsla(${ah}, ${as_}, ${al}, 0.60)`
-      ctx.lineWidth = 10 + bassAvg * 8
+      ctx.shadowBlur = 10 + reactiveMotion * 8
+      ctx.shadowColor = hexToRgba(c1, 0.72)
+      ctx.strokeStyle = hexToRgba(c1, 0.44 + reactiveMotion * 0.12)
+      ctx.lineWidth = 3 + reactiveMotion * 2.5
       ctx.stroke()
 
       // Live: focused glow
       buildPath(smoothedTime, toY, w)
-      ctx.shadowBlur = 14
-      ctx.shadowColor = c1
-        ? hexToRgba(c1, 1.0)
-        : `hsla(${ah}, ${as_}, ${al}, 1.0)`
-      ctx.strokeStyle = c1
-        ? hexToRgba(c1, 1.0)
-        : `hsla(${ah}, ${as_}, ${al}, 1.0)`
-      ctx.lineWidth = 3.5
+      ctx.shadowBlur = 10
+      ctx.shadowColor = hexToRgba(c2, 0.85)
+      ctx.strokeStyle = hexToRgba(c2, 0.92)
+      ctx.lineWidth = 2.6
       ctx.stroke()
 
       // Live: razor core

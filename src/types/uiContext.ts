@@ -18,6 +18,8 @@ interface IMiniPlayerUi {
 interface IFullscreenUi {
   open: boolean
   setOpen: (open: boolean) => void
+  visualizerActive: boolean
+  setVisualizerActive: (active: boolean) => void
 }
 
 export interface IUiContext {

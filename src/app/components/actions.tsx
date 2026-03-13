@@ -23,7 +23,7 @@ function Container({ children, className, ...rest }: ActionsContainerProps) {
   return (
     <div
       {...rest}
-      className={cn('mb-6 flex w-full items-center gap-1.5', className)}
+      className={cn('mb-6 flex w-full items-center gap-2', className)}
     >
       {children}
     </div>
@@ -34,20 +34,24 @@ interface ActionsMainButtonProps
   extends ButtonHTMLAttributes<HTMLButtonElement> {
   tooltip?: string
   buttonStyle?: 'primary' | 'secondary'
+  isActive?: boolean
 }
 
 function Button({
   children,
   tooltip,
   buttonStyle = 'secondary',
+  isActive = false,
   className,
   ...props
 }: ActionsMainButtonProps) {
   const button = (
     <ComponentButton
+      data-state={isActive ? 'active' : 'inactive'}
       className={cn(
         'h-14 w-14 rounded-full border border-transparent transition-all duration-150',
         'active:scale-[0.98] disabled:pointer-events-none disabled:opacity-45',
+        'data-[state=active]:bg-foreground/12 data-[state=active]:border-border/60',
         buttonStyle === 'primary'
           ? 'mr-2 hover:scale-105'
           : 'hover:bg-foreground/20',
@@ -103,7 +107,7 @@ function Dropdown({ tooltip, options }: DropdownProps) {
 }
 
 function PlayIcon() {
-  return <Play className="w-5 h-5 fill-primary-foreground" strokeWidth={6} />
+  return <Play className="w-6 h-6 fill-primary-foreground" strokeWidth={2} />
 }
 
 function PauseIcon() {

@@ -13,6 +13,7 @@ import { exportPlaylist } from '@/service/export-playlist'
 import { usePlayerActions } from '@/store/player.store'
 import { ColumnFilter } from '@/types/columnFilter'
 import { convertSecondsToHumanRead } from '@/utils/convertSecondsToTime'
+import { shuffleSongList } from '@/utils/songListFunctions'
 
 export default function DiscoverWeeklyPage() {
   const columns = songsColumns()
@@ -106,7 +107,7 @@ export default function DiscoverWeeklyPage() {
   }
 
   const handlePlayShuffle = () => {
-    const shuffled = [...playlist].sort(() => Math.random() - 0.5)
+    const shuffled = shuffleSongList(playlist, 0, true)
     setSongList(shuffled, 0)
   }
 

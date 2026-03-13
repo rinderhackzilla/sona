@@ -22,9 +22,7 @@ import { useLang } from '@/store/lang.store'
 import { useFullscreenPlayerSettings } from '@/store/player.store'
 import { ThemeSettingsPicker } from './appearance/theme'
 
-const appearanceLanguages = languages.filter((language) =>
-  ['de', 'en-US'].includes(language.langCode),
-)
+const appearanceLanguages = languages
 
 export function AppearancePage() {
   const { t } = useTranslation()

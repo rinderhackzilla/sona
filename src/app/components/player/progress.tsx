@@ -19,6 +19,7 @@ import {
   usePlayerSonglist,
 } from '@/store/player.store'
 import { useScrobbleStatusStore } from '@/store/scrobble.store'
+import { useFullscreenState } from '@/store/ui.store'
 import { convertSecondsToTime } from '@/utils/convertSecondsToTime'
 import { logger } from '@/utils/logger'
 
@@ -34,10 +35,13 @@ export function PlayerProgress({ audioRef }: PlayerProgressProps) {
   const isPlaying = usePlayerIsPlaying()
   const { currentSong, currentList, podcastList, currentSongIndex } =
     usePlayerSonglist()
+  const isFullscreenOpen = useFullscreenState((state) => state.open)
   const { isSong, isPodcast } = usePlayerMediaType()
   const { setProgress, setUpdatePodcastProgress, getCurrentPodcastProgress } =
     usePlayerActions()
   const isScrobbleSentRef = useRef(false)
+  const isNowPlayingSentRef = useRef(false)
+  const isNowPlayingSendingRef = useRef(false)
   const isSeekingRef = useRef(false)
   const scrobbleStatus = useScrobbleStatusStore((state) => state.status)
   const scrobbleTrackId = useScrobbleStatusStore((state) => state.trackId)
@@ -91,6 +95,10 @@ export function PlayerProgress({ audioRef }: PlayerProgressProps) {
   }, [localProgress, progress, setProgress, updateAudioCurrentTime])
 
   useEffect(() => {
+    if (isFullscreenOpen) {
+      setVisualProgress(progress)
+      return
+    }
     if (isSeekingRef.current) return
     if (!isPlaying) {
       setVisualProgress(progress)
@@ -106,7 +114,7 @@ export function PlayerProgress({ audioRef }: PlayerProgressProps) {
 
     frameId = requestAnimationFrame(tick)
     return () => cancelAnimationFrame(frameId)
-  }, [audioRef, isPlaying, progress])
+  }, [audioRef, isFullscreenOpen, isPlaying, progress])
 
   const [showRemaining, setShowRemaining] = useState(false)
 
@@ -128,6 +136,10 @@ export function PlayerProgress({ audioRef }: PlayerProgressProps) {
 
   const listenedSecondsRef = useRef(0)
   const lastProgressRef = useRef(0)
+  const isScrobbleSendingRef = useRef(false)
+  const lastScrobbleAttemptAtRef = useRef(0)
+  const lastSavedPodcastProgressRef = useRef(0)
+  const SCROBBLE_RETRY_COOLDOWN_MS = 10000
 
   const shouldSendFullScrobble = useCallback(
     (listenedSeconds: number, durationSeconds: number) => {
@@ -145,12 +157,17 @@ export function PlayerProgress({ audioRef }: PlayerProgressProps) {
 
   useEffect(() => {
     isScrobbleSentRef.current = false
+    isNowPlayingSentRef.current = false
+    isNowPlayingSendingRef.current = false
+    isScrobbleSendingRef.current = false
     listenedSecondsRef.current = 0
     lastProgressRef.current = 0
+    lastScrobbleAttemptAtRef.current = 0
   }, [currentSong.id])
 
   useEffect(() => {
     if (!isSong || !isPlaying || !currentSong.id) return
+    if (isNowPlayingSentRef.current || isNowPlayingSendingRef.current) return
     if (
       scrobbleTrackId === currentSong.id &&
       (scrobbleStatus === 'sending-now' || scrobbleStatus === 'now-ok')
@@ -158,13 +175,17 @@ export function PlayerProgress({ audioRef }: PlayerProgressProps) {
       return
     }
 
+    isNowPlayingSendingRef.current = true
     setScrobbleStatus('sending-now', currentSong.id)
 
     void sendNowPlaying(currentSong.id)
       .then(() => {
+        isNowPlayingSendingRef.current = false
+        isNowPlayingSentRef.current = true
         setScrobbleStatus('now-ok', currentSong.id)
       })
       .catch((error) => {
+        isNowPlayingSendingRef.current = false
         setScrobbleStatus('now-failed', currentSong.id)
         logger.warn('Now playing request failed', error)
       })
@@ -191,15 +212,22 @@ export function PlayerProgress({ audioRef }: PlayerProgressProps) {
 
       if (
         !isScrobbleSentRef.current &&
+        !isScrobbleSendingRef.current &&
+        Date.now() - lastScrobbleAttemptAtRef.current >=
+          SCROBBLE_RETRY_COOLDOWN_MS &&
         shouldSendFullScrobble(listenedSecondsRef.current, currentDuration)
       ) {
+        isScrobbleSendingRef.current = true
+        lastScrobbleAttemptAtRef.current = Date.now()
         setScrobbleStatus('sending', currentSong.id)
         void sendScrobble(currentSong.id)
           .then(() => {
             isScrobbleSentRef.current = true
+            isScrobbleSendingRef.current = false
             setScrobbleStatus('ok', currentSong.id)
           })
           .catch((error) => {
+            isScrobbleSendingRef.current = false
             setScrobbleStatus('failed', currentSong.id)
             logger.warn('Scrobble request failed', error)
           })
@@ -216,20 +244,40 @@ export function PlayerProgress({ audioRef }: PlayerProgressProps) {
     shouldSendFullScrobble,
   ])
 
+  useEffect(() => {
+    if (!isPodcast) {
+      lastSavedPodcastProgressRef.current = 0
+      return
+    }
+
+    const podcast = podcastList[currentSongIndex] ?? null
+    if (!podcast) {
+      lastSavedPodcastProgressRef.current = 0
+      return
+    }
+
+    const existingProgress = getCurrentPodcastProgress()
+    lastSavedPodcastProgressRef.current = Math.max(
+      0,
+      Math.floor(existingProgress || 0),
+    )
+  }, [currentSongIndex, getCurrentPodcastProgress, isPodcast, podcastList])
+
   // Used to save listening progress to backend every 30 seconds
   useEffect(() => {
     if (!isPodcast || !podcastList) return
     if (progress === 0) return
 
-    const send = (progress / 30) % 1 === 0
-    if (!send) return
-
     const podcast = podcastList[currentSongIndex] ?? null
     if (!podcast) return
+
+    const currentProgress = Math.floor(progress)
+    if (currentProgress - lastSavedPodcastProgressRef.current < 30) return
 
     const podcastProgress = getCurrentPodcastProgress()
     if (progress === podcastProgress) return
 
+    lastSavedPodcastProgressRef.current = currentProgress
     setUpdatePodcastProgress(progress)
 
     podcasts
@@ -238,6 +286,11 @@ export function PlayerProgress({ audioRef }: PlayerProgressProps) {
         logger.info('Progress sent:', progress)
       })
       .catch((error) => {
+        // Allow retry on the next interval-sized progress increase.
+        lastSavedPodcastProgressRef.current = Math.max(
+          0,
+          currentProgress - 30,
+        )
         logger.error('Error sending progress', error)
       })
   }, [
@@ -282,7 +335,7 @@ export function PlayerProgress({ audioRef }: PlayerProgressProps) {
           tooltipTransformer={convertSecondsToTime}
           max={currentDuration}
           step={1}
-          className="cursor-pointer w-[32rem] player-progress-slider"
+          className="cursor-pointer w-full max-w-[32rem] min-w-[8rem] player-progress-slider"
           onValueChange={([value]) => handleSeeking(value)}
           onValueCommit={([value]) => handleSeeked(value)}
           // Sometimes onValueCommit doesn't work properly
@@ -298,7 +351,7 @@ export function PlayerProgress({ audioRef }: PlayerProgressProps) {
           max={100}
           step={1}
           disabled={true}
-          className="cursor-pointer w-[32rem] pointer-events-none player-progress-slider"
+          className="cursor-pointer w-full max-w-[32rem] min-w-[8rem] pointer-events-none player-progress-slider"
         />
       )}
       <small

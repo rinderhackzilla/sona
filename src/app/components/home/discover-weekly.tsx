@@ -9,6 +9,7 @@ import {
 } from '@/app/components/ui/card'
 import { useDiscoverWeekly } from '@/app/hooks/use-discover-weekly'
 import { usePlayerActions } from '@/store/player.store'
+import { shuffleSongList } from '@/utils/songListFunctions'
 
 export function DiscoverWeekly() {
   const { t } = useTranslation()
@@ -106,7 +107,7 @@ export function DiscoverWeekly() {
   }
 
   const handlePlayShuffle = () => {
-    const shuffled = [...playlist].sort(() => Math.random() - 0.5)
+    const shuffled = shuffleSongList(playlist, 0, true)
     setSongList(shuffled, 0)
   }
 

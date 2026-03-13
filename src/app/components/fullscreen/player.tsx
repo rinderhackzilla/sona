@@ -2,6 +2,7 @@ import { clsx } from 'clsx'
 import { ListVideo, MicVocalIcon } from 'lucide-react'
 import { useCallback, useEffect, useRef } from 'react'
 import { Button } from '@/app/components/ui/button'
+import { useRenderCounter } from '@/app/hooks/use-render-counter'
 import {
   useLyricsState,
   useMainDrawerState,
@@ -24,6 +25,7 @@ type SwitchPhase = 'idle' | 'closing_for_switch'
 const PANEL_SWITCH_DELAY_MS = 420
 
 export function FullscreenPlayer({ isChromeVisible }: FullscreenPlayerProps) {
+  useRenderCounter('FullscreenPlayer')
   const { queueState } = useQueueState()
   const { lyricsState } = useLyricsState()
   const { setActiveDrawerPanel } = useMainDrawerState()
@@ -91,7 +93,7 @@ export function FullscreenPlayer({ isChromeVisible }: FullscreenPlayerProps) {
     >
       <div
         className={clsx(
-          'transition-all duration-700 [transition-timing-function:cubic-bezier(0.22,1,0.36,1)]',
+          'transition-[opacity,transform] duration-700 [transition-timing-function:cubic-bezier(0.22,1,0.36,1)]',
           isChromeVisible
             ? 'mb-2.5 translate-y-0 opacity-100'
             : 'mb-0 translate-y-0 opacity-100',
@@ -102,36 +104,27 @@ export function FullscreenPlayer({ isChromeVisible }: FullscreenPlayerProps) {
 
       <div
         className={clsx(
-          'absolute left-0 right-0 bottom-0 flex items-center justify-between gap-4 px-1 py-1 transition-all duration-700 [transition-timing-function:cubic-bezier(0.22,1,0.36,1)]',
+          'absolute left-0 right-0 bottom-0 flex items-center justify-between gap-4 px-1 py-1 transition-[opacity,transform] duration-700 [transition-timing-function:cubic-bezier(0.22,1,0.36,1)]',
           isChromeVisible
             ? 'opacity-100 translate-y-0'
             : 'opacity-0 translate-y-2 pointer-events-none',
         )}
       >
         <div
-          className={clsx(
-            'w-[200px] flex items-center gap-2 justify-start transition-all duration-300',
-            !isChromeVisible && 'opacity-0 translate-y-2 pointer-events-none',
-          )}
+          className="w-[304px] flex items-center gap-2 justify-start"
         >
           <CloseFullscreenButton />
           <FullscreenSettings />
         </div>
 
         <div
-          className={clsx(
-            'flex flex-1 justify-center items-center gap-2 transition-all duration-300',
-            !isChromeVisible && 'opacity-0 translate-y-2 pointer-events-none',
-          )}
+          className="flex flex-1 justify-center items-center gap-2"
         >
           <FullscreenControls />
         </div>
 
         <div
-          className={clsx(
-            'w-[304px] flex items-center gap-1.5 justify-end transition-all duration-300',
-            !isChromeVisible && 'opacity-0 translate-y-2 pointer-events-none',
-          )}
+          className="w-[304px] flex items-center gap-1.5 justify-end"
         >
           <div className="-ml-1">
             <LikeButton />

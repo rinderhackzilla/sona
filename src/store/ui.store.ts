@@ -58,6 +58,12 @@ export const useUiStore = createWithEqualityFn<IUiContext>()(
               state.fullscreen.open = open
             })
           },
+          visualizerActive: false,
+          setVisualizerActive: (active) => {
+            set((state) => {
+              state.fullscreen.visualizerActive = active
+            })
+          },
         },
       })),
       {

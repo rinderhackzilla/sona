@@ -9,6 +9,7 @@ import {
 } from '@/app/components/ui/card'
 import { useTop50Year } from '@/app/hooks/use-top-50-year'
 import { usePlayerActions } from '@/store/player.store'
+import { shuffleSongList } from '@/utils/songListFunctions'
 
 export function Top50Year() {
   const { t } = useTranslation()
@@ -104,7 +105,7 @@ export function Top50Year() {
   }
 
   const handlePlayShuffle = () => {
-    const shuffled = [...playlist].sort(() => Math.random() - 0.5)
+    const shuffled = shuffleSongList(playlist, 0, true)
     setSongList(shuffled, 0)
   }
 

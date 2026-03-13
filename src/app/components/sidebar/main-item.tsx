@@ -8,17 +8,19 @@ import { safeStorageSet } from '@/utils/safe-storage'
 
 export function SidebarMainItem({ item }: { item: ISidebarItem }) {
   const { t } = useTranslation()
-  const { isActive } = useRouteIsActive()
+  const { isActive, isExactActive } = useRouteIsActive()
+  const isItemActive = isActive(item.route)
+  const isItemExactActive = isExactActive(item.route)
 
   return (
     <MainSidebarMenuButton
       asChild
+      isActive={isItemActive}
       tooltip={t(item.title)}
-      className={clsx(isActive(item.route) && 'bg-accent')}
     >
       <Link
         to={item.route}
-        className={clsx(isActive(item.route) && 'pointer-events-none')}
+        className={clsx(isItemExactActive && 'pointer-events-none')}
         onClick={() => {
           if (item.id === SidebarItems.Albums) {
             safeStorageSet('albums_force_top_once', '1')

@@ -157,7 +157,7 @@ export function DiscoverWeeklyCard() {
 
         {/* Cover */}
         <div className="flex items-center justify-end">
-          <div className="group relative block h-[142px] w-[142px] shrink-0 overflow-hidden rounded-lg border border-border/60 shadow-xl transition-all duration-300 hover:scale-[1.015] min-[1600px]:h-[112px] min-[1600px]:w-[112px] min-[2300px]:h-[154px] min-[2300px]:w-[154px]">
+          <div className="group relative block h-[156px] w-[156px] shrink-0 overflow-hidden rounded-lg border border-border/60 shadow-xl transition-all duration-300 hover:scale-[1.015] min-[1600px]:h-[128px] min-[1600px]:w-[128px] min-[2300px]:h-[172px] min-[2300px]:w-[172px]">
             {coverArt ? (
               <ImageLoader id={coverArt} type="album" size="600">
                 {(src, isLoadingImage) => (

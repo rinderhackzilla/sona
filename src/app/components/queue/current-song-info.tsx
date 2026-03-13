@@ -42,7 +42,7 @@ export function CurrentSongInfo() {
           )}
         </h4>
 
-        <div className="leading-5 text-lg text-muted-foreground truncate text-shadow-lg">
+        <div className="text-sm text-muted-foreground truncate text-shadow-lg">
           <QueueArtistsLinks song={currentSong} />
         </div>
 

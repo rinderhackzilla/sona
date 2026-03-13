@@ -37,7 +37,7 @@ export function QueueSongList({
       <DialogTitle className="sr-only">{t('queue.title')}</DialogTitle>
       <div className="flex items-center justify-between h-8 mb-2 pl-3 lg:pl-4">
         <div className="flex gap-2 h-6 items-center text-foreground/70">
-          <p className="text-foreground">{t('queue.title')}</p>
+          <p className="text-sm font-medium text-foreground">{t('queue.title')}</p>
           <p>{'•'}</p>
           <p className="text-sm">
             {t('playlist.songCount', { count: trackListCount })}
@@ -51,7 +51,7 @@ export function QueueSongList({
         <div>
           <Button
             variant="ghost"
-            className="px-4 h-8 rounded-full py-0 flex items-center justify-center hover:bg-foreground/20"
+            className="px-4 h-8 rounded-[var(--radius-control)] py-0 flex items-center justify-center hover:bg-foreground/20"
             onClick={clearPlayerState}
           >
             <ListXIcon className="mr-1 w-5 h-5" />

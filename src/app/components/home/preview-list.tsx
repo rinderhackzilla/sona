@@ -1,4 +1,5 @@
 import { type ReactNode, useEffect, useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { ImageLoader } from '@/app/components/image-loader'
@@ -14,6 +15,7 @@ import { ROUTES } from '@/routes/routesList'
 import { subsonic } from '@/service/subsonic'
 import { usePlayerActions } from '@/store/player.store'
 import { Albums } from '@/types/responses/album'
+import { queryKeys } from '@/utils/queryKeys'
 
 interface PreviewListProps {
   list: Albums[]
@@ -33,22 +35,35 @@ export default function PreviewList({
   moreRoute,
 }: PreviewListProps) {
   const [api, setApi] = useState<CarouselApi>()
+  const [loadingAlbumId, setLoadingAlbumId] = useState<string | null>(null)
   const [canScrollPrev, setCanScrollPrev] = useState<boolean>()
   const [canScrollNext, setCanScrollNext] = useState<boolean>()
   const { setSongList } = usePlayerActions()
+  const queryClient = useQueryClient()
   const { t } = useTranslation()
 
   moreTitle = moreTitle || t('generic.seeMore')
-
-  if (list.length > 16) {
-    list = list.slice(0, 16)
-  }
+  const displayList = list.slice(0, 16)
 
   async function handlePlayAlbum(album: Albums) {
-    const response = await subsonic.albums.getOne(album.id)
+    if (loadingAlbumId === album.id) return
+    setLoadingAlbumId(album.id)
 
-    if (response) {
-      setSongList(response.song, 0)
+    try {
+      const response = await queryClient.ensureQueryData({
+        queryKey: [queryKeys.album.single, album.id],
+        queryFn: async () => {
+          const data = await subsonic.albums.getOne(album.id)
+          if (!data) throw new Error('Album not found')
+          return data
+        },
+      })
+
+      if (response) {
+        setSongList(response.song, 0)
+      }
+    } finally {
+      setLoadingAlbumId(null)
     }
   }
 
@@ -113,10 +128,10 @@ export default function PreviewList({
           data-testid="preview-list-carousel"
         >
           <CarouselContent>
-            {list.map((album, index) => (
+            {displayList.map((album, index) => (
               <CarouselItem
                 key={album.id}
-                className="basis-[56%] sm:basis-[38%] md:basis-[30%] lg:basis-[24%] xl:basis-[20%] 2xl:basis-[17.5%]"
+                className="basis-[clamp(168px,22vw,256px)]"
                 data-testid={`preview-list-carousel-item-${index}`}
               >
                 <PreviewCard.Root>
@@ -128,6 +143,7 @@ export default function PreviewList({
                     </ImageLoader>
                     <PreviewCard.PlayButton
                       onClick={() => handlePlayAlbum(album)}
+                      disabled={loadingAlbumId === album.id}
                     />
                   </PreviewCard.ImageWrapper>
                   <PreviewCard.InfoWrapper>

@@ -1,4 +1,5 @@
 import { FileText, Globe, Info, Music, Paintbrush } from 'lucide-react'
+import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Dialog, DialogContent, DialogTitle } from '@/app/components/ui/dialog'
 import {
@@ -33,6 +34,18 @@ export function SettingsDialog() {
   const { openDialog, setOpenDialog, currentPage, setCurrentPage } =
     useAppSettings()
 
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (!(event.ctrlKey || event.metaKey)) return
+      if (event.code !== 'Comma') return
+      event.preventDefault()
+      setOpenDialog(true)
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [setOpenDialog])
+
   return (
     <Dialog open={openDialog} onOpenChange={setOpenDialog}>
       <DialogContent
@@ -51,7 +64,7 @@ export function SettingsDialog() {
           className="flex flex-col h-full"
         >
           {/* Header: title row + tab bar, with right padding to clear the X button */}
-          <div className="flex-shrink-0 border-b bg-card/35 backdrop-blur-sm">
+          <div className="flex-shrink-0 border-b border-border/55 bg-card/35 backdrop-blur-sm">
             <div className="px-6 pb-2 pr-12 pt-4 flex items-center justify-between gap-3">
               <div>
                 <span className="text-base font-semibold text-foreground tracking-tight">
@@ -66,15 +79,15 @@ export function SettingsDialog() {
                   key={value}
                   value={value}
                   className="
-                    flex items-center gap-1.5 px-3 py-2
-                    rounded-md bg-transparent shadow-none
-                    border border-transparent
+                    flex items-center gap-1.5 px-2.5 py-1.5
+                    rounded-none bg-transparent shadow-none
+                    border-b-2 border-transparent
                     text-muted-foreground text-sm font-medium
                     transition-colors
                     hover:text-foreground hover:bg-muted/45
-                    data-[state=active]:border-border/70
+                    data-[state=active]:border-primary
                     data-[state=active]:text-foreground
-                    data-[state=active]:bg-background/70
+                    data-[state=active]:bg-transparent
                     data-[state=active]:shadow-none
                   "
                 >

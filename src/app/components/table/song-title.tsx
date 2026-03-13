@@ -14,7 +14,7 @@ export function TableSongTitle({ song }: { song: ISong }) {
         altText={song.title}
       />
       <div className="flex flex-col w-full justify-center truncate">
-        <span className="font-medium truncate">{song.title}</span>
+        <span className="text-sm font-medium truncate">{song.title}</span>
         <div className="flex items-center truncate">
           <TableArtists song={song} />
         </div>
@@ -36,7 +36,9 @@ export function TableArtists({ song }: ArtistsLinksProps) {
 
   if (!artistId) {
     return (
-      <span className="text-xs text-foreground/70 text-nowrap">{artist}</span>
+      <span className="text-xs text-foreground/70 text-nowrap transition-colors duration-150">
+        {artist}
+      </span>
     )
   }
 
@@ -81,7 +83,7 @@ function ArtistLink({ id, name }: ArtistLinkProps) {
     >
       <span
         className={cn(
-          'text-xs text-foreground/70 text-nowrap',
+          'text-xs text-foreground/70 text-nowrap transition-colors duration-150',
           id && 'hover:underline hover:text-foreground',
         )}
       >

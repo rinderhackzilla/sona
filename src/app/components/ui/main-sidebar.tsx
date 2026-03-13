@@ -273,7 +273,7 @@ function MainSidebar({
         <div
           data-sidebar="sidebar"
           data-slot="sidebar-inner"
-          className="bg-background/96 border-border/60 flex h-full w-full flex-col overflow-x-hidden border-r backdrop-blur-sm group-data-[variant=floating]:border-border group-data-[variant=floating]:rounded-[var(--radius-surface)] group-data-[variant=floating]:border group-data-[variant=floating]:shadow-sm"
+          className="bg-background/96 border-border/55 flex h-full w-full flex-col overflow-x-hidden border-r backdrop-blur-sm group-data-[variant=floating]:border-border/55 group-data-[variant=floating]:rounded-[var(--radius-surface)] group-data-[variant=floating]:border group-data-[variant=floating]:shadow-sm"
         >
           {children}
         </div>
@@ -462,7 +462,7 @@ function MainSidebarGroupLabel({
       data-slot="sidebar-group-label"
       data-sidebar="group-label"
       className={cn(
-        'text-foreground/60 ring-ring flex h-7 shrink-0 items-center rounded-[var(--radius-control)] px-2 text-[11px] font-semibold tracking-[0.06em] outline-hidden duration-200 ease-linear focus-visible:ring-2 [&>svg]:size-4 [&>svg]:shrink-0',
+        'text-foreground/60 ring-ring flex h-7 shrink-0 items-center rounded-[var(--radius-control)] px-2 text-[11px] font-medium tracking-[0.06em] outline-hidden duration-200 ease-linear focus-visible:ring-2 [&>svg]:size-4 [&>svg]:shrink-0',
         'transition-[margin,opacity] group-data-[collapsible=icon]:-mt-8 group-data-[collapsible=icon]:opacity-0',
         className,
       )}

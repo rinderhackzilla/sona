@@ -6,11 +6,9 @@ export function useAudioAnalyser() {
   const isPlaying = usePlayerIsPlaying()
 
   const animationFrameRef = useRef<number | null>(null)
-
-  const [frequencyData, setFrequencyData] = useState<Uint8Array>(
-    new Uint8Array(128),
-  )
-  const [timeData, setTimeData] = useState<Uint8Array>(new Uint8Array(128))
+  const frequencyDataRef = useRef<Uint8Array>(new Uint8Array(128))
+  const timeDataRef = useRef<Uint8Array>(new Uint8Array(128))
+  const [, setTick] = useState(0)
 
   useEffect(() => {
     if (!isPlaying) {
@@ -25,17 +23,18 @@ export function useAudioAnalyser() {
     if (!analyser) return
 
     const bufferLength = analyser.frequencyBinCount
-    const freqDataArray = new Uint8Array(bufferLength)
-    const timeDataArray = new Uint8Array(bufferLength)
+    if (frequencyDataRef.current.length !== bufferLength) {
+      frequencyDataRef.current = new Uint8Array(bufferLength)
+      timeDataRef.current = new Uint8Array(bufferLength)
+    }
 
     const updateData = () => {
       if (!analyser) return
 
-      analyser.getByteFrequencyData(freqDataArray)
-      analyser.getByteTimeDomainData(timeDataArray)
+      analyser.getByteFrequencyData(frequencyDataRef.current)
+      analyser.getByteTimeDomainData(timeDataRef.current)
 
-      setFrequencyData(new Uint8Array(freqDataArray))
-      setTimeData(new Uint8Array(timeDataArray))
+      setTick((tick) => tick + 1)
 
       animationFrameRef.current = requestAnimationFrame(updateData)
     }
@@ -50,8 +49,8 @@ export function useAudioAnalyser() {
   }, [isPlaying])
 
   return {
-    frequencyData,
-    timeData,
+    frequencyData: frequencyDataRef.current,
+    timeData: timeDataRef.current,
     analyser: getGlobalAnalyser(),
   }
 }

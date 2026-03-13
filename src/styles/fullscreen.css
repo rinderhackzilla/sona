@@ -22,12 +22,27 @@
   will-change: transform;
 }
 
+.fullscreen-backdrop-kenburns {
+  transform-origin: center center;
+  animation: fullscreen-backdrop-kenburns 140s linear infinite alternate;
+  will-change: transform;
+}
+
 @keyframes fullscreen-kenburns {
   0% {
     transform: scale(1.02) translate3d(-0.18%, -0.14%, 0);
   }
   100% {
     transform: scale(1.04) translate3d(0.16%, 0.14%, 0);
+  }
+}
+
+@keyframes fullscreen-backdrop-kenburns {
+  0% {
+    transform: scale(1) translate3d(-0.2%, -0.16%, 0) rotate(-1.5deg);
+  }
+  100% {
+    transform: scale(1.42) translate3d(0.2%, 0.16%, 0) rotate(1.5deg);
   }
 }
 
@@ -52,7 +67,7 @@
       hsl(var(--primary) / 0.34),
       transparent 62%
     );
-  filter: blur(8px) saturate(1.05);
+  filter: saturate(1.05);
   animation: hypnotic-float-a 110s ease-in-out infinite alternate;
 }
 
@@ -69,7 +84,7 @@
       hsl(var(--accent) / 0.26),
       transparent 60%
     );
-  filter: blur(24px) saturate(1.08);
+  filter: saturate(1.08);
   animation: hypnotic-float-b 128s ease-in-out infinite alternate;
 }
 
@@ -92,7 +107,7 @@
       hsl(var(--background) / 0.26),
       transparent 100%
     );
-  filter: blur(12px);
+  filter: none;
   animation: hypnotic-pulse 44s ease-in-out infinite;
 }
 
@@ -131,6 +146,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   .fullscreen-bg-kenburns,
+  .fullscreen-backdrop-kenburns,
   .hypnotic-layer-a,
   .hypnotic-layer-b,
   .hypnotic-layer-c {
@@ -142,6 +158,6 @@
   .hypnotic-layer-b,
   .hypnotic-layer-c {
     opacity: 0.08;
-    filter: blur(8px);
+    filter: none;
   }
 }

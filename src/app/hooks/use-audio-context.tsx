@@ -16,22 +16,28 @@ import {
 } from '@/app/audio/context-singleton'
 import {
   EQ_BANDS,
-  getEqEnabled,
   getEqFilters,
-  getEqGains,
   normalizeEqGains,
-  setEqEnabledState,
   setEqFilters,
-  setEqGainsState,
 } from '@/app/audio/eq-state'
-import { usePlayerMediaType } from '@/store/player.store'
+import {
+  useEqualizerSettings,
+  usePlayerMediaType,
+  usePlayerStore,
+} from '@/store/player.store'
 import { logger } from '@/utils/logger'
 import { ReplayGainParams } from '@/utils/replayGain'
 
 type IAudioSource = IMediaElementAudioSourceNode<IAudioContext>
 
-export function useAudioContext(audio: HTMLAudioElement | null) {
+export function useAudioContext(
+  audio: HTMLAudioElement | null,
+  enableVisualizerTap = true,
+) {
   const { isSong } = usePlayerMediaType()
+  const shouldEnableVisualizerBranch = enableVisualizerTap
+  const { enabled: eqEnabled, gains: eqGains } = useEqualizerSettings()
+  const normalizedEqGains = normalizeEqGains(eqGains)
 
   const audioContextRef = useRef<IAudioContext | null>(null)
   const sourceNodeRef = useRef<IAudioSource | null>(null)
@@ -40,12 +46,20 @@ export function useAudioContext(audio: HTMLAudioElement | null) {
   const eqFiltersRef = useRef<IBiquadFilterNode<IAudioContext>[]>([])
   const analyserRef = useRef<AnalyserNode | null>(null)
   const chainConnectedRef = useRef(false)
+  const visualizerBranchConnectedRef = useRef(false)
 
   const setupAudioContext = useCallback(() => {
     if (!audio || !isSong) return
 
-    if (!getGlobalAudioContext()) {
+    const existingCtx = getGlobalAudioContext()
+    if (!existingCtx || existingCtx.state === 'closed') {
       setGlobalAudioContext(new AudioContext())
+      // Nullify local refs so they are rebuilt against the new context
+      audioContextRef.current = null
+      chainConnectedRef.current = false
+      visualizerBranchConnectedRef.current = false
+      gainNodeRef.current = null
+      eqFiltersRef.current = []
     }
     if (!audioContextRef.current) {
       audioContextRef.current = getGlobalAudioContext()
@@ -68,29 +82,6 @@ export function useAudioContext(audio: HTMLAudioElement | null) {
       gainNodeRef.current = audioContext.createGain()
     }
 
-    // Create visualizer-specific gain node (fixed at 25% for consistent visualization)
-    if (!visualizerGainRef.current) {
-      const vizGain = audioContext.createGain() as GainNode
-      vizGain.gain.value = 0.25 // Fixed 25% volume for visualizer
-      visualizerGainRef.current = vizGain
-      logger.info('[AudioContext] Created visualizer gain node at 25%')
-    }
-
-    // Reuse existing global analyser when available to keep visualizer chain alive
-    if (!analyserRef.current) {
-      const globalAnalyser = getGlobalAnalyserNode()
-      if (globalAnalyser) {
-        analyserRef.current = globalAnalyser
-      } else {
-        const analyser = audioContext.createAnalyser() as AnalyserNode
-        analyser.fftSize = 512
-        analyser.smoothingTimeConstant = 0.75
-        analyserRef.current = analyser
-        setGlobalAnalyserNode(analyser)
-        logger.info('[AudioContext] Created analyser for visualizer')
-      }
-    }
-
     // Create EQ filters if not already created
     if (eqFiltersRef.current.length === 0) {
       const filters = EQ_BANDS.map((band) => {
@@ -103,9 +94,8 @@ export function useAudioContext(audio: HTMLAudioElement | null) {
       })
       eqFiltersRef.current = filters
       setEqFilters(filters)
-      const initialGains = normalizeEqGains(getEqGains())
       filters.forEach((filter, index) => {
-        filter.gain.value = getEqEnabled() ? initialGains[index] : 0
+        filter.gain.value = eqEnabled ? normalizedEqGains[index] : 0
       })
       logger.info('Created EQ filters', { count: filters.length })
     }
@@ -126,23 +116,72 @@ export function useAudioContext(audio: HTMLAudioElement | null) {
       // Connect gain node to destination
       gainNodeRef.current.connect(audioContext.destination)
 
-      // Separate visualizer chain: last EQ filter -> visualizer gain -> analyser
-      // This splits off BEFORE the master gain node
-      const lastEqFilter = eqFiltersRef.current[eqFiltersRef.current.length - 1]
-      if (lastEqFilter && visualizerGainRef.current && analyserRef.current) {
-        lastEqFilter.connect(visualizerGainRef.current)
-        visualizerGainRef.current.connect(analyserRef.current)
-        logger.info(
-          'Visualizer chain connected: EQ -> visualizer gain (25%) -> analyser',
-        )
-      }
-
       chainConnectedRef.current = true
       logger.info(
         'Audio chain connected: source -> EQ -> gain -> destination (+ visualizer branch)',
       )
     }
-  }, [audio, isSong])
+  }, [audio, eqEnabled, isSong, normalizedEqGains])
+
+  useEffect(() => {
+    if (!isSong || !chainConnectedRef.current) return
+
+    const lastEqFilter = eqFiltersRef.current[eqFiltersRef.current.length - 1]
+    if (!lastEqFilter) return
+
+    if (!shouldEnableVisualizerBranch) {
+      if (visualizerBranchConnectedRef.current) {
+        try {
+          visualizerGainRef.current?.disconnect()
+          analyserRef.current?.disconnect()
+        } catch {
+          // no-op
+        }
+        visualizerBranchConnectedRef.current = false
+      }
+      if (getGlobalAnalyserNode() === analyserRef.current) {
+        setGlobalAnalyserNode(null)
+      }
+      return
+    }
+
+    if (!audioContextRef.current) return
+
+    if (!visualizerGainRef.current) {
+      const vizGain = audioContextRef.current.createGain() as GainNode
+      vizGain.gain.value = 0.25
+      visualizerGainRef.current = vizGain
+    }
+
+    if (!analyserRef.current) {
+      const analyser = audioContextRef.current.createAnalyser() as AnalyserNode
+      analyser.fftSize = 256
+      analyser.smoothingTimeConstant = 0.75
+      analyserRef.current = analyser
+    }
+
+    if (!visualizerBranchConnectedRef.current) {
+      try {
+        lastEqFilter.connect(visualizerGainRef.current)
+        visualizerGainRef.current.connect(analyserRef.current)
+      } catch {
+        // already connected
+      }
+      visualizerBranchConnectedRef.current = true
+    }
+
+    setGlobalAnalyserNode(analyserRef.current)
+  }, [enableVisualizerTap, isSong, shouldEnableVisualizerBranch])
+
+  useEffect(() => {
+    const filters =
+      eqFiltersRef.current.length > 0 ? eqFiltersRef.current : getEqFilters()
+    if (!filters.length) return
+
+    filters.forEach((filter, index) => {
+      filter.gain.value = eqEnabled ? normalizedEqGains[index] : 0
+    })
+  }, [eqEnabled, normalizedEqGains])
 
   const resumeContext = useCallback(async () => {
     const audioContext = audioContextRef.current
@@ -189,6 +228,7 @@ export function useAudioContext(audio: HTMLAudioElement | null) {
     }
     audioContextRef.current = getGlobalAudioContext()
     chainConnectedRef.current = false
+    visualizerBranchConnectedRef.current = false
   }, [])
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: clear state after unmount
@@ -220,25 +260,25 @@ export function getGlobalAnalyser(): AnalyserNode | null {
 
 // Export functions to control EQ from equalizer modal
 export function setEqEnabled(enabled: boolean) {
-  setEqEnabledState(enabled)
+  usePlayerStore.getState().settings.equalizer.setEnabled(enabled)
   logger.info('EQ enabled:', enabled)
 }
 
 export function setEqGains(gains: number[]) {
-  setEqGainsState(gains)
-
-  if (getEqEnabled() && getEqFilters().length) {
-    getEqFilters().forEach((filter, index) => {
-      filter.gain.value = getEqGains()[index]
-      logger.info(`EQ Filter ${index}: ${getEqGains()[index]} dB`)
-    })
-  }
+  const normalized = normalizeEqGains(gains)
+  usePlayerStore.getState().settings.equalizer.setGains(normalized)
+  getEqFilters().forEach((filter, index) => {
+    logger.info(`EQ Filter ${index}: ${normalized[index]} dB`)
+  })
 }
 
 export function getEqState() {
+  const {
+    settings: { equalizer },
+  } = usePlayerStore.getState()
   return {
-    enabled: getEqEnabled(),
-    gains: getEqGains(),
+    enabled: equalizer.enabled,
+    gains: normalizeEqGains(equalizer.gains),
     filters: getEqFilters(),
   }
 }
