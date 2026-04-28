@@ -4,6 +4,7 @@ import { cn } from '@/lib/utils'
 import { ROUTES } from '@/routes/routesList'
 import { useMainDrawerState } from '@/store/player.store'
 import { ISong } from '@/types/responses/song'
+import { ALBUM_ARTISTS_MAX_NUMBER } from '@/utils/multipleArtists'
 
 export function TableSongTitle({ song }: { song: ISong }) {
   return (
@@ -49,12 +50,17 @@ function ArtistsLinks({ song }: ArtistsLinksProps) {
   const { artists, artistId, artist } = song
 
   if (artists && artists.length > 1) {
+    const reducedArtists = artists.slice(0, ALBUM_ARTISTS_MAX_NUMBER)
+    const fullText = artists.map(({ name }) => name).join(', ')
     return (
-      <div className="flex items-center gap-1 text-xs text-foreground/70 w-full maskImage-marquee-fade-finished">
-        {artists.map(({ id, name }, index) => (
+      <div
+        className="flex items-center gap-1 text-xs text-foreground/70 w-full maskImage-marquee-fade-finished"
+        title={fullText}
+      >
+        {reducedArtists.map(({ id, name }, index) => (
           <div key={id} className="flex items-center">
             <ArtistLink id={id} name={name} />
-            {index < artists.length - 1 && ','}
+            {index < reducedArtists.length - 1 && ','}
           </div>
         ))}
       </div>

@@ -9,12 +9,12 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/app/components/ui/dialog'
-import { usePlayerActions } from '@/store/player.store'
+import { useMainDrawerState, usePlayerActions } from '@/store/player.store'
 import { SonaDjMode, useSonaDj } from '@/store/sona-dj.store'
 
 const triggerStyles = {
   fullscreen:
-    'relative w-12 h-12 rounded-full border border-transparent bg-transparent text-foreground/88 hover:text-foreground data-[state=active]:text-foreground hover:bg-transparent hover:scale-110 transition-transform will-change-transform',
+    'relative w-12 h-12 rounded-full border border-[color:var(--fs-btn-utility-border)] bg-[color:var(--fs-btn-utility-bg)] text-[color:var(--fs-btn-fg-muted)] hover:text-[color:var(--fs-btn-fg)] data-[state=active]:text-[color:var(--fs-btn-fg)] hover:bg-[color:var(--fs-btn-utility-bg-hover)] hover:border-[color:var(--fs-btn-utility-border-hover)] transition-colors',
   player:
     'relative rounded-full w-10 h-10 p-2 text-secondary-foreground hover:text-secondary-foreground data-[state=active]:text-primary hover:bg-transparent',
   active: 'player-button-active',
@@ -27,6 +27,7 @@ interface SonaDjButtonProps {
 export function SonaDjButton({ variant = 'fullscreen' }: SonaDjButtonProps) {
   const { mode, setMode } = useSonaDj()
   const { seedSonaDjTrack, setRuntimeSonaDjMode } = usePlayerActions()
+  const { setActiveDrawerPanel } = useMainDrawerState()
   const { t } = useTranslation()
   const enabled = mode !== SonaDjMode.Off
   const djs = [
@@ -87,6 +88,10 @@ export function SonaDjButton({ variant = 'fullscreen' }: SonaDjButtonProps) {
         variant === 'fullscreen' && 'fullscreen-utility-button',
         enabled && triggerStyles.active,
       )}
+      data-fullscreen-panel-toggle={variant === 'fullscreen' ? 'dj' : undefined}
+      onClick={() => {
+        if (variant === 'fullscreen') setActiveDrawerPanel(null)
+      }}
       aria-label={t('fullscreen.sonaDj.title')}
       title={t('fullscreen.sonaDj.title')}
     >
@@ -212,3 +217,5 @@ function SonaDjIcon({
     />
   )
 }
+
+

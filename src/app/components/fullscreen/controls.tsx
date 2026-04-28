@@ -40,9 +40,7 @@ export function FullscreenControls() {
         variant="ghost"
         data-state={isShuffleActive && 'active'}
         className={clsx(
-          buttonsStyle.utility,
-          'night-control-soft-pulse',
-          isShuffleActive && buttonsStyle.activeDot,
+          buttonsStyle.utility, 'fullscreen-control-button', isShuffleActive && buttonsStyle.activeDot,
         )}
         style={{ ...buttonsStyle.style }}
         onClick={() => toggleShuffle()}
@@ -53,7 +51,7 @@ export function FullscreenControls() {
       <Button
         size="icon"
         variant="ghost"
-        className={clsx(buttonsStyle.secondary, 'night-control-soft-pulse')}
+        className={clsx(buttonsStyle.secondary, 'fullscreen-control-button')}
         style={{ ...buttonsStyle.style }}
         onClick={() => playPrevSong()}
         disabled={!hasPrev}
@@ -63,7 +61,7 @@ export function FullscreenControls() {
       <Button
         size="icon"
         variant="ghost"
-        className={clsx(buttonsStyle.main, 'night-control-main-pulse')}
+        className={clsx(buttonsStyle.main, 'fullscreen-control-button')}
         style={{ ...buttonsStyle.style }}
         onClick={() => togglePlayPause()}
       >
@@ -76,7 +74,7 @@ export function FullscreenControls() {
       <Button
         size="icon"
         variant="ghost"
-        className={clsx(buttonsStyle.secondary, 'night-control-soft-pulse')}
+        className={clsx(buttonsStyle.secondary, 'fullscreen-control-button')}
         style={{ ...buttonsStyle.style }}
         onClick={() => playNextSong()}
         disabled={!hasNext && loopState !== LoopState.All}
@@ -87,22 +85,18 @@ export function FullscreenControls() {
         size="icon"
         variant="ghost"
         data-state={loopState !== LoopState.Off && 'active'}
-        className={clsx(
-          buttonsStyle.utility,
-          'night-control-soft-pulse',
-          loopState !== LoopState.Off && buttonsStyle.activeDot,
-        )}
+        className={clsx(buttonsStyle.utility, 'fullscreen-control-button', loopState !== LoopState.Off && buttonsStyle.activeDot)}
         onClick={() => toggleLoop()}
         style={{ ...buttonsStyle.style }}
       >
         {loopState === LoopState.Off && (
-          <Repeat className={clsx(buttonsStyle.secondaryIcon, 'text-foreground/55')} />
+          <Repeat className={clsx(buttonsStyle.secondaryIcon, 'text-[color:var(--fs-btn-fg-muted)]')} />
         )}
         {loopState === LoopState.All && (
-          <Repeat className={clsx(buttonsStyle.secondaryIcon, 'text-primary')} />
+          <Repeat className={clsx(buttonsStyle.secondaryIcon, 'text-[color:var(--fs-btn-fg)]')} />
         )}
         {loopState === LoopState.One && (
-          <RepeatOne className={clsx(buttonsStyle.secondaryIcon, 'text-primary')} />
+          <RepeatOne className={clsx(buttonsStyle.secondaryIcon, 'text-[color:var(--fs-btn-fg)]')} />
         )}
       </Button>
     </Fragment>
@@ -110,14 +104,14 @@ export function FullscreenControls() {
 }
 
 export const buttonsStyle = {
-  main: 'w-14 h-14 rounded-full shadow-lg border border-primary/35 bg-primary/25 text-foreground hover:bg-primary/35 hover:scale-105 transition-transform will-change-transform',
-  mainIcon: 'w-7 h-7 text-foreground fill-foreground',
+  main: 'w-14 h-14 rounded-full border border-[color:var(--fs-btn-main-border)] bg-[color:var(--fs-btn-main-bg)] text-[color:var(--fs-btn-fg)] hover:bg-[color:var(--fs-btn-main-bg-hover)] hover:scale-[1.04] transition-[background-color,transform,border-color,color]',
+  mainIcon: 'w-7 h-7 text-current fill-current',
   secondary:
-    'relative w-12 h-12 rounded-full border border-primary/20 bg-primary/10 text-foreground/88 hover:text-foreground data-[state=active]:text-foreground data-[state=active]:bg-primary/18 hover:bg-primary/14 hover:scale-110 transition-transform will-change-transform',
+    'relative w-12 h-12 rounded-full border border-[color:var(--fs-btn-secondary-border)] bg-[color:var(--fs-btn-secondary-bg)] text-[color:var(--fs-btn-fg-muted)] hover:text-[color:var(--fs-btn-fg)] data-[state=active]:text-[color:var(--fs-btn-fg)] data-[state=active]:bg-[color:var(--fs-btn-secondary-bg-active)] hover:bg-[color:var(--fs-btn-secondary-bg-hover)] hover:border-[color:var(--fs-btn-secondary-border-hover)] hover:scale-[1.05] transition-[background-color,transform,border-color,color]',
   utility:
-    'relative w-12 h-12 rounded-full border border-transparent bg-transparent text-foreground/88 hover:text-foreground data-[state=active]:text-foreground hover:bg-transparent hover:scale-110 transition-transform will-change-transform',
-  secondaryIcon: 'w-6 h-6 drop-shadow-lg',
-  secondaryIconFilled: 'w-6 h-6 text-foreground fill-foreground drop-shadow-lg',
+    'relative w-12 h-12 rounded-full border border-[color:var(--fs-btn-utility-border)] bg-[color:var(--fs-btn-utility-bg)] text-[color:var(--fs-btn-fg-muted)] hover:text-[color:var(--fs-btn-fg)] data-[state=active]:text-[color:var(--fs-btn-fg)] hover:bg-[color:var(--fs-btn-utility-bg-hover)] hover:border-[color:var(--fs-btn-utility-border-hover)] hover:scale-[1.05] transition-[background-color,transform,border-color,color]',
+  secondaryIcon: 'w-6 h-6',
+  secondaryIconFilled: 'w-6 h-6 text-current fill-current',
   activeDot: 'player-button-active',
   style: {
     backfaceVisibility: 'hidden' as const,

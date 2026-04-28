@@ -1,4 +1,4 @@
-import { is, platform } from '@electron-toolkit/utils'
+import { is } from '@electron-toolkit/utils'
 import { BrowserWindow } from 'electron'
 import { join } from 'path'
 import { electron } from '../../package.json'
@@ -6,7 +6,6 @@ import { colorsState } from './core/colors'
 import { setupDownloads } from './core/downloads'
 import { setupEvents, setupIpcEvents } from './core/events'
 import { appIcon } from './core/icon'
-import { titleBarOverlay } from './core/titleBarOverlay'
 import { setupUpdater } from './core/updater'
 import {
   getStoredMainBounds,
@@ -37,7 +36,6 @@ export function createWindow(): void {
     visualEffectState: 'followWindow',
     roundedCorners: true,
     frame: false,
-    ...(platform.isWindows ? { titleBarOverlay } : {}),
     trafficLightPosition: { x: 15, y: 14 },
     icon: appIcon(),
     webPreferences: {
@@ -73,3 +71,4 @@ export function createWindow(): void {
     })
   }
 }
+

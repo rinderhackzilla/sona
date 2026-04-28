@@ -3,6 +3,7 @@ import { usePlayerCurrentSong, useSongColor } from '@/store/player.store'
 import { useTheme } from '@/store/theme.store'
 import { Theme } from '@/types/themeContext'
 import { setDesktopTitleBarColors } from '@/utils/theme'
+import { useFullscreenState } from '@/store/ui.store'
 
 export const appThemes: Theme[] = Object.values(Theme)
 
@@ -110,6 +111,7 @@ function applyReactivePaletteColors(
 
 export function ThemeObserver() {
   const { theme } = useTheme()
+  const fullscreenOpen = useFullscreenState((state) => state.open)
   const currentSong = usePlayerCurrentSong()
   const { currentSongColor, currentSongColorPalette } = useSongColor()
 
@@ -140,8 +142,10 @@ export function ThemeObserver() {
       applyReactiveThemeColors(root, null)
     }
 
-    setDesktopTitleBarColors()
-  }, [theme, currentSong?.id, currentSongColor, currentSongColorPalette])
+    setDesktopTitleBarColors(fullscreenOpen)
+  }, [theme, fullscreenOpen, currentSong?.id, currentSongColor, currentSongColorPalette])
 
   return null
 }
+
+

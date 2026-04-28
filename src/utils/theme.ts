@@ -2,8 +2,8 @@ import { Theme } from '@/types/themeContext'
 import { isDesktop } from './desktop'
 import { hslToHex, hslToHsla } from './getAverageColor'
 
-const DEFAULT_TITLE_BAR_COLOR = '#ff000000'
-const DEFAULT_TITLE_BAR_SYMBOL = '#ffffff'
+const DEFAULT_TITLE_BAR_COLOR = '#00000000'
+const DEFAULT_TITLE_BAR_SYMBOL = '#00000000'
 
 export function setDesktopTitleBarColors(transparent = false) {
   if (!isDesktop()) return
@@ -37,3 +37,5 @@ export function getValidThemeFromEnv(): Theme | null {
 
   return null
 }
+
+

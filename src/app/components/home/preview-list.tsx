@@ -24,6 +24,7 @@ interface PreviewListProps {
   showMore?: boolean
   moreTitle?: string
   moreRoute?: string
+  showAlbumYearInSubtitle?: boolean
 }
 
 export default function PreviewList({
@@ -33,6 +34,7 @@ export default function PreviewList({
   showMore = true,
   moreTitle,
   moreRoute,
+  showAlbumYearInSubtitle = false,
 }: PreviewListProps) {
   const [api, setApi] = useState<CarouselApi>()
   const [loadingAlbumId, setLoadingAlbumId] = useState<string | null>(null)
@@ -154,7 +156,9 @@ export default function PreviewList({
                       enableLink={album.artistId !== undefined}
                       link={ROUTES.ARTIST.PAGE(album.artistId ?? '')}
                     >
-                      {album.artist}
+                      {showAlbumYearInSubtitle && album.year
+                        ? `${album.artist} • ${album.year}`
+                        : album.artist}
                     </PreviewCard.Subtitle>
                   </PreviewCard.InfoWrapper>
                 </PreviewCard.Root>
@@ -166,3 +170,5 @@ export default function PreviewList({
     </div>
   )
 }
+
+

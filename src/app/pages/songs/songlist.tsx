@@ -3,9 +3,8 @@ import { Shuffle } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSearchParams } from 'react-router-dom'
-import { ShadowHeader } from '@/app/components/album/shadow-header'
+import { DetailStickyHeader } from '@/app/components/detail-sticky-header'
 import { InfinitySongListFallback } from '@/app/components/fallbacks/song-fallbacks'
-import { HeaderTitle } from '@/app/components/header-title'
 import { ClearFilterButton } from '@/app/components/search/clear-filter-button'
 import { ExpandableSearchInput } from '@/app/components/search/expandable-input'
 import { Button } from '@/app/components/ui/button'
@@ -31,6 +30,7 @@ export default function SongList() {
 
   const filter = getSearchParam<string>(AlbumsSearchParams.MainFilter, '')
   const query = getSearchParam<string>(AlbumsSearchParams.Query, '')
+  const selectedSongId = getSearchParam<string>(AlbumsSearchParams.SongId, '')
   const artistId = getSearchParam<string>(AlbumsSearchParams.ArtistId, '')
   const artistName = getSearchParam<string>(AlbumsSearchParams.ArtistName, '')
 
@@ -66,6 +66,9 @@ export default function SongList() {
   if (!data) return null
 
   const songlist = data.pages.flatMap((page) => page.songs) ?? []
+  const selectedSongIndex = selectedSongId
+    ? songlist.findIndex((song) => song.id === selectedSongId)
+    : -1
   const songCount = (hasSomeFilter ? songlist.length : songCountData) ?? 0
 
   function handlePlaySong(index: number) {
@@ -100,18 +103,14 @@ export default function SongList() {
 
   return (
     <div className="w-full h-content">
-      <ShadowHeader
-        showGlassEffect={false}
+      <DetailStickyHeader
+        title={title}
+        count={songCount}
+        loading={songCountIsLoading}
         fixed={false}
-        className="relative w-full justify-between items-center"
-      >
-        <HeaderTitle
-          title={title}
-          count={songCount}
-          loading={songCountIsLoading}
-        />
-
-        <div className="flex gap-2 flex-1 justify-end">
+        showGlassEffect={false}
+        rightSlot={
+          <>
           <Button
             variant="outline"
             size="sm"
@@ -127,8 +126,9 @@ export default function SongList() {
           <ExpandableSearchInput
             placeholder={t('songs.list.search.placeholder')}
           />
-        </div>
-      </ShadowHeader>
+          </>
+        }
+      />
 
       <div className="w-full h-[calc(100%-80px)] overflow-auto">
         <DataTableList
@@ -138,6 +138,9 @@ export default function SongList() {
           columnFilter={columnsToShow}
           fetchNextPage={fetchNextPage}
           hasNextPage={hasNextPage}
+          highlightRowId={selectedSongId || undefined}
+          scrollToIndex={selectedSongIndex >= 0}
+          currentSongIndex={selectedSongIndex}
         />
       </div>
     </div>

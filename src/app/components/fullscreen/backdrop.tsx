@@ -3,10 +3,6 @@ import { useEffect, useMemo, useState } from 'react'
 import { isSafari } from 'react-device-detect'
 import { LazyLoadImage } from 'react-lazy-load-image-component'
 import { getSimpleCoverArtUrl } from '@/api/httpClient'
-import { useVisualizerContext } from '@/app/components/fullscreen/settings'
-import { ImageLoader } from '@/app/components/image-loader'
-import { useReducedMotion } from '@/app/hooks/use-reduced-motion'
-import { useRenderCounter } from '@/app/hooks/use-render-counter'
 import {
   usePlayerCurrentSong,
   useSessionModeSettings,
@@ -14,6 +10,8 @@ import {
 } from '@/store/player.store'
 import { isChromeOrFirefox } from '@/utils/browser'
 import { hexToRgba } from '@/utils/getAverageColor'
+
+let lastStableFullscreenBackdropUrl = ''
 
 function getImageLuminanceFromElement(image: HTMLImageElement) {
   try {
@@ -88,32 +86,65 @@ function useBackdropLuminance(coverUrl: string) {
 }
 
 export function FullscreenBackdrop() {
-  useRenderCounter('FullscreenBackdrop')
-  const { useSongColorOnBigPlayer } = useSongColor()
-  const { visualizerActive } = useVisualizerContext()
-  const reduceMotion = useReducedMotion()
-  const enableKenBurns = !reduceMotion
-  const PERSISTENT_FULLSCREEN_BLUR_PX = 26
+  const { coverArt, title } = usePlayerCurrentSong()
+  const {
+    useSongColorOnBigPlayer,
+    currentSongColor,
+    currentSongColorIntensity,
+  } = useSongColor()
+
+  const dynamicOverlayStyle = useMemo(() => {
+    if (!useSongColorOnBigPlayer) return undefined
+
+    return {
+      backgroundColor: currentSongColor ?? 'hsl(var(--primary))',
+      opacity: Math.min(currentSongColorIntensity * 0.4, 0.32),
+    }
+  }, [useSongColorOnBigPlayer, currentSongColor, currentSongColorIntensity])
+  const currentCoverUrl = useMemo(
+    () => getSimpleCoverArtUrl(coverArt, 'song', '800'),
+    [coverArt],
+  )
+  const [stableBackdropUrl, setStableBackdropUrl] = useState<string>(
+    () => lastStableFullscreenBackdropUrl || currentCoverUrl,
+  )
+
+  useEffect(() => {
+    if (!currentCoverUrl) return
+    let cancelled = false
+    const image = new Image()
+    image.src = currentCoverUrl
+    image.onload = () => {
+      if (cancelled) return
+      lastStableFullscreenBackdropUrl = currentCoverUrl
+      setStableBackdropUrl(currentCoverUrl)
+    }
+    return () => {
+      cancelled = true
+    }
+  }, [currentCoverUrl])
 
   return (
-    <>
-      {useSongColorOnBigPlayer ? (
-        <DynamicColorBackdrop
-          enableKenBurns={enableKenBurns}
-          blurPx={PERSISTENT_FULLSCREEN_BLUR_PX}
-          compactBlurSurface={false}
-        />
-      ) : (
-        <ImageBackdrop
-          enableKenBurns={enableKenBurns}
-          blurPx={PERSISTENT_FULLSCREEN_BLUR_PX}
-          compactBlurSurface={false}
+    <div className="absolute inset-0 w-full h-full z-0 overflow-hidden bg-black">
+      <img
+        src={stableBackdropUrl || currentCoverUrl}
+        alt={title}
+        className="absolute -inset-4 w-[calc(100%+2rem)] h-[calc(100%+2rem)] object-cover"
+        style={{
+          filter: 'blur(24px) saturate(1.08)',
+          transform: 'scale(1.08)',
+        }}
+      />
+
+      {dynamicOverlayStyle && (
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={dynamicOverlayStyle}
         />
       )}
-    </>
+    </div>
   )
 }
-
 export function ImageBackdrop({
   enableKenBurns,
   blurPx,

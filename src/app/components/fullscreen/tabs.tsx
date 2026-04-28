@@ -53,7 +53,7 @@ export function FullscreenTabs({
       {isFocusMode && (
         <div
           className={clsx(
-            'relative z-40 w-full mb-4 flex justify-start transition-all duration-300',
+            'relative z-40 w-full mb-4 flex justify-start transition-[opacity,transform] duration-300',
             !isChromeVisible && 'opacity-0 -translate-y-2 pointer-events-none',
           )}
         >
@@ -72,12 +72,17 @@ export function FullscreenTabs({
 
       <div className="relative w-full h-full">
         <div
-          className="absolute inset-0 mt-0 h-full overflow-visible"
+          className={clsx(
+            'absolute inset-0 mt-0 h-full overflow-visible transition-[opacity,transform] duration-320 [transition-timing-function:cubic-bezier(0.22,1,0.36,1)]',
+            isPanelOpen
+              ? 'opacity-0 translate-y-1 pointer-events-none'
+              : 'opacity-100 translate-y-0',
+          )}
           style={{ backfaceVisibility: 'hidden' }}
         >
           <MemoSongInfo
-            isChromeVisible={isChromeVisible}
             isPanelOpen={isPanelOpen}
+            isChromeVisible={isChromeVisible}
           />
         </div>
       </div>

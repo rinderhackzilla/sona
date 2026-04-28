@@ -14,6 +14,7 @@ import { Albums } from '@/types/responses/album'
 
 interface AlbumHeaderProps {
   albums: Albums[]
+  newReleaseAlbumId?: string
   title?: string
   subtitle?: string
 }
@@ -56,7 +57,13 @@ function HeroThumbnail({
   )
 }
 
-function AlbumHeaderItem({ album }: { album: Albums }) {
+function AlbumHeaderItem({
+  album,
+  isNewRelease,
+}: {
+  album: Albums
+  isNewRelease?: boolean
+}) {
   const { t } = useTranslation()
   const { setSongList } = usePlayerActions()
   const [imageLoaded, setImageLoaded] = useState(false)
@@ -70,7 +77,6 @@ function AlbumHeaderItem({ album }: { album: Albums }) {
 
   return (
     <div className="relative h-full w-full overflow-hidden">
-      {/* Background Image with Blur */}
       <ImageLoader id={album.coverArt} type="album">
         {(src) => (
           <>
@@ -83,7 +89,6 @@ function AlbumHeaderItem({ album }: { album: Albums }) {
         )}
       </ImageLoader>
 
-      {/* Content */}
       <div className="relative z-10 grid h-full grid-cols-[auto,minmax(0,1fr)] items-center gap-5 py-4 pl-7 pr-5 min-[1700px]:gap-6 min-[1700px]:py-5 min-[1700px]:pl-8 min-[1700px]:pr-6 min-[2600px]:gap-7 min-[2600px]:pl-9 min-[2600px]:pr-7">
         <div className="flex flex-col items-center justify-center gap-3">
           <Link
@@ -96,7 +101,8 @@ function AlbumHeaderItem({ album }: { album: Albums }) {
                   src={src}
                   alt={album.name}
                   className={cn(
-                    'aspect-square h-[236px] w-[236px] rounded-xl border border-border/55 object-cover shadow-2xl transition-all duration-300 group-hover:scale-[1.02] min-[1700px]:h-[272px] min-[1700px]:w-[272px] min-[2600px]:h-[300px] min-[2600px]:w-[300px]',
+                    'aspect-square h-[236px] w-[236px] rounded-xl border object-cover shadow-2xl transition-all duration-300 group-hover:scale-[1.02] min-[1700px]:h-[272px] min-[1700px]:w-[272px] min-[2600px]:h-[300px] min-[2600px]:w-[300px]',
+                    isNewRelease ? 'border-primary/55' : 'border-border/55',
                     imageLoaded ? 'opacity-100' : 'opacity-0',
                   )}
                   onLoad={() => setImageLoaded(true)}
@@ -106,10 +112,17 @@ function AlbumHeaderItem({ album }: { album: Albums }) {
           </Link>
 
           <div className="w-[236px] min-[1700px]:w-[272px] min-[2600px]:w-[300px]">
-            <div className="inline-flex w-full items-center justify-center gap-2 rounded-md border border-border/60 bg-background/70 px-3 py-1.5 text-center text-sm text-foreground/80 min-[2300px]:text-base">
+            <div
+              className={cn(
+                'inline-flex w-full items-center justify-center gap-2 rounded-md border px-3 py-1.5 text-center text-sm text-foreground/80 min-[2300px]:text-base',
+                isNewRelease
+                  ? 'border-primary/45 bg-primary/12'
+                  : 'border-border/60 bg-background/70',
+              )}
+            >
               {album.genre && <span className="truncate">{album.genre}</span>}
               {album.genre && album.year && (
-                <span className="text-foreground/40">•</span>
+                <span className="text-foreground/40">&bull;</span>
               )}
               {album.year && <span>{album.year}</span>}
             </div>
@@ -118,9 +131,20 @@ function AlbumHeaderItem({ album }: { album: Albums }) {
 
         <div className="min-w-0 space-y-3 text-left">
           <div className="space-y-1.5">
-            <p className="text-sm text-muted-foreground/90 min-[1700px]:text-base">
-              {t('home.recommendedAlbum')}
-            </p>
+            <div className="flex items-center gap-2">
+              <p className="text-sm text-muted-foreground/90 min-[1700px]:text-base">
+                {t(
+                  isNewRelease
+                    ? 'home.newReleaseAlbum'
+                    : 'home.recommendedAlbum',
+                )}
+              </p>
+              {isNewRelease && (
+                <span className="rounded-full border border-primary/45 bg-primary/15 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-primary">
+                  New
+                </span>
+              )}
+            </div>
             <Link to={ROUTES.ALBUM.PAGE(album.id)} className="hover:underline">
               <h2 className="line-clamp-2 break-words text-[1.9rem] font-bold leading-tight min-[1700px]:text-[2.2rem] min-[2600px]:text-[2.45rem]">
                 {album.name}
@@ -150,15 +174,18 @@ function AlbumHeaderItem({ album }: { album: Albums }) {
 
 export default function AlbumHeader({
   albums,
+  newReleaseAlbumId,
   title,
   subtitle,
 }: AlbumHeaderProps) {
   const [currentSlide, setCurrentSlide] = useState(0)
+  const [manualResetToken, setManualResetToken] = useState(0)
   const { data: onRepeat, isLoading: onRepeatLoading } = useOnRepeat()
+
   const carouselItems = useMemo(() => {
     const items: Array<
       | { type: 'onRepeat'; data: NonNullable<typeof onRepeat> }
-      | { type: 'album'; data: Albums }
+      | { type: 'album'; data: Albums; isNewRelease: boolean }
     > = []
 
     if (onRepeat?.song) {
@@ -174,11 +201,12 @@ export default function AlbumHeader({
       items.push({
         type: 'album',
         data: album,
+        isNewRelease: album.id === newReleaseAlbumId,
       })
     })
 
     return items
-  }, [albums, onRepeat])
+  }, [albums, newReleaseAlbumId, onRepeat])
 
   useEffect(() => {
     if (carouselItems.length <= 1) return
@@ -188,7 +216,7 @@ export default function AlbumHeader({
     return () => {
       clearInterval(timer)
     }
-  }, [carouselItems.length])
+  }, [carouselItems.length, manualResetToken])
 
   if (carouselItems.length === 0 && !onRepeatLoading) return null
 
@@ -201,13 +229,16 @@ export default function AlbumHeader({
         </div>
       )}
 
-      <div className="flex h-full overflow-hidden rounded-xl border border-border/60 bg-card/20 min-[1600px]:rounded-2xl">
+      <div className="flex h-full overflow-hidden rounded-[var(--radius-surface)] border border-border/60 bg-card/20">
         <div className="flex h-full w-[90px] flex-col items-center justify-between overflow-hidden border-r border-border/55 bg-foreground/[0.03] px-2.5 py-3">
           {carouselItems.map((item, index) => (
             <HeroThumbnail
               key={`thumb-${item.type === 'onRepeat' ? 'on-repeat' : item.data.id}`}
               isActive={currentSlide === index}
-              onClick={() => setCurrentSlide(index)}
+              onClick={() => {
+                setCurrentSlide(index)
+                setManualResetToken((prev) => prev + 1)
+              }}
               coverArt={
                 item.type === 'onRepeat'
                   ? item.data.song.coverArt
@@ -238,7 +269,10 @@ export default function AlbumHeader({
                     playcount={item.data.playcount}
                   />
                 ) : (
-                  <AlbumHeaderItem album={item.data} />
+                  <AlbumHeaderItem
+                    album={item.data}
+                    isNewRelease={item.isNewRelease}
+                  />
                 )}
               </div>
             )

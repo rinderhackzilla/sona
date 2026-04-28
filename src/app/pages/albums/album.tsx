@@ -1,6 +1,6 @@
 import { startTransition } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useParams } from 'react-router-dom'
+import { useParams, useSearchParams } from 'react-router-dom'
 import ImageHeader from '@/app/components/album/image-header'
 import { AlbumInfo } from '@/app/components/album/info'
 import { RecordLabelsInfo } from '@/app/components/album/record-labels'
@@ -9,6 +9,7 @@ import { PreviewListFallback } from '@/app/components/fallbacks/home-fallbacks'
 import { BadgesData } from '@/app/components/header-info'
 import PreviewList from '@/app/components/home/preview-list'
 import ListWrapper from '@/app/components/list-wrapper'
+import { DetailStickyHeader } from '@/app/components/detail-sticky-header'
 import { DataTable } from '@/app/components/ui/data-table'
 import { PageState } from '@/app/components/ui/page-state'
 import {
@@ -27,7 +28,9 @@ import { convertSecondsToHumanRead } from '@/utils/convertSecondsToTime'
 
 export default function Album() {
   const { albumId: albumIdParam } = useParams() as { albumId: string }
+  const [searchParams] = useSearchParams()
   const albumId = decodeURIComponent(albumIdParam ?? '')
+  const highlightSongId = searchParams.get('songId') ?? undefined
   const { setSongList } = usePlayerActions()
   const { t } = useTranslation()
 
@@ -141,6 +144,12 @@ export default function Album() {
       />
 
       <ListWrapper>
+        <DetailStickyHeader
+          title={t('album.headline')}
+          count={albumSongs.length}
+          fixed={true}
+        />
+
         <AlbumInfo album={album} />
 
         <DataTable
@@ -151,6 +160,7 @@ export default function Album() {
           noRowsMessage={t('states.empty.noTracks')}
           showDiscNumber={true}
           variant="modern"
+          highlightRowId={highlightSongId}
         />
 
         {albumSongs.length === 0 && (
@@ -172,6 +182,7 @@ export default function Album() {
               title={t('album.more.listTitle')}
               moreTitle={t('album.more.discography')}
               moreRoute={ROUTES.ALBUMS.ARTIST(album.artistId, album.artist)}
+              showAlbumYearInSubtitle
             />
           )}
 
@@ -190,3 +201,4 @@ export default function Album() {
     </div>
   )
 }
+

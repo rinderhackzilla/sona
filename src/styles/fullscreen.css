@@ -147,6 +147,7 @@
 @media (prefers-reduced-motion: reduce) {
   .fullscreen-bg-kenburns,
   .fullscreen-backdrop-kenburns,
+  .fullscreen-backdrop-kenburns-lite,
   .hypnotic-layer-a,
   .hypnotic-layer-b,
   .hypnotic-layer-c {
@@ -160,4 +161,76 @@
     opacity: 0.08;
     filter: none;
   }
+}
+
+/* Fullscreen transport controls: keep hover cheap to avoid frame drops. */
+.fullscreen-control-button,
+.fullscreen-control-button:hover,
+.fullscreen-control-button:focus-visible,
+.fullscreen-control-button[data-state='active'] {
+  box-shadow: none !important;
+  filter: none !important;
+}
+
+
+/* Keep fullscreen control hover cheap even in session/night global button rules. */
+.fullscreen-drawer-content .fullscreen-control-button,
+.fullscreen-drawer-content .fullscreen-control-button:hover,
+.fullscreen-drawer-content .fullscreen-control-button:focus-visible,
+.fullscreen-drawer-content .fullscreen-control-button[data-state='active'] {
+  box-shadow: none !important;
+  filter: none !important;
+  text-shadow: none !important;
+  transition-property: background-color, color, border-color, opacity, transform !important;
+  transition-duration: 140ms !important;
+}
+
+.session-mode-night .fullscreen-drawer-content .fullscreen-control-button,
+.session-mode-night .fullscreen-drawer-content .fullscreen-control-button:hover,
+.session-mode-night .fullscreen-drawer-content .fullscreen-control-button:focus-visible,
+.session-mode-night .fullscreen-drawer-content .fullscreen-control-button[data-state='active'] {
+  animation: none !important;
+  box-shadow: none !important;
+  filter: none !important;
+}
+
+.fullscreen-backdrop-kenburns-lite {
+  transform-origin: center center;
+  animation: fullscreen-backdrop-kenburns-lite 200s ease-in-out infinite alternate;
+  will-change: transform;
+}
+
+@keyframes fullscreen-backdrop-kenburns-lite {
+  0% {
+    transform: scale(1.05) translate3d(-0.18%, -0.12%, 0) rotate(-0.22deg);
+  }
+  100% {
+    transform: scale(1.11) translate3d(0.18%, 0.12%, 0) rotate(0.22deg);
+  }
+}
+.fullscreen-song-swap {
+  animation: fullscreen-song-swap 220ms ease-out;
+}
+
+@keyframes fullscreen-song-swap {
+  0% {
+    opacity: 0.58;
+    transform: translateY(2px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fullscreen-readable-shadow-strong {
+  text-shadow:
+    0 2px 14px rgba(0, 0, 0, 0.92),
+    0 0 2px rgba(0, 0, 0, 0.65);
+}
+
+.fullscreen-readable-shadow-soft {
+  text-shadow:
+    0 2px 10px rgba(0, 0, 0, 0.86),
+    0 0 2px rgba(0, 0, 0, 0.55);
 }

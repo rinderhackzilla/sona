@@ -377,6 +377,7 @@
     "weeklyMix": "Dein täglicher Mix",
     "weeklyMixSoon": "Deine tägliche Playlist wird bald erstellt",
     "recommendedAlbum": "Empfohlenes Album",
+    "newReleaseAlbum": "Neues Release",
     "browse": "Durchsuchen →",
     "generating": "Wird generiert...",
     "generatePlaylist": "Generiere deine tägliche Playlist",
@@ -572,6 +573,7 @@
   },
   "command": {
     "inputPlaceholder": "Suchen Sie nach einem Album, Künstler oder Lied",
+    "typeMore": "Bitte mindestens 2 Zeichen eingeben",
     "noResults": "Keine Ergebnisse gefunden.",
     "commands": {
       "heading": "Befehle",
@@ -1008,7 +1010,9 @@
           "sending": "Sende...",
           "ok": "OK",
           "failed": "Fehlgeschlagen",
-          "lastFailed": "Letzter Scrobble fehlgeschlagen"
+          "lastFailed": "Letzter Scrobble fehlgeschlagen",
+          "lastSuccess": "Letzter erfolgreicher Scrobble",
+          "lastFailure": "Letzter fehlgeschlagener Scrobble"
         }
       }
     },
@@ -1182,3 +1186,5 @@
     }
   }
 }
+
+

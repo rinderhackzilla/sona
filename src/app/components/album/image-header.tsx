@@ -187,9 +187,9 @@ export default function ImageHeader({
                   className={cn(
                     'w-[200px] h-[200px] min-w-[200px] min-h-[200px]',
                     '2xl:w-[250px] 2xl:h-[250px] 2xl:min-w-[250px] 2xl:min-h-[250px]',
-                    'bg-skeleton aspect-square bg-cover bg-center rounded-[var(--radius-surface-lg)]',
-                    'shadow-header-image overflow-hidden',
-                    'transition-transform duration-150 ease-out hover:scale-[1.02]',
+                    'aspect-square rounded-[var(--radius-surface-lg)] bg-transparent',
+                    'shadow-header-image overflow-hidden group',
+                    'transition-transform duration-150 ease-out',
                     'focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:outline-none',
                   )}
                 >
@@ -202,7 +202,7 @@ export default function ImageHeader({
                     id="cover-art-image"
                     src={resolvedDisplaySrc}
                     alt={coverArtAlt}
-                    className="aspect-square object-cover w-full h-full"
+                    className="aspect-square object-cover w-full h-full rounded-[var(--radius-surface-lg)] transition-transform duration-150 ease-out will-change-transform group-hover:scale-[1.02]"
                     width="100%"
                     height="100%"
                     onError={handleError}

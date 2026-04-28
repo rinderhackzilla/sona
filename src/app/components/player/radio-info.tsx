@@ -121,7 +121,7 @@ export function RadioInfo({ radio }: { radio: Radio | undefined }) {
           <img
             src={nowPlaying.coverUrl}
             alt={nowPlaying.track ?? nowPlaying.rawTitle}
-            className="h-full w-full object-cover"
+            className="block h-full w-full object-cover"
             onError={() => setCoverLoadFailed(true)}
           />
         ) : (

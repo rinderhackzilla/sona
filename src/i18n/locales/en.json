@@ -11,6 +11,7 @@
     "weeklyMix": "Your Daily Mix",
     "weeklyMixSoon": "Your daily playlist will be generated soon",
     "recommendedAlbum": "Recommended album",
+    "newReleaseAlbum": "New release",
     "browse": "Browse →",
     "generating": "Generating...",
     "generatePlaylist": "Generate your daily playlist",
@@ -541,6 +542,7 @@
   },
   "command": {
     "inputPlaceholder": "Search for an album, artist or song",
+    "typeMore": "Type at least 2 characters",
     "noResults": "No results found.",
     "commands": {
       "heading": "Commands",
@@ -1038,7 +1040,9 @@
           "sending": "Sending...",
           "ok": "OK",
           "failed": "Failed",
-          "lastFailed": "Last scrobble failed"
+          "lastFailed": "Last scrobble failed",
+          "lastSuccess": "Last successful scrobble",
+          "lastFailure": "Last failed scrobble"
         }
       }
     },
@@ -1182,3 +1186,5 @@
     }
   }
 }
+
+

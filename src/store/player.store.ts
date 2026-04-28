@@ -36,6 +36,7 @@ export {
 
 const miniStores = {
   songlist: 'player_songlist',
+  progress: 'player_progress',
 }
 
 const blurSettings = {
@@ -714,6 +715,7 @@ export const usePlayerStore = createWithEqualityFn<IPlayerContext>()(
               })
             },
             setProgress: (progress) => {
+              if (get().playerProgress.progress === progress) return
               set((state) => {
                 state.playerProgress.progress = progress
               })
@@ -1184,6 +1186,7 @@ export const usePlayerStore = createWithEqualityFn<IPlayerContext>()(
         partialize: (state) => {
           const appStore = omit(state, [
             'songlist',
+            'playerProgress',
             'actions',
             'playerState.isPlaying',
             'playerState.audioPlayerRef',
@@ -1212,6 +1215,13 @@ idbStorage.getItem<ISongList>(miniStores.songlist, (value) => {
   if (!value) return
   usePlayerStore.setState((state) => ({ ...state, songlist: value }))
 })
+idbStorage.getItem<number>(miniStores.progress, (value) => {
+  if (typeof value !== 'number' || Number.isNaN(value) || value < 0) return
+  usePlayerStore.setState((state) => ({
+    ...state,
+    playerProgress: { progress: Math.floor(value) },
+  }))
+})
 
 usePlayerStore.subscribe(
   (state) => [state.songlist],
@@ -1220,6 +1230,12 @@ usePlayerStore.subscribe(
   },
   {
     equalityFn: shallow,
+  },
+)
+usePlayerStore.subscribe(
+  (state) => state.playerProgress.progress,
+  (progress) => {
+    idbStorage.setItem(miniStores.progress, Math.max(0, Math.floor(progress)))
   },
 )
 
@@ -1363,7 +1379,7 @@ export const usePlayerPrevAndNext = () =>
   usePlayerStore((state) => ({
     hasPrev: state.playerState.hasPrev,
     hasNext: state.playerState.hasNext,
-  }))
+  }), shallow)
 
 export const usePlayerRef = () =>
   usePlayerStore((state) => state.playerState.audioPlayerRef)
@@ -1377,21 +1393,21 @@ export const useMainDrawerState = () =>
     setActiveDrawerPanel: state.actions.setActiveDrawerPanel,
     toggleQueueAndLyrics: state.actions.toggleQueueAndLyrics,
     closeDrawer: state.actions.closeDrawer,
-  }))
+  }), shallow)
 
 export const useQueueState = () =>
   usePlayerStore((state) => ({
     queueState: state.playerState.queueState,
     setQueueState: state.actions.setQueueState,
     toggleQueueAction: state.actions.toggleQueueAction,
-  }))
+  }), shallow)
 
 export const useLyricsState = () =>
   usePlayerStore((state) => ({
     lyricsState: state.playerState.lyricsState,
     setLyricsState: state.actions.setLyricsState,
     toggleLyricsAction: state.actions.toggleLyricsAction,
-  }))
+  }), shallow)
 
 export const useSongColor = () =>
   usePlayerStore((state) => {
@@ -1437,3 +1453,5 @@ export const useVisualizerSettingsStore = () =>
 
 export const usePlayerCurrentList = () =>
   usePlayerStore((state) => state.songlist.currentList)
+
+

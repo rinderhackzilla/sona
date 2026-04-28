@@ -75,4 +75,11 @@ export const useUiStore = createWithEqualityFn<IUiContext>()(
 
 export const useSongInfo = () => useUiStore((state) => state.songInfo)
 export const useMiniPlayerState = () => useUiStore((state) => state.miniPlayer)
-export const useFullscreenState = () => useUiStore((state) => state.fullscreen)
+export function useFullscreenState<T = IUiContext['fullscreen']>(
+  selector?: (state: IUiContext['fullscreen']) => T,
+) {
+  return useUiStore((state) =>
+    selector ? selector(state.fullscreen) : (state.fullscreen as unknown as T),
+  )
+}
+

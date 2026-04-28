@@ -3,6 +3,7 @@ import { useEffect, useRef } from 'react'
 declare global {
   interface Window {
     __sonaRenderCounters?: Record<string, number>
+    __sonaEnableRenderCounters?: boolean
   }
 }
 
@@ -13,6 +14,8 @@ export function useRenderCounter(name: string) {
 
   useEffect(() => {
     if (!DEV_ONLY) return
+    if (!window.__sonaEnableRenderCounters) return
+
     if (!window.__sonaRenderCounters) {
       window.__sonaRenderCounters = {}
     }
@@ -20,6 +23,7 @@ export function useRenderCounter(name: string) {
     if (!mountedRef.current) {
       mountedRef.current = true
     }
+
     window.__sonaRenderCounters[name] =
       (window.__sonaRenderCounters[name] ?? 0) + 1
   })

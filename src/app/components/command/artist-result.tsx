@@ -33,13 +33,13 @@ export function CommandArtistResult({
       <CustomGroupHeader>
         <span>{t('sidebar.artists')}</span>
       </CustomGroupHeader>
-      <CommandGroup>
+      <CommandGroup className="[&_[cmdk-group-items]]:grid [&_[cmdk-group-items]]:grid-cols-3 md:[&_[cmdk-group-items]]:grid-cols-4 lg:[&_[cmdk-group-items]]:grid-cols-5 [&_[cmdk-group-items]]:gap-2.5 [&_[cmdk-group-items]]:px-3 [&_[cmdk-group-items]]:pb-2">
         {artists.length > 0 &&
           artists.map((artist) => (
             <CommandItem
               key={`artist-${artist.id}`}
               value={`artist-${artist.id}`}
-              className="border mb-1"
+              className="border border-border/45 bg-card/55 rounded-[var(--radius-surface)] p-2 items-start cursor-pointer transition-[background-color,border-color,transform] duration-150 hover:bg-accent/35 hover:border-border/70 aria-selected:bg-accent/55"
               onSelect={() => {
                 runCommand(() =>
                   navigateSafe(navigate, ROUTES.ARTIST.PAGE(artist.id)),
@@ -61,3 +61,4 @@ export function CommandArtistResult({
     </CustomGroup>
   )
 }
+

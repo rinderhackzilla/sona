@@ -9,12 +9,6 @@
 .session-mode-focus .hypnotic-layer-c {
   animation-duration: calc(var(--session-motion-scale, 1) * 22s) !important;
 }
-
-.session-mode-night .fullscreen-drawer-content *,
-.session-mode-focus .fullscreen-drawer-content * {
-  transition-duration: calc(var(--session-transition-scale, 1) * 260ms) !important;
-}
-
 @media (prefers-reduced-motion: reduce) {
   .session-mode-night body,
   .session-mode-night header,
@@ -36,3 +30,4 @@
     transition-duration: 0ms !important;
   }
 }
+

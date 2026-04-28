@@ -7,9 +7,9 @@ export function VolumeContainer() {
   const { volume } = usePlayerVolume()
 
   return (
-    <div className="flex justify-center items-center gap-1 text-foreground/90">
+    <div className="flex justify-center items-center gap-1 text-[color:var(--fs-btn-fg)]">
       <MuteButton
-        className={`${buttonsStyle.utility} night-control-soft-pulse fullscreen-utility-button`}
+        className={`${buttonsStyle.utility} fullscreen-utility-button`}
       >
         <VolumeIcon volume={volume} className={buttonsStyle.secondaryIcon} />
       </MuteButton>
@@ -20,3 +20,5 @@ export function VolumeContainer() {
     </div>
   )
 }
+
+

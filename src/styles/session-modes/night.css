@@ -495,25 +495,23 @@
 }
 
 .session-mode-night .fullscreen-cover-glow {
-  opacity: calc(0.12 + (var(--cover-glow-pulse) - 1) * 1.45);
-  transform: scale(calc(1.002 + (var(--cover-glow-pulse) - 1) * 0.22));
+  opacity: 0.14;
+  transform: scale(1.03);
   background:
     radial-gradient(
       circle at 50% 50%,
-      hsl(var(--primary) / 0.9) 0%,
-      hsl(var(--primary) / 0.62) 36%,
-      hsl(var(--primary) / 0.24) 62%,
+      hsl(var(--primary) / 0.72) 0%,
+      hsl(var(--primary) / 0.42) 38%,
+      hsl(var(--primary) / 0.16) 64%,
       transparent 90%
     ),
     radial-gradient(
       circle at 50% 50%,
-      hsl(var(--accent) / 0.26) 0%,
+      hsl(var(--accent) / 0.2) 0%,
       transparent 74%
     );
   filter: none;
-  transition:
-    opacity 75ms linear,
-    transform 75ms linear;
+  transition: none;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -744,3 +742,4 @@
     filter: saturate(1);
   }
 }
+

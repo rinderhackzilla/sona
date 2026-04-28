@@ -39,16 +39,16 @@ export function CommandSongResult({
           {t('generic.seeMore')}
         </CustomHeaderLink>
       </CustomGroupHeader>
-      <CommandGroup>
+      <CommandGroup className="[&_[cmdk-group-items]]:grid [&_[cmdk-group-items]]:grid-cols-3 md:[&_[cmdk-group-items]]:grid-cols-4 lg:[&_[cmdk-group-items]]:grid-cols-5 [&_[cmdk-group-items]]:gap-2.5 [&_[cmdk-group-items]]:px-3 [&_[cmdk-group-items]]:pb-2">
         {songs.length > 0 &&
           songs.map((song) => (
             <CommandItem
               key={`song-${song.id}`}
               value={`song-${song.id}`}
-              className="border mb-1"
+              className="border border-border/45 bg-card/55 rounded-[var(--radius-surface)] p-2 items-start cursor-pointer transition-[background-color,border-color,transform] duration-150 hover:bg-accent/35 hover:border-border/70 aria-selected:bg-accent/55"
               onSelect={() => {
                 runCommand(() =>
-                  navigateSafe(navigate, ROUTES.ALBUM.PAGE(song.albumId)),
+                  navigateSafe(navigate, ROUTES.ALBUM.PAGE(song.albumId, song.id)),
                 )
               }}
             >
@@ -65,3 +65,4 @@ export function CommandSongResult({
     </CustomGroup>
   )
 }
+

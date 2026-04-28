@@ -20,39 +20,48 @@ export function ResultItem({
   onClick,
 }: ResultItemProps) {
   return (
-    <div className="flex w-full justify-between items-center">
-      <div className="flex gap-2 w-[420px]">
+    <div className="w-full">
+      <div className="relative w-full">
         <ImageLoader id={coverArt} type={coverArtType} size={100}>
           {(src) => (
             <Image
               src={src}
-              width={40}
-              height={40}
-              className="aspect-square object-cover rounded shadow"
+              width={84}
+              height={84}
+              className="aspect-square w-full max-w-[84px] mx-auto object-cover rounded-[var(--radius-surface)] shadow"
               alt={`${artist} - ${title}`}
             />
           )}
         </ImageLoader>
-        <div className="flex flex-col justify-center w-full">
-          <span className="font-medium text-sm truncate w-[370px]">
-            {title}
-          </span>
-          <span className="text-xs text-muted-foreground">{artist}</span>
-        </div>
-      </div>
-      <div className="flex">
+
         <Button
-          variant="outline"
-          size="sm"
-          className="w-7 h-7 p-[6px] rounded-full hover:bg-background"
+          variant="default"
+          size="icon"
+          className="absolute right-0.5 top-0.5 size-5 rounded-full border border-primary/70 bg-primary/90 text-primary-foreground shadow-[0_4px_12px_hsl(var(--primary)/0.45)] hover:bg-primary"
+          onMouseDown={(e) => {
+            e.preventDefault()
+            e.stopPropagation()
+          }}
+          onPointerDown={(e) => {
+            e.preventDefault()
+            e.stopPropagation()
+          }}
           onClick={(e) => {
             e.preventDefault()
             e.stopPropagation()
             onClick()
           }}
         >
-          <Play className="w-4 h-4 fill-foreground" />
+          <Play className="w-3 h-3 fill-primary-foreground" />
         </Button>
+      </div>
+      <div className="mt-1.5 min-w-0">
+        <p className="text-sm leading-4 line-clamp-2 min-h-7 font-semibold text-foreground">
+          {title}
+        </p>
+        <p className="text-xs leading-4 truncate font-medium text-muted-foreground">
+          {artist}
+        </p>
       </div>
     </div>
   )

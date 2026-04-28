@@ -1,6 +1,6 @@
 import { clsx } from 'clsx'
 import {
-  ReactNode,
+  type ReactNode,
   useCallback,
   useEffect,
   useLayoutEffect,
@@ -20,26 +20,23 @@ export function MarqueeTitle({ children, gap }: MarqueeTitleProps) {
   const [isOverflowing, setIsOverflowing] = useState(false)
   const [isFinished, setIsFinished] = useState(false)
   const [marqueeKey, setMarqueeKey] = useState('')
-  const [containerKey, setContainerKey] = useState('')
 
   const MARQUEE_OVERFLOW_THRESHOLD_PX = 40
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: needed to calculate properly
   const calculateOverflow = useCallback(() => {
     if (!containerRef.current || !textRef.current) return
 
     const containerWidth = containerRef.current.offsetWidth
     const textWidth = textRef.current.offsetWidth
-
-    const isOversizing =
+    const nextOverflow =
       textWidth > containerWidth + MARQUEE_OVERFLOW_THRESHOLD_PX
 
-    if (isOverflowing && !isOversizing) {
+    if (isOverflowing && !nextOverflow) {
       setMarqueeKey(Math.random().toString())
     }
 
-    setIsOverflowing(isOversizing)
-  }, [containerRef, textRef, isOverflowing])
+    setIsOverflowing(nextOverflow)
+  }, [isOverflowing])
 
   useLayoutEffect(() => {
     const handleResize = () => {
@@ -48,27 +45,23 @@ export function MarqueeTitle({ children, gap }: MarqueeTitleProps) {
 
     calculateOverflow()
     window.addEventListener('resize', handleResize)
+
     return () => {
       window.removeEventListener('resize', handleResize)
     }
   }, [calculateOverflow])
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: needed to reset states
   useEffect(() => {
     setIsOverflowing(false)
     setIsFinished(false)
     setMarqueeKey(Math.random().toString())
-    setContainerKey(Math.random().toString())
-
     calculateOverflow()
   }, [calculateOverflow, children])
 
   return (
     <div className="relative">
-      {/* Not shown in screen, its just for calculations */}
       <div
-        key={containerKey}
-        className="w-full overflow-hidden whitespace-nowrap opacity-0 absolute left-0 right-0 bottom-0 pointer-events-none"
+        className="absolute bottom-0 left-0 right-0 w-full overflow-hidden whitespace-nowrap opacity-0 pointer-events-none"
         ref={containerRef}
       >
         <div className="inline-flex" ref={textRef}>
@@ -76,25 +69,25 @@ export function MarqueeTitle({ children, gap }: MarqueeTitleProps) {
         </div>
       </div>
 
-      <div>
+      {!isOverflowing ? (
+        <div>{children}</div>
+      ) : (
         <Marquee
           key={marqueeKey}
           className={clsx(
-            isOverflowing && !isFinished && 'maskImage-marquee-fade',
+            !isFinished && 'maskImage-marquee-fade',
             isFinished && 'maskImage-marquee-fade-finished',
           )}
           speed={26}
-          play={isOverflowing}
+          play={true}
           loop={0}
           delay={4}
-          pauseOnHover={true}
-          onFinish={() => {
-            setIsFinished(true)
-          }}
+          pauseOnHover={false}
+          onFinish={() => setIsFinished(true)}
         >
           <div className={gap}>{children}</div>
         </Marquee>
-      </div>
+      )}
     </div>
   )
 }

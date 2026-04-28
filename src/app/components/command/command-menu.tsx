@@ -16,6 +16,7 @@ import {
 import { useMainSidebar } from '@/app/components/ui/main-sidebar'
 import { subsonic } from '@/service/subsonic'
 import { useAppStore } from '@/store/app.store'
+import { ISimilarArtist } from '@/types/responses/artist'
 import { byteLength } from '@/utils/byteLength'
 import { convertMinutesToMs } from '@/utils/convertSecondsToTime'
 import { queryKeys } from '@/utils/queryKeys'
@@ -36,25 +37,41 @@ export default function CommandMenu({ compact = false }: CommandMenuProps) {
   const { state: sidebarState } = useMainSidebar()
   const { open, setOpen } = useAppStore((state) => state.command)
 
+  const [inputValue, setInputValue] = useState('')
   const [query, setQuery] = useState('')
   const enableQuery = Boolean(byteLength(query) >= 2)
+  const hasInput = Boolean(inputValue.trim().length > 0)
 
   const { data: searchResult } = useQuery({
     queryKey: [queryKeys.search, query],
     queryFn: () =>
       subsonic.search.get({
         query,
-        albumCount: 4,
-        artistCount: 4,
-        songCount: 4,
+        albumCount: 5,
+        artistCount: 5,
+        songCount: 5,
       }),
     enabled: enableQuery,
     staleTime: convertMinutesToMs(5),
   })
 
-  const albums = searchResult?.album ?? []
-  const artists = searchResult?.artist ?? []
-  const songs = searchResult?.song ?? []
+  const { data: artistOnlyResult } = useQuery({
+    queryKey: [queryKeys.search, 'artists-only', query],
+    queryFn: () =>
+      subsonic.search.get({
+        query,
+        albumCount: 0,
+        songCount: 0,
+        artistCount: 5,
+      }),
+    enabled: enableQuery,
+    staleTime: convertMinutesToMs(5),
+  })
+
+  const albums = (searchResult?.album ?? []).slice(0, 5)
+  const artists = mergeArtists(searchResult?.artist, artistOnlyResult?.artist)
+    .slice(0, 5)
+  const songs = (searchResult?.song ?? []).slice(0, 5)
 
   const showAlbumGroup = Boolean(query && albums.length > 0)
   const showArtistGroup = Boolean(query && artists.length > 0)
@@ -65,6 +82,7 @@ export default function CommandMenu({ compact = false }: CommandMenuProps) {
   })
 
   const clear = useCallback(() => {
+    setInputValue('')
     setQuery('')
   }, [])
 
@@ -88,12 +106,9 @@ export default function CommandMenu({ compact = false }: CommandMenuProps) {
   }
 
   function handleSearchChange(value: string) {
+    setInputValue(value)
     debounced(value)
   }
-
-  const showNotFoundMessage = Boolean(
-    enableQuery && !showAlbumGroup && !showArtistGroup && !showSongGroup,
-  )
 
   const sidebarOpen = sidebarState === 'expanded'
 
@@ -129,6 +144,11 @@ export default function CommandMenu({ compact = false }: CommandMenuProps) {
         </Button>
       )}
       <CommandDialog
+        contentClassName={
+          hasInput
+            ? 'top-[36%] translate-y-[-36%] h-[70vh] max-h-[70vh]'
+            : 'top-[24%] translate-y-[-24%] h-auto max-h-none'
+        }
         open={open}
         onOpenChange={(state) => {
           setOpen(state)
@@ -138,7 +158,7 @@ export default function CommandMenu({ compact = false }: CommandMenuProps) {
         <Command
           shouldFilter={false}
           id="main-command"
-          className="h-full max-h-full"
+          className={hasInput ? 'h-full max-h-full' : 'h-auto'}
         >
           <CommandInput
             data-testid="command-menu-input"
@@ -150,37 +170,65 @@ export default function CommandMenu({ compact = false }: CommandMenuProps) {
             onValueChange={(value) => handleSearchChange(value)}
             onKeyDown={handleInputKeyDown}
           />
-          <CommandList className="pr-1">
-            <CommandEmpty>{t('command.noResults')}</CommandEmpty>
+          {hasInput && (
+            <CommandList>
+              {!enableQuery && (
+                <div className="mx-3 mt-2 rounded-xl border border-border/60 bg-muted/30 px-4 py-3 text-sm text-muted-foreground">
+                  {t('command.typeMore')}
+                </div>
+              )}
 
-            {showNotFoundMessage && (
-              <div className="flex justify-center items-center p-4 mt-2 mx-2 bg-accent/40 rounded border border-border">
-                <p className="text-sm">{t('command.noResults')}</p>
-              </div>
-            )}
+              {enableQuery && showArtistGroup && (
+                <CommandArtistResult artists={artists} runCommand={runCommand} />
+              )}
 
-            {showAlbumGroup && (
-              <CommandAlbumResult
-                query={query}
-                albums={albums}
-                runCommand={runCommand}
-              />
-            )}
+              {enableQuery && showAlbumGroup && (
+                <CommandAlbumResult
+                  query={query}
+                  albums={albums}
+                  runCommand={runCommand}
+                />
+              )}
 
-            {showSongGroup && (
-              <CommandSongResult
-                query={query}
-                songs={songs}
-                runCommand={runCommand}
-              />
-            )}
+              {enableQuery && showSongGroup && (
+                <CommandSongResult
+                  query={query}
+                  songs={songs}
+                  runCommand={runCommand}
+                />
+              )}
 
-            {showArtistGroup && (
-              <CommandArtistResult artists={artists} runCommand={runCommand} />
-            )}
-          </CommandList>
+              {enableQuery && (
+                <CommandEmpty>{t('command.noResults')}</CommandEmpty>
+              )}
+            </CommandList>
+          )}
         </Command>
       </CommandDialog>
     </>
   )
+}
+
+function mergeArtists(
+  primary?: ISimilarArtist[],
+  fallback?: ISimilarArtist[],
+) {
+  const merged = [...(primary ?? []), ...(fallback ?? [])]
+  const byId = new Map<string, ISimilarArtist>()
+  const byName = new Map<string, ISimilarArtist>()
+
+  for (const artist of merged) {
+    if (!artist?.name) continue
+
+    if (artist.id) {
+      if (!byId.has(artist.id)) byId.set(artist.id, artist)
+      continue
+    }
+
+    const key = artist.name.trim().toLowerCase()
+    if (!key) continue
+    if (!byName.has(key)) byName.set(key, artist)
+  }
+
+  return [...byId.values(), ...byName.values()]
 }

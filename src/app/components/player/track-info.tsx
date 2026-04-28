@@ -6,7 +6,6 @@ import { useTranslation } from 'react-i18next'
 import { LazyLoadImage } from 'react-lazy-load-image-component'
 import { Link } from 'react-router-dom'
 import { MarqueeTitle } from '@/app/components/fullscreen/marquee-title'
-import { FullscreenMode } from '@/app/components/fullscreen/page'
 import { ImageLoader } from '@/app/components/image-loader'
 import { SongMenuOptions } from '@/app/components/song/menu-options'
 import { ContextMenuProvider } from '@/app/components/table/context-menu'
@@ -14,6 +13,7 @@ import { SimpleTooltip } from '@/app/components/ui/simple-tooltip'
 import { cn } from '@/lib/utils'
 import { ROUTES } from '@/routes/routesList'
 import { useSongColor } from '@/store/player.store'
+import { useFullscreenState } from '@/store/ui.store'
 import { ISong } from '@/types/responses/song'
 import { getAverageColor } from '@/utils/getAverageColor'
 import { logger } from '@/utils/logger'
@@ -22,6 +22,7 @@ import { ALBUM_ARTISTS_MAX_NUMBER } from '@/utils/multipleArtists'
 export function TrackInfo({ song }: { song: ISong | undefined }) {
   const { t } = useTranslation()
   const { setCurrentSongColor, currentSongColor } = useSongColor()
+  const { setOpen: setFullscreenOpen } = useFullscreenState()
 
   const getImageElement = useCallback(() => {
     return document.getElementById('track-song-image') as HTMLImageElement
@@ -75,36 +76,35 @@ export function TrackInfo({ song }: { song: ISong | undefined }) {
     >
       <div className="flex items-center gap-2 w-full">
         <SimpleTooltip text={t('fullscreen.switchButton')}>
-          <FullscreenMode>
-            <div
-              className="group relative cursor-pointer"
-              data-coach-id="fullscreen-cover"
-            >
-              <div className="min-w-[70px] max-w-[70px] aspect-square bg-cover bg-center bg-skeleton rounded-lg overflow-hidden shadow-md transition-transform hover:scale-105">
-                <ImageLoader id={song.coverArt} type="song" size={400}>
-                  {(src) => (
-                    <LazyLoadImage
-                      key={song.id}
-                      id="track-song-image"
-                      src={src}
-                      width="100%"
-                      height="100%"
-                      crossOrigin="anonymous"
-                      effect="opacity"
-                      className="aspect-square object-cover w-full h-full bg-skeleton text-transparent"
-                      data-testid="track-image"
-                      alt={`${song.artist} - ${song.title}`}
-                      onLoad={getImageColor}
-                      onError={handleError}
-                    />
-                  )}
-                </ImageLoader>
-              </div>
-              <div className="pointer-events-none absolute inset-0 flex items-center justify-center rounded-lg bg-black/0 transition-opacity duration-150 group-hover:bg-black/35">
-                <Maximize2 className="h-4 w-4 text-white/80 opacity-0 transition-opacity duration-150 group-hover:opacity-100" />
-              </div>
+          <div
+            className="group relative w-[70px] h-[70px] cursor-pointer transition-transform hover:scale-105"
+            data-coach-id="fullscreen-cover"
+            onClick={() => setFullscreenOpen(true)}
+          >
+            <div className="w-full h-full aspect-square bg-cover bg-center bg-skeleton rounded-lg overflow-hidden shadow-md">
+              <ImageLoader id={song.coverArt} type="song" size={400}>
+                {(src) => (
+                  <LazyLoadImage
+                    key={song.id}
+                    id="track-song-image"
+                    src={src}
+                    width="100%"
+                    height="100%"
+                    crossOrigin="anonymous"
+                    effect="opacity"
+                    className="aspect-square object-cover w-full h-full bg-skeleton text-transparent"
+                    data-testid="track-image"
+                    alt={`${song.artist} - ${song.title}`}
+                    onLoad={getImageColor}
+                    onError={handleError}
+                  />
+                )}
+              </ImageLoader>
             </div>
-          </FullscreenMode>
+            <div className="pointer-events-none absolute inset-0 flex items-center justify-center rounded-lg bg-black/0 transition-opacity duration-150 group-hover:bg-black/35">
+              <Maximize2 className="h-4 w-4 text-white/80 opacity-0 transition-opacity duration-150 group-hover:opacity-100" />
+            </div>
+          </div>
         </SimpleTooltip>
         <div className="flex flex-col justify-center w-full overflow-hidden">
           <MarqueeTitle gap="mr-2">
@@ -172,3 +172,4 @@ function ArtistLink({ id, name }: ArtistLinkProps) {
     </Link>
   )
 }
+

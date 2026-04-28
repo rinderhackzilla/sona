@@ -1,4 +1,4 @@
-import { is, platform } from '@electron-toolkit/utils'
+import { is } from '@electron-toolkit/utils'
 import { BrowserWindow, ipcMain, nativeTheme, session, shell } from 'electron'
 import { electron } from '../../../package.json'
 import {
@@ -16,11 +16,6 @@ import {
 import { playerState } from './playerState'
 import { getAppSetting, ISettingPayload, saveAppSettings } from './settings'
 import { setTaskbarButtons } from './taskbar'
-import {
-  DEFAULT_TITLE_BAR_HEIGHT,
-  hiddenTitleBarOverlay,
-  titleBarOverlay,
-} from './titleBarOverlay'
 import {
   getStoredMainBounds,
   getStoredMainIsMaximized,
@@ -105,7 +100,6 @@ export function setupIpcEvents(window: BrowserWindow | null) {
   let miniPlayerPrevClosable = window.isClosable()
   let miniPlayerPrevFullScreenable = window.isFullScreenable()
   let miniPlayerLastBounds: Electron.Rectangle | null = null
-  let restoreTitleBarOverlayTimer: ReturnType<typeof setTimeout> | null = null
   let restoreMouseEventsTimer: ReturnType<typeof setTimeout> | null = null
   let isMiniPlayerMode = false
 
@@ -363,19 +357,13 @@ export function setupIpcEvents(window: BrowserWindow | null) {
   })
 
   ipcMain.on(IpcChannels.ThemeChanged, (_, colors: OverlayColors) => {
-    const { color, symbol, bgColor } = colors
+    const { bgColor } = colors
 
     if (bgColor) {
       colorsState.set('bgColor', bgColor)
     }
-
-    if (platform.isMacOS || platform.isLinux) return
-
-    window.setTitleBarOverlay({
-      color,
-      height: DEFAULT_TITLE_BAR_HEIGHT,
-      symbolColor: symbol,
-    })
+    // Native titlebar overlay is disabled globally. Keep bg-color persistence only.
+    return
   })
 
   ipcMain.on(IpcChannels.UpdateNativeTheme, (_, isDark: boolean) => {
@@ -409,10 +397,6 @@ export function setupIpcEvents(window: BrowserWindow | null) {
   ipcMain.on(IpcChannels.SetMiniPlayerMode, (_, enabled: boolean) => {
     if (enabled) {
       isMiniPlayerMode = true
-      if (restoreTitleBarOverlayTimer) {
-        clearTimeout(restoreTitleBarOverlayTimer)
-        restoreTitleBarOverlayTimer = null
-      }
       if (restoreMouseEventsTimer) {
         clearTimeout(restoreMouseEventsTimer)
         restoreMouseEventsTimer = null
@@ -445,9 +429,6 @@ export function setupIpcEvents(window: BrowserWindow | null) {
       window.setResizable(false)
       window.setClosable(false)
       window.setFullScreenable(false)
-      if (platform.isWindows) {
-        window.setTitleBarOverlay(hiddenTitleBarOverlay)
-      }
       const persistedMiniBounds = getStoredMiniBounds()
       const targetMiniBounds = persistedMiniBounds ?? miniPlayerLastBounds
       if (targetMiniBounds) {
@@ -477,9 +458,6 @@ export function setupIpcEvents(window: BrowserWindow | null) {
     window.setResizable(miniPlayerPrevResizable)
     window.setClosable(miniPlayerPrevClosable)
     window.setFullScreenable(miniPlayerPrevFullScreenable)
-    if (platform.isWindows) {
-      window.setTitleBarOverlay(hiddenTitleBarOverlay)
-    }
 
     const persistedMainBounds = getStoredMainBounds()
     const persistedMainIsMaximized = getStoredMainIsMaximized()
@@ -515,15 +493,10 @@ export function setupIpcEvents(window: BrowserWindow | null) {
     restoreMouseEventsTimer = setTimeout(() => {
       window.setIgnoreMouseEvents(false)
     }, 260)
-
-    if (platform.isWindows) {
-      restoreTitleBarOverlayTimer = setTimeout(() => {
-        window.setTitleBarOverlay(titleBarOverlay)
-      }, 520)
-    }
   })
 
   ipcMain.on(IpcChannels.SetMiniPlayerPinned, (_, pinned: boolean) => {
     window.setAlwaysOnTop(pinned)
   })
 }
+

@@ -1,7 +1,7 @@
 import { useQueries, useQuery } from '@tanstack/react-query'
 import { useEffect, useMemo, useRef } from 'react'
 import { subsonic } from '@/service/subsonic'
-import { AlbumsListData } from '@/types/responses/album'
+import { Albums, AlbumsListData } from '@/types/responses/album'
 import { Genres } from '@/types/responses/genre'
 import { convertMinutesToMs } from '@/utils/convertSecondsToTime'
 import { logger } from '@/utils/logger'
@@ -27,7 +27,61 @@ function createHomeAlbumListQuery(
       }),
   }
 }
+function parseReleaseLikeDate(value: unknown): number | undefined {
+  if (!value) return undefined
 
+  if (typeof value === 'string' || typeof value === 'number') {
+    const parsed = Date.parse(String(value))
+    if (Number.isFinite(parsed)) return parsed
+    const asNumber = Number(value)
+    return Number.isFinite(asNumber) ? asNumber : undefined
+  }
+
+  if (typeof value === 'object') {
+    const maybeDate = value as {
+      year?: number
+      month?: number
+      day?: number
+      date?: string
+    }
+
+    if (typeof maybeDate.date === 'string') {
+      const parsed = Date.parse(maybeDate.date)
+      if (Number.isFinite(parsed)) return parsed
+    }
+
+    if (typeof maybeDate.year === 'number' && Number.isFinite(maybeDate.year)) {
+      const monthIndex =
+        typeof maybeDate.month === 'number' && Number.isFinite(maybeDate.month)
+          ? Math.max(0, maybeDate.month - 1)
+          : 0
+      const day =
+        typeof maybeDate.day === 'number' && Number.isFinite(maybeDate.day)
+          ? Math.max(1, maybeDate.day)
+          : 1
+      return Date.UTC(maybeDate.year, monthIndex, day)
+    }
+  }
+
+  return undefined
+}
+
+function getAlbumReleaseTimestamp(album: Albums): number {
+  const fromReleaseDate = parseReleaseLikeDate(album.releaseDate)
+  if (typeof fromReleaseDate === 'number') return fromReleaseDate
+
+  const fromOriginalReleaseDate = parseReleaseLikeDate(album.originalReleaseDate)
+  if (typeof fromOriginalReleaseDate === 'number') return fromOriginalReleaseDate
+
+  if (typeof album.year === 'number' && Number.isFinite(album.year)) {
+    return Date.UTC(album.year, 0, 1)
+  }
+
+  const fromCreated = parseReleaseLikeDate(album.created)
+  if (typeof fromCreated === 'number') return fromCreated
+
+  return 0
+}
 export interface GenreDiscoveryItem {
   value: string
   albumCount: number
@@ -79,6 +133,54 @@ export const useGetRandomSongs = () => {
 export const useGetRecentlyAdded = () => {
   return useQuery({
     ...createHomeAlbumListQuery(queryKeys.album.recentlyAdded, 'newest'),
+    ...HOME_QUERY_BASE,
+  })
+}
+
+export const useGetLatestReleaseAlbum = () => {
+  return useQuery({
+    queryKey: [queryKeys.album.latestRelease],
+    queryFn: async () => {
+      const currentYear = new Date().getUTCFullYear()
+
+      // Probe recent release windows first so "New Release" does not get
+      // polluted by old catalog entries that were recently added/scanned.
+      const yearWindows = [
+        1, // current year
+        2, // current + previous
+        4,
+        8,
+        16,
+      ]
+
+      for (const span of yearWindows) {
+        const fromYear = currentYear - span + 1
+        const byYear = await subsonic.albums.getAlbumList({
+          type: 'byYear',
+          fromYear: String(fromYear),
+          toYear: String(currentYear),
+          size: 200,
+        })
+
+        const byYearList = byYear?.list || []
+        if (!byYearList.length) continue
+
+        return [...byYearList].sort(
+          (a, b) => getAlbumReleaseTimestamp(b) - getAlbumReleaseTimestamp(a),
+        )[0]
+      }
+
+      const fallbackNewest = await subsonic.albums.getAlbumList({
+        type: 'newest',
+        size: 200,
+      })
+      const fallbackList = fallbackNewest?.list || []
+      if (!fallbackList.length) return undefined
+
+      return [...fallbackList].sort(
+        (a, b) => getAlbumReleaseTimestamp(b) - getAlbumReleaseTimestamp(a),
+      )[0]
+    },
     ...HOME_QUERY_BASE,
   })
 }

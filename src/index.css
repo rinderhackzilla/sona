@@ -42,10 +42,10 @@
 
     /* Global corner-radius system */
     --radius-control-sm: 8px;
-    --radius-control: 10px;
-    --radius-surface: 12px;
-    --radius-surface-lg: 14px;
-    --radius-surface-xl: 16px;
+    --radius-control: 8px;
+    --radius-surface: 8px;
+    --radius-surface-lg: 8px;
+    --radius-surface-xl: 8px;
     --radius-pill: 9999px;
 
     --list-row-min-h: 40px;
@@ -220,7 +220,7 @@ img {
 }
 
 .player-button-active {
-  @apply after:content-['•'] after:block after:absolute after:-bottom-1 after:text-primary;
+  @apply after:content-[''] after:block after:absolute after:-bottom-1 after:left-1/2 after:-translate-x-1/2 after:w-1 after:h-1 after:rounded-full after:bg-primary;
 }
 
 .play-button-accent-glow {
@@ -236,22 +236,6 @@ img {
   box-shadow:
     0 0 3px hsl(var(--primary) / 0.45),
     0 0 20px hsl(var(--primary) / 0.35);
-}
-
-.reactive-theme-transition * {
-  transition-property:
-    color, background-color, border-color, fill, stroke, text-decoration-color,
-    box-shadow;
-  transition-duration: 2000ms;
-  transition-timing-function: ease;
-}
-
-.session-mode-transition * {
-  transition-property:
-    color, background-color, border-color, fill, stroke, box-shadow, filter,
-    opacity;
-  transition-duration: 420ms !important;
-  transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1) !important;
 }
 
 .dj-card-active-pulse {
@@ -278,7 +262,7 @@ img {
 }
 
 .mini-player-button-active {
-  @apply after:content-['•'] after:block after:absolute after:-bottom-1.5 after:text-secondary-foreground !text-secondary-foreground;
+  @apply after:content-[''] after:block after:absolute after:-bottom-1.5 after:left-1/2 after:-translate-x-1/2 after:w-1 after:h-1 after:rounded-full after:bg-secondary-foreground !text-secondary-foreground;
 }
 
 .bg-skeleton {
@@ -359,11 +343,11 @@ img {
 }
 ::-webkit-scrollbar-thumb {
   background: hsl(var(--border));
-  border-radius: 7px;
+  border-radius: var(--radius-control);
 }
 ::-webkit-scrollbar-track {
   background: transparent;
-  border-radius: 7px;
+  border-radius: var(--radius-control);
 }
 ::-webkit-scrollbar-corner {
   background: transparent;
@@ -494,3 +478,5 @@ div[data-test-id="table-row"]:hover {
     @apply text-foreground;
   }
 }
+
+

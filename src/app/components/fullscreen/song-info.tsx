@@ -1,6 +1,5 @@
-import { memo, startTransition, useRef } from 'react'
+import { memo, startTransition, useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Dot } from '@/app/components/dot'
 import { MarqueeTitle } from '@/app/components/fullscreen/marquee-title'
 import { SongMenuOptions } from '@/app/components/song/menu-options'
 import { SongQualityBadge } from '@/app/components/song/quality-badge'
@@ -12,21 +11,48 @@ import { usePlayerStore } from '@/store/player.store'
 import { ISong } from '@/types/responses/song'
 import { ALBUM_ARTISTS_MAX_NUMBER } from '@/utils/multipleArtists'
 import { FullscreenSongImage } from './song-image'
+import { useFullscreenLuminance } from './luminance-context'
 
 const MemoFullscreenSongImage = memo(FullscreenSongImage)
 
 interface SongInfoProps {
-  isChromeVisible: boolean
   isPanelOpen?: boolean
+  isChromeVisible?: boolean
 }
 
 export function SongInfo({
-  isChromeVisible,
   isPanelOpen = false,
+  isChromeVisible = true,
 }: SongInfoProps) {
   const currentSong = usePlayerStore((state) => state.songlist.currentSong)
   const navigate = useNavigate()
   const closeButtonRef = useRef<HTMLButtonElement>(null)
+  const { useDarkForeground: useDarkText } = useFullscreenLuminance()
+  const [isSongSwapping, setIsSongSwapping] = useState(false)
+  const lastSongIdRef = useRef(currentSong?.id)
+
+  useEffect(() => {
+    if (lastSongIdRef.current === currentSong?.id) return
+    lastSongIdRef.current = currentSong?.id
+    setIsSongSwapping(true)
+    const timeoutId = window.setTimeout(() => setIsSongSwapping(false), 220)
+    return () => window.clearTimeout(timeoutId)
+  }, [currentSong?.id])
+  const titleToneClass = useDarkText
+    ? 'text-black/90 hover:text-black'
+    : 'text-foreground hover:text-foreground/95'
+  const bodyToneClass = useDarkText
+    ? 'text-black/90 hover:text-black'
+    : 'text-foreground hover:text-foreground/95'
+  const mutedToneClass = useDarkText ? 'text-black/70' : 'text-foreground/40'
+  const chipToneClass = useDarkText
+    ? 'border-black/30 bg-white/42 text-black/90' : 'border-primary/30 bg-black/30 text-foreground/92'
+  const titleShadowClass = useDarkText
+    ? ''
+    : 'fullscreen-readable-shadow-strong'
+  const bodyShadowClass = useDarkText
+    ? ''
+    : 'fullscreen-readable-shadow-soft'
 
   function handleTitleClick() {
     closeButtonRef.current?.click()
@@ -64,55 +90,64 @@ export function SongInfo({
     >
       <div
         className={cn(
-          'flex items-center justify-start h-full min-h-full max-h-full gap-4 2xl:gap-6 flex-1 overflow-visible transition-[opacity,transform,filter] duration-420 [transition-timing-function:cubic-bezier(0.22,1,0.36,1)]',
-          isChromeVisible ? 'pt-2 translate-y-0' : 'pt-1 translate-y-0',
-          isPanelOpen && 'opacity-0 scale-[0.97] saturate-0',
+          'flex items-center justify-start h-full min-h-full max-h-full gap-4 2xl:gap-6 flex-1 overflow-visible transition-[opacity,transform] duration-220',
+          isChromeVisible ? 'pt-2' : 'pt-0',
+          isPanelOpen && 'opacity-0 scale-[0.97]',
+          isSongSwapping && 'fullscreen-song-swap',
+          !isChromeVisible && 'scale-[0.99]',
         )}
       >
-        {/* Hidden close button for programmatic closing */}
         <DrawerClose ref={closeButtonRef} className="hidden" />
 
         <MemoFullscreenSongImage isChromeVisible={isChromeVisible} />
 
         <div
           className={cn(
-            'flex flex-col flex-1 min-w-0 h-full min-h-0 text-left overflow-hidden transition-[max-height] duration-500 ease-in-out',
-            isChromeVisible
-              ? 'max-h-[520px] 2xl:max-h-[640px] justify-end pb-1'
-              : 'max-h-[595px] 2xl:max-h-[720px] justify-end pb-2',
+            'flex flex-col flex-1 min-w-0 h-full min-h-0 text-left overflow-visible max-h-[595px] 2xl:max-h-[720px]',
+            isChromeVisible ? 'justify-end pb-2' : 'justify-end pb-0',
           )}
         >
           <MarqueeTitle gap="mr-6">
             <h2
-              className="scroll-m-20 text-4xl 2xl:text-5xl font-bold tracking-tight py-2 2xl:py-3 text-shadow-md hover:underline cursor-pointer"
+              className={cn(
+                'inline-block max-w-full scroll-m-20 text-4xl 2xl:text-5xl font-bold tracking-tight py-2 2xl:py-3 transition-colors cursor-pointer',
+                titleToneClass,
+                titleShadowClass,
+              )}
               onClick={handleTitleClick}
             >
               {currentSong.title}
             </h2>
           </MarqueeTitle>
-          <div className="text-xl 2xl:text-2xl flex gap-1 text-foreground/70 truncate maskImage-marquee-fade-finished">
+          <div className={cn('min-w-0 overflow-visible', useDarkText ? 'text-black/90' : 'text-foreground/74')}>
             <p
-              className="truncate text-shadow-lg text-foreground hover:underline cursor-pointer"
+              className={cn('inline-block text-xl 2xl:text-2xl transition-colors cursor-pointer', bodyToneClass, bodyShadowClass)}
               onClick={handleAlbumClick}
             >
               {currentSong.album}
             </p>
-            <Dot className="text-foreground/70" />
-            <ArtistNames song={currentSong} onArtistClick={handleArtistClick} />
+            <div className="mt-0.5 text-lg 2xl:text-xl min-w-0">
+              <ArtistNames
+                song={currentSong}
+                onArtistClick={handleArtistClick}
+                useDarkText={useDarkText}
+                bodyToneClass={bodyToneClass}
+                bodyShadowClass={bodyShadowClass}
+                className="inline-block min-w-0 max-w-full truncate whitespace-nowrap align-top"
+              />
+            </div>
           </div>
           <div className="mt-2 2xl:mt-3 mb-[1px]">
-            <div className="inline-flex items-center gap-2 rounded-md border border-primary/15 bg-background/20 px-3 py-1.5 text-sm text-foreground/82">
+            <div className={cn('inline-flex items-center gap-2 rounded-md border-[1.5px] px-3 py-1.5 text-sm', chipToneClass)}>
               {currentSong.genre && (
-                <span className="truncate max-w-[220px]">
-                  {currentSong.genre}
-                </span>
+                <span className="truncate max-w-[220px]">{currentSong.genre}</span>
               )}
               {currentSong.genre && currentSong.year && (
-                <span className="text-foreground/40">•</span>
+                <span className={mutedToneClass}>•</span>
               )}
               {currentSong.year && <span>{currentSong.year}</span>}
               {(currentSong.genre || currentSong.year) && (
-                <span className="text-foreground/40">•</span>
+                <span className={mutedToneClass}>•</span>
               )}
               <SongQualityBadge
                 song={currentSong}
@@ -130,44 +165,85 @@ export function SongInfo({
 function ArtistNames({
   song,
   onArtistClick,
+  useDarkText,
+  bodyToneClass,
+  bodyShadowClass,
+  className,
 }: {
   song: ISong
   onArtistClick: (id?: string) => void
+  useDarkText: boolean
+  bodyToneClass: string
+  bodyShadowClass: string
+  className?: string
 }) {
   const { artist, artistId, artists } = song
 
   if (artists && artists.length > 1) {
     const data = artists.slice(0, ALBUM_ARTISTS_MAX_NUMBER)
+    const cleaned = data
+      .map(({ id, name }) => ({
+        id,
+        name: name?.replace(/^[\s,;•]+/, '').trim() ?? '',
+      }))
+      .filter((entry) => entry.name.length > 0)
 
-    return (
-      <div className="flex items-center gap-1">
-        {data.map(({ id, name }, index) => (
-          <div key={id} className="flex">
-            <p
-              className={cn(
-                'truncate text-shadow-lg',
-                id && 'hover:underline cursor-pointer hover:text-foreground',
+    const fullText = cleaned.map((entry) => entry.name).join(', ')
+
+    if (cleaned.length > 0) {
+      return (
+        <span
+          className={cn(
+            'inline-block min-w-0 max-w-full truncate whitespace-nowrap',
+            bodyToneClass,
+            bodyShadowClass,
+            className,
+          )}
+          title={fullText}
+        >
+          {cleaned.map((entry, index) => (
+            <span key={`${entry.id ?? entry.name}-${index}`}>
+              <span
+                className={cn(
+                  'transition-colors',
+                  entry.id &&
+                    (useDarkText
+                      ? 'cursor-pointer hover:text-black'
+                      : 'cursor-pointer hover:text-foreground'),
+                )}
+                onClick={() => onArtistClick(entry.id)}
+              >
+                {entry.name}
+              </span>
+              {index < cleaned.length - 1 && (
+                <span className={mutedInlineTone(useDarkText)}>, </span>
               )}
-              onClick={() => onArtistClick(id)}
-            >
-              {name}
-            </p>
-            {index < data.length - 1 && ','}
-          </div>
-        ))}
-      </div>
-    )
+            </span>
+          ))}
+        </span>
+      )
+    }
   }
 
   return (
-    <p
+    <span
       className={cn(
-        'truncate text-shadow-lg',
-        artistId && 'hover:underline cursor-pointer hover:text-foreground',
+        'inline-block transition-colors',
+        bodyToneClass,
+        bodyShadowClass,
+        className,
+        artistId &&
+          (useDarkText
+            ? 'cursor-pointer hover:text-black'
+            : 'cursor-pointer hover:text-foreground'),
       )}
       onClick={() => onArtistClick(artistId)}
     >
       {artist}
-    </p>
+    </span>
   )
+}
+
+function mutedInlineTone(useDarkText: boolean) {
+  return useDarkText ? 'text-black/72' : 'text-foreground/65'
 }

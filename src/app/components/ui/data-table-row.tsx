@@ -17,6 +17,7 @@ interface RowProps<TData> extends ComponentPropsWithoutRef<'div'> {
   variant?: 'classic' | 'modern'
   dataType?: 'song' | 'artist' | 'playlist' | 'radio'
   sortableId?: string
+  isHighlighted?: boolean
 }
 
 const MemoContextMenuProvider = memo(ContextMenuProvider)
@@ -31,6 +32,7 @@ export function TableRow<TData>({
   isPrevRowSelected,
   isNextRowSelected,
   sortableId,
+  isHighlighted = false,
   ...props
 }: RowProps<TData>) {
   const currentSong = usePlayerCurrentSong()
@@ -85,6 +87,8 @@ export function TableRow<TData>({
           'hover:bg-foreground/20 data-[state=selected]:bg-foreground/30',
           isClassic && 'border-b',
           isRowSongActive && isModern && 'row-active bg-foreground/20',
+          isHighlighted &&
+            'bg-primary/18 ring-1 ring-inset ring-primary/45 hover:bg-primary/22',
           isSortable && isDragging && 'opacity-30',
         )}
       >

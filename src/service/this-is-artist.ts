@@ -34,6 +34,7 @@ const TARGET_SONGS = 30
 const TOP_TRACKS_COUNT = 15 // Get top 15 from Last.fm, fill rest with random
 const MAX_RETRIES = 10 // Try up to 10 different artists
 
+const MIN_ARTIST_SONGS = 10
 interface GenerateConfig {
   username: string
   apiKey: string
@@ -197,10 +198,10 @@ export async function generateThisIsArtist(config: GenerateConfig): Promise<{
       // Step 2: Get all songs from artist
       const artistSongs = await getArtistSongs(artist.id)
 
-      // Check if artist has songs
-      if (artistSongs.length === 0) {
+      // Check minimum library songs for this-is selection
+      if (artistSongs.length < MIN_ARTIST_SONGS) {
         console.warn(
-          `[ThisIsArtist] Artist "${artist.name}" has no songs, trying another...`,
+          `[ThisIsArtist] Artist "${artist.name}" has only ${artistSongs.length} songs (< ${MIN_ARTIST_SONGS}), trying another...`,
         )
         excludedArtists.add(artist.id)
         continue // Try next artist

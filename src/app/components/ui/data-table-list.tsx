@@ -65,6 +65,7 @@ interface DataTableProps<TData, TValue> {
   hasNextPage?: boolean
   scrollToIndex?: boolean
   currentSongIndex?: number
+  highlightRowId?: string
   enableSorting?: boolean
 }
 
@@ -83,6 +84,7 @@ export function DataTableList<TData, TValue>({
   hasNextPage,
   scrollToIndex = false,
   currentSongIndex,
+  highlightRowId,
   enableSorting = false,
 }: DataTableProps<TData, TValue>) {
   const { t } = useTranslation()
@@ -95,6 +97,7 @@ export function DataTableList<TData, TValue>({
   const [sorting, setSorting] = useState<SortingState>([])
   const [rowSelection, setRowSelection] = useState({})
   const [lastRowSelected, setLastRowSelected] = useState<number | null>(null)
+  const lastAppliedHighlightRef = useRef<string | null>(null)
 
   const selectedRows = useMemo(
     () => Object.keys(rowSelection).map(Number),
@@ -321,12 +324,28 @@ export function DataTableList<TData, TValue>({
   }, [virtualizer.scrollElement, debouncedHandleScroll])
 
   useEffect(() => {
-    if (!scrollToIndex || !currentSongIndex) return
+    if (!scrollToIndex || currentSongIndex === undefined || currentSongIndex < 0)
+      return
 
     virtualizer.scrollToIndex(currentSongIndex, {
       align: 'start',
     })
   }, [currentSongIndex, scrollToIndex, virtualizer])
+
+  useEffect(() => {
+    if (!highlightRowId) return
+    if (lastAppliedHighlightRef.current === highlightRowId) return
+
+    const index = (data as Array<{ id?: string }>).findIndex(
+      (item) => item?.id === highlightRowId,
+    )
+
+    if (index < 0) return
+
+    setRowSelection({ [index]: true })
+    setLastRowSelected(index)
+    lastAppliedHighlightRef.current = highlightRowId
+  }, [data, highlightRowId])
 
   return (
     <div className="h-full">

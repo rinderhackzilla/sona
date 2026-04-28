@@ -47,12 +47,14 @@ export function SongQualityBadge({
   return (
     <TooltipProvider>
       <Tooltip delayDuration={100}>
-        <TooltipTrigger className={`cursor-default flex ${className ?? ''}`}>
-          {display === 'text' ? (
-            <span className="text-foreground/85 tracking-wide">{quality}</span>
-          ) : (
-            <Badge variant={variant}>{quality}</Badge>
-          )}
+        <TooltipTrigger asChild>
+          <span className={`cursor-default inline-flex ${className ?? ''}`}>
+            {display === 'text' ? (
+              <span className="tracking-wide text-current">{quality}</span>
+            ) : (
+              <Badge variant={variant}>{quality}</Badge>
+            )}
+          </span>
         </TooltipTrigger>
         <TooltipPortal>
           <TooltipContent className="flex flex-col items-center p-0 divide-y">

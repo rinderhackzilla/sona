@@ -1,4 +1,5 @@
 import { Clock, Disc } from 'lucide-react'
+import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   HeaderFallback,
@@ -6,14 +7,15 @@ import {
 } from '@/app/components/fallbacks/home-fallbacks'
 import AlbumHeader from '@/app/components/home/carousel/album-header'
 import { DiscoverWeeklyCard } from '@/app/components/home/discover-weekly-card'
-import GenreDiscovery from '@/app/components/home/genre-discovery'
+import GenreDiscovery, { DaypartMixCard } from '@/app/components/home/genre-discovery'
 import PreviewList from '@/app/components/home/preview-list'
 import { ThisIsArtist } from '@/app/components/home/this-is-artist'
 import { PageState } from '@/app/components/ui/page-state'
-import { useHomeDashboardData } from '@/app/hooks/use-home'
+import { useGetLatestReleaseAlbum, useHomeDashboardData } from '@/app/hooks/use-home'
 import { useRenderCounter } from '@/app/hooks/use-render-counter'
 import { ROUTES } from '@/routes/routesList'
 import { useAppStore } from '@/store/app.store'
+
 
 export default function Home() {
   useRenderCounter('HomePage')
@@ -29,6 +31,7 @@ export default function Home() {
     genres,
     isGenresLoading,
   } = useHomeDashboardData()
+  const latestReleaseQuery = useGetLatestReleaseAlbum()
 
   const hasCriticalError =
     similarArtists.isError && recentlyPlayed.isError && recentlyAdded.isError
@@ -57,6 +60,18 @@ export default function Home() {
     (recentlyAdded.data?.list?.length ?? 0) > 0 ||
     genres.length > 0
 
+  const latestReleasedAlbum = latestReleaseQuery.data
+
+  const heroAlbums = useMemo(() => {
+    const recommendedAlbums = similarArtists.data?.list || []
+    if (!latestReleasedAlbum) return recommendedAlbums
+
+    const dedupedRecommended = recommendedAlbums.filter(
+      (album) => album.id !== latestReleasedAlbum.id,
+    )
+
+    return [latestReleasedAlbum, ...dedupedRecommended]
+  }, [latestReleasedAlbum, similarArtists.data?.list])
   const allLoaded =
     !similarArtists.isLoading &&
     !recentlyPlayed.isLoading &&
@@ -90,7 +105,7 @@ export default function Home() {
               {showHeaderFallback ? (
                 <HeaderFallback />
               ) : (
-                <AlbumHeader albums={similarArtists.data?.list || []} />
+                <AlbumHeader albums={heroAlbums} newReleaseAlbumId={latestReleasedAlbum?.id} />
               )}
             </div>
 
@@ -99,7 +114,7 @@ export default function Home() {
                 <DiscoverWeeklyCard />
               </div>
               <div className="h-full">
-                <ThisIsArtist />
+                <DaypartMixCard />
               </div>
             </div>
           </section>
@@ -108,14 +123,18 @@ export default function Home() {
             {showHeaderFallback ? (
               <HeaderFallback />
             ) : (
-              <AlbumHeader albums={similarArtists.data?.list || []} />
+              <AlbumHeader albums={heroAlbums} newReleaseAlbumId={latestReleasedAlbum?.id} />
             )}
           </section>
         )}
 
         {/* Genre Discovery */}
         <section>
-          <GenreDiscovery genres={genres} isLoading={isGenresLoading} />
+          <GenreDiscovery
+            genres={genres}
+            isLoading={isGenresLoading}
+            thirdCard={showThisIsArtist ? <ThisIsArtist /> : undefined}
+          />
         </section>
 
         {/* Recently Played */}
@@ -127,6 +146,7 @@ export default function Home() {
               icon={<Clock className="h-5 w-5 text-muted-foreground" />}
               moreRoute={ROUTES.ALBUMS.RECENTLY_PLAYED}
               list={recentlyPlayed.data.list}
+              showAlbumYearInSubtitle
             />
           )}
         </section>
@@ -140,6 +160,7 @@ export default function Home() {
               icon={<Disc className="h-5 w-5 text-muted-foreground" />}
               moreRoute={ROUTES.ALBUMS.RECENTLY_ADDED}
               list={recentlyAdded.data.list}
+              showAlbumYearInSubtitle
             />
           )}
         </section>

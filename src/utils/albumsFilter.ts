@@ -5,6 +5,7 @@ export enum AlbumsSearchParams {
   ArtistId = 'artistId',
   ArtistName = 'artistName',
   Query = 'query',
+  SongId = 'songId',
 }
 
 export enum PersistedAlbumListKeys {

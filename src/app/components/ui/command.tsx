@@ -13,7 +13,7 @@ const Command = React.forwardRef<
   <CommandPrimitive
     ref={ref}
     className={cn(
-      'flex h-full w-full flex-col overflow-hidden rounded-md bg-popover text-popover-foreground',
+      'flex h-full w-full flex-col overflow-hidden rounded-[var(--radius-surface-lg)] bg-transparent text-popover-foreground',
       className,
     )}
     {...props}
@@ -21,12 +21,24 @@ const Command = React.forwardRef<
 ))
 Command.displayName = CommandPrimitive.displayName
 
-const CommandDialog = ({ children, ...props }: DialogProps) => {
+type CommandDialogProps = DialogProps & {
+  contentClassName?: string
+}
+
+const CommandDialog = ({
+  children,
+  contentClassName,
+  ...props
+}: CommandDialogProps) => {
   return (
     <Dialog {...props}>
       <DialogTitle className="sr-only">Search Dialog</DialogTitle>
       <DialogContent
-        className="w-[min(96vw,56rem)] max-w-none max-h-[calc(100vh-2rem)] overflow-hidden rounded-2xl border border-border/60 bg-background/92 p-0 shadow-[0_20px_60px_hsl(var(--background)/0.85)] backdrop-blur-2xl"
+        overlayClassName="bg-black/72 backdrop-blur-sm supports-[backdrop-filter]:bg-black/62"
+        className={cn(
+          'w-[min(96vw,58rem)] max-w-none overflow-hidden rounded-[var(--radius-surface-lg)] border border-border/70 bg-background/95 p-0 shadow-[0_24px_70px_hsl(var(--background)/0.65)]',
+          contentClassName,
+        )}
         aria-describedby={undefined}
       >
         {children}
@@ -41,14 +53,14 @@ const CommandInput = React.forwardRef<
 >(({ className, ...props }, ref) => (
   // eslint-disable-next-line react/no-unknown-property
   <div
-    className="flex items-center border-b border-border/70 bg-card/35 px-3.5"
+    className="flex items-center border-b border-border/70 bg-background/60 px-3.5"
     cmdk-input-wrapper=""
   >
-    <Search className="mr-2.5 h-4 w-4 shrink-0 opacity-70" />
+    <Search className="mr-2 h-3.5 w-3.5 shrink-0 text-primary/75" />
     <CommandPrimitive.Input
       ref={ref}
       className={cn(
-        'flex h-13 w-full rounded-md bg-transparent py-3.5 text-[15px] font-medium outline-none placeholder:text-muted-foreground/85 disabled:cursor-not-allowed disabled:opacity-50',
+        'flex h-11 w-full rounded-md bg-transparent py-2 text-sm font-medium outline-none placeholder:text-muted-foreground/85 disabled:cursor-not-allowed disabled:opacity-50',
         className,
       )}
       {...props}
@@ -62,13 +74,13 @@ const CommandList = React.forwardRef<
   React.ElementRef<typeof CommandPrimitive.List>,
   React.ComponentPropsWithoutRef<typeof CommandPrimitive.List>
 >(({ className, ...props }, ref) => (
-  <CommandPrimitive.List
-    ref={ref}
-    className={cn(
-      'min-h-0 flex-1 overflow-y-auto overflow-x-hidden',
-      className,
-    )}
-    {...props}
+    <CommandPrimitive.List
+      ref={ref}
+      className={cn(
+        'min-h-0 flex-1 overflow-y-auto overflow-x-hidden px-0 pt-1 pb-4',
+        className,
+      )}
+      {...props}
   />
 ))
 
@@ -80,7 +92,7 @@ const CommandEmpty = React.forwardRef<
 >((props, ref) => (
   <CommandPrimitive.Empty
     ref={ref}
-    className="py-6 text-center text-sm"
+    className="py-8 text-center text-sm text-muted-foreground"
     {...props}
   />
 ))

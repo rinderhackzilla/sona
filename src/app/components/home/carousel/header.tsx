@@ -31,7 +31,7 @@ export default function HomeHeader({ songs }: HomeHeaderProps) {
     >
       <CarouselContent
         className="ml-0 flex transform-gpu"
-        style={{ borderRadius: 'calc(var(--radius) - 2px)' }}
+        style={{ borderRadius: 'var(--radius)' }}
       >
         {songs.map((song, index) => (
           <CarouselItem

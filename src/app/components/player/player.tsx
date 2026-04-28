@@ -113,7 +113,9 @@ export function Player({ hideUi = false }: { hideUi?: boolean }) {
   const loopState = usePlayerLoop()
   const { hasNext } = usePlayerPrevAndNext()
   const { setCurrentSongColor } = useSongColor()
-  const currentPlaybackRate = usePlayerStore().playerState.currentPlaybackRate
+  const currentPlaybackRate = usePlayerStore(
+    (state) => state.playerState.currentPlaybackRate,
+  )
   const { replayGainType, replayGainPreAmp, replayGainDefaultGain } =
     useReplayGainState()
   const {

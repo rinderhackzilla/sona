@@ -71,7 +71,7 @@ export function LyricsTab() {
         <div className="flex flex-col gap-1">
           <ContextMenu>
             <ContextMenuTrigger asChild>
-              <h2 className="text-xl font-bold truncate cursor-pointer hover:underline">
+              <h2 className="text-xl font-bold truncate cursor-pointer hover:text-foreground/95 transition-colors">
                 {title}
               </h2>
             </ContextMenuTrigger>
@@ -83,7 +83,7 @@ export function LyricsTab() {
           {artistId && (
             <Link
               to={ROUTES.ARTIST.PAGE(artistId)}
-              className="text-lg text-muted-foreground truncate hover:text-foreground hover:underline transition-colors"
+              className="text-lg text-muted-foreground truncate hover:text-foreground transition-colors"
             >
               {artist}
             </Link>
@@ -95,7 +95,7 @@ export function LyricsTab() {
           {album && albumId && (
             <Link
               to={ROUTES.ALBUM.PAGE(albumId)}
-              className="text-sm text-muted-foreground truncate hover:text-foreground hover:underline transition-colors"
+              className="text-sm text-muted-foreground truncate hover:text-foreground transition-colors"
             >
               {album}
             </Link>
@@ -128,15 +128,18 @@ function SyncedLyrics({ lyrics }: LyricProps) {
   const playerRef = usePlayerRef()
   const [progress, setProgress] = useState(0)
 
-  setTimeout(() => {
-    let newProgress = (playerRef?.currentTime || 0) * 1000
+  useEffect(() => {
+    let rafId = 0
 
-    if (newProgress === progress) {
-      newProgress += 1 // Prevents the lyrics from getting stuck when the audio is still loading
+    const tick = () => {
+      const next = (playerRef?.currentTime ?? 0) * 1000
+      setProgress((prev) => (Math.abs(prev - next) >= 1 ? next : prev))
+      rafId = requestAnimationFrame(tick)
     }
 
-    setProgress(newProgress)
-  }, 50)
+    rafId = requestAnimationFrame(tick)
+    return () => cancelAnimationFrame(rafId)
+  }, [playerRef])
 
   const skipToTime = (timeMs: number) => {
     if (playerRef) {
@@ -236,3 +239,5 @@ function areLyricsSynced(lyrics: ILyric) {
     lyric.startsWith('[02:')
   )
 }
+
+

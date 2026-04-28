@@ -15,7 +15,15 @@ function getArtworkKey(id: string, type: CoverArt, size: string) {
   return `${type}:${size}:${id}`
 }
 
+function isEphemeralBlobUrl(value: string) {
+  return value.startsWith('blob:')
+}
+
 function setResolvedArtworkCache(key: string, value: string) {
+  // Blob URLs are revoked by the image cache LRU layer, so keeping them in this
+  // higher-level cache can return dead URLs after navigation-heavy sessions.
+  // Only persist stable URLs here.
+  if (isEphemeralBlobUrl(value)) return
   resolvedArtworkCache.set(key, value)
   if (resolvedArtworkCache.size <= MAX_RESOLVED_ARTWORK_CACHE) return
 
@@ -45,7 +53,13 @@ export async function resolveArtwork({
 
   const key = getArtworkKey(id, type, normalizedSize)
   const cached = resolvedArtworkCache.get(key)
-  if (cached) return cached
+  if (cached) {
+    if (isEphemeralBlobUrl(cached)) {
+      resolvedArtworkCache.delete(key)
+    } else {
+      return cached
+    }
+  }
 
   const inFlight = inFlightArtworkRequests.get(key)
   if (inFlight) return inFlight

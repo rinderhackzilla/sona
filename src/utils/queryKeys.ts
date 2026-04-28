@@ -10,6 +10,7 @@ const album = {
   moreAlbums: 'get-artist-albums',
   genreAlbums: 'get-genre-random-albums',
   recentlyAdded: 'get-recently-added-albums',
+  latestRelease: 'get-latest-release-album',
   mostPlayed: 'get-most-played-albums',
   recentlyPlayed: 'get-recently-played-albums',
   random: 'get-random-albums',

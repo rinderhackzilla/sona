@@ -24,7 +24,8 @@ const ARTIST = {
 }
 
 const ALBUM = {
-  PAGE: (albumId: string) => `${LIBRARY.ALBUMS}/${encodeURIComponent(albumId)}`,
+  PAGE: (albumId: string, songId?: string) =>
+    `${LIBRARY.ALBUMS}/${encodeURIComponent(albumId)}${songId ? `?songId=${encodeURIComponent(songId)}` : ''}`,
   PATH: `${LIBRARY.ALBUMS}/:albumId`,
 }
 
@@ -45,8 +46,8 @@ const ALBUMS = {
 }
 
 const SONGS = {
-  SEARCH: (query: string) =>
-    `${LIBRARY.SONGS}?filter=${AlbumsFilters.Search}&query=${encodeURIComponent(query)}`,
+  SEARCH: (query: string, songId?: string) =>
+    `${LIBRARY.SONGS}?filter=${AlbumsFilters.Search}&query=${encodeURIComponent(query)}${songId ? `&songId=${encodeURIComponent(songId)}` : ''}`,
   ARTIST_TRACKS: (id: string, name: string) =>
     `${LIBRARY.SONGS}?artistId=${id}&artistName=${encodeURIComponent(name)}`,
 }

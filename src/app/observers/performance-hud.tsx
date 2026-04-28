@@ -43,7 +43,7 @@ export function PerformanceHud() {
   }, [])
 
   useEffect(() => {
-    if (!DEV_ONLY) return
+    if (!DEV_ONLY || !enabled) return
 
     let rafId = 0
     let frameCount = 0
@@ -99,7 +99,7 @@ export function PerformanceHud() {
       cancelAnimationFrame(rafId)
       perfObserver?.disconnect()
     }
-  }, [])
+  }, [enabled])
 
   useEffect(() => {
     if (!enabled) return

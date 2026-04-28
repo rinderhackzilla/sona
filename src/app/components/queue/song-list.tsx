@@ -68,6 +68,8 @@ export function QueueSongList({
           songs={currentList}
           currentSongIndex={currentSongIndex}
           scrollToIndex={true}
+          enableReorder={true}
+          compact={inFullscreenOverlay}
         />
       </div>
     </div>

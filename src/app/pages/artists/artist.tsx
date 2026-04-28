@@ -1,6 +1,7 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useParams } from 'react-router-dom'
+import { toast } from 'react-toastify'
 import ImageHeader from '@/app/components/album/image-header'
 import ArtistTopSongs from '@/app/components/artist/artist-top-songs'
 import { ArtistInfo } from '@/app/components/artist/info'
@@ -11,6 +12,7 @@ import { TopSongsTableFallback } from '@/app/components/fallbacks/table-fallback
 import { BadgesData } from '@/app/components/header-info'
 import PreviewList from '@/app/components/home/preview-list'
 import ListWrapper from '@/app/components/list-wrapper'
+import { DetailStickyHeader } from '@/app/components/detail-sticky-header'
 import { PageState } from '@/app/components/ui/page-state'
 import {
   useGetArtist,
@@ -20,12 +22,15 @@ import {
 } from '@/app/hooks/use-artist'
 import ErrorPage from '@/app/pages/error-page'
 import { ROUTES } from '@/routes/routesList'
+import { lidarr } from '@/service/lidarr'
 import { sortRecentAlbums } from '@/utils/album'
 import { dedupeAlbumsByIdentity } from '@/utils/albumDedup'
+import { useAppIntegrations } from '@/store/app.store'
 
 export default function Artist() {
   const { t } = useTranslation()
   const { artistId } = useParams() as { artistId: string }
+  const [isLidarrRequesting, setIsLidarrRequesting] = useState(false)
 
   const {
     data: artist,
@@ -83,11 +88,30 @@ export default function Artist() {
     [artistsList, artistId],
   )
 
+  const { lidarr: lidarrConfig } = useAppIntegrations((state) => state.integrations)
+  const isLidarrConfigured = Boolean(lidarrConfig.url && lidarrConfig.apiKey)
+
+  async function handleLidarrArtistRequest() {
+    if (!artist?.name || isLidarrRequesting) return
+
+    setIsLidarrRequesting(true)
+    try {
+      await lidarr.addArtist(artist.name)
+      toast.success(t('command.lidarr.success', { artist: artist.name }))
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Connection failed'
+      toast.error(t('command.lidarr.error', { message }))
+    } finally {
+      setIsLidarrRequesting(false)
+    }
+  }
+
   if (artistIsLoading) return <AlbumFallback />
   if (isFetched && !artist) {
     return <ErrorPage status={404} statusText="Not Found" />
   }
   if (!artist) return <AlbumFallback />
+
 
   function getSongCount() {
     if (!artist) return null
@@ -183,6 +207,12 @@ export default function Artist() {
       />
 
       <ListWrapper>
+        <DetailStickyHeader
+          title={t('artist.headline')}
+          count={topSongs?.length ?? recentAlbums.length}
+          fixed={true}
+        />
+
         <ArtistInfo artist={artist} />
 
         {topSongsIsLoading && <TopSongsTableFallback />}
@@ -196,6 +226,14 @@ export default function Artist() {
               title={t('states.empty.title')}
               description={t('states.empty.artistDescription')}
               className="min-h-[180px] px-0 py-4"
+              actionLabel={
+                isLidarrConfigured
+                  ? isLidarrRequesting
+                    ? t('command.lidarr.requesting')
+                    : t('command.lidarr.request', { artist: artist.name })
+                  : undefined
+              }
+              onAction={isLidarrConfigured ? handleLidarrArtistRequest : undefined}
             />
           )}
 
@@ -205,6 +243,7 @@ export default function Artist() {
             list={recentAlbums}
             moreTitle={t('album.more.discography')}
             moreRoute={ROUTES.ALBUMS.ARTIST(artist.id, artist.name)}
+            showAlbumYearInSubtitle
           />
         )}
 
@@ -219,3 +258,4 @@ export default function Artist() {
     </div>
   )
 }
+

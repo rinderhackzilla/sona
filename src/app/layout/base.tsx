@@ -12,7 +12,7 @@ import {
   MainSidebarProvider,
 } from '@/app/components/ui/main-sidebar'
 import { Header } from '@/app/layout/header'
-import { useMiniPlayerState } from '@/store/ui.store'
+import { useFullscreenState, useMiniPlayerState } from '@/store/ui.store'
 import { MainRoutes } from './main'
 
 const MemoHeader = memo(Header)
@@ -25,6 +25,7 @@ const MemoFullscreenGlobal = memo(FullscreenGlobal)
 
 export default function BaseLayout() {
   const { open: miniPlayerOpen } = useMiniPlayerState()
+  const { open: fullscreenOpen } = useFullscreenState()
 
   return (
     <div className="h-screen w-screen overflow-hidden">
@@ -32,21 +33,25 @@ export default function BaseLayout() {
         <MemoMiniPlayerModePage />
       ) : (
         <>
-          <MainSidebarProvider>
-            <MemoHeader />
-            <AppSidebar />
-            <MainSidebarInset>
-              <MainRoutes />
-            </MainSidebarInset>
-          </MainSidebarProvider>
-          <MemoSongInfoDialog />
-          <MemoRemovePlaylistDialog />
-          <MemoMainDrawerPage />
+          {!fullscreenOpen && (
+            <>
+              <MainSidebarProvider>
+                <MemoHeader />
+                <AppSidebar />
+                <MainSidebarInset>
+                  <MainRoutes />
+                </MainSidebarInset>
+              </MainSidebarProvider>
+              <MemoSongInfoDialog />
+              <MemoRemovePlaylistDialog />
+              <MemoMainDrawerPage />
+              <CreatePlaylistDialog />
+            </>
+          )}
           <MemoFullscreenGlobal />
-          <CreatePlaylistDialog />
         </>
       )}
-      <MemoPlayer hideUi={miniPlayerOpen} />
+      <MemoPlayer hideUi={miniPlayerOpen || fullscreenOpen} />
     </div>
   )
 }

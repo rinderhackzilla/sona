@@ -1,5 +1,5 @@
 import { Clock3, Music, Play } from 'lucide-react'
-import type { MouseEvent } from 'react'
+import type { MouseEvent, ReactNode } from 'react'
 import { startTransition } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router-dom'
@@ -102,11 +102,13 @@ function GenreCard({ genre, albumCount, index }: GenreCardProps) {
 interface GenreDiscoveryProps {
   genres?: GenreDiscoveryItem[]
   isLoading?: boolean
+  thirdCard?: ReactNode
 }
 
 export function GenreDiscovery({
   genres = [],
   isLoading = false,
+  thirdCard,
 }: GenreDiscoveryProps) {
   const { playlist, dayPart } = useTimeOfDayPlaylist()
 
@@ -135,7 +137,7 @@ export function GenreDiscovery({
             index={index}
           />
         ))}
-        <DaypartPlaylistCard playlist={playlist} dayPart={dayPart} />
+        {thirdCard || <DaypartPlaylistCard playlist={playlist} dayPart={dayPart} />}
       </div>
     </div>
   )
@@ -147,6 +149,11 @@ export function ConnectedGenreDiscovery() {
 }
 
 export default GenreDiscovery
+
+export function DaypartMixCard() {
+  const { playlist, dayPart } = useTimeOfDayPlaylist()
+  return <DaypartPlaylistCard playlist={playlist} dayPart={dayPart} />
+}
 
 function DaypartPlaylistCard({
   playlist,

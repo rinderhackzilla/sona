@@ -73,7 +73,12 @@ export function ServicesPage() {
   )
 
   const isLrclibEnabled = DISABLE_LRCLIB ? false : enabled
-  const { status, hasPendingScrobbleFailure } = useScrobbleStatus()
+  const {
+    status,
+    hasPendingScrobbleFailure,
+    lastScrobbleFailedAt,
+    lastScrobbleSucceededAt,
+  } = useScrobbleStatus()
   const [lastfmUsernameInput, setLastfmUsernameInput] = useState(lastfm.username)
   const [lastfmApiKeyInput, setLastfmApiKeyInput] = useState(lastfm.apiKey)
 
@@ -106,6 +111,16 @@ export function ServicesPage() {
     isLastFmConfigured,
     hasPendingScrobbleFailure,
   )
+  const formatScrobbleTimestamp = (value: number) => {
+    if (!value) return null
+    try {
+      return new Date(value).toLocaleString()
+    } catch {
+      return null
+    }
+  }
+  const lastFailedText = formatScrobbleTimestamp(lastScrobbleFailedAt)
+  const lastSucceededText = formatScrobbleTimestamp(lastScrobbleSucceededAt)
 
   return (
     <div className="space-y-4">
@@ -194,6 +209,28 @@ export function ServicesPage() {
               </div>
             </ContentItemForm>
           </ContentItem>
+          {(lastFailedText || lastSucceededText) && (
+            <div className="space-y-1 px-2">
+              {lastSucceededText && (
+                <p className="text-[11px] text-emerald-600 dark:text-emerald-400">
+                  {t(
+                    'settings.integrations.lastfm.scrobbleStatus.lastSuccess',
+                    'Last successful scrobble',
+                  )}
+                  : {lastSucceededText}
+                </p>
+              )}
+              {lastFailedText && (
+                <p className="text-[11px] text-amber-600 dark:text-amber-400">
+                  {t(
+                    'settings.integrations.lastfm.scrobbleStatus.lastFailure',
+                    'Last failed scrobble',
+                  )}
+                  : {lastFailedText}
+                </p>
+              )}
+            </div>
+          )}
           <p className="text-xs text-muted-foreground">
             {t(
               'settings.integrations.lastfm.apiKey.helpPrefix',

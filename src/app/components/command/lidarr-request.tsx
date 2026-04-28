@@ -1,6 +1,7 @@
 import { Download } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { toast } from 'react-toastify'
 import { CommandGroup, CommandItem } from '@/app/components/ui/command'
 import { lidarr } from '@/service/lidarr'
 import { useAppIntegrations } from '@/store/app.store'
@@ -36,11 +37,13 @@ export function CommandLidarrRequest({
     try {
       await lidarr.addArtist(searchQuery.trim())
       setStatus('success')
+      toast.success(t('command.lidarr.success', { artist: searchQuery }))
       // Reset success status after 2 seconds
       setTimeout(() => setStatus('idle'), 2000)
     } catch (error) {
       setStatus('error')
       console.error('Lidarr request failed:', error)
+      toast.error(t('command.lidarr.error', { message: 'Connection failed' }))
       // Reset error status after 3 seconds
       setTimeout(() => setStatus('idle'), 3000)
     } finally {

@@ -31,7 +31,9 @@ import {
   memo,
   TouchEvent,
   useCallback,
+  useEffect,
   useMemo,
+  useRef,
   useState,
 } from 'react'
 import { isMacOs } from 'react-device-detect'
@@ -84,6 +86,7 @@ interface DataTableProps<TData, TValue> {
   dataType?: 'song' | 'artist' | 'playlist' | 'radio'
   onReorder?: (fromIndex: number, toIndex: number) => void
   enableSorting?: boolean
+  highlightRowId?: string
 }
 
 let isTap = false
@@ -106,6 +109,7 @@ export function DataTable<TData, TValue>({
   dataType = 'song',
   onReorder,
   enableSorting,
+  highlightRowId,
 }: DataTableProps<TData, TValue>) {
   const { t } = useTranslation()
   const resolvedNoRowsMessage = noRowsMessage ?? t('states.empty.noResults')
@@ -118,6 +122,8 @@ export function DataTable<TData, TValue>({
   const [rowSelection, setRowSelection] = useState({})
   const [lastRowSelected, setLastRowSelected] = useState<number | null>(null)
   const [activeRowIndex, setActiveRowIndex] = useState<number | null>(null)
+  const tableRef = useRef<HTMLDivElement>(null)
+  const lastAppliedHighlightRef = useRef<string | null>(null)
 
   const isClassic = variant === 'classic'
   const isModern = variant === 'modern'
@@ -385,6 +391,27 @@ export function DataTable<TData, TValue>({
 
   const activeRow = activeRowIndex !== null ? rows[activeRowIndex] : null
 
+  useEffect(() => {
+    if (!highlightRowId) return
+    if (lastAppliedHighlightRef.current === highlightRowId) return
+
+    const highlightIndex = (data as Array<{ id?: string }>).findIndex(
+      (item) => item?.id === highlightRowId,
+    )
+    if (highlightIndex < 0) return
+
+    setRowSelection({ [highlightIndex.toString()]: true })
+    setLastRowSelected(highlightIndex)
+    lastAppliedHighlightRef.current = highlightRowId
+
+    requestAnimationFrame(() => {
+      const rowElement = tableRef.current?.querySelector<HTMLDivElement>(
+        `[data-song-id="${highlightRowId}"]`,
+      )
+      rowElement?.scrollIntoView({ block: 'center', behavior: 'smooth' })
+    })
+  }, [data, highlightRowId])
+
   const rowList = rows?.length ? (
     rows.map((row, index) => (
       <Fragment key={row.id}>
@@ -416,7 +443,15 @@ export function DataTable<TData, TValue>({
           isNextRowSelected={isNextRowSelected}
           variant={variant}
           dataType={dataType}
+          isHighlighted={
+            Boolean(
+              highlightRowId &&
+                (row.original as { id?: string })?.id === highlightRowId,
+            )
+          }
           sortableId={isDragReorderActive ? index.toString() : undefined}
+          data-row-index={index}
+          data-song-id={(row.original as { id?: string })?.id ?? ''}
           onClick={(e) => handleClicks(e, row)}
           onDoubleClick={(e) => handleRowDbClick(e, row)}
           onTouchStart={handleTouchStart}
@@ -470,6 +505,7 @@ export function DataTable<TData, TValue>({
 
       <div className={clsx(isClassic && 'rounded-md border')}>
         <div
+          ref={tableRef}
           className={clsx(
             'relative w-full overflow-hidden rounded-md cursor-default caption-bottom text-sm',
             isClassic ? 'bg-background' : 'bg-transparent',
