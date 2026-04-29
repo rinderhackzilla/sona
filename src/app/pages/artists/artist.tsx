@@ -12,7 +12,6 @@ import { TopSongsTableFallback } from '@/app/components/fallbacks/table-fallback
 import { BadgesData } from '@/app/components/header-info'
 import PreviewList from '@/app/components/home/preview-list'
 import ListWrapper from '@/app/components/list-wrapper'
-import { DetailStickyHeader } from '@/app/components/detail-sticky-header'
 import { PageState } from '@/app/components/ui/page-state'
 import {
   useGetArtist,
@@ -207,12 +206,6 @@ export default function Artist() {
       />
 
       <ListWrapper>
-        <DetailStickyHeader
-          title={t('artist.headline')}
-          count={topSongs?.length ?? recentAlbums.length}
-          fixed={true}
-        />
-
         <ArtistInfo artist={artist} />
 
         {topSongsIsLoading && <TopSongsTableFallback />}
