@@ -20,7 +20,7 @@ export function useOnRepeat() {
   const isConfigured = !!(lastfm.username && lastfm.apiKey)
 
   return useQuery<OnRepeatData | null>({
-    queryKey: ['onRepeat', lastfm.username],
+    queryKey: ['onRepeat', lastfm.username, lastfm.apiKey],
     queryFn: async () => {
       if (!isConfigured) {
         return null
@@ -70,8 +70,10 @@ export function useOnRepeat() {
       }
     },
     enabled: isConfigured,
-    staleTime: 1000 * 60 * 60, // 1 hour
-    gcTime: 1000 * 60 * 60 * 24, // 24 hours
+    staleTime: 1000 * 60 * 5, // 5 minutes
+    gcTime: 1000 * 60 * 30, // 30 minutes
+    refetchOnWindowFocus: true,
+    refetchInterval: 1000 * 60 * 10, // 10 minutes
     retry: 1,
   })
 }

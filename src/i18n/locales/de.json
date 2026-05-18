@@ -595,7 +595,7 @@
     "noPlayback": "Keine Wiedergabe aktiv.",
     "equalizer": {
       "title": "Equalizer",
-      "enabled": "Aktiviert",
+      "enabled": "Lautstärke normalisieren",
       "disabled": "Deaktiviert",
       "preset": "Voreinstellung",
       "reset": "Zurücksetzen",
@@ -833,9 +833,12 @@
       "replayGain": {
         "group": "ReplayGain",
         "description": "Für ein konsistentes Hörerlebnis Wiedergabelautstärken automatisch angleichen.",
-        "enabled": "Aktiviert",
+        "enabled": "Lautstärke normalisieren",
+        "enabledInfo": "Gleicht die Wiedergabelautstärke zwischen Songs aus, damit leise und laute Titel ähnlicher wahrgenommen werden.",
         "mode": {
           "label": "Modus",
+          "albumToggle": "Albumpegel verwenden",
+          "albumToggleInfo": "Wenn aktiviert, bleibt die relative Lautstärke innerhalb eines Albums erhalten. Wenn deaktiviert, wird jeder Track einzeln normalisiert.",
           "track": "Track-Verstärkung",
           "album": "Album-Verstärkung"
         },

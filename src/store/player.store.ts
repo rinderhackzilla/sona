@@ -172,7 +172,7 @@ export const usePlayerStore = createWithEqualityFn<IPlayerContext>()(
             },
             replayGain: {
               values: {
-                enabled: false,
+                enabled: true,
                 type: 'track',
                 preAmp: 0,
                 error: false,
@@ -1064,7 +1064,7 @@ export const usePlayerStore = createWithEqualityFn<IPlayerContext>()(
                 state.settings.fullscreen.autoFullscreenEnabled = false
                 state.settings.lyrics.preferSyncedLyrics = false
                 state.settings.replayGain.values = {
-                  enabled: false,
+                  enabled: true,
                   type: 'track',
                   preAmp: 0,
                   error: false,
@@ -1157,6 +1157,14 @@ export const usePlayerStore = createWithEqualityFn<IPlayerContext>()(
               settings.equalizer.gains = normalizeEqualizerGains(
                 settings.equalizer.gains,
               )
+            }
+            if (settings?.replayGain?.values) {
+              if (
+                settings.replayGain.values.type !== 'track' &&
+                settings.replayGain.values.type !== 'album'
+              ) {
+                settings.replayGain.values.type = 'track'
+              }
             }
             if (settings?.sessionMode) {
               settings.sessionMode.mode = 'off'

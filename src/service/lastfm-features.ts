@@ -154,14 +154,23 @@ export async function findTrackInNavidrome(
 
     logger.info('[Last.fm Features] Searching for:', { artistName, trackName })
 
-    // Search for track
+    // Search for track (artist + title), then fallback to title-only query.
     const searchQuery = `${artistName} ${trackName}`
-    const results = await subsonic.search.get({
+    let results = await subsonic.search.get({
       query: searchQuery,
       songCount: 10,
       artistCount: 0,
       albumCount: 0,
     })
+
+    if (!results?.song || results.song.length === 0) {
+      results = await subsonic.search.get({
+        query: trackName,
+        songCount: 10,
+        artistCount: 0,
+        albumCount: 0,
+      })
+    }
 
     logger.info('[Last.fm Features] Search results:', results)
 

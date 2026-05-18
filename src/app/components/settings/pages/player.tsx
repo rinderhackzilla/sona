@@ -11,7 +11,6 @@ import {
   Root,
 } from '@/app/components/settings/section'
 import { Button } from '@/app/components/ui/button'
-import { NumericInput } from '@/app/components/ui/numeric-input'
 import {
   Select,
   SelectContent,
@@ -36,13 +35,11 @@ import {
   useReplayGainActions,
   useReplayGainState,
 } from '@/store/player.store'
-import { ReplayGainType } from '@/types/playerContext'
 import { ListDensity } from '@/types/serverConfig'
 import { isDesktop } from '@/utils/desktop'
 
 const { HIDE_RADIOS_SECTION, DISABLE_IMAGE_CACHE_TOGGLE } = window
 
-const replayGainModes: ReplayGainType[] = ['track', 'album']
 const listDensityModes: ListDensity[] = ['compact', 'default', 'cozy']
 
 export function PlayerPage() {
@@ -53,15 +50,11 @@ export function PlayerPage() {
   const {
     replayGainEnabled,
     replayGainType,
-    replayGainPreAmp,
-    replayGainDefaultGain,
     replayGainError,
   } = useReplayGainState()
   const {
     setReplayGainEnabled,
     setReplayGainType,
-    setReplayGainPreAmp,
-    setReplayGainDefaultGain,
     setReplayGainError,
   } = useReplayGainActions()
 
@@ -137,108 +130,6 @@ export function PlayerPage() {
               </Button>
             </ContentItemForm>
           </ContentItem>
-
-          {/* Replay Gain toggle */}
-          <ContentItem>
-            <ContentItemTitle>
-              {t('settings.audio.replayGain.group', 'Replay Gain')}
-            </ContentItemTitle>
-            <ContentItemForm>
-              <Switch
-                checked={replayGainEnabled}
-                onCheckedChange={setReplayGainEnabled}
-                disabled={replayGainError}
-              />
-            </ContentItemForm>
-          </ContentItem>
-
-          {replayGainError && (
-            <ContentItem>
-              <ContentItemTitle className="text-xs text-muted-foreground text-balance">
-                {t('settings.audio.replayGain.error.message')}
-              </ContentItemTitle>
-              <ContentItemForm>
-                <Button
-                  size="sm"
-                  variant="destructive"
-                  className="h-8"
-                  onClick={handleResetError}
-                >
-                  {t('settings.audio.replayGain.error.button')}
-                </Button>
-              </ContentItemForm>
-            </ContentItem>
-          )}
-
-          {replayGainEnabled && (
-            <>
-              <ContentItem>
-                <ContentItemTitle>
-                  {t('settings.audio.replayGain.mode.label', 'Mode')}
-                </ContentItemTitle>
-                <ContentItemForm>
-                  <Select
-                    value={replayGainType}
-                    onValueChange={(value) =>
-                      setReplayGainType(value as ReplayGainType)
-                    }
-                  >
-                    <SelectTrigger className="h-8">
-                      <SelectValue>
-                        <span className="text-sm">
-                          {t(
-                            'settings.audio.replayGain.mode.' + replayGainType,
-                          )}
-                        </span>
-                      </SelectValue>
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectGroup>
-                        {replayGainModes.map((mode) => (
-                          <SelectItem key={mode} value={mode}>
-                            {t('settings.audio.replayGain.mode.' + mode)}
-                          </SelectItem>
-                        ))}
-                      </SelectGroup>
-                    </SelectContent>
-                  </Select>
-                </ContentItemForm>
-              </ContentItem>
-
-              <ContentItem>
-                <ContentItemTitle>
-                  {t('settings.audio.replayGain.preAmp', 'Pre-Amplification')}
-                </ContentItemTitle>
-                <ContentItemForm>
-                  <NumericInput
-                    value={replayGainPreAmp}
-                    onChange={setReplayGainPreAmp}
-                    min={-15}
-                    max={15}
-                  />
-                </ContentItemForm>
-              </ContentItem>
-
-              <ContentItem>
-                <ContentItemTitle
-                  info={t('settings.audio.replayGain.defaultGain.info')}
-                >
-                  {t(
-                    'settings.audio.replayGain.defaultGain.label',
-                    'Default Gain',
-                  )}
-                </ContentItemTitle>
-                <ContentItemForm>
-                  <NumericInput
-                    value={replayGainDefaultGain}
-                    onChange={setReplayGainDefaultGain}
-                    min={-10}
-                    max={-1}
-                  />
-                </ContentItemForm>
-              </ContentItem>
-            </>
-          )}
 
           {/* Crossfade point slider */}
           <ContentItem>
@@ -332,6 +223,70 @@ export function PlayerPage() {
               />
             </ContentItemForm>
           </ContentItem>
+        </Content>
+      </Root>
+
+      {/* Loudness */}
+      <Root>
+        <Header>
+          <HeaderTitle>
+            {t('settings.audio.replayGain.group', 'ReplayGain')}
+          </HeaderTitle>
+        </Header>
+        <Content>
+          <ContentItem>
+            <ContentItemTitle
+              info={t('settings.audio.replayGain.enabledInfo')}
+            >
+              {t('settings.audio.replayGain.enabled', 'Normalize volume')}
+            </ContentItemTitle>
+            <ContentItemForm>
+              <Switch
+                checked={replayGainEnabled}
+                onCheckedChange={setReplayGainEnabled}
+                disabled={replayGainError}
+              />
+            </ContentItemForm>
+          </ContentItem>
+
+          {replayGainError && (
+            <ContentItem>
+              <ContentItemTitle className="text-xs text-muted-foreground text-balance">
+                {t('settings.audio.replayGain.error.message')}
+              </ContentItemTitle>
+              <ContentItemForm>
+                <Button
+                  size="sm"
+                  variant="destructive"
+                  className="h-8"
+                  onClick={handleResetError}
+                >
+                  {t('settings.audio.replayGain.error.button')}
+                </Button>
+              </ContentItemForm>
+            </ContentItem>
+          )}
+
+          {replayGainEnabled && (
+            <ContentItem>
+              <ContentItemTitle
+                info={t('settings.audio.replayGain.mode.albumToggleInfo')}
+              >
+                {t(
+                  'settings.audio.replayGain.mode.albumToggle',
+                  'Use Album Gain',
+                )}
+              </ContentItemTitle>
+              <ContentItemForm>
+                <Switch
+                  checked={replayGainType === 'album'}
+                  onCheckedChange={(checked) =>
+                    setReplayGainType(checked ? 'album' : 'track')
+                  }
+                />
+              </ContentItemForm>
+            </ContentItem>
+          )}
         </Content>
       </Root>
 
