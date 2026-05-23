@@ -27,12 +27,14 @@ export function PlayerLyricsButton({ disabled }: PlayerLyricsButtonProps) {
         size="icon"
         className={clsx(
           'rounded-full w-10 h-10 p-2 text-secondary-foreground relative',
-          isActive && 'player-button-active',
+          isActive && 'player-button-active text-primary-foreground',
         )}
         onClick={handleClick}
         disabled={disabled}
       >
-        <MicVocalIcon className={clsx('w-4 h-4', isActive && 'text-primary')} />
+        <MicVocalIcon
+          className={clsx('w-4 h-4', isActive && 'text-primary-foreground')}
+        />
       </Button>
     </SimpleTooltip>
   )

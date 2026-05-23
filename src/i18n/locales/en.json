@@ -479,6 +479,17 @@
   "fullscreen": {
     "noLyrics": "No lyrics found",
     "loadingLyrics": "Searching for lyrics…",
+    "lyricsSource": {
+      "label": "Lyrics source",
+      "sources": {
+        "cache": "Cache",
+        "server_songlyrics_synced": "Server (synced)",
+        "server_songlyrics_plain": "Server (plain)",
+        "server_legacy": "Server (legacy)",
+        "lrclib": "LRCLIB",
+        "none": "No source"
+      }
+    },
     "queue": "Queue",
     "playing": "Playing now",
     "lyrics": "Lyrics",

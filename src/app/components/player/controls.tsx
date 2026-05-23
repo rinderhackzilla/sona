@@ -23,17 +23,21 @@ import { usePlayerHotkeys } from '@/app/hooks/use-audio-hotkeys'
 import { cn } from '@/lib/utils'
 import {
   usePlayerActions,
+  usePlayerCurrentSong,
   useCrossfadeSettings,
+  usePlayerDuration,
   usePlayerIsPlaying,
   usePlayerLoop,
   usePlayerMediaType,
   usePlayerPrevAndNext,
+  usePlayerProgress,
   usePlayerShuffle,
 } from '@/store/player.store'
 import { LoopState } from '@/types/playerContext'
 import { EpisodeWithPodcast } from '@/types/responses/podcasts'
 import { Radio } from '@/types/responses/radios'
 import { ISong } from '@/types/responses/song'
+import { rememberSongSkip } from '@/utils/listening-memory'
 import { manageMediaSession } from '@/utils/setMediaSession'
 
 interface PlayerControlsProps {
@@ -55,6 +59,9 @@ export function PlayerControls({
   const { hasPrev, hasNext } = usePlayerPrevAndNext()
   const loopState = usePlayerLoop()
   const isPlaying = usePlayerIsPlaying()
+  const currentSong = usePlayerCurrentSong()
+  const progress = usePlayerProgress()
+  const duration = usePlayerDuration()
   const { enabled: crossfadeEnabled } = useCrossfadeSettings()
   const {
     isPlayingOneSong,
@@ -68,7 +75,10 @@ export function PlayerControls({
 
   useAudioHotkeys('space', togglePlayPause)
   useAudioHotkeys('mod+left', playPrevSong)
-  useAudioHotkeys('mod+right', playNextSong)
+  useAudioHotkeys('mod+right', () => {
+    if (isSong) rememberSongSkip(currentSong, progress, duration)
+    playNextSong()
+  })
   useAudioHotkeys('mod+s', toggleShuffle)
   useAudioHotkeys('mod+r', toggleLoop)
 
@@ -83,6 +93,8 @@ export function PlayerControls({
   )
 
   const handleNextWithSoftCut = useCallback(async () => {
+    if (isSong) rememberSongSkip(currentSong, progress, duration)
+
     if (crossfadeEnabled) {
       playNextSong()
       return
@@ -120,7 +132,16 @@ export function PlayerControls({
 
     audio.volume = startVolume
     playNextSong()
-  }, [audioRef, crossfadeEnabled, isPlaying, isSong, playNextSong])
+  }, [
+    audioRef,
+    crossfadeEnabled,
+    currentSong,
+    duration,
+    isPlaying,
+    isSong,
+    playNextSong,
+    progress,
+  ])
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: isPlaying needed to trigger
   useEffect(() => {

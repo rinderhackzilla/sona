@@ -1,6 +1,6 @@
 import { safeStorageGet, safeStorageSet } from '@/utils/safe-storage'
 
-const NEGATIVE_CACHE_TTL_MS = 90_000
+const NEGATIVE_CACHE_TTL_MS = 20_000
 const STALE_WHILE_REVALIDATE_MS = 5 * 60 * 1000
 const IMAGE_METADATA_STORAGE_KEY = 'sona.image.cache.metadata.v1'
 const failedFetches = new Map<string, number>()
@@ -8,7 +8,7 @@ const objectUrlCache = new Map<string, string>()
 const objectUrlTimestamps = new Map<string, number>()
 const cacheMetadata = new Map<string, number>()
 const inFlightRequests = new Map<string, Promise<string>>()
-const MAX_OBJECT_URL_CACHE_SIZE = 150
+const MAX_OBJECT_URL_CACHE_SIZE = 300
 const MAX_FAILED_FETCHES_SIZE = 500
 const DEFAULT_PREFETCH_STEP_DELAY_MS = 60
 const DEFAULT_RATE_LIMIT_COOLDOWN_MS = 15_000
@@ -180,7 +180,8 @@ function setObjectUrl(url: string, objectUrl: string) {
 
 async function fetchAndCacheImage(url: string, cache: Cache, now: number) {
   if (Date.now() < rateLimitedUntil) {
-    setFailedFetch(url, now)
+    // Global cooldown is active. Do not poison this URL in negative cache;
+    // otherwise covers may stay blank longer than necessary.
     return url
   }
 

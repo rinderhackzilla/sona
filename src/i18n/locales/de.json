@@ -539,6 +539,17 @@
   "fullscreen": {
     "noLyrics": "Keine Songtexte gefunden",
     "loadingLyrics": "Suche nach Songtexten…",
+    "lyricsSource": {
+      "label": "Songtext-Quelle",
+      "sources": {
+        "cache": "Cache",
+        "server_songlyrics_synced": "Server (synchronisiert)",
+        "server_songlyrics_plain": "Server (unsynchronisiert)",
+        "server_legacy": "Server (Legacy)",
+        "lrclib": "LRCLIB",
+        "none": "Keine Quelle"
+      }
+    },
     "queue": "Warteschlange",
     "playing": "Jetzt läuft",
     "lyrics": "Songtexte",

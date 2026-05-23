@@ -9,7 +9,6 @@ import { PreviewListFallback } from '@/app/components/fallbacks/home-fallbacks'
 import { BadgesData } from '@/app/components/header-info'
 import PreviewList from '@/app/components/home/preview-list'
 import ListWrapper from '@/app/components/list-wrapper'
-import { DetailStickyHeader } from '@/app/components/detail-sticky-header'
 import { DataTable } from '@/app/components/ui/data-table'
 import { PageState } from '@/app/components/ui/page-state'
 import {
@@ -144,12 +143,6 @@ export default function Album() {
       />
 
       <ListWrapper>
-        <DetailStickyHeader
-          title={t('album.headline')}
-          count={albumSongs.length}
-          fixed={true}
-        />
-
         <AlbumInfo album={album} />
 
         <DataTable

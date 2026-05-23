@@ -1,5 +1,5 @@
 import clsx from 'clsx'
-import { Play } from 'lucide-react'
+import { Play, Repeat } from 'lucide-react'
 import { isFirefox } from 'react-device-detect'
 import { LazyLoadImage } from 'react-lazy-load-image-component'
 import { Link } from 'react-router-dom'
@@ -11,7 +11,7 @@ import { usePlayerActions } from '@/store/player.store'
 import { ISong } from '@/types/responses/song'
 import { convertSecondsToTime } from '@/utils/convertSecondsToTime'
 
-export function HeaderItem({ song }: { song: ISong }) {
+export function HeaderItem({ song, index }: { song: ISong; index: number }) {
   const { setSongList } = usePlayerActions()
 
   async function handlePlaySongAlbum(song: ISong) {
@@ -53,6 +53,16 @@ export function HeaderItem({ song }: { song: ISong }) {
                   className="h-full aspect-square relative group bg-skeleton rounded-lg"
                   data-testid="header-image-container"
                 >
+                  {index === 0 && (
+                    <div className="absolute left-2 top-2 z-20 inline-flex items-center rounded-md border border-white/20 bg-black/50 px-1.5 py-1 text-white backdrop-blur-sm">
+                      <Repeat className="h-3.5 w-3.5" />
+                    </div>
+                  )}
+                  {index === 1 && (
+                    <div className="absolute left-2 top-2 z-20 inline-flex items-center rounded-md border border-white/25 bg-primary/85 px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-primary-foreground">
+                      Neu
+                    </div>
+                  )}
                   <LazyLoadImage
                     src={src}
                     alt={song.title}

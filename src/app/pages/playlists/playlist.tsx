@@ -10,7 +10,6 @@ import { BadgesData } from '@/app/components/header-info'
 import ListWrapper from '@/app/components/list-wrapper'
 import { PlaylistButtons } from '@/app/components/playlist/buttons'
 import { RemoveSongFromPlaylistDialog } from '@/app/components/playlist/remove-song-dialog'
-import { DetailStickyHeader } from '@/app/components/detail-sticky-header'
 import { DataTable } from '@/app/components/ui/data-table'
 import ErrorPage from '@/app/pages/error-page'
 import { songsColumns } from '@/app/tables/songs-columns'
@@ -391,12 +390,6 @@ export default function Playlist() {
       />
 
       <ListWrapper className="relative">
-        <DetailStickyHeader
-          title={t('playlist.headline')}
-          count={playlist.songCount}
-          fixed={true}
-        />
-
         {isDropActive && hasSongs && (
           <div className="pointer-events-none absolute inset-0 z-20 rounded-xl border border-primary/45 bg-background/35 backdrop-blur-[1px]">
             <div className="absolute inset-x-4 top-4 rounded-lg border border-primary/50 bg-primary/12 px-4 py-3 text-sm text-foreground/95 shadow-lg">

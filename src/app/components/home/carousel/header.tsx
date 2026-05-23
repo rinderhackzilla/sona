@@ -39,7 +39,7 @@ export default function HomeHeader({ songs }: HomeHeaderProps) {
             className="pl-0 basis-full maskImage-carousel-item"
             data-testid={`carousel-header-song-${index}`}
           >
-            <HeaderItem song={song} />
+            <HeaderItem song={song} index={index} />
           </CarouselItem>
         ))}
       </CarouselContent>

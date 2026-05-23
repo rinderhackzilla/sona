@@ -1,4 +1,4 @@
-import { Play } from 'lucide-react'
+import { Play, Repeat, Sparkles } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
@@ -25,12 +25,16 @@ function HeroThumbnail({
   coverArt,
   type,
   alt,
+  showRepeatBadge = false,
+  showNewBadge = false,
 }: {
   isActive: boolean
   onClick: () => void
   coverArt?: string
   type: 'album' | 'song'
   alt: string
+  showRepeatBadge?: boolean
+  showNewBadge?: boolean
 }) {
   return (
     <button
@@ -44,6 +48,16 @@ function HeroThumbnail({
       )}
       aria-label={alt}
     >
+      {showRepeatBadge && (
+        <span className="absolute bottom-1.5 right-1.5 z-20 inline-flex h-5 w-5 items-center justify-center rounded-full border border-primary/70 bg-primary text-primary-foreground shadow-sm">
+          <Repeat className="h-3 w-3" />
+        </span>
+      )}
+      {showNewBadge && (
+        <span className="absolute bottom-1.5 right-1.5 z-20 inline-flex h-5 w-5 items-center justify-center rounded-full border border-primary/70 bg-primary text-primary-foreground shadow-sm">
+          <Sparkles className="h-3 w-3" />
+        </span>
+      )}
       {coverArt ? (
         <ImageLoader id={coverArt} type={type} size="240">
           {(src) => (
@@ -248,6 +262,8 @@ export default function AlbumHeader({
               alt={
                 item.type === 'onRepeat' ? item.data.song.title : item.data.name
               }
+              showRepeatBadge={index === 0}
+              showNewBadge={index === 1}
             />
           ))}
         </div>

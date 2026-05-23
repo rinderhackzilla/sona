@@ -12,17 +12,24 @@ import RepeatOne from '@/app/components/icons/repeat-one'
 import { Button } from '@/app/components/ui/button'
 import {
   usePlayerActions,
+  usePlayerCurrentSong,
+  usePlayerDuration,
   usePlayerIsPlaying,
   usePlayerLoop,
   usePlayerPrevAndNext,
+  usePlayerProgress,
   usePlayerShuffle,
 } from '@/store/player.store'
 import { LoopState } from '@/types/playerContext'
+import { rememberSongSkip } from '@/utils/listening-memory'
 
 export function FullscreenControls() {
   const isPlaying = usePlayerIsPlaying()
   const isShuffleActive = usePlayerShuffle()
   const loopState = usePlayerLoop()
+  const currentSong = usePlayerCurrentSong()
+  const progress = usePlayerProgress()
+  const duration = usePlayerDuration()
   const { hasPrev, hasNext } = usePlayerPrevAndNext()
   const {
     isPlayingOneSong,
@@ -76,7 +83,10 @@ export function FullscreenControls() {
         variant="ghost"
         className={clsx(buttonsStyle.secondary, 'fullscreen-control-button')}
         style={{ ...buttonsStyle.style }}
-        onClick={() => playNextSong()}
+        onClick={() => {
+          rememberSongSkip(currentSong, progress, duration)
+          playNextSong()
+        }}
         disabled={!hasNext && loopState !== LoopState.All}
       >
         <SkipForward className={buttonsStyle.secondaryIconFilled} />

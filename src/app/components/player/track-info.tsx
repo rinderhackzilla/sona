@@ -12,7 +12,7 @@ import { ContextMenuProvider } from '@/app/components/table/context-menu'
 import { SimpleTooltip } from '@/app/components/ui/simple-tooltip'
 import { cn } from '@/lib/utils'
 import { ROUTES } from '@/routes/routesList'
-import { useSongColor } from '@/store/player.store'
+import { useMainDrawerState, useSongColor } from '@/store/player.store'
 import { useFullscreenState } from '@/store/ui.store'
 import { ISong } from '@/types/responses/song'
 import { getAverageColor } from '@/utils/getAverageColor'
@@ -22,7 +22,12 @@ import { ALBUM_ARTISTS_MAX_NUMBER } from '@/utils/multipleArtists'
 export function TrackInfo({ song }: { song: ISong | undefined }) {
   const { t } = useTranslation()
   const { setCurrentSongColor, currentSongColor } = useSongColor()
+  const { mainDrawerState, closeDrawer } = useMainDrawerState()
   const { setOpen: setFullscreenOpen } = useFullscreenState()
+
+  const handleNavigate = () => {
+    if (mainDrawerState) closeDrawer()
+  }
 
   const getImageElement = useCallback(() => {
     return document.getElementById('track-song-image') as HTMLImageElement
@@ -108,7 +113,11 @@ export function TrackInfo({ song }: { song: ISong | undefined }) {
         </SimpleTooltip>
         <div className="flex flex-col justify-center w-full overflow-hidden">
           <MarqueeTitle gap="mr-2">
-            <Link to={ROUTES.ALBUM.PAGE(song.albumId)} tabIndex={-1}>
+            <Link
+              to={ROUTES.ALBUM.PAGE(song.albumId)}
+              tabIndex={-1}
+              onClick={handleNavigate}
+            >
               <span
                 className="text-[15px] font-semibold hover:underline cursor-pointer"
                 data-testid="track-title"
@@ -117,7 +126,7 @@ export function TrackInfo({ song }: { song: ISong | undefined }) {
               </span>
             </Link>
           </MarqueeTitle>
-          <TrackInfoArtistsLinks song={song} />
+          <TrackInfoArtistsLinks song={song} onNavigate={handleNavigate} />
         </div>
       </div>
     </ContextMenuProvider>
@@ -126,9 +135,13 @@ export function TrackInfo({ song }: { song: ISong | undefined }) {
 
 type TrackInfoArtistsLinksProps = {
   song: ISong
+  onNavigate: () => void
 }
 
-function TrackInfoArtistsLinks({ song }: TrackInfoArtistsLinksProps) {
+function TrackInfoArtistsLinks({
+  song,
+  onNavigate,
+}: TrackInfoArtistsLinksProps) {
   const { artists, artistId, artist } = song
 
   if (artists && artists.length > 1) {
@@ -138,7 +151,7 @@ function TrackInfoArtistsLinks({ song }: TrackInfoArtistsLinksProps) {
       <div className="flex items-center gap-1 text-xs text-muted-foreground w-full maskImage-marquee-fade-finished">
         {reducedArtists.map(({ id, name }, index) => (
           <div key={id} className="flex items-center">
-            <ArtistLink id={id} name={name} />
+            <ArtistLink id={id} name={name} onClick={onNavigate} />
             {index < reducedArtists.length - 1 && ','}
           </div>
         ))}
@@ -146,20 +159,22 @@ function TrackInfoArtistsLinks({ song }: TrackInfoArtistsLinksProps) {
     )
   }
 
-  return <ArtistLink id={artistId} name={artist} />
+  return <ArtistLink id={artistId} name={artist} onClick={onNavigate} />
 }
 
 type ArtistLinkProps = {
   id?: string
   name: string
+  onClick?: () => void
 }
 
-function ArtistLink({ id, name }: ArtistLinkProps) {
+function ArtistLink({ id, name, onClick }: ArtistLinkProps) {
   return (
     <Link
       to={ROUTES.ARTIST.PAGE(id ?? '')}
       className={cn('w-fit inline-flex', !id && 'pointer-events-none')}
       data-testid="track-artist-url"
+      onClick={onClick}
     >
       <span
         className={cn(

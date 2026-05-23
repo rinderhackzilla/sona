@@ -231,13 +231,10 @@ function CenteredMessage({ children }: CenteredMessageProps) {
 }
 
 function areLyricsSynced(lyrics: ILyric) {
-  // Most LRC files start with the string "[00:" or "[01:" indicating synced lyrics
+  // Detect any LRC timestamp line (e.g. [00:12], [01:23.45], [10:02.123]),
+  // even when metadata tags like [ar:] or [ti:] appear before timed lines.
   const lyric = lyrics.value?.trim() ?? ''
-  return (
-    lyric.startsWith('[00:') ||
-    lyric.startsWith('[01:') ||
-    lyric.startsWith('[02:')
-  )
+  return /^\[\d{1,2}:\d{2}(?:\.\d{1,3})?\]/m.test(lyric)
 }
 
 

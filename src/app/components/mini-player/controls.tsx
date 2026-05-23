@@ -13,18 +13,25 @@ import { Button } from '@/app/components/ui/button'
 import { cn } from '@/lib/utils'
 import {
   usePlayerActions,
+  usePlayerCurrentSong,
+  usePlayerDuration,
   usePlayerIsPlaying,
   usePlayerLoop,
   usePlayerPrevAndNext,
+  usePlayerProgress,
   usePlayerShuffle,
   usePlayerSongStarred,
 } from '@/store/player.store'
 import { LoopState } from '@/types/playerContext'
+import { rememberSongSkip } from '@/utils/listening-memory'
 
 export function MiniPlayerControls() {
   const isPlaying = usePlayerIsPlaying()
   const isShuffleActive = usePlayerShuffle()
   const loopState = usePlayerLoop()
+  const currentSong = usePlayerCurrentSong()
+  const progress = usePlayerProgress()
+  const duration = usePlayerDuration()
   const { hasPrev, hasNext } = usePlayerPrevAndNext()
   const {
     isPlayingOneSong,
@@ -99,7 +106,10 @@ export function MiniPlayerControls() {
           '[@media(max-height:132px)]:w-8 [@media(max-height:132px)]:h-8',
         )}
         style={{ ...buttonsStyle.style }}
-        onClick={() => playNextSong()}
+        onClick={() => {
+          rememberSongSkip(currentSong, progress, duration)
+          playNextSong()
+        }}
         disabled={!hasNext && loopState !== LoopState.All}
       >
         <SkipForward className={buttonsStyle.secondaryIconFilled} size={20} />

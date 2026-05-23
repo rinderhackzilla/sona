@@ -27,6 +27,21 @@ interface LRCLibResponse {
   syncedLyrics: string
 }
 
+type LyricsDebugSource =
+  | 'cache'
+  | 'server_songlyrics_synced'
+  | 'server_songlyrics_plain'
+  | 'server_legacy'
+  | 'lrclib'
+  | 'none'
+
+function withDebugSource(lyric: ILyric, source: LyricsDebugSource): ILyric {
+  return {
+    ...lyric,
+    debugSource: source,
+  } as ILyric
+}
+
 async function getLyrics(getLyricsData: GetLyricsData) {
   const { preferSyncedLyrics } = usePlayerStore.getState().settings.lyrics
   const { songLyricsEnabled } = getServerExtensions()
@@ -40,7 +55,7 @@ async function getLyrics(getLyricsData: GetLyricsData) {
   const cachedLyrics = await get(cacheKey)
 
   if (cachedLyrics) {
-    return cachedLyrics
+    return withDebugSource(cachedLyrics as ILyric, 'cache')
   }
 
   // First attempt to retrieve lyrics from the server.
@@ -68,7 +83,10 @@ async function getLyrics(getLyricsData: GetLyricsData) {
         const syncedLyrics = structuredLyrics.find((lyrics) => lyrics.synced)
 
         if (syncedLyrics) {
-          const serverSyncedLyrics = osStructuredLyricsToILyric(syncedLyrics)
+          const serverSyncedLyrics = withDebugSource(
+            osStructuredLyricsToILyric(syncedLyrics),
+            'server_songlyrics_synced',
+          )
 
           set(cacheKey, serverSyncedLyrics)
 
@@ -77,7 +95,10 @@ async function getLyrics(getLyricsData: GetLyricsData) {
       }
 
       // save the plain lyrics retrieved from the server
-      osUnsyncedLyricsFound = osStructuredLyricsToILyric(structuredLyrics[0])
+      osUnsyncedLyricsFound = withDebugSource(
+        osStructuredLyricsToILyric(structuredLyrics[0]),
+        'server_songlyrics_plain',
+      )
     }
   }
 
@@ -85,9 +106,10 @@ async function getLyrics(getLyricsData: GetLyricsData) {
     const lyrics = await getLyricsFromLRCLib(getLyricsData)
 
     if (lyrics.value !== '') {
-      set(cacheKey, lyrics)
+      const lrclibLyrics = withDebugSource(lyrics, 'lrclib')
+      set(cacheKey, lrclibLyrics)
 
-      return lyrics
+      return lrclibLyrics
     }
   }
 
@@ -118,17 +140,31 @@ async function getLyrics(getLyricsData: GetLyricsData) {
     const lyrics = await getLyricsFromLRCLib(getLyricsData)
 
     if (lyrics.value !== '') {
-      set(cacheKey, lyrics)
+      const lrclibLyrics = withDebugSource(lyrics, 'lrclib')
+      set(cacheKey, lrclibLyrics)
+      return lrclibLyrics
     }
 
-    return lyrics
+    return withDebugSource(lyrics, 'none')
   }
 
   if (response?.data.lyrics) {
-    set(cacheKey, response.data.lyrics)
+    const serverLegacyLyrics = withDebugSource(
+      response.data.lyrics,
+      'server_legacy',
+    )
+    set(cacheKey, serverLegacyLyrics)
+    return serverLegacyLyrics
   }
 
-  return response?.data.lyrics
+  if (response?.data.lyrics) {
+    return withDebugSource(response.data.lyrics, 'server_legacy')
+  }
+
+  return withDebugSource(
+    { artist: getLyricsData.artist, title: getLyricsData.title, value: '' },
+    'none',
+  )
 }
 
 async function getLyricsFromLRCLib(getLyricsData: GetLyricsData) {
