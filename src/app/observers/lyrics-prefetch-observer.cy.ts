@@ -5,8 +5,8 @@ import {
 
 describe('LyricsPrefetchObserver helpers', () => {
   it('creates stable query keys', () => {
-    const key = buildLyricsQueryKey('Artist', 'Track', 123)
-    expect(key).to.deep.equal(['get-lyrics', 'Artist', 'Track', 123])
+    const key = buildLyricsQueryKey('Artist', 'Track', 123, true)
+    expect(key).to.deep.equal(['get-lyrics', 'Artist', 'Track', 123, true])
   })
 
   it('prefetches only next song and skips invalid entries', () => {
@@ -21,4 +21,3 @@ describe('LyricsPrefetchObserver helpers', () => {
     expect(result[0].id).to.equal('s1')
   })
 })
-

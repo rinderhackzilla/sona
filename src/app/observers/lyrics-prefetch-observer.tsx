@@ -1,7 +1,11 @@
 import { useQueryClient } from '@tanstack/react-query'
 import { useEffect, useRef } from 'react'
 import { subsonic } from '@/service/subsonic'
-import { usePlayerMediaType, usePlayerSonglist } from '@/store/player.store'
+import {
+  useLyricsSettings,
+  usePlayerMediaType,
+  usePlayerSonglist,
+} from '@/store/player.store'
 
 const LYRICS_PREFETCH_DELAY_MS = 450
 const LYRICS_STALE_TIME_MS = 10 * 60 * 1000
@@ -12,8 +16,15 @@ export function buildLyricsQueryKey(
   artist?: string,
   title?: string,
   duration?: number,
+  preferSyncedLyrics?: boolean,
 ) {
-  return ['get-lyrics', artist ?? '', title ?? '', duration ?? 0] as const
+  return [
+    'get-lyrics',
+    artist ?? '',
+    title ?? '',
+    duration ?? 0,
+    Boolean(preferSyncedLyrics),
+  ] as const
 }
 
 export function buildLyricsPrefetchSongs(
@@ -21,6 +32,7 @@ export function buildLyricsPrefetchSongs(
     id?: string
     artist?: string
     title?: string
+    album?: string
     duration?: number
   }>,
   currentSongIndex: number,
@@ -33,6 +45,7 @@ export function buildLyricsPrefetchSongs(
 export function LyricsPrefetchObserver() {
   const queryClient = useQueryClient()
   const { isSong } = usePlayerMediaType()
+  const { preferSyncedLyrics } = useLyricsSettings()
   const { currentList, currentSongIndex } = usePlayerSonglist()
   const prefetchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const inflightPrefetchKeyRef = useRef<string | null>(null)
@@ -57,6 +70,7 @@ export function LyricsPrefetchObserver() {
           song.artist,
           song.title,
           song.duration,
+          preferSyncedLyrics,
         )
         const queryKeyAsString = queryKey.join('|')
         const now = Date.now()
@@ -87,6 +101,7 @@ export function LyricsPrefetchObserver() {
                 id: song.id,
                 artist: song.artist,
                 title: song.title,
+                album: song.album,
                 duration: song.duration,
               }),
             staleTime: LYRICS_STALE_TIME_MS,
@@ -108,7 +123,7 @@ export function LyricsPrefetchObserver() {
         prefetchTimerRef.current = null
       }
     }
-  }, [currentList, currentSongIndex, isSong, queryClient])
+  }, [currentList, currentSongIndex, isSong, preferSyncedLyrics, queryClient])
 
   return null
 }

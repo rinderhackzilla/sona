@@ -55,7 +55,11 @@ async function getLyrics(getLyricsData: GetLyricsData) {
   const cachedLyrics = await get(cacheKey)
 
   if (cachedLyrics) {
-    return withDebugSource(cachedLyrics as ILyric, 'cache')
+    const lyric = cachedLyrics as ILyric
+
+    if (!preferSyncedLyrics || isSyncedLyricsValue(lyric.value)) {
+      return withDebugSource(lyric, 'cache')
+    }
   }
 
   // First attempt to retrieve lyrics from the server.
@@ -94,18 +98,21 @@ async function getLyrics(getLyricsData: GetLyricsData) {
         }
       }
 
-      // save the plain lyrics retrieved from the server
-      osUnsyncedLyricsFound = withDebugSource(
-        osStructuredLyricsToILyric(structuredLyrics[0]),
-        'server_songlyrics_plain',
-      )
+      const plainLyrics = structuredLyrics?.find((lyrics) => !lyrics.synced)
+
+      if (plainLyrics) {
+        osUnsyncedLyricsFound = withDebugSource(
+          osStructuredLyricsToILyric(plainLyrics),
+          'server_songlyrics_plain',
+        )
+      }
     }
   }
 
   if (preferSyncedLyrics) {
     const lyrics = await getLyricsFromLRCLib(getLyricsData)
 
-    if (lyrics.value !== '') {
+    if (lyrics.value !== '' && isSyncedLyricsValue(lyrics.value)) {
       const lrclibLyrics = withDebugSource(lyrics, 'lrclib')
       set(cacheKey, lrclibLyrics)
 
@@ -189,29 +196,18 @@ async function getLyricsFromLRCLib(getLyricsData: GetLyricsData) {
   }
 
   try {
-    const params = new URLSearchParams({
-      artist_name: artist,
-      track_name: title,
-    })
-
-    if (duration) params.append('duration', duration.toString())
-    if (album) params.append('album_name', album)
-
     let defaultLrcLibUrl = 'https://lrclib.net/api/get'
 
     if (lrclib.customUrlEnabled && lrclib.customUrl !== '') {
       defaultLrcLibUrl = `${lrclib.customUrl}/api/get`
     }
 
-    const url = new URL(defaultLrcLibUrl)
-    url.search = params.toString()
-
-    const request = await fetch(url.toString(), {
-      headers: {
-        'Lrclib-Client': lrclibClient,
-      },
+  const response = await fetchBestLRCLibMatch(defaultLrcLibUrl, {
+      artist,
+      title,
+      album,
+      duration,
     })
-    const response: LRCLibResponse = await request.json()
 
     if (response) {
       const { syncedLyrics, plainLyrics } = response
@@ -239,6 +235,75 @@ async function getLyricsFromLRCLib(getLyricsData: GetLyricsData) {
   }
 }
 
+interface LRCLibSearchData {
+  artist: string
+  title: string
+  album?: string
+  duration?: number
+}
+
+async function fetchBestLRCLibMatch(
+  baseUrl: string,
+  data: LRCLibSearchData,
+): Promise<LRCLibResponse | null> {
+  let plainFallback: LRCLibResponse | null = null
+  const attempts = [
+    { album: data.album, duration: data.duration },
+    { album: undefined, duration: data.duration },
+    { album: data.album, duration: undefined },
+    { album: undefined, duration: undefined },
+  ]
+
+  for (const attempt of attempts) {
+    const params = new URLSearchParams({
+      artist_name: data.artist,
+      track_name: data.title,
+    })
+
+    if (attempt.duration) params.append('duration', attempt.duration.toString())
+    if (attempt.album) params.append('album_name', attempt.album)
+
+    const url = new URL(baseUrl)
+    url.search = params.toString()
+
+    const response = await fetchLRCLibLyrics(url)
+    if (response?.syncedLyrics) return response
+    if (response?.plainLyrics && !plainFallback) plainFallback = response
+  }
+
+  return plainFallback
+}
+
+async function fetchLRCLibLyrics(url: URL): Promise<LRCLibResponse | null> {
+  try {
+    const browserResponse = await fetch(url.toString(), {
+      headers: {
+        'Lrclib-Client': lrclibClient,
+      },
+    })
+
+    if (browserResponse.ok) {
+      return browserResponse.json()
+    }
+  } catch {
+    // Installed Electron builds can hit CORS from file://; fall back to main.
+  }
+
+  const electronResponse = await fetchLRCLibLyricsFromMain(url)
+  return electronResponse
+}
+
+async function fetchLRCLibLyricsFromMain(
+  url: URL,
+): Promise<LRCLibResponse | null> {
+  if (!window.api?.fetchExternalText) return null
+
+  const response = await window.api.fetchExternalText(url.toString())
+  if (!response.ok || !response.text) return null
+
+  return JSON.parse(response.text) as LRCLibResponse
+}
+
 function formatLyrics(lyrics: string) {
   return lyrics.trim().replaceAll('\r\n', '\n')
 }
@@ -248,14 +313,27 @@ function getLyricsCacheKey(
   preferSyncedLyrics: boolean,
   songLyricsEnabled?: boolean,
 ) {
-  const { artist, title } = getLyricsData
+  const { artist, title, album, duration } = getLyricsData
 
   const type = preferSyncedLyrics ? 'synced' : 'plain'
   const serverExtension = songLyricsEnabled ? 'internal' : 'external'
+  const roundedDuration = duration ? Math.round(duration) : ''
 
-  const keys = ['lyrics', artist, title, type, serverExtension]
+  const keys = [
+    'lyrics-v2',
+    artist,
+    title,
+    album ?? '',
+    roundedDuration,
+    type,
+    serverExtension,
+  ]
 
   return keys.join(':')
+}
+
+function isSyncedLyricsValue(value?: string) {
+  return /^\[\d{1,2}:\d{2}(?:\.\d{1,3})?\]/m.test(value?.trim() ?? '')
 }
 
 function osStructuredLyricsToILyric(lyrics: IStructuredLyric): ILyric {

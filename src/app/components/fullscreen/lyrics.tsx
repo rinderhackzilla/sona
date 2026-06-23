@@ -18,7 +18,11 @@ import {
 } from '@/app/components/ui/scroll-area'
 import { ROUTES } from '@/routes/routesList'
 import { subsonic } from '@/service/subsonic'
-import { usePlayerRef, usePlayerSonglist } from '@/store/player.store'
+import {
+  useLyricsSettings,
+  usePlayerRef,
+  usePlayerSonglist,
+} from '@/store/player.store'
 import { ILyric } from '@/types/responses/song'
 
 interface LyricProps {
@@ -27,18 +31,20 @@ interface LyricProps {
 
 export function LyricsTab() {
   const { currentSong } = usePlayerSonglist()
+  const { preferSyncedLyrics } = useLyricsSettings()
   const { t } = useTranslation()
 
   const { id, artist, artistId, title, album, albumId, duration, coverArt } =
     currentSong
 
   const { data: lyrics, isLoading } = useQuery({
-    queryKey: ['get-lyrics', artist, title, duration],
+    queryKey: ['get-lyrics', artist, title, duration, preferSyncedLyrics],
     queryFn: () =>
       subsonic.lyrics.getLyrics({
         id,
         artist,
         title,
+        album,
         duration,
       }),
     enabled: Boolean(id),

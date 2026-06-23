@@ -16,7 +16,9 @@ import {
 import { useMainSidebar } from '@/app/components/ui/main-sidebar'
 import { subsonic } from '@/service/subsonic'
 import { useAppStore } from '@/store/app.store'
+import { Albums } from '@/types/responses/album'
 import { ISimilarArtist } from '@/types/responses/artist'
+import { ISong } from '@/types/responses/song'
 import { byteLength } from '@/utils/byteLength'
 import { convertMinutesToMs } from '@/utils/convertSecondsToTime'
 import { queryKeys } from '@/utils/queryKeys'
@@ -31,6 +33,9 @@ export type CommandItemProps = {
 type CommandMenuProps = {
   compact?: boolean
 }
+
+const SEARCH_RESULT_LIMIT = 5
+const SEARCH_CANDIDATE_LIMIT = 25
 
 export default function CommandMenu({ compact = false }: CommandMenuProps) {
   const { t } = useTranslation()
@@ -47,9 +52,9 @@ export default function CommandMenu({ compact = false }: CommandMenuProps) {
     queryFn: () =>
       subsonic.search.get({
         query,
-        albumCount: 5,
-        artistCount: 5,
-        songCount: 5,
+        albumCount: SEARCH_CANDIDATE_LIMIT,
+        artistCount: SEARCH_CANDIDATE_LIMIT,
+        songCount: SEARCH_CANDIDATE_LIMIT,
       }),
     enabled: enableQuery,
     staleTime: convertMinutesToMs(5),
@@ -62,16 +67,24 @@ export default function CommandMenu({ compact = false }: CommandMenuProps) {
         query,
         albumCount: 0,
         songCount: 0,
-        artistCount: 5,
+        artistCount: SEARCH_CANDIDATE_LIMIT,
       }),
     enabled: enableQuery,
     staleTime: convertMinutesToMs(5),
   })
 
-  const albums = (searchResult?.album ?? []).slice(0, 5)
-  const artists = mergeArtists(searchResult?.artist, artistOnlyResult?.artist)
-    .slice(0, 5)
-  const songs = (searchResult?.song ?? []).slice(0, 5)
+  const albums = sortAlbumsByRelevance(searchResult?.album ?? [], query).slice(
+    0,
+    SEARCH_RESULT_LIMIT,
+  )
+  const artists = sortArtistsByRelevance(
+    mergeArtists(searchResult?.artist, artistOnlyResult?.artist),
+    query,
+  ).slice(0, SEARCH_RESULT_LIMIT)
+  const songs = sortSongsByRelevance(searchResult?.song ?? [], query).slice(
+    0,
+    SEARCH_RESULT_LIMIT,
+  )
 
   const showAlbumGroup = Boolean(query && albums.length > 0)
   const showArtistGroup = Boolean(query && artists.length > 0)
@@ -231,4 +244,66 @@ function mergeArtists(
   }
 
   return [...byId.values(), ...byName.values()]
+}
+
+function sortArtistsByRelevance(artists: ISimilarArtist[], query: string) {
+  return artists
+    .filter((artist) => (artist.albumCount ?? 0) > 0)
+    .sort((a, b) => compareByRelevance(a, b, query, getArtistRelevance))
+}
+
+function sortAlbumsByRelevance(albums: Albums[], query: string) {
+  return albums
+    .filter((album) => (album.songCount ?? 0) > 0)
+    .sort((a, b) => compareByRelevance(a, b, query, getAlbumRelevance))
+}
+
+function sortSongsByRelevance(songs: ISong[], query: string) {
+  return songs.sort((a, b) => compareByRelevance(a, b, query, getSongRelevance))
+}
+
+function compareByRelevance<T>(
+  a: T,
+  b: T,
+  query: string,
+  getRelevance: (item: T, query: string) => number,
+) {
+  return getRelevance(b, query) - getRelevance(a, query)
+}
+
+function getArtistRelevance(artist: ISimilarArtist, query: string) {
+  return (artist.albumCount ?? 0) * 100 + getTextMatchScore(artist.name, query)
+}
+
+function getAlbumRelevance(album: Albums, query: string) {
+  return (
+    (album.songCount ?? 0) * 100 +
+    getTextMatchScore(album.name, query) +
+    getTextMatchScore(album.artist, query)
+  )
+}
+
+function getSongRelevance(song: ISong, query: string) {
+  return (
+    getTextMatchScore(song.title, query) * 100 +
+    getTextMatchScore(song.artist, query) * 50 +
+    getTextMatchScore(song.album, query) * 25 +
+    (song.playCount ?? 0)
+  )
+}
+
+function getTextMatchScore(value: string | undefined, query: string) {
+  const text = normalizeSearchText(value)
+  const normalizedQuery = normalizeSearchText(query)
+
+  if (!text || !normalizedQuery) return 0
+  if (text === normalizedQuery) return 40
+  if (text.startsWith(normalizedQuery)) return 30
+  if (text.split(' ').some((part) => part.startsWith(normalizedQuery))) return 20
+  if (text.includes(normalizedQuery)) return 10
+  return 0
+}
+
+function normalizeSearchText(value: string | undefined) {
+  return value?.trim().toLowerCase() ?? ''
 }

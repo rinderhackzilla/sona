@@ -42,7 +42,7 @@ export function PlayerQueueButton({ disabled }: PlayerSongListButtonProps) {
             variant="ghost"
             className={clsx(
               'rounded-full w-10 h-10 p-2 text-secondary-foreground relative',
-              isActive && 'player-button-active text-primary-foreground',
+              isActive && 'player-button-active text-primary',
             )}
             disabled={disabled}
             onClick={handleClick}
@@ -52,10 +52,7 @@ export function PlayerQueueButton({ disabled }: PlayerSongListButtonProps) {
             }}
           >
             <ListVideo
-              className={clsx(
-                'w-4 h-4',
-                isActive && 'text-primary-foreground',
-              )}
+              className={clsx('w-4 h-4', isActive && 'text-primary')}
             />
           </Button>
         </SimpleTooltip>
