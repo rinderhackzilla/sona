@@ -141,69 +141,44 @@ export function ThisIsArtist() {
         )}
       </ImageLoader>
 
-      <div className="relative z-10 grid h-full grid-cols-[minmax(0,1fr),auto] items-stretch gap-3">
-        <div className="flex min-w-0 flex-col justify-between">
+      <div className="relative z-10 flex h-full min-w-0 flex-col justify-between">
+        <div>
           <div className="mb-2 inline-flex w-fit max-w-max self-start items-center gap-1.5 rounded-md border border-foreground/15 bg-foreground/5 px-2 py-1 text-xs text-foreground/75 backdrop-blur-sm">
             <Music className="h-3.5 w-3.5 text-primary" />
             <span>{t('home.thisIsPrefix')}</span>
           </div>
-          <div className="min-w-0">
-            <h2 className="line-clamp-2 break-words text-[1.05rem] font-semibold leading-snug sm:text-[1.12rem]">
-              {artist.name}
-            </h2>
-            <p className="mt-0.5 text-xs text-muted-foreground/90">
-              {t('playlist.songCount', { count: playlist.length })}
-            </p>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <Button
-              onClick={handlePlay}
-              className="h-7 gap-1.5 border border-primary/35 bg-primary/90 px-2.5 text-xs hover:bg-primary"
-              size="sm"
-            >
-              <Play className="h-3.5 w-3.5" fill="currentColor" />
-              {t('options.play')}
-            </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              onClick={(event) => {
-                event.stopPropagation()
-                generate()
-              }}
-              disabled={isGenerating}
-              className="h-7 w-7 rounded-md border border-foreground/15 bg-foreground/5 text-foreground/75 hover:bg-foreground/12"
-            >
-              <RefreshCw
-                className={`h-3.5 w-3.5 ${isGenerating ? 'animate-spin' : ''}`}
-              />
-            </Button>
-          </div>
+          <h2 className="max-w-[70%] break-words text-[1.05rem] font-semibold leading-snug sm:text-[1.12rem]">
+            {artist.name}
+          </h2>
+          <p className="mt-0.5 text-xs text-muted-foreground/90">
+            {t('playlist.songCount', { count: playlist.length })}
+          </p>
         </div>
 
-        <div className="flex items-center justify-end">
-          <div className="h-[104px] w-[104px] overflow-hidden rounded-lg border border-border/50 bg-muted shadow-lg min-[1700px]:h-[116px] min-[1700px]:w-[116px]">
-            <ImageLoader id={artist.coverArt} type="artist" size="420">
-              {(artistCoverUrl, isLoadingImage) => (
-                <>
-                  {artistCoverUrl && (
-                    <img
-                      src={artistCoverUrl}
-                      alt={artist.name}
-                      className="h-full w-full object-cover text-transparent"
-                    />
-                  )}
-                  {!artistCoverUrl && !isLoadingImage && (
-                    <div className="flex h-full w-full items-center justify-center">
-                      <Music className="h-8 w-8 text-muted-foreground" />
-                    </div>
-                  )}
-                </>
-              )}
-            </ImageLoader>
-          </div>
+        <div className="flex items-center gap-2">
+          <Button
+            onClick={handlePlay}
+            className="h-7 gap-1.5 border border-primary/35 bg-primary/90 px-2.5 text-xs hover:bg-primary"
+            size="sm"
+          >
+            <Play className="h-3.5 w-3.5" fill="currentColor" />
+            {t('options.play')}
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            onClick={(event) => {
+              event.stopPropagation()
+              generate()
+            }}
+            disabled={isGenerating}
+            className="h-7 w-7 rounded-md border border-foreground/15 bg-foreground/5 text-foreground/75 hover:bg-foreground/12"
+          >
+            <RefreshCw
+              className={`h-3.5 w-3.5 ${isGenerating ? 'animate-spin' : ''}`}
+            />
+          </Button>
         </div>
       </div>
     </div>
