@@ -17,6 +17,7 @@ import {
   usePlayerActions,
   useQueueState,
 } from '@/store/player.store'
+import { useFullscreenState } from '@/store/ui.store'
 
 interface PlayerSongListButtonProps {
   disabled: boolean
@@ -24,14 +25,22 @@ interface PlayerSongListButtonProps {
 
 export function PlayerQueueButton({ disabled }: PlayerSongListButtonProps) {
   const { t } = useTranslation()
-  const { mainDrawerState } = useMainDrawerState()
-  const { queueState, toggleQueueAction } = useQueueState()
+  const { setActiveDrawerPanel } = useMainDrawerState()
+  const { queueState } = useQueueState()
+  const { open: fullscreenOpen, setOpen: setFullscreenOpen } =
+    useFullscreenState()
   const [openPopover, setOpenPopover] = useState(false)
 
-  const isActive = mainDrawerState && queueState
+  const isActive = fullscreenOpen && queueState
 
   function handleClick() {
-    toggleQueueAction()
+    if (isActive) {
+      setActiveDrawerPanel(null)
+      return
+    }
+
+    setActiveDrawerPanel('queue')
+    setFullscreenOpen(true)
   }
 
   return (
@@ -67,11 +76,13 @@ type QueueMenuItemsProps = ComponentPropsWithoutRef<typeof Popover> & {
 
 function QueueMenuItems({ open, onOpenChange, children }: QueueMenuItemsProps) {
   const { t } = useTranslation()
-  const { mainDrawerState } = useMainDrawerState()
-  const { queueState, toggleQueueAction } = useQueueState()
+  const { setActiveDrawerPanel } = useMainDrawerState()
+  const { queueState } = useQueueState()
+  const { open: fullscreenOpen, setOpen: setFullscreenOpen } =
+    useFullscreenState()
   const { clearPlayerState } = usePlayerActions()
 
-  const isActive = mainDrawerState && queueState
+  const isActive = fullscreenOpen && queueState
 
   function closePopover() {
     if (onOpenChange) onOpenChange(false)
@@ -79,7 +90,13 @@ function QueueMenuItems({ open, onOpenChange, children }: QueueMenuItemsProps) {
 
   function handleOpenClose() {
     closePopover()
-    toggleQueueAction()
+    if (isActive) {
+      setActiveDrawerPanel(null)
+      return
+    }
+
+    setActiveDrawerPanel('queue')
+    setFullscreenOpen(true)
   }
 
   function handleClearQueue() {

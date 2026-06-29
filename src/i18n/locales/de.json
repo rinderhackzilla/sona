@@ -387,6 +387,17 @@
     "playsThisWeek_one": "{{count}} Mal diese Woche gehört",
     "playsThisWeek_other": "{{count}} Mal diese Woche gehört",
     "playNow": "Jetzt abspielen",
+    "genreRadio": {
+      "label": "{{genre}} Radio",
+      "play": "Radio starten"
+    },
+    "anniversaryRadio": {
+      "label": "Vor {{years}} Jahren veröffentlicht",
+      "albumFallback": "Jubiläumsalbum",
+      "albumDescription": "{{artist}} · vor {{years}} Jahren",
+      "empty": "Keine Erinnerung gefunden",
+      "emptyDescription": "Noch keine passenden Release-Daten."
+    },
     "daypart": {
       "label": "Tageszeiten-Mix",
       "usedGenres": "Mit: {{genres}}",
@@ -539,6 +550,10 @@
   "fullscreen": {
     "noLyrics": "Keine Songtexte gefunden",
     "loadingLyrics": "Suche nach Songtexten…",
+    "lyricsStatus": {
+      "synced": "Lyrics synchronisiert",
+      "unsynced": "Unsynchronisierte Lyrics"
+    },
     "lyricsSource": {
       "label": "Songtext-Quelle",
       "sources": {

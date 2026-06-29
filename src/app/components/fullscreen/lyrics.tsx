@@ -55,6 +55,10 @@ export function LyricsTab() {
 
   const noLyricsFound = t('fullscreen.noLyrics')
   const loadingLyrics = t('fullscreen.loadingLyrics')
+  const lyricsAreSynced = lyrics ? areLyricsSynced(lyrics) : false
+  const showLyricsStatus = Boolean(
+    lyrics?.value && (lyricsAreSynced || preferSyncedLyrics),
+  )
 
   return (
     <div className="flex w-full h-full gap-6">
@@ -113,11 +117,21 @@ export function LyricsTab() {
       </div>
 
       {/* Right side - Lyrics */}
-      <div className="flex-1 min-w-0">
+      <div className="relative flex-1 min-w-0">
+        {showLyricsStatus && (
+          <LyricsStatusPill
+            synced={lyricsAreSynced}
+            label={
+              lyricsAreSynced
+                ? t('fullscreen.lyricsStatus.synced', 'Lyrics synced')
+                : t('fullscreen.lyricsStatus.unsynced', 'Unsynced lyrics')
+            }
+          />
+        )}
         {isLoading ? (
           <CenteredMessage>{loadingLyrics}</CenteredMessage>
         ) : lyrics && lyrics.value ? (
-          areLyricsSynced(lyrics) ? (
+          lyricsAreSynced ? (
             <SyncedLyrics lyrics={lyrics} />
           ) : (
             <UnsyncedLyrics lyrics={lyrics} />
@@ -126,6 +140,27 @@ export function LyricsTab() {
           <CenteredMessage>{noLyricsFound}</CenteredMessage>
         )}
       </div>
+    </div>
+  )
+}
+
+function LyricsStatusPill({
+  synced,
+  label,
+}: {
+  synced: boolean
+  label: string
+}) {
+  return (
+    <div
+      className={clsx(
+        'pointer-events-none absolute right-3 top-3 z-10 rounded-full border px-2.5 py-1 text-[11px] font-medium shadow-lg backdrop-blur-md',
+        synced
+          ? 'border-primary/30 bg-primary/12 text-primary'
+          : 'border-foreground/15 bg-background/35 text-muted-foreground',
+      )}
+    >
+      {label}
     </div>
   )
 }

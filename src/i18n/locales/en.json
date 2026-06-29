@@ -21,6 +21,17 @@
     "playsThisWeek_one": "{{count}} play this week",
     "playsThisWeek_other": "{{count}} plays this week",
     "playNow": "Play Now",
+    "genreRadio": {
+      "label": "{{genre}} Radio",
+      "play": "Start radio"
+    },
+    "anniversaryRadio": {
+      "label": "Released {{years}} years ago",
+      "albumFallback": "Anniversary album",
+      "albumDescription": "{{artist}} · {{years}} years ago",
+      "empty": "No memory found",
+      "emptyDescription": "No matching release metadata yet."
+    },
     "daypart": {
       "label": "Daypart Mix",
       "usedGenres": "Using: {{genres}}",
@@ -479,6 +490,10 @@
   "fullscreen": {
     "noLyrics": "No lyrics found",
     "loadingLyrics": "Searching for lyrics…",
+    "lyricsStatus": {
+      "synced": "Lyrics synced",
+      "unsynced": "Unsynced lyrics"
+    },
     "lyricsSource": {
       "label": "Lyrics source",
       "sources": {

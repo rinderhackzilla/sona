@@ -2,10 +2,8 @@ import clsx from 'clsx'
 import { ChevronDownIcon } from 'lucide-react'
 import { ComponentPropsWithoutRef, useMemo } from 'react'
 import { getSimpleCoverArtUrl } from '@/api/httpClient'
-import { LyricsTab } from '@/app/components/fullscreen/lyrics'
 import { QueueSettings } from '@/app/components/fullscreen/settings'
-import { CurrentSongInfo } from '@/app/components/queue/current-song-info'
-import { QueueSongList } from '@/app/components/queue/song-list'
+import { LyricsPanelView, QueuePanelView } from '@/app/components/player/panel-views'
 import { Button } from '@/app/components/ui/button'
 import { Drawer, DrawerContent } from '@/app/components/ui/drawer'
 import { cn } from '@/lib/utils'
@@ -97,15 +95,10 @@ export function MainDrawerPage() {
           <div className="flex w-full h-full mt-8 px-[6%] mb-0">
             <div className="flex flex-1 relative min-w-0">
               <ActiveContent active={queueState}>
-                <div className="flex w-full h-full gap-6">
-                  <CurrentSongInfo />
-                  <div className="flex-1 min-w-0">
-                    <QueueSongList />
-                  </div>
-                </div>
+                <QueuePanelView />
               </ActiveContent>
               <ActiveContent active={lyricsState}>
-                <LyricsTab />
+                <LyricsPanelView />
               </ActiveContent>
             </div>
           </div>

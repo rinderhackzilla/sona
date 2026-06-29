@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { Button } from '@/app/components/ui/button'
 import { SimpleTooltip } from '@/app/components/ui/simple-tooltip'
 import { useLyricsState, useMainDrawerState } from '@/store/player.store'
+import { useFullscreenState } from '@/store/ui.store'
 
 interface PlayerLyricsButtonProps {
   disabled?: boolean
@@ -11,13 +12,21 @@ interface PlayerLyricsButtonProps {
 
 export function PlayerLyricsButton({ disabled }: PlayerLyricsButtonProps) {
   const { t } = useTranslation()
-  const { mainDrawerState } = useMainDrawerState()
-  const { lyricsState, toggleLyricsAction } = useLyricsState()
+  const { setActiveDrawerPanel } = useMainDrawerState()
+  const { lyricsState } = useLyricsState()
+  const { open: fullscreenOpen, setOpen: setFullscreenOpen } =
+    useFullscreenState()
 
-  const isActive = mainDrawerState && lyricsState
+  const isActive = fullscreenOpen && lyricsState
 
   function handleClick() {
-    toggleLyricsAction()
+    if (isActive) {
+      setActiveDrawerPanel(null)
+      return
+    }
+
+    setActiveDrawerPanel('lyrics')
+    setFullscreenOpen(true)
   }
 
   return (

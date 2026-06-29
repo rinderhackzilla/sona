@@ -21,8 +21,11 @@ interface GetLyricsData {
 
 interface LRCLibResponse {
   id: number
+  name?: string
   trackName: string
   artistName: string
+  albumName?: string
+  duration?: number
   plainLyrics: string
   syncedLyrics: string
 }
@@ -267,8 +270,9 @@ async function fetchBestLRCLibMatch(
     url.search = params.toString()
 
     const response = await fetchLRCLibLyrics(url)
-    if (response?.syncedLyrics) return response
-    if (response?.plainLyrics && !plainFallback) plainFallback = response
+    if (!response || !isAcceptableLRCLibMatch(response, data)) continue
+    if (response.syncedLyrics) return response
+    if (response.plainLyrics && !plainFallback) plainFallback = response
   }
 
   return plainFallback
@@ -334,6 +338,73 @@ function getLyricsCacheKey(
 
 function isSyncedLyricsValue(value?: string) {
   return /^\[\d{1,2}:\d{2}(?:\.\d{1,3})?\]/m.test(value?.trim() ?? '')
+}
+
+function isAcceptableLRCLibMatch(
+  response: LRCLibResponse,
+  data: LRCLibSearchData,
+) {
+  const titleScore = getStringSimilarity(
+    normalizeLyricsMatchText(response.trackName || response.name || ''),
+    normalizeLyricsMatchText(data.title),
+  )
+  const artistScore = getStringSimilarity(
+    normalizeLyricsMatchText(response.artistName),
+    normalizeLyricsMatchText(data.artist),
+  )
+  const albumScore = data.album
+    ? getStringSimilarity(
+        normalizeLyricsMatchText(response.albumName || ''),
+        normalizeLyricsMatchText(data.album),
+      )
+    : 1
+
+  const durationDelta =
+    typeof response.duration === 'number' && typeof data.duration === 'number'
+      ? Math.abs(response.duration - data.duration)
+      : 0
+  const durationLimit =
+    typeof data.duration === 'number'
+      ? Math.max(6, Math.min(12, data.duration * 0.05))
+      : 12
+
+  // Middle ground: reject clearly wrong external matches, but allow common
+  // remaster/deluxe metadata differences and minor duration drift.
+  return (
+    titleScore >= 0.72 &&
+    artistScore >= 0.55 &&
+    albumScore >= 0.42 &&
+    durationDelta <= durationLimit
+  )
+}
+
+function normalizeLyricsMatchText(value: string) {
+  return value
+    .toLowerCase()
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/\b(feat|featuring|ft|remaster(ed)?|deluxe|edition|explicit|clean|mono|stereo|version|radio edit)\b/g, ' ')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim()
+}
+
+function getStringSimilarity(a: string, b: string) {
+  if (!a || !b) return 0
+  if (a === b) return 1
+  if (a.includes(b) || b.includes(a)) {
+    return Math.min(a.length, b.length) / Math.max(a.length, b.length)
+  }
+
+  const aTokens = new Set(a.split(' ').filter(Boolean))
+  const bTokens = new Set(b.split(' ').filter(Boolean))
+  if (aTokens.size === 0 || bTokens.size === 0) return 0
+
+  let overlap = 0
+  aTokens.forEach((token) => {
+    if (bTokens.has(token)) overlap += 1
+  })
+
+  return overlap / Math.max(aTokens.size, bTokens.size)
 }
 
 function osStructuredLyricsToILyric(lyrics: IStructuredLyric): ILyric {

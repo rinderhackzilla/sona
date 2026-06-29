@@ -1,9 +1,7 @@
 import { clsx } from 'clsx'
 import { type ComponentProps, type PointerEvent as ReactPointerEvent, memo, useCallback, useEffect, useRef, useState } from 'react'
 import { WindowControlButtons } from '@/app/components/window-control-buttons'
-import { LyricsTab } from '@/app/components/fullscreen/lyrics'
-import { CurrentSongInfo } from '@/app/components/queue/current-song-info'
-import { QueueSongList } from '@/app/components/queue/song-list'
+import { LyricsPanelView, QueuePanelView } from '@/app/components/player/panel-views'
 import { Drawer, DrawerContent, DrawerTitle } from '@/app/components/ui/drawer'
 import { useAppWindow } from '@/app/hooks/use-app-window'
 import { useAlbumColorExtractor } from '@/app/hooks/useAlbumColorExtractor'
@@ -26,9 +24,8 @@ import { FullscreenTabs } from './tabs'
 import { useFullscreenChromeVisibility } from './use-fullscreen-chrome-visibility'
 
 const MemoFullscreenBackdrop = memo(FullscreenBackdrop)
-const MemoQueueSongList = memo(QueueSongList)
-const MemoCurrentSongInfo = memo(CurrentSongInfo)
-const MemoLyricsTab = memo(LyricsTab)
+const MemoQueuePanelView = memo(QueuePanelView)
+const MemoLyricsPanelView = memo(LyricsPanelView)
 
 function FullscreenScene() {
   const { queueState } = useQueueState()
@@ -112,6 +109,18 @@ function FullscreenIntegratedPanel({
   const { lyricsState } = useLyricsState()
   const { setActiveDrawerPanel } = useMainDrawerState()
   const panelRef = useRef<HTMLDivElement | null>(null)
+  const activePanel = queueState ? 'queue' : lyricsState ? 'lyrics' : null
+  const previousPanelRef = useRef<typeof activePanel>(activePanel)
+  const [slideDirection, setSlideDirection] = useState<'left' | 'right'>('right')
+
+  useEffect(() => {
+    if (!activePanel) return
+    const previousPanel = previousPanelRef.current
+    if (previousPanel && previousPanel !== activePanel) {
+      setSlideDirection(activePanel === 'queue' ? 'left' : 'right')
+    }
+    previousPanelRef.current = activePanel
+  }, [activePanel])
 
   const closePanel = useCallback(() => {
     setActiveDrawerPanel(null)
@@ -148,28 +157,28 @@ function FullscreenIntegratedPanel({
     <div
       ref={panelRef}
       className={clsx(
-        'absolute left-8 right-8 2xl:left-16 2xl:right-16 top-0 z-30 transform-gpu transition-[transform,opacity] duration-260 [transition-timing-function:cubic-bezier(0.22,1,0.36,1)]',
+        'absolute left-8 right-8 2xl:left-16 2xl:right-16 top-0 z-30 transform-gpu transition-opacity duration-260',
         isChromeVisible ? 'bottom-[170px] 2xl:bottom-[188px]' : 'bottom-[110px]',
         isOpen
-          ? 'opacity-100 translate-y-0 pointer-events-auto'
-          : 'opacity-0 -translate-y-full pointer-events-none',
+          ? 'opacity-100 pointer-events-auto'
+          : 'opacity-0 pointer-events-none',
       )}
     >
-      <div className="relative w-full h-full rounded-b-[var(--radius-surface)] border-x border-b border-border/55 bg-background shadow-[0_12px_28px_rgba(0,0,0,0.28)] overflow-hidden">
-        <div className="flex w-full h-full gap-6 px-5 pt-11 pb-4 2xl:pt-12">
-          {queueState && (
-            <>
-              <MemoCurrentSongInfo />
-              <div className="flex-1 relative min-w-0">
-                <div className="w-full h-full">
-                  <MemoQueueSongList inFullscreenOverlay />
-                </div>
-              </div>
-            </>
+      <div className="relative w-full h-full overflow-hidden">
+        <div
+          key={activePanel ?? 'closed'}
+          className={clsx(
+            'flex w-full h-full gap-6 px-0 pt-11 pb-4 2xl:pt-12',
+            activePanel &&
+              (slideDirection === 'left'
+                ? 'fullscreen-panel-slide-left'
+                : 'fullscreen-panel-slide-right'),
           )}
-          {lyricsState && !queueState && (
+        >
+          {activePanel === 'queue' && <MemoQueuePanelView inFullscreenOverlay />}
+          {activePanel === 'lyrics' && (
             <div className="w-full h-full">
-              <MemoLyricsTab />
+              <MemoLyricsPanelView inFullscreenOverlay />
             </div>
           )}
         </div>
@@ -210,10 +219,12 @@ function FullscreenWindowControls({
 export function FullscreenGlobal() {
   const { handleFullscreen } = useAppWindow()
   const { open, setOpen } = useFullscreenState()
+  const { setActiveDrawerPanel } = useMainDrawerState()
 
   useEffect(() => {
     setDesktopTitleBarColors(open)
-  }, [open])
+    if (!open) setActiveDrawerPanel(null)
+  }, [open, setActiveDrawerPanel])
 
   return (
     <FullscreenDrawer

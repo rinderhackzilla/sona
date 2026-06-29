@@ -1,15 +1,46 @@
 import type { Song } from '@/types/responses/song'
 import { runWithRetry } from '@/utils/background-task-runner'
-import { readStoredPlaylist, writeStoredPlaylist } from './playlist-storage'
 import {
+  readStoredJson,
+  readStoredPlaylist,
+  writeStoredJson,
+  writeStoredPlaylist,
+} from './playlist-storage'
+import {
+  DAYPART_HISTORY_STORAGE_KEY,
   generateTimeOfDayPlaylist,
   getCurrentDayPart,
   getMillisecondsUntilNextDayPartBoundary,
+  type TimeOfDayPlaylistHistoryEntry,
   type TimeOfDayPlaylistMetadata,
 } from './time-of-day-playlist'
 
 const STORAGE_KEY = 'time_of_day_playlist'
 const STORAGE_KEY_METADATA = 'time_of_day_playlist_metadata'
+const MAX_HISTORY_ENTRIES = 12
+
+function rememberGeneratedDaypartPlaylist(
+  playlist: Song[],
+  metadata: TimeOfDayPlaylistMetadata,
+) {
+  const history =
+    readStoredJson<TimeOfDayPlaylistHistoryEntry[]>(
+      DAYPART_HISTORY_STORAGE_KEY,
+    ) ?? []
+  const nextEntry: TimeOfDayPlaylistHistoryEntry = {
+    generatedAt: metadata.generatedAt,
+    windowKey: metadata.windowKey,
+    dayPart: metadata.dayPart,
+    songIds: playlist.map((song) => song.id).filter(Boolean),
+  }
+
+  const nextHistory = [
+    ...history.filter((entry) => entry.windowKey !== metadata.windowKey),
+    nextEntry,
+  ].slice(-MAX_HISTORY_ENTRIES)
+
+  writeStoredJson(DAYPART_HISTORY_STORAGE_KEY, nextHistory)
+}
 
 export function loadTimeOfDayPlaylist(): {
   playlist: Song[]
@@ -57,6 +88,7 @@ export async function generateAndSaveTimeOfDayPlaylist(force: boolean = false) {
     generated.playlist,
     generated.metadata,
   )
+  rememberGeneratedDaypartPlaylist(generated.playlist, generated.metadata)
   return generated
 }
 

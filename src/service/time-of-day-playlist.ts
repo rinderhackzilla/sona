@@ -4,6 +4,7 @@ import {
   getListeningMemoryEnabledPreference,
   sortByListeningMemory,
 } from '@/utils/listening-memory'
+import { readStoredJson } from './playlist-storage'
 import { subsonic } from './subsonic'
 
 export type DayPart =
@@ -25,6 +26,13 @@ export interface TimeOfDayPlaylistMetadata {
 export interface TimeOfDayGenerationResult {
   playlist: Song[]
   metadata: TimeOfDayPlaylistMetadata
+}
+
+export interface TimeOfDayPlaylistHistoryEntry {
+  generatedAt: string
+  windowKey: string
+  dayPart: DayPart
+  songIds: string[]
 }
 
 type DaypartBucket = {
@@ -261,6 +269,9 @@ const SLOT_STARTS = {
   night: { hour: 21, minute: 0 },
 } as const
 
+export const DAYPART_HISTORY_STORAGE_KEY = 'time_of_day_playlist_history'
+const MAX_RECENT_HISTORY_WINDOWS = 8
+
 function setTime(target: Date, hour: number, minute: number) {
   const next = new Date(target)
   next.setHours(hour, minute, 0, 0)
@@ -480,9 +491,82 @@ function planBucketSizes(size: number, buckets: DaypartBucket[]) {
   return planned
 }
 
+function hashString(value: string) {
+  let hash = 2166136261
+  for (let i = 0; i < value.length; i += 1) {
+    hash ^= value.charCodeAt(i)
+    hash = Math.imul(hash, 16777619)
+  }
+  return hash >>> 0
+}
+
+function seededRandom(seed: string) {
+  let state = hashString(seed) || 1
+  return () => {
+    state += 0x6d2b79f5
+    let next = state
+    next = Math.imul(next ^ (next >>> 15), next | 1)
+    next ^= next + Math.imul(next ^ (next >>> 7), next | 61)
+    return ((next ^ (next >>> 14)) >>> 0) / 4294967296
+  }
+}
+
+function seededShuffle<T>(items: T[], seed: string) {
+  const random = seededRandom(seed)
+  const copy = [...items]
+  for (let i = copy.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(random() * (i + 1))
+    ;[copy[i], copy[j]] = [copy[j], copy[i]]
+  }
+  return copy
+}
+
+function loadRecentDaypartSongWeights() {
+  const history =
+    readStoredJson<TimeOfDayPlaylistHistoryEntry[]>(
+      DAYPART_HISTORY_STORAGE_KEY,
+    ) ?? []
+  const weights = new Map<string, number>()
+
+  history
+    .slice(-MAX_RECENT_HISTORY_WINDOWS)
+    .reverse()
+    .forEach((entry, index) => {
+      const weight = Math.max(1, MAX_RECENT_HISTORY_WINDOWS - index)
+      entry.songIds.forEach((songId) => {
+        weights.set(songId, (weights.get(songId) ?? 0) + weight)
+      })
+    })
+
+  return weights
+}
+
+function diversifySongQueue(
+  songs: Song[],
+  seed: string,
+  recentSongWeights: Map<string, number>,
+) {
+  if (songs.length <= 1) return songs
+  const random = seededRandom(seed)
+
+  return [...songs]
+    .map((song, index) => ({
+      song,
+      // Keep the listening-memory order roughly intact, but rotate inside
+      // small bands and push recent daypart repeats toward the back.
+      score:
+        (recentSongWeights.get(song.id) ?? 0) * 120 +
+        Math.floor(index / 4) * 4 +
+        random(),
+    }))
+    .sort((a, b) => a.score - b.score)
+    .map((item) => item.song)
+}
+
 function buildWeightedGenreOrder(
   genres: string[],
   targetCountByGenre: Map<string, number>,
+  seed: string,
 ) {
   const order: string[] = []
   genres.forEach((genre) => {
@@ -491,7 +575,7 @@ function buildWeightedGenreOrder(
       order.push(genre)
     }
   })
-  return order.sort(() => Math.random() - 0.5)
+  return seededShuffle(order, seed)
 }
 
 function pickWithConstraints(
@@ -586,6 +670,7 @@ export async function generateTimeOfDayPlaylist(
 ): Promise<TimeOfDayGenerationResult> {
   const { dayPart, windowKey } = getCurrentDayPart()
   const config = DAYPART_CONFIG[dayPart]
+  const recentSongWeights = loadRecentDaypartSongWeights()
   const availableGenres = (await subsonic.genres.get()) ?? []
   const availableGenreNames = availableGenres
     .map((genre) => genre.value)
@@ -637,8 +722,13 @@ export async function generateTimeOfDayPlaylist(
 
   for (const [genre, songs] of songsByGenre.entries()) {
     const sorted = sortByListeningMemory(songs, listeningMemoryEnabled)
-    if (sorted.length > 0) {
-      queuesByGenre.set(genre, sorted)
+    const diversified = diversifySongQueue(
+      sorted,
+      `${windowKey}:${dayPart}:${genre}`,
+      recentSongWeights,
+    )
+    if (diversified.length > 0) {
+      queuesByGenre.set(genre, diversified)
       genresUsed.add(genre)
     }
   }
@@ -646,6 +736,7 @@ export async function generateTimeOfDayPlaylist(
   const weightedOrder = buildWeightedGenreOrder(
     [...queuesByGenre.keys()],
     targetCountByGenre,
+    `${windowKey}:${dayPart}:genre-order`,
   )
   const playlist = pickWithConstraints(
     queuesByGenre,

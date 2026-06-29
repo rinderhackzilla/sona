@@ -87,6 +87,11 @@ export interface GenreDiscoveryItem {
   albumCount: number
 }
 
+export interface AnniversaryRadioData {
+  album?: Albums
+  yearsAgo?: number
+}
+
 function deriveGenreDiscoveryItems(
   genres?: Genres,
   mostPlayed?: AlbumsListData,
@@ -183,6 +188,77 @@ export const useGetLatestReleaseAlbum = () => {
     },
     ...HOME_QUERY_BASE,
   })
+}
+
+export const useGetAnniversaryRadio = () => {
+  return useQuery({
+    queryKey: ['home-release-anniversary'],
+    queryFn: async (): Promise<AnniversaryRadioData> => {
+      const anniversary = await getAnniversaryAlbumFallback()
+      return {
+        album: anniversary?.album,
+        yearsAgo: anniversary?.yearsAgo,
+      }
+    },
+    staleTime: convertMinutesToMs(60),
+    gcTime: convertMinutesToMs(120),
+    refetchOnWindowFocus: false,
+  })
+}
+
+async function getAnniversaryAlbumFallback() {
+  const now = new Date()
+  const candidateYears = [5, 10, 15, 20, 25, 30]
+
+  for (const yearsAgo of candidateYears) {
+    const releaseYear = now.getUTCFullYear() - yearsAgo
+    const albums = await subsonic.albums.getAlbumList({
+      type: 'byYear',
+      fromYear: String(releaseYear),
+      toYear: String(releaseYear),
+      size: 200,
+    })
+
+    const candidates = albums?.list || []
+    if (candidates.length === 0) continue
+
+    const exactishDate = candidates.find((album) =>
+      isAlbumNearToday(album, now),
+    )
+
+    return {
+      album: exactishDate || candidates[0],
+      yearsAgo,
+    }
+  }
+
+  return undefined
+}
+
+function isAlbumNearToday(album: Albums, now: Date) {
+  const timestamp =
+    parseReleaseLikeDate(album.releaseDate) ??
+    parseReleaseLikeDate(album.originalReleaseDate)
+
+  if (!timestamp) return false
+
+  const releaseDate = new Date(timestamp)
+  const normalizedRelease = Date.UTC(
+    now.getUTCFullYear(),
+    releaseDate.getUTCMonth(),
+    releaseDate.getUTCDate(),
+  )
+  const normalizedToday = Date.UTC(
+    now.getUTCFullYear(),
+    now.getUTCMonth(),
+    now.getUTCDate(),
+  )
+
+  const diffDays = Math.abs(
+    (normalizedRelease - normalizedToday) / (24 * 60 * 60 * 1000),
+  )
+
+  return diffDays <= 5
 }
 
 export const useGetMostPlayed = () => {

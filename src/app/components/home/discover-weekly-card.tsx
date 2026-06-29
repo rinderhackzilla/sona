@@ -1,4 +1,4 @@
-import { Calendar, Info, Play } from 'lucide-react'
+import { Calendar, Info, Play, Sparkles } from 'lucide-react'
 import type { MouseEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
@@ -95,7 +95,7 @@ export function DiscoverWeeklyCard() {
 
   return (
     <div
-      className="group relative h-full w-full cursor-pointer overflow-hidden rounded-xl border border-border/60 bg-card/20 transition-colors hover:border-primary/35"
+      className="group relative h-full w-full cursor-pointer overflow-hidden rounded-xl border border-border/60 bg-gradient-to-br from-primary/12 via-accent/8 to-background/10 p-4 transition-colors hover:border-primary/35"
       onClick={() => navigateSafe(navigate, ROUTES.LIBRARY.DISCOVER_WEEKLY)}
       onKeyDown={(event) => {
         if (event.key === 'Enter' || event.key === ' ') {
@@ -106,16 +106,26 @@ export function DiscoverWeeklyCard() {
       role="link"
       tabIndex={0}
     >
-      {/* Background Image with Blur */}
       {coverArt && (
         <ImageLoader id={coverArt} type="album" size="300">
           {(src) => (
             <>
               <div
-                className="absolute inset-0 bg-cover bg-center blur-2xl scale-110 opacity-40"
+                className="absolute inset-0 bg-cover bg-center blur-md scale-105 opacity-30"
                 style={{ backgroundImage: `url(${src})` }}
               />
-              <div className="absolute inset-0 bg-gradient-to-r from-background/84 via-background/66 to-background/84" />
+              <div className="absolute inset-0 bg-gradient-to-r from-background/35 via-background/22 to-background/35" />
+              <div
+                className="absolute right-0 top-0 h-full w-[58%] bg-cover bg-center opacity-70"
+                style={{
+                  backgroundImage: `url(${src})`,
+                  WebkitMaskImage:
+                    'linear-gradient(to left, rgba(0, 0, 0, 1) 58%, rgba(0, 0, 0, 0) 100%)',
+                  maskImage:
+                    'linear-gradient(to left, rgba(0, 0, 0, 1) 58%, rgba(0, 0, 0, 0) 100%)',
+                }}
+              />
+              <div className="absolute right-0 top-0 h-full w-[62%] bg-gradient-to-l from-background/58 via-background/34 to-transparent" />
             </>
           )}
         </ImageLoader>
@@ -124,49 +134,44 @@ export function DiscoverWeeklyCard() {
         <div className="absolute inset-0 bg-gradient-to-br from-primary/12 via-primary/6 to-transparent" />
       )}
 
-      {/* Content */}
-      <div className="relative z-10 grid h-full grid-cols-[minmax(0,1fr),auto] items-center gap-3 p-3.5 min-[1600px]:gap-2.5 min-[1600px]:p-3 min-[2300px]:gap-4 min-[2300px]:p-4">
-        {/* Info - Left */}
+      <div className="relative z-10 grid h-full grid-cols-[minmax(0,1fr),auto] items-stretch gap-3">
         <div className="flex min-w-0 flex-col justify-between">
-          <div className="space-y-1.5">
-            <p className="text-[11px] uppercase tracking-[0.08em] text-muted-foreground/85 min-[2300px]:text-xs">
-              {t('home.weeklyMix')}
-            </p>
-            <h2 className="truncate text-[1.2rem] font-semibold leading-tight min-[1600px]:text-[1.02rem] min-[2300px]:text-[1.45rem]">
+          <div className="mb-2 inline-flex w-fit max-w-max self-start items-center gap-1.5 rounded-md border border-foreground/15 bg-foreground/5 px-2 py-1 text-xs text-foreground/75 backdrop-blur-sm">
+            <Sparkles className="h-3.5 w-3.5 text-primary" />
+            <span>{t('home.weeklyMix')}</span>
+          </div>
+          <div className="min-w-0">
+            <h2 className="line-clamp-2 break-words text-[1.05rem] font-semibold leading-snug sm:text-[1.12rem]">
               {t('home.discoverWeekly')}
             </h2>
-            <p className="text-[11px] text-muted-foreground/90 min-[2300px]:text-xs">
+            <p className="mt-0.5 text-xs text-muted-foreground/90">
               {t('playlist.songCount', { count: playlist.length })}
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-1.5 pt-1.5 min-[2300px]:gap-2">
+          <div className="flex items-center gap-2">
             <Button
               onClick={handlePlay}
-              className="h-7 gap-1.5 border border-primary/35 bg-primary/90 px-2.5 text-xs hover:bg-primary min-[2300px]:h-8 min-[2300px]:gap-2 min-[2300px]:px-3"
+              className="h-7 gap-1.5 border border-primary/35 bg-primary/90 px-2.5 text-xs hover:bg-primary"
               size="sm"
             >
-              <Play
-                className="h-3.5 w-3.5 min-[2300px]:h-4 min-[2300px]:w-4"
-                fill="currentColor"
-              />
+              <Play className="h-3.5 w-3.5" fill="currentColor" />
               {t('options.play')}
             </Button>
           </div>
         </div>
 
-        {/* Cover */}
         <div className="flex items-center justify-end">
-          <div className="group relative block h-[156px] w-[156px] shrink-0 overflow-hidden rounded-lg border border-border/60 shadow-xl transition-all duration-300 hover:scale-[1.015] min-[1600px]:h-[128px] min-[1600px]:w-[128px] min-[2300px]:h-[172px] min-[2300px]:w-[172px]">
+          <div className="h-[104px] w-[104px] overflow-hidden rounded-lg border border-border/50 bg-muted shadow-lg min-[1700px]:h-[116px] min-[1700px]:w-[116px]">
             {coverArt ? (
-              <ImageLoader id={coverArt} type="album" size="600">
+              <ImageLoader id={coverArt} type="album" size="420">
                 {(src, isLoadingImage) => (
                   <>
                     {src && (
                       <img
                         src={src}
                         alt={t('home.discoverWeekly')}
-                        className="h-full w-full rounded-lg object-cover"
+                        className="h-full w-full object-cover text-transparent"
                       />
                     )}
                     {!src && !isLoadingImage && (
