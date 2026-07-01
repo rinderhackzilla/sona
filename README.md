@@ -97,11 +97,11 @@ Sona is a fork of Aonsoku, customized and enhanced for Windows desktop use. This
 
 ## Screenshots
 
-<a href="https://raw.githubusercontent.com/rinderhackzilla/sona/refs/heads/main/public/screenshots/start.jpg"><img src="https://raw.githubusercontent.com/rinderhackzilla/sona/refs/heads/main/public/screenshots/start.jpg" width="49.5%"/></a> <a href="https://raw.githubusercontent.com/rinderhackzilla/sona/refs/heads/main/public/screenshots/top50.jpg"><img src="https://raw.githubusercontent.com/rinderhackzilla/sona/refs/heads/main/public/screenshots/top50.jpg" width="49.5%"/></a>
+<a href="https://github.com/user-attachments/assets/5bb7661b-5cf5-468a-8312-835f2379e9e5"><img src="https://github.com/user-attachments/assets/5bb7661b-5cf5-468a-8312-835f2379e9e5" width="49.5%"/></a> <a href="https://github.com/user-attachments/assets/97f7c025-d034-4a19-8d24-7386b2b9e965"><img src="https://github.com/user-attachments/assets/97f7c025-d034-4a19-8d24-7386b2b9e965" width="49.5%"/></a>
 
-<a href="https://raw.githubusercontent.com/rinderhackzilla/sona/refs/heads/main/public/screenshots/discover.jpg"><img src="https://raw.githubusercontent.com/rinderhackzilla/sona/refs/heads/main/public/screenshots/discover.jpg" width="49.5%"/></a> <a href="https://raw.githubusercontent.com/rinderhackzilla/sona/refs/heads/main/public/screenshots/lyrics.jpg"><img src="https://raw.githubusercontent.com/rinderhackzilla/sona/refs/heads/main/public/screenshots/lyrics.jpg" width="49.5%"/></a>
+<a href="https://github.com/user-attachments/assets/5908f43c-9a57-47ef-b361-32b2bbd36ca1"><img src="https://github.com/user-attachments/assets/5908f43c-9a57-47ef-b361-32b2bbd36ca1" width="49.5%"/></a> <a href="https://github.com/user-attachments/assets/af194f84-ba1d-4bb9-8769-d10548b0515c"><img src="https://github.com/user-attachments/assets/af194f84-ba1d-4bb9-8769-d10548b0515c" width="49.5%"/></a>
 
-<a href="https://raw.githubusercontent.com/rinderhackzilla/sona/refs/heads/main/public/screenshots/visualizer.jpg"><img src="https://raw.githubusercontent.com/rinderhackzilla/sona/refs/heads/main/public/screenshots/visualizer.jpg" width="49.5%"/></a> <a href="https://raw.githubusercontent.com/rinderhackzilla/sona/refs/heads/main/public/screenshots/eq.jpg"><img src="https://raw.githubusercontent.com/rinderhackzilla/sona/refs/heads/main/public/screenshots/eq.jpg" width="49.5%"/></a>
+<a href="https://github.com/user-attachments/assets/cb9e4311-8240-4b35-836e-6b93d1f3f585"><img src="https://github.com/user-attachments/assets/cb9e4311-8240-4b35-836e-6b93d1f3f585" width="49.5%"/></a> 
 
 
 ## Planned Features
