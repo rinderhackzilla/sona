@@ -20,32 +20,16 @@
 <details open>
   <summary>Table of Contents</summary>
   <ol>
-    <li>
-      <a href="#about-sona">About Sona</a>
-    </li>
-    <li>
-      <a href="#features">Features</a>
-    </li>
-    <li>
-      <a href="#planned-features">Planned Features</a>
-    </li>
-    <li>
-      <a href="#getting-started">Getting Started</a>
+    <li><a href="#about-sona">About Sona</a></li>
+    <li><a href="#download--installation">Download & Installation</a></li>
+    <li><a href="#features">Features</a></li>
+    <li><a href="#screenshots">Screenshots</a></li>
+    <li><a href="#setup-guides">Setup Guides</a>
       <ul>
-        <li><a href="#prerequisites">Prerequisites</a></li>
-        <li><a href="#installation">Installation</a></li>
-        <li><a href="#running">Running</a></li>
-        <li><a href="#building-windows-executable">Building Windows Executable</a></li>
-        <li><a href="#recommended-ide-setup">Recommended IDE Setup</a></li>
-      </ul>
-    </li>
-    <li>
-      <a href="#setup-guides">Setup Guides</a>
-      <ul>
-        <li><a href="#audio-visualizer-setup">Audio Visualizer Setup</a></li>
         <li><a href="#lidarr-integration-setup">Lidarr Integration Setup</a></li>
       </ul>
     </li>
+    <li><a href="#development--building">Development & Building</a></li>
     <li><a href="#developer-notes">Developer Notes</a></li>
     <li><a href="#license">License</a></li>
   </ol>
@@ -53,45 +37,60 @@
 
 ## About Sona
 
-Sona is a fork of Aonsoku, customized and enhanced for Windows desktop use. This project focuses on delivering a powerful music client experience with advanced audio features and music discovery capabilities.
+Sona is a desktop music client for Subsonic-compatible servers (such as Navidrome), customized and enhanced for Windows. It focuses on a clean, modern interface, advanced audio control, and smart music discovery.
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+## Download & Installation
+
+Sona is distributed as a ready-to-run Windows executable with built-in auto-updates.
+
+1. **Download:** Grab the latest installer (`Sona-Setup-*.exe`) or portable executable from the **[Releases](https://github.com/rinderhackzilla/sona/releases)** page.
+2. **Install:** Run the installer and launch **Sona**.
+3. **Connect:** Enter your Subsonic/Navidrome server URL, username, and password on the login screen.
+
+> **Note:** Once installed, Sona will automatically check for future updates and allow you to update directly within the app (or manually via **Settings → About**).
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ## Features
 
-### Core Features
-- **Subsonic Integration:** Sona integrates with your Navidrome or Subsonic server, providing you with easy access to your music collection.
-- **Intuitive UI:** Modern, clean and user-friendly interface designed to enhance your music listening experience.
-- **Fullscreen Player:** Dedicated fullscreen scene with queue/lyrics/now-playing views, animated backdrop option, and immersive layout.
-- **Mini Player Mode:** Compact always-on-top style player mode for quick control without the full interface.
-- **Session Modes:** One-click listening modes:
-  - **Focus:** reduced-distraction playback mood
-  - **Night:** high-contrast atmospheric mode with neon-inspired styling
-- **Sona DJ Modes:** Queue intelligence modes for different listening goals:
-  - **Wildcard:** musical detours between queue tracks
-  - **Drift:** keeps the current vibe/genre moving
-  - **Timekeeper:** stays within a similar era/decade flow
-- **Podcast Support:** Easily access, manage, and listen to your favorite podcasts directly within the app.
-- **Synchronized Lyrics:** Automatically find synced lyrics from LRCLIB if none is provided by the server.
-- **Unsynchronized Lyrics:** Display embedded unsynchronized lyrics from your songs.
-- **Radio:** Listen to radio shows directly within Sona if your server supports it.
-- **Scrobble:** Sync played songs with your server.
-- **Discord Rich Presence:** Show off your music taste to your Discord friends.
+### Core Experience
+- **Subsonic & Navidrome Integration:** Full library browsing, instant search, and streaming from your personal music server.
+- **In-App Auto-Updates:** Seamless update notifications and one-click installation for new GitHub releases.
+- **Customizable Home Dashboard:** Modular dashboard with customizable slots (Discover Daily, Session Vibe, Daytime Mood, Top Genres, On This Day anniversaries, This Is Artist).
+- **Intuitive UI:** Modern, clean, and responsive design following a unified design-token system.
+- **Fullscreen Player:** Dedicated fullscreen scene with queue, lyrics, now-playing details, animated backdrops, and cover art visualizers.
+- **Mini Player Mode:** Compact always-on-top player for background listening.
+- **Session Modes:** One-click listening moods:
+  - **Focus:** Distraction-free, minimal interface.
+  - **Night:** Atmospheric, high-contrast neon theme.
+- **Sona DJ Modes:** Smart queue injection for dynamic listening sessions:
+  - **Wildcard:** Spontaneous musical detours between queued tracks.
+  - **Drift:** Keeps the current vibe and genre flowing smoothly.
+  - **Timekeeper:** Stays within a cohesive musical era or decade.
+- **Synchronized & Embedded Lyrics:** Automatic synced lyrics lookup via LRCLIB with fallback to embedded tags.
+- **Internet Radio:** Play and manage custom radio streams.
+- **Scrobble & Offline Queue:** Sync playback with your server and Last.fm, with an automatic offline retry queue during connection drops.
+- **Discord Rich Presence:** Showcase current track, album art, and playback progress to Discord.
 
-### Audio Features
-- **Audio Visualizer:** Real-time audio visualization with multiple visual styles for an immersive listening experience.
-- **Equalizer:** Built-in 10-band equalizer with presets and custom settings for personalized sound control.
-- **Crossfade Playback:** Smooth transitions between tracks for less abrupt song changes.
+### Audio Engine & Performance
+- **Ultra-Low CPU Usage:** Throttled render loop and background animation pausing for efficient playback on laptops and desktops.
+- **Audio Visualizers:** Real-time audio waveform and bar visualizers.
+- **Equalizer:** Built-in 8-band graphic equalizer with curated genre presets and custom gain adjustments.
+- **Crossfade Playback:** Smooth transitions between consecutive tracks.
 
 ### Music Discovery & Playlists
-- **Discover Weekly:** Personalized weekly playlists powered by Last.fm integration, automatically generated every Monday with ~50 songs from similar artists based on your listening history.
-- **Your Top 50:** Your top 50 most played tracks from the last 12 months, synced from Last.fm listening history and updated weekly.
-- **Rabbit Hole:** Generate a 50-song discovery queue on-demand with tracks from similar artists. Perfect for diving deep into your music taste and finding new favorites.
-- **This Is [Artist]:** Daily artist-focused playlist generated from your listening profile.
-- **Daypart Playlist:** Time-of-day driven playlist logic (morning, noon, afternoon, evening, night, midnight) with mood-aware genre selection.
+- **Discover Daily / Weekly:** Personalized recommendations powered by your Last.fm history and local library matches.
+- **Daytime Mood Mix:** Continuous, time-of-day adapted mix (Morning, Afternoon, Evening, Night) with mood-aware track selection.
+- **Rabbit Hole:** Instant 50-song discovery queue generated from similar artists.
+- **Your Top 50:** Your 50 most-played tracks of the past year, synced and updated automatically.
+- **This Is [Artist]:** Dynamic artist spotlights and curated deep dives.
+- **Anniversary Spotlight ("On This Day"):** Discover albums celebrating release milestones today.
 
 ### Integrations
-- **Lidarr Integration:** Send music requests directly to Lidarr via API for automated music collection management via the search bar.
+- **Lidarr Integration:** Search and request missing albums or artists directly from Sona via the Lidarr API.
+- **Last.fm:** Scrobbling, similar artists mapping, and listening history integration.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -103,50 +102,34 @@ Sona is a fork of Aonsoku, customized and enhanced for Windows desktop use. This
 
 <a href="https://raw.githubusercontent.com/rinderhackzilla/sona/refs/heads/main/public/screenshots/visualizer.jpg"><img src="https://raw.githubusercontent.com/rinderhackzilla/sona/refs/heads/main/public/screenshots/visualizer.jpg" width="49.5%"/></a> <a href="https://raw.githubusercontent.com/rinderhackzilla/sona/refs/heads/main/public/screenshots/eq.jpg"><img src="https://raw.githubusercontent.com/rinderhackzilla/sona/refs/heads/main/public/screenshots/eq.jpg" width="49.5%"/></a>
 
-
-## Planned Features
-
-Sona will continue to evolve with new features on the go. Right now, the roadmap with planned enhancements is complete.
-
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-## Getting Started
+## Development & Building
+
+If you wish to contribute or build Sona from source:
 
 ### Prerequisites
+- Node.js (LTS recommended)
+- npm or pnpm
 
-- Node.js
-- pnpm, npm or yarn
-- cargo
-
-### Installation
-
-1. Clone the repo
+### Setup & Run
 ```sh
+# Clone repository
 git clone https://github.com/rinderhackzilla/sona.git
-```
-2. Install NPM packages
-```sh
-pnpm install
-```
+cd sona
 
-### Running
+# Install dependencies
+npm install
 
-- Desktop App
-```sh
-pnpm run electron:dev
-```
+# Run in development mode
+npm run electron:dev
 
-### Building Windows Executable
-
-To build the Windows .exe installer:
-
-```sh
+# Build Windows installer (.exe)
 npm run build:win
 ```
 
 ### Recommended IDE Setup
-
-- [VS Code](https://code.visualstudio.com/) + [Biome.js](https://marketplace.visualstudio.com/items?itemName=biomejs.biome)
+- [VS Code](https://code.visualstudio.com/) + [Biome](https://marketplace.visualstudio.com/items?itemName=biomejs.biome)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
