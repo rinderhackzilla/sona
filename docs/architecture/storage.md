@@ -36,12 +36,12 @@ Keep keys close to their domain and export shared keys from dedicated files.
 
 - Session/theme/fullscreen keys:
   - `src/utils/session-storage-keys.ts`
-- EQ state key:
-  - `src/app/audio/eq-state.ts`
 - Image metadata cache key:
   - `src/cache/image.ts`
-- Listening memory keys:
+- Listening memory & skip tracking keys:
   - `src/utils/listening-memory.ts`
+- Core player & equalizer persistence:
+  - Managed via Zustand `player_store` (`src/store/player.store.ts`) and `app_store` (`src/store/app.store.ts`)
 
 ## Rules
 
@@ -57,5 +57,5 @@ When touching old code:
 1. Replace direct `localStorage` usage with `safe-storage` helpers.
 2. If storing playlist + metadata pairs, move to `playlist-storage` helpers.
 3. Keep behavior unchanged, then run:
-   - `pnpm biome lint`
-   - `pnpm tsc --noEmit`
+   - `npx biome lint src/`
+   - `npm run build`
