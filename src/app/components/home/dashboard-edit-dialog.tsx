@@ -115,13 +115,13 @@ export function DashboardEditDialog({
                 onClick={() => !isDisabled && handleSelect(option.id)}
                 disabled={isDisabled}
                 className={cn(
-                  'flex w-full items-start gap-4 rounded-xl border border-border/20 bg-background/30 p-3.5 text-left transition-all duration-200',
+                  'flex w-full items-start gap-4 rounded-[var(--radius-surface)] border border-border/20 bg-background/30 p-3.5 text-left transition-all duration-200',
                   isDisabled
                     ? 'opacity-40 cursor-not-allowed bg-muted/20 border-border/10'
                     : 'hover:border-primary/45 hover:bg-background/80 cursor-pointer',
                 )}
               >
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-background/50 border border-border/10">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[var(--radius-control)] bg-background/50 border border-border/10">
                   {option.icon}
                 </div>
                 <div className="min-w-0 flex-1">

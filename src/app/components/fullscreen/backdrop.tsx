@@ -94,12 +94,6 @@ export function FullscreenBackdrop() {
     currentSongColorIntensity,
   } = useSongColor()
 
-  if (mode === 'focus') {
-    return (
-      <div className="absolute inset-0 w-full h-full z-0 bg-gradient-to-br from-neutral-950 via-neutral-900 to-zinc-950" />
-    )
-  }
-
   const dynamicOverlayStyle = useMemo(() => {
     if (!useSongColorOnBigPlayer) return undefined
 
@@ -130,6 +124,12 @@ export function FullscreenBackdrop() {
       cancelled = true
     }
   }, [currentCoverUrl])
+
+  if (mode === 'focus') {
+    return (
+      <div className="absolute inset-0 w-full h-full z-0 bg-gradient-to-br from-neutral-950 via-neutral-900 to-zinc-950" />
+    )
+  }
 
   return (
     <div className="absolute inset-0 w-full h-full z-0 overflow-hidden bg-black">

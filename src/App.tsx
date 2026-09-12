@@ -8,6 +8,7 @@ import { PlaylistDialogProvider } from '@/app/context/playlist-dialog-context'
 import { AlbumColorObserver } from '@/app/observers/album-color-observer'
 import { ArtworkPrefetchObserver } from '@/app/observers/artwork-prefetch-observer'
 import { DiscoverWeeklyObserver } from '@/app/observers/discover-weekly-observer'
+import { DownloadObserver } from '@/app/observers/download-observer'
 import { LangObserver } from '@/app/observers/lang-observer'
 import { LyricsPrefetchObserver } from '@/app/observers/lyrics-prefetch-observer'
 import { MediaSessionObserver } from '@/app/observers/media-session-observer'
@@ -37,6 +38,7 @@ function App() {
       <Suspense fallback={null}>
         {isElectron() && <UpdateObserver />}
         {isElectron() && <DiscoverWeeklyObserver />}
+        {isElectron() && <DownloadObserver />}
         <MediaSessionObserver />
         <AlbumColorObserver />
         <LangObserver />

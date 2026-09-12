@@ -17,14 +17,12 @@ import {
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
 } from '@/app/components/ui/form'
 import { Input } from '@/app/components/ui/input'
-import { Switch } from '@/app/components/ui/switch'
 import { Textarea } from '@/app/components/ui/textarea'
 import { subsonic } from '@/service/subsonic'
 import { usePlaylists } from '@/store/playlists.store'
@@ -80,7 +78,7 @@ export function CreatePlaylistDialog() {
       toast.success(t('playlist.form.create.toast.success'))
     },
     onError: () => {
-      toast.error(t('playlist.form.create.toast.success'))
+      toast.error(t('playlist.form.create.toast.error'))
     },
   })
 

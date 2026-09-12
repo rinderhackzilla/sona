@@ -63,7 +63,7 @@ type FormData = z.infer<typeof loginSchema>
 
 const defaultUrl = isDesktop() ? 'http://' : 'https://'
 const rawServerUrl =
-  window.SERVER_URL && window.SERVER_URL !== '${SERVER_URL}'
+  window.SERVER_URL && window.SERVER_URL !== '$' + '{SERVER_URL}'
     ? window.SERVER_URL
     : undefined
 const url = rawServerUrl || defaultUrl

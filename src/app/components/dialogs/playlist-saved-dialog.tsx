@@ -1,3 +1,4 @@
+import { Trans, useTranslation } from 'react-i18next'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -21,20 +22,27 @@ export function PlaylistSavedDialog({
   playlistName,
   trackCount,
 }: PlaylistSavedDialogProps) {
+  const { t } = useTranslation()
+
   return (
-    <AlertDialog open={open}>
+    <AlertDialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>✓ Playlist gespeichert</AlertDialogTitle>
+          <AlertDialogTitle>
+            {t('playlist.form.saved.title')}
+          </AlertDialogTitle>
           <AlertDialogDescription>
-            Deine personalisierte <strong>{playlistName}</strong> wurde
-            erfolgreich aktualisiert!
+            <Trans
+              i18nKey="playlist.form.saved.description"
+              values={{ playlistName }}
+              components={{ 1: <strong /> }}
+            />
             {trackCount > 0 && (
               <>
                 <br />
                 <br />
                 <span className="text-sm text-muted-foreground">
-                  {trackCount} {trackCount === 1 ? 'Track' : 'Tracks'} verfügbar
+                  {t('playlist.form.saved.tracks', { count: trackCount })}
                 </span>
               </>
             )}

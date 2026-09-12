@@ -270,24 +270,33 @@ function RailCoverVisualizer({ title }: { title: string }) {
       attributeFilter: ['class', 'style'],
     })
 
-    const resize = () => {
-      const rect = canvas.getBoundingClientRect()
-      const dpr = Math.min(window.devicePixelRatio || 1, 2)
-      const width = Math.max(1, Math.floor(rect.width * dpr))
-      const height = Math.max(1, Math.floor(rect.height * dpr))
+    let width = 0
+    let height = 0
+    const dpr = Math.min(window.devicePixelRatio || 1, 2)
 
-      if (canvas.width !== width || canvas.height !== height) {
-        canvas.width = width
-        canvas.height = height
+    const resizeObserver = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        const entryWidth = Math.max(1, Math.floor(entry.contentRect.width * dpr))
+        const entryHeight = Math.max(1, Math.floor(entry.contentRect.height * dpr))
+
+        if (canvas.width !== entryWidth || canvas.height !== entryHeight) {
+          canvas.width = entryWidth
+          canvas.height = entryHeight
+        }
+        width = entry.contentRect.width
+        height = entry.contentRect.height
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
       }
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
-    }
+    })
+
+    resizeObserver.observe(canvas)
 
     const draw = (time: number) => {
-      resize()
+      if (width <= 0 || height <= 0) {
+        frameId = requestAnimationFrame(draw)
+        return
+      }
 
-      const width = canvas.clientWidth
-      const height = canvas.clientHeight
       const analyser = getGlobalAnalyser()
 
       ctx.clearRect(0, 0, width, height)
@@ -411,6 +420,7 @@ function RailCoverVisualizer({ title }: { title: string }) {
     frameId = requestAnimationFrame(draw)
     return () => {
       themeObserver.disconnect()
+      resizeObserver.disconnect()
       cancelAnimationFrame(frameId)
     }
   }, [isPlaying])

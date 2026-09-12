@@ -124,9 +124,13 @@ export function PlayerProgress({
     }
 
     let frameId: number
-    const tick = () => {
+    let lastUpdate = 0
+    const tick = (now: number) => {
       const next = audioRef.current?.currentTime ?? progress
-      setVisualProgress((prev) => (Math.abs(prev - next) > 0.015 ? next : prev))
+      if (now - lastUpdate >= 200) {
+        lastUpdate = now
+        setVisualProgress((prev) => (Math.abs(prev - next) >= 0.1 ? next : prev))
+      }
       frameId = requestAnimationFrame(tick)
     }
 
@@ -178,7 +182,9 @@ export function PlayerProgress({
     processScrobbleQueue()
   }, [])
 
+  const currentSongId = currentSong.id
   useEffect(() => {
+    if (!currentSongId) return
     isScrobbleSentRef.current = false
     isNowPlayingSentRef.current = false
     isNowPlayingSendingRef.current = false
@@ -186,7 +192,7 @@ export function PlayerProgress({
     listenedSecondsRef.current = 0
     lastProgressRef.current = 0
     lastScrobbleAttemptAtRef.current = 0
-  }, [currentSong.id])
+  }, [currentSongId])
 
   useEffect(() => {
     if (!isSong || !isPlaying || !currentSong.id) return

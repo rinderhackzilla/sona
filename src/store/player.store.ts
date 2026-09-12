@@ -326,7 +326,7 @@ export const usePlayerStore = createWithEqualityFn<IPlayerContext>()(
                 set((state) => {
                   state.settings.dashboardLayout.columnsTop = cols
                   const oldRow1 = state.settings.dashboardLayout.row1
-                  const newRow1 = Array(cols).fill(null).map((_, i) => oldRow1[i] ?? null)
+                  const newRow1 = Array.from({ length: cols }, (_, i) => oldRow1[i] ?? null)
                   state.settings.dashboardLayout.row1 = newRow1
                 })
               },
@@ -334,7 +334,7 @@ export const usePlayerStore = createWithEqualityFn<IPlayerContext>()(
                 set((state) => {
                   state.settings.dashboardLayout.columnsMiddle = cols
                   const oldRow2 = state.settings.dashboardLayout.row2
-                  const newRow2 = Array(cols).fill(null).map((_, i) => oldRow2[i] ?? null)
+                  const newRow2 = Array.from({ length: cols }, (_, i) => oldRow2[i] ?? null)
                   state.settings.dashboardLayout.row2 = newRow2
                 })
               },
@@ -342,7 +342,7 @@ export const usePlayerStore = createWithEqualityFn<IPlayerContext>()(
                 set((state) => {
                   state.settings.dashboardLayout.columnsBottom = cols
                   const oldRow3 = state.settings.dashboardLayout.row3
-                  const newRow3 = Array(cols).fill(null).map((_, i) => oldRow3[i] ?? null)
+                  const newRow3 = Array.from({ length: cols }, (_, i) => oldRow3[i] ?? null)
                   state.settings.dashboardLayout.row3 = newRow3
                 })
               },
@@ -1322,15 +1322,15 @@ export const usePlayerStore = createWithEqualityFn<IPlayerContext>()(
               const oldRow2 = Array.isArray(layout.row2) ? [...layout.row2] : []
 
               if (!Array.isArray(layout.row1) || layout.row1.length !== layout.columnsTop) {
-                layout.row1 = Array(layout.columnsTop).fill(null).map((_, i) => layout.row1?.[i] ?? null)
+                layout.row1 = Array.from({ length: layout.columnsTop }, (_, i) => layout.row1?.[i] ?? null)
               }
               // Force row2 to match columnsMiddle (slicing out extra slots)
               if (!Array.isArray(layout.row2) || layout.row2.length !== layout.columnsMiddle) {
-                layout.row2 = Array(layout.columnsMiddle).fill(null).map((_, i) => oldRow2[i] ?? null)
+                layout.row2 = Array.from({ length: layout.columnsMiddle }, (_, i) => oldRow2[i] ?? null)
               }
               // Force row3 to match columnsBottom, migrating extra slots from oldRow2 if needed
               if (!Array.isArray(layout.row3) || layout.row3.length !== layout.columnsBottom) {
-                layout.row3 = Array(layout.columnsBottom).fill(null).map((_, i) => layout.row3?.[i] ?? oldRow2[i + 2] ?? null)
+                layout.row3 = Array.from({ length: layout.columnsBottom }, (_, i) => layout.row3?.[i] ?? oldRow2[i + 2] ?? null)
               }
             }
           }

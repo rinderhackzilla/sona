@@ -1,5 +1,4 @@
 import type { Song } from '@/types/responses/song'
-import { logger } from '@/utils/logger'
 import { songs } from './songs'
 
 let cachedSongs: Song[] = []
@@ -28,8 +27,9 @@ const DEFAULT_GENRES_MAP: Record<string, string[]> = {
 export async function fetchDaytimeMoodSongs(
   aiEnabled: boolean,
   aiApiKey: string,
+  targetPeriod?: 'morning' | 'afternoon' | 'evening' | 'night',
 ): Promise<Song[]> {
-  const period = getDaytimePeriod()
+  const period = targetPeriod ?? getDaytimePeriod()
 
   // Use cache if same period is active
   if (cachedPeriod === period && cachedSongs.length > 0) {
@@ -40,22 +40,19 @@ export async function fetchDaytimeMoodSongs(
 
   let candidateSongs: Song[] = []
   try {
-    let favSongs: Song[] = []
-    try {
-      const favs = await songs.getFavoriteSongs()
-      // console.info(`[DaytimeMood] Collected ${favSongs.length} favorites.`)
-    } catch (e) {
-      console.warn('[DaytimeMood] Failed to fetch favorites:', e)
-    }
+    const [favsResult, randResult] = await Promise.allSettled([
+      songs.getFavoriteSongs(),
+      songs.getRandomSongs({ size: 120 }),
+    ])
 
-    let randSongs: Song[] = []
-    try {
-      const rand = await songs.getRandomSongs({ size: 120 })
-      randSongs = rand ?? []
-      // console.info(`[DaytimeMood] Collected ${randSongs.length} random songs.`)
-    } catch (e) {
-      console.warn('[DaytimeMood] Failed to fetch random songs:', e)
-    }
+    const favSongs: Song[] =
+      favsResult.status === 'fulfilled' && favsResult.value?.song
+        ? favsResult.value.song
+        : []
+    const randSongs: Song[] =
+      randResult.status === 'fulfilled' && randResult.value
+        ? randResult.value
+        : []
 
     candidateSongs = [...favSongs, ...randSongs]
 

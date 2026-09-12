@@ -27,7 +27,6 @@ import {
 import { Switch } from '@/app/components/ui/switch'
 import { cn } from '@/lib/utils'
 import { subsonic } from '@/service/subsonic'
-import { useAppIntegrations } from '@/store/app.store'
 import {
   DEFAULT_FOCUS_GENRES,
   DEFAULT_NIGHT_GENRES,
@@ -55,9 +54,6 @@ export function ContentPage() {
   // Lyrics
   const { preferSyncedLyrics, setPreferSyncedLyrics } = useLyricsSettings()
 
-  // Homepage Playlists
-  const { lastfm } = useAppIntegrations()
-  const isLastfmConfigured = Boolean(lastfm.username && lastfm.apiKey)
   const { focusGenres, nightGenres, setFocusGenres, setNightGenres } =
     useSessionModeSettings()
 

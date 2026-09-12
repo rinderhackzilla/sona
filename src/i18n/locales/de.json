@@ -73,6 +73,12 @@
       },
       "validations": {
         "nameLength": "Der Name der Wiedergabeliste muss mindestens 2 Zeichen lang sein."
+      },
+      "saved": {
+        "title": "Playlist gespeichert",
+        "description": "Deine personalisierte <1>{{playlistName}}</1> wurde erfolgreich aktualisiert!",
+        "tracks_one": "{{count}} Track verfügbar",
+        "tracks_other": "{{count}} Tracks verfügbar"
       }
     },
     "headline": "Wiedergabeliste",

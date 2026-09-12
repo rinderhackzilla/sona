@@ -321,7 +321,8 @@ async function getAnniversaryAlbumFallback() {
   )
 
   const validResults = results.filter(
-    (r): r is { album: any; yearsAgo: number; exact: boolean } => r !== null,
+    (r): r is { album: AlbumsListData; yearsAgo: number; exact: boolean } =>
+      r !== null,
   )
 
   const exactMatch = validResults.find((r) => r.exact)

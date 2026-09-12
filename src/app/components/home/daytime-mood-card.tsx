@@ -23,7 +23,7 @@ export function DaytimeMoodCard({ layout = 'wide' }: { layout?: 'wide' | 'narrow
   useEffect(() => {
     if (!aiEnabled) return
     let active = true
-    fetchDaytimeMoodSongs(aiEnabled, "")
+    fetchDaytimeMoodSongs(aiEnabled, '', period)
       .then((songsList) => {
         if (active && songsList && songsList.length > 0) {
           setCoverArt(songsList[0].coverArt)
@@ -93,11 +93,11 @@ export function DaytimeMoodCard({ layout = 'wide' }: { layout?: 'wide' | 'narrow
           })
         }}
         className={cn(
-          "h-full w-full text-left relative overflow-hidden rounded-xl",
+          "h-full w-full text-left cursor-pointer",
           !aiEnabled && "opacity-40 cursor-not-allowed pointer-events-none select-none"
         )}
       >
-        <SecondaryTileFrame className={isActive ? 'border-primary/50' : ''}>
+        <SecondaryTileFrame>
           {coverArt && (
             <ImageLoader id={coverArt} type="album" size="300">
               {(src) => (
@@ -148,8 +148,7 @@ export function DaytimeMoodCard({ layout = 'wide' }: { layout?: 'wide' | 'narrow
         })
       }}
       className={cn(
-        'sona-panel group relative h-full w-full cursor-pointer bg-background-foreground p-5 transition-all duration-300 hover:border-primary/35 overflow-hidden',
-        isActive && 'border-primary/50 shadow-[0_0_15px_rgba(var(--primary),0.12)]',
+        'sona-panel group relative h-full w-full cursor-pointer bg-background-foreground p-5 transition-colors hover:border-primary/35 overflow-hidden',
         !aiEnabled && "opacity-40 cursor-not-allowed pointer-events-none select-none"
       )}
     >

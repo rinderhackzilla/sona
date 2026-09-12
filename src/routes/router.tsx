@@ -12,17 +12,16 @@ import {
   InfinitySongListFallback,
   SongListFallback,
 } from '@/app/components/fallbacks/song-fallbacks'
-// Direct imports (not lazy) to avoid suspense issues
 import BaseLayout from '@/app/layout/base'
-import DiscoverWeekly from '@/app/pages/discover-weekly'
 import ErrorPage from '@/app/pages/error-page'
-import ThisIsArtistPage from '@/app/pages/this-is-artist'
-import Top50Year from '@/app/pages/top-50-year'
 import { albumsLoader } from '@/routes/loaders/albumsLoader'
 import { loginLoader } from '@/routes/loginLoader'
 import { protectedLoader } from '@/routes/protectedLoader'
 import { ROUTES } from '@/routes/routesList'
 
+const Top50Year = lazy(() => import('@/app/pages/top-50-year'))
+const DiscoverWeekly = lazy(() => import('@/app/pages/discover-weekly'))
+const ThisIsArtistPage = lazy(() => import('@/app/pages/this-is-artist'))
 const Album = lazy(() => import('@/app/pages/albums/album'))
 const AlbumsList = lazy(() => import('@/app/pages/albums/list'))
 const Artist = lazy(() => import('@/app/pages/artists/artist'))
@@ -58,19 +57,31 @@ export const router = createHashRouter(
           id: 'top-50-year',
           path: ROUTES.LIBRARY.TOP_50_YEAR,
           errorElement: <ErrorPage />,
-          element: <Top50Year />,
+          element: (
+            <Suspense fallback={<SongListFallback />}>
+              <Top50Year />
+            </Suspense>
+          ),
         },
         {
           id: 'discover-daily',
           path: ROUTES.LIBRARY.DISCOVER_WEEKLY,
           errorElement: <ErrorPage />,
-          element: <DiscoverWeekly />,
+          element: (
+            <Suspense fallback={<SongListFallback />}>
+              <DiscoverWeekly />
+            </Suspense>
+          ),
         },
         {
           id: 'this-is-artist',
           path: ROUTES.LIBRARY.THIS_IS_ARTIST,
           errorElement: <ErrorPage />,
-          element: <ThisIsArtistPage />,
+          element: (
+            <Suspense fallback={<SongListFallback />}>
+              <ThisIsArtistPage />
+            </Suspense>
+          ),
         },
         {
           id: 'artists',

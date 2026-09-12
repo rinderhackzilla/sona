@@ -19,12 +19,11 @@ function createLinkTag({ schema, url, text }: createParams) {
 }
 
 export function linkifyText(textToParse: string) {
-  const urlRegex = /(\b(https?|mailto):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig
+  const urlRegex = /(\b(https?|mailto):\/\/[-A-Z0-9+&@#/%?=~_|!:,.;]*[-A-Z0-9+&@#/%?=~_|])/gi
 
   const matchUrls = (text: string) => {
     const matches: { url: string; text: string; schema: string }[] = []
     let match: RegExpExecArray | null
-    // biome-ignore lint/suspicious/noAssignInExpressions: standard RegExp loop
     while ((match = urlRegex.exec(text)) !== null) {
       const url = match[0]
       const schema = url.startsWith('mailto:') ? 'mailto:' : 'http:'

@@ -3,7 +3,6 @@ import {
   FileDown,
   FileUp,
   RefreshCw,
-  RotateCcw,
 } from 'lucide-react'
 import { useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -16,7 +15,6 @@ import { getAppInfo } from '@/utils/appName'
 import { isDesktop } from '@/utils/desktop'
 import {
   safeStorageGet,
-  safeStorageRemove,
   safeStorageSet,
 } from '@/utils/safe-storage'
 
@@ -28,7 +26,6 @@ export function AboutPage() {
   const [upToDate, setUpToDate] = useState(false)
   const [isClearingCache, setIsClearingCache] = useState(false)
   const importRef = useRef<HTMLInputElement>(null)
-  const ONBOARDING_STORAGE_KEY = 'sona.contextualOnboarding.v1'
 
   const handleCheckForUpdates = async () => {
     setIsChecking(true)

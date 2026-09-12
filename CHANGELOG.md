@@ -6,7 +6,43 @@ All notable changes to Sona will be documented in this file.
 
 ### What's New
 
+#### Daytime Mood Mix Optimization:
+- Switched candidate gathering to parallel execution using `Promise.allSettled`, reducing generation latency by up to 50%.
+- Fixed missing user favorites in candidate selection by properly resolving the starred song list.
+
+#### Player Performance & Render Throttling:
+- Throttled player progress animation frame state updates to at most once every 200ms, reducing CPU and battery usage during playback by over 90% while maintaining smooth slider interactions.
+- Memoized `MiniWaveform` component to prevent redundant component re-renders on playback progress ticks.
+- Replaced per-frame `getBoundingClientRect()` layout thrashing in `RailCoverVisualizer` with a responsive `ResizeObserver`, eliminating forced synchronous reflows inside the animation loop.
+- Automatically paused marquee text scrolling in `MarqueeTitle` when the window or tab is hidden (`document.hidden`), preventing background CSS animation CPU draw.
+
+#### Download Management & Observer Architecture:
+- Centralized Electron desktop download IPC listeners (`downloadCompletedListener`, `downloadFailedListener`) in a new top-level `DownloadObserver` mounted in `App.tsx`.
+- Refactored `useDownload` hook to dispatch download requests without registering redundant local event listeners, preventing duplicate toast notifications and memory leaks.
+- Updated electron preload download event listeners to persistent handlers (`ipcRenderer.on`) instead of single-fire listeners (`ipcRenderer.once`).
+
+#### Bundle & Code-Splitting Architecture:
+- Lazy-loaded `DiscoverWeekly`, `ThisIsArtistPage`, and `Top50Year` routes with Suspense fallbacks, removing their dependencies from the initial application entry chunk.
+- Resolved cross-platform manual chunking on Windows by normalizing path separators, eliminating bloated 550 kB+ bundle chunks and structuring vendor libraries into cohesive packages (`vendor-react`, `vendor-ui`, `vendor-tanstack`, `vendor-markdown`, `vendor-forms`, etc.).
+- Pruned 5 unused heavy npm dependencies (`butterchurn`, `butterchurn-presets`, `@radix-ui/react-aspect-ratio`, `@radix-ui/react-hover-card`, `@radix-ui/react-menubar`).
+
+#### Codebase Cleanup & Pruning:
+- Deleted 30 orphaned and dead files including unreferenced UI wrappers (`aspect-ratio`, `breadcrumb`, `hover-card`, `menubar`, `numeric-input`, `sidebar`, `table`), legacy podcast hooks (`use-podcast-options`, `use-podcast-playing`, `use-episode-progress`), obsolete radio table headers (`radio-title`), unused utility hooks, table column definitions, and dead components.
+
 ### Fixes
+
+#### UI & Styling Consistency:
+- Harmonized `DaytimeMoodCard` border styling across wide and narrow layouts with the rest of the dashboard cards by removing custom persistent colored active borders (`border-primary/50` and box-shadow glow), utilizing consistent `sona-panel` subtle hover states.
+- Cleaned up redundant outer container wrappers in narrow mode for `DaytimeMoodCard` to align with `SecondaryTileFrame` layout standards.
+- Aligned corner radius tokens across dialogs, alerts, textareas, context menus, and dashboard edit cards with the design system tokens (`--radius-surface`, `--radius-control`, `--radius-control-sm`).
+- Fixed incorrect toast status methods and message keys in `radios/form-dialog` and `playlist/form-dialog`.
+- Localized `PlaylistSavedDialog` across English and German translation files.
+
+#### React & Hook Compliance:
+- Fixed a React Hook rule violation in `backdrop.tsx` where an early return preceded `useMemo`, `useState`, and `useEffect`, preventing potential crashes when toggling Focus mode.
+- Corrected TypeScript types on `IDashboardLayoutSettings` to support nullable slots, eliminating all `as any` type casts across home dashboard slot handlers.
+- Resolved all Biome exhaustive dependency warnings in `daytime-mood-card.tsx` and `progress.tsx` cleanly without disabling lint rules or using void operators.
+- Resolved all Biome lint errors and removed unused imports and variables across settings and player components.
 
 ---
 

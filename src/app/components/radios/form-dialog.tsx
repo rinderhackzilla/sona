@@ -102,7 +102,7 @@ export function RadioFormDialog() {
       toast.success(t('radios.form.edit.toast.success'))
     },
     onError: () => {
-      toast.success(t('radios.form.edit.toast.error'))
+      toast.error(t('radios.form.edit.toast.error'))
     },
   })
 

@@ -1,10 +1,13 @@
+import { memo } from 'react'
 import { cn } from '@/lib/utils'
 
 interface MiniWaveformProps {
   isPlaying: boolean
 }
 
-export function MiniWaveform({ isPlaying }: MiniWaveformProps) {
+export const MiniWaveform = memo(function MiniWaveform({
+  isPlaying,
+}: MiniWaveformProps) {
   return (
     <div
       className="flex items-end gap-[2px] h-[10px] w-3.5 px-[1px] overflow-hidden select-none"
@@ -30,4 +33,4 @@ export function MiniWaveform({ isPlaying }: MiniWaveformProps) {
       />
     </div>
   )
-}
+})

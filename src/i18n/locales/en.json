@@ -222,6 +222,12 @@
       "validations": {
         "nameLength": "Playlist name must be at least 2 characters."
       },
+      "saved": {
+        "title": "Playlist saved",
+        "description": "Your personalized <1>{{playlistName}}</1> was successfully updated!",
+        "tracks_one": "{{count}} track available",
+        "tracks_other": "{{count}} tracks available"
+      },
       "removeSong": {
         "title_one": "Are you sure you want to remove the selected song?",
         "title_other": "Are you sure you want to remove the selected songs?",

@@ -58,6 +58,19 @@ export function MarqueeTitle({ children, gap }: MarqueeTitleProps) {
     calculateOverflow()
   }, [calculateOverflow])
 
+  const [isVisible, setIsVisible] = useState(!document.hidden)
+
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      setIsVisible(!document.hidden)
+    }
+
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+    }
+  }, [])
+
   return (
     <div className="relative">
       <div
@@ -79,7 +92,7 @@ export function MarqueeTitle({ children, gap }: MarqueeTitleProps) {
             isFinished && 'maskImage-marquee-fade-finished',
           )}
           speed={26}
-          play={true}
+          play={isVisible}
           loop={0}
           delay={4}
           pauseOnHover={false}

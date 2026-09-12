@@ -21,11 +21,6 @@ import {
   DropdownMenu,
   DropdownMenuTrigger,
   DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuSub,
-  DropdownMenuSubTrigger,
-  DropdownMenuSubContent,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
 } from '@/app/components/ui/dropdown-menu'
@@ -90,17 +85,17 @@ export default function Home() {
 
     if (activeSlot < columnsTop) {
       const newRow1 = [...row1]
-      newRow1[activeSlot] = optionId as any
+      newRow1[activeSlot] = optionId
       setRow1(newRow1)
     } else if (activeSlot < columnsTop + columnsMiddle) {
       const indexInRow2 = activeSlot - columnsTop
       const newRow2 = [...row2]
-      newRow2[indexInRow2] = optionId as any
+      newRow2[indexInRow2] = optionId
       setRow2(newRow2)
     } else {
       const indexInRow3 = activeSlot - columnsTop - columnsMiddle
       const newRow3 = [...row3]
-      newRow3[indexInRow3] = optionId as any
+      newRow3[indexInRow3] = optionId
       setRow3(newRow3)
     }
     setActiveSlot(null)
@@ -109,17 +104,17 @@ export default function Home() {
   const handleClearSlot = (slotIndex: number) => {
     if (slotIndex < columnsTop) {
       const newRow1 = [...row1]
-      newRow1[slotIndex] = null as any
+      newRow1[slotIndex] = null
       setRow1(newRow1)
     } else if (slotIndex < columnsTop + columnsMiddle) {
       const indexInRow2 = slotIndex - columnsTop
       const newRow2 = [...row2]
-      newRow2[indexInRow2] = null as any
+      newRow2[indexInRow2] = null
       setRow2(newRow2)
     } else {
       const indexInRow3 = slotIndex - columnsTop - columnsMiddle
       const newRow3 = [...row3]
-      newRow3[indexInRow3] = null as any
+      newRow3[indexInRow3] = null
       setRow3(newRow3)
     }
   }

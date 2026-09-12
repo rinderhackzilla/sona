@@ -1,6 +1,7 @@
 import { httpClient } from '@/api/httpClient'
 import { normalizeSimilarArtists } from '@/service/mappers/artist'
 import { useAppStore } from '@/store/app.store'
+import type { ISong } from '@/types/responses/song'
 import {
   ArtistInfoResponse,
   ArtistResponse,
@@ -484,7 +485,7 @@ async function fetchLastFmTopTracks(
     const trackList = data?.toptracks?.track
     if (!trackList) return []
     const arr = Array.isArray(trackList) ? trackList : [trackList]
-    return arr.map((t: any) => t.name).filter(Boolean)
+    return arr.map((t: { name?: string }) => t.name).filter(Boolean) as string[]
   }
 
   if (mbid) {
@@ -500,7 +501,7 @@ async function fetchLastFmTopTracks(
   return []
 }
 
-async function getTopSongsFallback(artistName: string): Promise<any[]> {
+async function getTopSongsFallback(artistName: string): Promise<ISong[]> {
   const apiKey = useAppStore.getState().integrations.lastfm.apiKey?.trim()
   if (!apiKey) return []
 
@@ -511,7 +512,7 @@ async function getTopSongsFallback(artistName: string): Promise<any[]> {
 
     // Fetch all local songs for this artist via search3
     const localSongsResponse = await httpClient<{
-      searchResult2?: { song?: any[] }
+      searchResult2?: { song?: ISong[] }
     }>('/search3', {
       method: 'GET',
       query: {
@@ -524,7 +525,7 @@ async function getTopSongsFallback(artistName: string): Promise<any[]> {
     const localSongs = localSongsResponse?.data?.searchResult2?.song ?? []
     if (localSongs.length === 0) return []
 
-    const matchedSongs: any[] = []
+    const matchedSongs: ISong[] = []
     const normalizeString = (str: string) =>
       str
         .toLowerCase()

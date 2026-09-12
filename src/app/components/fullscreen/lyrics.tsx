@@ -34,7 +34,7 @@ export function LyricsTab() {
   const { preferSyncedLyrics } = useLyricsSettings()
   const { t } = useTranslation()
 
-  const { id, artist, artistId, title, album, albumId, duration, coverArt } =
+  const { id, artist, artistId, title, album, duration, coverArt } =
     currentSong
 
   const { data: lyrics, isLoading } = useQuery({

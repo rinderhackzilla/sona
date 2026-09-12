@@ -35,12 +35,12 @@ const api: IAonsokuAPI = {
   downloadFile: (payload) =>
     ipcRenderer.send(IpcChannels.HandleDownloads, payload),
   downloadCompletedListener: (func) => {
-    ipcRenderer.once(IpcChannels.DownloadCompleted, (_, fileId: string) =>
+    ipcRenderer.on(IpcChannels.DownloadCompleted, (_, fileId: string) =>
       func(fileId),
     )
   },
   downloadFailedListener: (func) => {
-    ipcRenderer.once(IpcChannels.DownloadFailed, (_, fileId: string) =>
+    ipcRenderer.on(IpcChannels.DownloadFailed, (_, fileId: string) =>
       func(fileId),
     )
   },

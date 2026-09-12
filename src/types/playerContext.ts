@@ -175,15 +175,15 @@ export interface IAISettings {
 }
 
 export interface IDashboardLayoutSettings {
-  row1: string[]
-  row2: string[]
-  row3: string[]
+  row1: (string | null)[]
+  row2: (string | null)[]
+  row3: (string | null)[]
   columnsTop: number
   columnsMiddle: number
   columnsBottom: number
-  setRow1: (layout: string[]) => void
-  setRow2: (layout: string[]) => void
-  setRow3: (layout: string[]) => void
+  setRow1: (layout: (string | null)[]) => void
+  setRow2: (layout: (string | null)[]) => void
+  setRow3: (layout: (string | null)[]) => void
   setColumnsTop: (cols: number) => void
   setColumnsMiddle: (cols: number) => void
   setColumnsBottom: (cols: number) => void

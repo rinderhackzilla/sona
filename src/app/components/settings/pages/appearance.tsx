@@ -20,7 +20,7 @@ import { Switch } from '@/app/components/ui/switch'
 import { Button } from '@/app/components/ui/button'
 import { languages } from '@/i18n/languages'
 import { useLang } from '@/store/lang.store'
-import { useFullscreenPlayerSettings, useIsDashboardEditing, usePlayerActions } from '@/store/player.store'
+import { useFullscreenPlayerSettings, usePlayerActions } from '@/store/player.store'
 import { useAppSettings } from '@/store/app.store'
 import { ThemeSettingsPicker } from './appearance/theme'
 
@@ -29,7 +29,6 @@ const appearanceLanguages = languages
 export function AppearancePage() {
   const { t } = useTranslation()
   const { setOpenDialog } = useAppSettings()
-  const isDashboardEditing = useIsDashboardEditing()
   const { setIsDashboardEditing } = usePlayerActions()
   const { autoFullscreenEnabled, setAutoFullscreenEnabled } =
     useFullscreenPlayerSettings()

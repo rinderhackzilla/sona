@@ -18,7 +18,7 @@ interface RowProps<TData> extends ComponentPropsWithoutRef<'div'> {
   dataType?: 'song' | 'artist' | 'playlist' | 'radio'
   sortableId?: string
   isHighlighted?: boolean
-  meta?: any
+  meta?: unknown
 }
 
 const MemoContextMenuProvider = memo(ContextMenuProvider)
@@ -117,7 +117,7 @@ export function TableRow<TData>({
 
 interface TableCellProps<TData, TValue> {
   cell: Cell<TData, TValue>
-  meta?: any
+  meta?: unknown
 }
 
 function TableCell<TData, TValue>({ cell }: TableCellProps<TData, TValue>) {

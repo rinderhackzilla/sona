@@ -59,7 +59,7 @@ const MemoTableRow = memo(TableRow) as typeof TableRow
 declare module '@tanstack/react-table' {
   interface TableMeta<TData extends RowData> {
     handlePlaySong: ((row: Row<TData>) => void) | undefined
-    [key: string]: any
+    [key: string]: unknown
   }
   interface SortingFns {
     customSortFn: SortingFn<unknown>
@@ -90,7 +90,7 @@ interface DataTableProps<TData, TValue> {
   onReorder?: (fromIndex: number, toIndex: number) => void
   enableSorting?: boolean
   highlightRowId?: string
-  meta?: Record<string, any>
+  meta?: Record<string, unknown>
 }
 
 let isTap = false
