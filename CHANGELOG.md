@@ -4,6 +4,10 @@ All notable changes to Sona will be documented in this file.
 
 ## [Unreleased]
 
+---
+
+## [0.21.1] - 2026-09-12
+
 ### What's New
 
 #### Daytime Mood Mix Optimization:
