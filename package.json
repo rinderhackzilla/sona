@@ -17,8 +17,6 @@
     "lint:fix": "biome lint --write",
     "lint:check": "biome check --write",
     "lint:format": "biome format --write",
-    "cy:open": "cypress open",
-    "test": "cypress run --component",
     "electron:start": "electron-vite preview",
     "electron:dev": "electron-vite dev",
     "electron:build": "electron-vite build",
@@ -120,8 +118,6 @@
     "@types/react-lazy-load-image-component": "^1.6.4",
     "@vitejs/plugin-react": "^5.1.2",
     "autoprefixer": "^10.4.21",
-    "cypress": "^15.9.0",
-    "cypress-real-events": "^1.15.0",
     "electron": "^40.1.0",
     "electron-builder": "^26.4.0",
     "electron-vite": "^5.0.0",
@@ -134,7 +130,6 @@
   },
   "pnpm": {
     "onlyBuiltDependencies": [
-      "cypress",
       "electron",
       "esbuild"
     ],

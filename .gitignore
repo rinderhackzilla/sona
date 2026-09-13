@@ -24,8 +24,6 @@ dist-ssr
 *.sln
 *.sw?
 
-cypress/screenshots
-cypress/videos
 
 # Docker env file
 env-config.js

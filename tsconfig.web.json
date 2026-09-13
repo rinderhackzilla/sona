@@ -9,8 +9,7 @@
     /* shadcn/ui */
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"],
-      "cy/*": ["./cypress/*"]
+      "@/*": ["./src/*"]
     },
     /* Bundler mode */
     "moduleResolution": "bundler",
@@ -29,11 +28,10 @@
       "./src/types",
       "./electron/preload/types.ts"
     ],
-    "types": ["cypress", "node"]
+    "types": ["node"]
   },
   "include": [
     "src",
-    "cypress",
     "electron/main/**/*",
     "electron/preload/**/*",
     "vite.config.ts",
