@@ -96,11 +96,13 @@ Sona is distributed as a ready-to-run Windows executable with built-in auto-upda
 
 ## Screenshots
 
-<a href="https://raw.githubusercontent.com/rinderhackzilla/sona/refs/heads/main/public/screenshots/start.jpg"><img src="https://raw.githubusercontent.com/rinderhackzilla/sona/refs/heads/main/public/screenshots/start.jpg" width="49.5%"/></a> <a href="https://raw.githubusercontent.com/rinderhackzilla/sona/refs/heads/main/public/screenshots/top50.jpg"><img src="https://raw.githubusercontent.com/rinderhackzilla/sona/refs/heads/main/public/screenshots/top50.jpg" width="49.5%"/></a>
+<a href="https://github.com/user-attachments/assets/3bdb4262-c0e4-4922-a06e-859701983135"><img src="https://github.com/user-attachments/assets/3bdb4262-c0e4-4922-a06e-859701983135" alt="home_1" width="49.5%"/></a> <a href="https://github.com/user-attachments/assets/22027c24-a308-4f60-a6ea-baffd2dd0c8b"><img src="https://github.com/user-attachments/assets/22027c24-a308-4f60-a6ea-baffd2dd0c8b" alt="home_2" width="49.5%"/></a>
 
-<a href="https://raw.githubusercontent.com/rinderhackzilla/sona/refs/heads/main/public/screenshots/discover.jpg"><img src="https://raw.githubusercontent.com/rinderhackzilla/sona/refs/heads/main/public/screenshots/discover.jpg" width="49.5%"/></a> <a href="https://raw.githubusercontent.com/rinderhackzilla/sona/refs/heads/main/public/screenshots/lyrics.jpg"><img src="https://raw.githubusercontent.com/rinderhackzilla/sona/refs/heads/main/public/screenshots/lyrics.jpg" width="49.5%"/></a>
+<a href="https://github.com/user-attachments/assets/dbd61f9a-f6a6-4724-89b7-3c79e79cc3b1"><img src="https://github.com/user-attachments/assets/dbd61f9a-f6a6-4724-89b7-3c79e79cc3b1" alt="discover" width="49.5%"/></a> <a href="https://github.com/user-attachments/assets/42375422-0399-41fc-b667-b1a082490c6e"><img src="https://github.com/user-attachments/assets/42375422-0399-41fc-b667-b1a082490c6e" alt="artist" width="49.5%"/></a>
 
-<a href="https://raw.githubusercontent.com/rinderhackzilla/sona/refs/heads/main/public/screenshots/visualizer.jpg"><img src="https://raw.githubusercontent.com/rinderhackzilla/sona/refs/heads/main/public/screenshots/visualizer.jpg" width="49.5%"/></a> <a href="https://raw.githubusercontent.com/rinderhackzilla/sona/refs/heads/main/public/screenshots/eq.jpg"><img src="https://raw.githubusercontent.com/rinderhackzilla/sona/refs/heads/main/public/screenshots/eq.jpg" width="49.5%"/></a>
+<a href="https://github.com/user-attachments/assets/5995e9f5-7ffc-42de-b427-c746dfc43e25"><img src="https://github.com/user-attachments/assets/5995e9f5-7ffc-42de-b427-c746dfc43e25" alt="album" width="49.5%"/></a> <a href="https://github.com/user-attachments/assets/c5dd97bd-8447-4a3d-bd7f-34a31679f070"><img src="https://github.com/user-attachments/assets/c5dd97bd-8447-4a3d-bd7f-34a31679f070" alt="edit" width="49.5%"/></a>
+
+<a href="https://github.com/user-attachments/assets/51866a38-ecac-4175-95da-b1d232c56f5b"><img src="https://github.com/user-attachments/assets/51866a38-ecac-4175-95da-b1d232c56f5b" alt="settings" width="49.5%"/></a>
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
