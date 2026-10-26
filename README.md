@@ -200,6 +200,23 @@ Connect Sona directly to your Lidarr instance via API to request and download mi
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
+### API Keys
+
+Sona plays a library with only the Subsonic or Navidrome login. Every key below is optional. Enter them under **Settings → Integrations**. They stay on this computer and are not part of the app.
+
+| Service | Where to get it | What it unlocks |
+| --- | --- | --- |
+| **Last.fm** API key and username | [Last.fm API account](https://www.last.fm/api/account/create) | Scrobbling, Discover Daily, Rabbit Hole, This Is, Your Top 50, Forgotten Favorites, artist biographies, and cover art for internet radio |
+| **Fanart.tv** API key | [Get an API key](https://fanart.tv/get-an-api-key/) | Landscape artist backdrops in the hero. Without a key, Sona uses TheAudioDB, MusicBrainz, Wikipedia, then the photo from the server |
+| **ElevenLabs** API key | [ElevenLabs API keys](https://elevenlabs.io/app/settings/api-keys) | Radio host (Vicky on Sona FM). Saved announcements still play without a key. New lines need one. The host switch sits next to the field |
+| **OpenRouter** API key | [OpenRouter](https://openrouter.ai/) | AI daylist and AI-assisted Discover Daily. Turn AI on in the same section |
+| **ListenBrainz** username, user token optional | [ListenBrainz settings](https://listenbrainz.org/settings/) | Time-of-day habits and Explo. A public username is enough. Add the token if the profile is private |
+| **Lidarr** server URL and API key | Lidarr → **Settings → General → Security** | Request missing artists and albums from inside Sona. |
+
+For the full app, add Last.fm, Fanart.tv, and ElevenLabs. Add OpenRouter for the AI mixes, ListenBrainz if that is where you scrobble, and Lidarr if you request music from Sona.
+
+LRCLIB lyrics and Discord Rich Presence do not take a key in Settings.
+
 ## Developer Notes
 
 - Storage conventions and key ownership:
